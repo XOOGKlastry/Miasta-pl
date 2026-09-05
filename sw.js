@@ -1,5 +1,5 @@
-const CACHE = "miasta-pl-v2";
-const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./woj.geojson"];
+const CACHE = "miasta-pl-v3";
+const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./woj.geojson", "./zdjecie.html", "./manifest-zdjecie.webmanifest"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
