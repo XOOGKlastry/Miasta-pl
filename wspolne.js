@@ -24,7 +24,7 @@ function inRing(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;
 function bboxOf(ring){let a=[1e9,1e9,-1e9,-1e9];ring.forEach(([x,y])=>{if(x<a[0])a[0]=x;if(y<a[1])a[1]=y;if(x>a[2])a[2]=x;if(y>a[3])a[3]=y;});return a;}
 async function loadWoj(){
   if(WOJ)return WOJ;
-  const gj=await (await fetch("woj.geojson")).json();
+  const gj=await (await fetch("woj.geojson?v=5")).json();
   WOJ=gj.features.map(f=>{const g=f.geometry,rings=g.type==="Polygon"?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);return {name:f.properties.nazwa,rings,bb:rings.map(bboxOf),f};});
   return WOJ;
 }
@@ -81,8 +81,11 @@ function projection(features,W,pad){
   const P={W,H,
     x:lon=>pad+(lon-b[0])*k*s, y:lat=>pad+(b[3]-lat)*s,
     lon:x=>(x-pad)/(k*s)+b[0], lat:y=>b[3]-(y-pad)/s,
-    path(g){const polys=g.type==="Polygon"?[g.coordinates]:g.coordinates;let d="";
-      polys.forEach(p=>p.forEach(r=>{d+="M"+r.map(([x,y])=>P.x(x).toFixed(1)+" "+P.y(y).toFixed(1)).join("L")+"Z";}));return d;}
+    // pełne granice, ale bez punktów bliższych niż ~pół piksela (niewidoczne, a spowalniają telefon)
+    path(g,tol){tol=tol==null?0.6:tol;const polys=g.type==="Polygon"?[g.coordinates]:g.coordinates;let d="";
+      polys.forEach(p=>p.forEach(r=>{let out=[],lx=1e9,ly=1e9;
+        for(let i=0;i<r.length;i++){const x=P.x(r[i][0]),y=P.y(r[i][1]);if(i===r.length-1||Math.abs(x-lx)+Math.abs(y-ly)>=tol){out.push(x.toFixed(1)+" "+y.toFixed(1));lx=x;ly=y;}}
+        if(out.length>2)d+="M"+out.join("L")+"Z";}));return d;}
   };
   return P;
 }
@@ -93,11 +96,30 @@ function fitViewport(){
   const fit=()=>{document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");if(vv&&vv.offsetTop)scrollTo(0,0);};
   (vv||window).addEventListener("resize",fit);fit();
 }
-function registerSW(){if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});}
+function registerSW(){if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).then(r=>r.update()).catch(()=>{});}
+
+/* ---- powiaty: pełne granice PRG (TopoJSON), sąsiedztwo ze wspólnych odcinków granic ---- */
+const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
+let POWC=null;
+async function loadPowiaty(){
+  if(POWC)return POWC;
+  const t=await (await fetch("powiaty.topojson?v=5")).json();
+  const o=t.objects.powiaty,nbi=topojson.neighbors(o.geometries),fs=topojson.feature(t,o).features;
+  POWC=fs.map((f,i)=>{
+    const k=f.properties.k,n=f.properties.n,city=+k.slice(2)>=60;
+    let b=[1e9,1e9,-1e9,-1e9];
+    const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
+    polys.forEach(p=>p[0].forEach(([x,y])=>{if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y;}));
+    return {f,k,n,city,woj:WOJ_KOD[k.slice(0,2)],bb:b,lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2,
+      label:city?"m. "+n:n,full:(city?"miasto ":"powiat ")+n,short:n,nbi:nbi[i]};
+  });
+  POWC.forEach(p=>{p.nb=p.nbi.map(i=>POWC[i].k);});
+  return POWC;
+}
 
 /* ---- losowanie powtarzalne (to samo dla wszystkich w danym dniu) ---- */
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,WOJ_KOD,loadPowiaty,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

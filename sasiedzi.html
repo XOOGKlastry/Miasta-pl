@@ -13,8 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css" />
+<link rel="stylesheet" href="wspolne.css?v=5" />
 <style>
+svg path{fill-rule:evenodd}
 .target{flex:none;text-align:center}
 .target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(24px,7.5vw,34px);line-height:1.05}
 .target .hint{font-size:14px;color:var(--dim)}
@@ -75,22 +76,16 @@
 </main>
 </div>
 
-<script src="wspolne.js"></script>
+<script src="topojson-client.min.js?v=5"></script>
+<script src="wspolne.js?v=5"></script>
 <script>
 const {$,shuffle}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
 let POW=[],BY={},game=null;
 Object.entries(WOJ_KOD).sort((a,b)=>a[1].localeCompare(b[1],"pl")).forEach(([k,n])=>{const o=document.createElement("option");o.value=k;o.textContent=n;$("area").appendChild(o);});
 
-fetch("powiaty.geojson").then(r=>r.json()).then(pg=>{
-  POW=pg.features.map(f=>{
-    const k=f.properties.k,city=+k.slice(2)>=60;
-    let b=[1e9,1e9,-1e9,-1e9];
-    const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
-    polys.forEach(p=>p[0].forEach(([x,y])=>{if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y;}));
-    return {f,k,city,nb:f.properties.s||[],woj:WOJ_KOD[k.slice(0,2)],bb:b,lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2,
-      full:city?"miasto "+f.properties.n:"powiat "+f.properties.n,short:f.properties.n};
-  });
+ZP.loadPowiaty().then(pw=>{
+  POW=pw;
   POW.forEach(p=>BY[p.k]=p);
   $("datastate").textContent=POW.length+" powiatów";
   $("startBtn").disabled=false;refreshBest();

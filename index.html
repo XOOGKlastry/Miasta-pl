@@ -157,7 +157,7 @@ try{
 }catch(e){}
 
 /* kontur Polski z granic województw */
-fetch("woj.geojson").then(r=>r.json()).then(gj=>{
+fetch("woj.geojson?v=5").then(r=>r.json()).then(gj=>{
   const k=Math.cos(52*Math.PI/180);
   const W=13.9,E=24.3,N=55.0,S=48.9;
   const sx=100/((E-W)*k), sy=100/(N-S), s=Math.min(sx,sy);
@@ -172,7 +172,7 @@ fetch("woj.geojson").then(r=>r.json()).then(gj=>{
   svg.innerHTML='<g class="draw">'+d+'</g>';
 }).catch(()=>{});
 
-if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
 </body>
 </html>

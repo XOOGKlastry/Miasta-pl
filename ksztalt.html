@@ -13,8 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css" />
+<link rel="stylesheet" href="wspolne.css?v=5" />
 <style>
+svg path{fill-rule:evenodd}
 .stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden}
 #shape{position:absolute;inset:0;width:100%;height:100%}
 #shape path{fill:rgba(242,193,78,.18);stroke:var(--gold);stroke-width:2.2;stroke-linejoin:round;vector-effect:non-scaling-stroke}
@@ -76,7 +77,8 @@
 </main>
 </div>
 
-<script src="wspolne.js"></script>
+<script src="topojson-client.min.js?v=5"></script>
+<script src="wspolne.js?v=5"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -84,19 +86,10 @@ let POW=[],WOJF=[],PL=null,game=null;
 
 Object.entries(WOJ_KOD).sort((a,b)=>a[1].localeCompare(b[1],"pl")).forEach(([k,n])=>{const o=document.createElement("option");o.value=k;o.textContent=n;$("area").appendChild(o);});
 
-Promise.all([fetch("powiaty.geojson").then(r=>r.json()),fetch("woj.geojson").then(r=>r.json())]).then(([pg,wg])=>{
-  WOJF=wg.features;
+Promise.all([ZP.loadPowiaty(),ZP.loadWoj()]).then(([pw,woj])=>{
+  WOJF=woj.map(w=>w.f);
   PL=ZP.projection(WOJF,300,4);
-  POW=pg.features.map(f=>{
-    const k=f.properties.k,city=+k.slice(2)>=60;
-    let b=[1e9,1e9,-1e9,-1e9];
-    const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
-    polys.forEach(p=>p[0].forEach(([x,y])=>{if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y;}));
-    return {f,k,city,woj:WOJ_KOD[k.slice(0,2)],
-      label:city?"m. "+f.properties.n:f.properties.n,
-      full:city?"miasto "+f.properties.n:"powiat "+f.properties.n,
-      lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2};
-  });
+  POW=pw;
   $("datastate").textContent=POW.length+" powiatów";
   $("startBtn").disabled=false;refreshBest();
 }).catch(()=>{$("datastate").textContent="Nie udało się wczytać granic. Sprawdź połączenie i odśwież stronę.";});

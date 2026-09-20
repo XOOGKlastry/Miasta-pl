@@ -150,7 +150,7 @@ const norm=s=>s.toLowerCase()
   .replace(/ń/g,"n").replace(/ó/g,"o").replace(/ś/g,"s").replace(/[żź]/g,"z")
   .normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
-const imgUrl=(f,w)=>"https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(f)+"?width="+(w||320);
+const imgUrl=(f,w)=>f.startsWith("herby/")?f:"https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(f)+"?width="+(w||320);
 
 /* ---------- dane: miasta z OSM + herby z Wikidata ---------- */
 const CK="pl-herby-v1";
@@ -185,6 +185,18 @@ async function sparql(q){
 const fileOf=u=>decodeURIComponent(u.split("/Special:FilePath/")[1]||"");
 
 async function loadData(){
+  // 1) gotowa, sprawdzona lista z miniaturami w repozytorium (budowana automatycznie raz w miesiącu)
+  try{
+    const r=await fetchT("herby.json",{cache:"no-cache"},15000);
+    if(r.ok){
+      const j=await r.json();
+      if(j.miasta&&j.miasta.length>100){
+        HERBY=j.miasta.map(c=>({name:c.n,lat:c.lat,lon:c.lon,pop:c.pop,file:c.img}));
+        return ready("lista z "+new Date(j.zbudowano).toLocaleDateString("pl-PL"));
+      }
+    }
+  }catch(e){}
+  // 2) zapas: pobieranie na żywo z OSM i Wikidata
   try{
     const o=JSON.parse(localStorage.getItem(CK)||"null");
     const fresh=o&&(o.wd!==false||Date.now()-o.ts<864e5); // bez Wikidata: ponów po dobie
@@ -365,7 +377,7 @@ document.addEventListener("keydown",e=>{
 });
 
 loadData();
-if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
+if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
 </body>
 </html>

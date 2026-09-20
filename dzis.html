@@ -13,8 +13,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css" />
+<link rel="stylesheet" href="wspolne.css?v=5" />
 <style>
+svg path{fill-rule:evenodd}
 .dots{display:flex;gap:6px;flex:none}
 .dots i{flex:1;height:6px;border-radius:3px;background:var(--line)}
 .dots i.now{background:var(--paper)}
@@ -88,7 +89,8 @@
 </main>
 </div>
 
-<script src="wspolne.js"></script>
+<script src="topojson-client.min.js?v=5"></script>
+<script src="wspolne.js?v=5"></script>
 <script>
 const {$,fmt}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -108,12 +110,7 @@ async function prepare(){
   base=woj.map(w=>'<path class="w" d="'+P.path(w.f.geometry)+'"/>').join("");
   // miasta: stała, wbudowana lista, żeby każdy dostał to samo
   const cities=sh(ZP.FALLBACK.filter(c=>c[3]>=25000)).slice(0,3).map(([name,lat,lon,pop])=>({name,lat,lon,pop,woj:ZP.wojOf(lon,lat)}));
-  const pg=await (await fetch("powiaty.geojson")).json();
-  const pows=pg.features.filter(f=>+f.properties.k.slice(2)<60).map(f=>{
-    let b=[1e9,1e9,-1e9,-1e9];const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
-    polys.forEach(p=>p[0].forEach(([x,y])=>{if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y;}));
-    return {f,k:f.properties.k,label:f.properties.n,full:"powiat "+f.properties.n,woj:WOJ_KOD[f.properties.k.slice(0,2)],lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2};
-  });
+  const pows=(await ZP.loadPowiaty()).filter(p=>!p.city);
   const two=sh(pows).slice(0,2).map(p=>{
     const near=pows.filter(o=>o!==p).sort((x,y)=>ZP.km(p,x)-ZP.km(p,y)).slice(0,7);
     return {type:"k",p,opts:sh(sh(near).slice(0,3).concat([p]))};
