@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Sąsiedzi · Znasz Polskę?</title>
+<meta name="theme-color" content="#0C1A1D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css" />
+<style>
+.target{flex:none;text-align:center}
+.target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(24px,7.5vw,34px);line-height:1.05}
+.target .hint{font-size:14px;color:var(--dim)}
+.stage{flex:1;min-height:180px;position:relative;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);overflow:hidden}
+#map{position:absolute;inset:0;width:100%;height:100%}
+#map path{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke;cursor:pointer;transition:fill .15s}
+#map path.me{fill:var(--gold);stroke:var(--ink);cursor:default}
+#map path.sel{fill:#6FA7AE}
+#map path.good{fill:var(--ok)}
+#map path.miss{fill:#E8A33A;fill-opacity:.55}
+#map path.bad{fill:var(--red)}
+#map text{font-size:13px;font-weight:700;fill:var(--paper);paint-order:stroke;stroke:var(--ink);stroke-width:4px;stroke-linejoin:round;pointer-events:none;text-anchor:middle}
+.count{position:absolute;left:10px;top:10px;font-size:13px;color:var(--dim);background:rgba(12,26,29,.85);border:1px solid var(--line);border-radius:999px;padding:3px 10px;pointer-events:none}
+.legend{position:absolute;left:10px;bottom:10px;display:flex;gap:10px;font-size:12px;color:var(--dim);background:rgba(12,26,29,.85);border-radius:8px;padding:4px 8px;pointer-events:none}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+#okBtn{width:100%}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Sąsiedzi</h1>
+  <span class="round" id="round"></span>
+</header>
+
+<div class="stats hidden" id="stats">
+  <span class="gold">Punkty <b id="pts">0</b></span>
+  <span>Rekord <b id="best">0</b></span>
+</div>
+
+<main>
+  <section class="setup" id="setup">
+    <h2>Zaznacz wszystkich sąsiadów powiatu</h2>
+    <p>Na mapie bez podpisów świeci się jeden powiat. Stuknij wszystkie powiaty, które z nim graniczą (także miasta na prawach powiatu), i sprawdź. Każdy trafiony sąsiad dodaje punkty, każdy błędnie zaznaczony je odejmuje, maksymalnie 100 za rundę.</p>
+    <label class="field"><span>Obszar</span>
+      <select id="area"><option value="">cała Polska</option></select>
+    </label>
+    <label class="field"><span>Liczba rund</span>
+      <select id="rounds"><option>5</option><option selected>10</option></select>
+    </label>
+    <button class="big" id="startBtn" disabled>Zagraj</button>
+    <div class="datastate" id="datastate">Wczytywanie granic powiatów…</div>
+    <footer>Granice: PRG (GUGiK), uproszczone. Sąsiedztwo wyliczone ze wspólnych granic.</footer>
+  </section>
+
+  <div class="target hidden" id="target"><div class="nm" id="tName"></div><div class="hint" id="tHint"></div></div>
+  <section class="stage hidden" id="stage">
+    <svg id="map" preserveAspectRatio="xMidYMid meet"></svg>
+    <span class="count" id="count">Zaznaczone: 0</span>
+    <div class="legend hidden" id="legend"><span><i style="background:var(--ok)"></i>trafione</span><span><i style="background:#E8A33A"></i>pominięte</span><span><i style="background:var(--red)"></i>błędne</span></div>
+  </section>
+  <button class="big hidden" id="okBtn">Sprawdź</button>
+  <div class="feedback hidden" id="feedback"></div>
+
+  <section class="summary hidden" id="summary"></section>
+</main>
+</div>
+
+<script src="wspolne.js"></script>
+<script>
+const {$,shuffle}=ZP;
+const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
+let POW=[],BY={},game=null;
+Object.entries(WOJ_KOD).sort((a,b)=>a[1].localeCompare(b[1],"pl")).forEach(([k,n])=>{const o=document.createElement("option");o.value=k;o.textContent=n;$("area").appendChild(o);});
+
+fetch("powiaty.geojson").then(r=>r.json()).then(pg=>{
+  POW=pg.features.map(f=>{
+    const k=f.properties.k,city=+k.slice(2)>=60;
+    let b=[1e9,1e9,-1e9,-1e9];
+    const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
+    polys.forEach(p=>p[0].forEach(([x,y])=>{if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y;}));
+    return {f,k,city,nb:f.properties.s||[],woj:WOJ_KOD[k.slice(0,2)],bb:b,lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2,
+      full:city?"miasto "+f.properties.n:"powiat "+f.properties.n,short:f.properties.n};
+  });
+  POW.forEach(p=>BY[p.k]=p);
+  $("datastate").textContent=POW.length+" powiatów";
+  $("startBtn").disabled=false;refreshBest();
+}).catch(()=>{$("datastate").textContent="Nie udało się wczytać granic. Sprawdź połączenie i odśwież stronę.";});
+
+const bestKey=()=>"sasiedzi-best-"+($("area").value||"pl")+"-"+$("rounds").value;
+function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
+$("area").onchange=$("rounds").onchange=refreshBest;
+
+function startGame(){
+  const area=$("area").value;
+  const pool=POW.filter(p=>!p.city&&p.nb.length>=3&&(!area||p.k.startsWith(area)));
+  const n=Math.min(+$("rounds").value,pool.length);
+  game={qs:shuffle(pool.slice()).slice(0,n),i:-1,pts:0,res:[]};
+  $("setup").classList.add("hidden");$("summary").classList.add("hidden");
+  ["stats","target","stage","okBtn"].forEach(id=>$(id).classList.remove("hidden"));
+  $("pts").textContent=0;refreshBest();
+  next();
+}
+function next(){
+  game.i++;
+  if(game.i>=game.qs.length)return endGame();
+  const t=game.qs[game.i];game.answered=false;game.sel=new Set();
+  $("round").textContent=(game.i+1)+" / "+game.qs.length;
+  $("tName").textContent=t.full;$("tHint").textContent="woj. "+t.woj+", sąsiadów: ?";
+  // widok: powiat z sąsiadami i marginesem
+  const view=[t,...t.nb.map(k=>BY[k])];
+  const P=ZP.projection(view.map(p=>p.f),500,40);
+  game.P=P;
+  const vb=[P.lon(-60),P.lat(P.H+60),P.lon(560),P.lat(-60)];
+  let s="";
+  POW.forEach(p=>{
+    if(p.bb[2]<vb[0]||p.bb[0]>vb[2]||p.bb[3]<vb[1]||p.bb[1]>vb[3])return;
+    s+='<path data-k="'+p.k+'" class="'+(p===t?"me":"")+'" d="'+P.path(p.f.geometry)+'"/>';
+  });
+  const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));svg.innerHTML=s+'<g id="lbl"></g>';
+  $("count").textContent="Zaznaczone: 0";$("legend").classList.add("hidden");
+  $("feedback").classList.add("hidden");$("okBtn").classList.remove("hidden");
+}
+$("map").addEventListener("click",e=>{
+  const el=e.target.closest("path");
+  if(!game||game.answered||!el||el.classList.contains("me"))return;
+  const k=el.dataset.k;
+  if(game.sel.has(k)){game.sel.delete(k);el.classList.remove("sel");}else{game.sel.add(k);el.classList.add("sel");}
+  $("count").textContent="Zaznaczone: "+game.sel.size;
+});
+$("okBtn").onclick=()=>{
+  if(!game||game.answered)return;game.answered=true;
+  const t=game.qs[game.i],nb=new Set(t.nb);
+  let good=0,bad=0;
+  $("map").querySelectorAll("path").forEach(el=>{
+    const k=el.dataset.k;el.classList.remove("sel");
+    if(nb.has(k)&&game.sel.has(k)){el.classList.add("good");good++;}
+    else if(nb.has(k))el.classList.add("miss");
+    else if(game.sel.has(k)){el.classList.add("bad");bad++;}
+  });
+  // podpisy sąsiadów
+  const P=game.P;let l="";
+  t.nb.forEach(k=>{const p=BY[k];l+='<text x="'+P.x(p.lon).toFixed(1)+'" y="'+P.y(p.lat).toFixed(1)+'"></text>';});
+  $("lbl").innerHTML=l;[...$("lbl").children].forEach((el,i)=>el.textContent=BY[t.nb[i]].short);
+  const got=Math.round(100*Math.max(0,good-bad)/nb.size);
+  game.pts+=got;game.res.push({t,good,bad,n:nb.size,got});
+  $("pts").textContent=game.pts;
+  $("tHint").textContent="woj. "+t.woj+", sąsiadów: "+nb.size;
+  $("legend").classList.remove("hidden");$("okBtn").classList.add("hidden");
+  const fb=$("feedback");
+  fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
+  fb.querySelector("strong").textContent=(good===nb.size&&!bad?"Komplet! ":"")+"+"+got+" pkt";
+  fb.querySelector("span").textContent="Trafione "+good+" z "+nb.size+(bad?", błędne "+bad:"");
+  $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";
+  $("nextBtn").onclick=next;
+  fb.classList.remove("hidden");
+};
+function endGame(){
+  ["target","stage","okBtn","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  $("round").textContent="";
+  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
+  if(rec)localStorage.setItem(k,game.pts);
+  refreshBest();
+  const s=$("summary");
+  s.innerHTML='<div class="score">'+game.pts+' <span>z '+game.qs.length*100+'</span></div><p class="sub"></p>'
+    +'<div class="btnrow"><button class="ghost" id="setBtn">Zmień obszar</button><button class="big" id="againBtn">Jeszcze raz</button></div><div class="rows"></div>';
+  s.querySelector(".sub").textContent=rec?"Nowy rekord.":"Rekord w tych ustawieniach: "+Math.max(best,game.pts)+" pkt.";
+  const rows=s.querySelector(".rows");
+  game.res.forEach(r=>{
+    const d=document.createElement("div");d.className="r";
+    d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
+    d.querySelector("b").textContent=r.t.full;
+    d.querySelector("small").textContent="trafione "+r.good+" z "+r.n+(r.bad?", błędne "+r.bad:"")+": "+r.t.nb.map(k=>BY[k].short).join(", ");
+    const pt=d.querySelector(".pt");pt.textContent="+"+r.got;pt.classList.add(r.got>=80?"ok":r.got<40?"no":"x");
+    rows.appendChild(d);
+  });
+  s.classList.remove("hidden");
+  $("againBtn").onclick=startGame;
+  $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
+}
+$("startBtn").onclick=startGame;
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>
