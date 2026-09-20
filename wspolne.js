@@ -24,7 +24,7 @@ function inRing(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;
 function bboxOf(ring){let a=[1e9,1e9,-1e9,-1e9];ring.forEach(([x,y])=>{if(x<a[0])a[0]=x;if(y<a[1])a[1]=y;if(x>a[2])a[2]=x;if(y>a[3])a[3]=y;});return a;}
 async function loadWoj(){
   if(WOJ)return WOJ;
-  const gj=await (await fetch("woj.geojson?v=6")).json();
+  const gj=await (await fetch("woj.geojson?v=7")).json();
   WOJ=gj.features.map(f=>{const g=f.geometry,rings=g.type==="Polygon"?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);return {name:f.properties.nazwa,rings,bb:rings.map(bboxOf),f};});
   return WOJ;
 }
@@ -103,7 +103,7 @@ const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie",
 let POWC=null;
 async function loadPowiaty(){
   if(POWC)return POWC;
-  const t=await (await fetch("powiaty.topojson?v=6")).json();
+  const t=await (await fetch("powiaty.topojson?v=7")).json();
   const o=t.objects.powiaty,nbi=topojson.neighbors(o.geometries),fs=topojson.feature(t,o).features;
   POWC=fs.map((f,i)=>{
     const k=f.properties.k,n=f.properties.n,city=+k.slice(2)>=60;
@@ -115,6 +115,25 @@ async function loadPowiaty(){
   });
   POWC.forEach(p=>{p.nb=p.nbi.map(i=>POWC[i].k);});
   return POWC;
+}
+
+/* ---- zakresy wielkości miast: raz wszystkie, raz tylko małe ---- */
+const ZAKRESY=[
+  ["0","wszystkie miasta"],
+  ["20000","duże i średnie (powyżej 20 tys.)"],
+  ["100000","tylko duże (powyżej 100 tys.)"],
+  ["40000-100000","tylko większe średnie (40 do 100 tys.)"],
+  ["20000-40000","tylko mniejsze średnie (20 do 40 tys.)"],
+  ["5000-20000","tylko małe (5 do 20 tys.)"],
+  ["0-5000","tylko najmniejsze (poniżej 5 tys.)"]
+];
+function zakresy(sel,domyslny){
+  sel.innerHTML=ZAKRESY.map(([v,t])=>'<option value="'+v+'">'+t+'</option>').join("");
+  sel.value=domyslny||"20000";
+}
+function wZakresie(c,v){
+  const p=String(v).split("-"),min=+p[0]||0,max=p.length>1?(+p[1]||Infinity):Infinity;
+  return c.pop>=min&&c.pop<max;
 }
 
 /* ---- tryb nauki: to, co sprawia kłopot, wraca częściej ---- */
@@ -176,5 +195,5 @@ async function wojSasiedzi(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,WOJ_KOD,loadPowiaty,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,WOJ_KOD,loadPowiaty,ZAKRESY,zakresy,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

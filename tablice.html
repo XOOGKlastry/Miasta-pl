@@ -64,8 +64,8 @@ a{color:inherit}
 .phone{
   width:100%;
   max-width:430px;
-  height:100dvh;
-  max-height:100dvh;
+  height:var(--app-h,100dvh);
+  max-height:var(--app-h,100dvh);
   background:var(--shell);
   position:relative;
   overflow:hidden;
@@ -2471,6 +2471,12 @@ a{color:inherit}
 
 </div>
 
+<script>
+/* wysokość dopasowana do tego, co widać na ekranie (pasek adresu, klawiatura) */
+(function(){const vv=window.visualViewport;
+  const fit=()=>{document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");if(vv&&vv.offsetTop)scrollTo(0,0);};
+  (vv||window).addEventListener("resize",fit);(vv||window).addEventListener("scroll",fit);fit();})();
+</script>
 <script src="tablice-powiaty.js"></script>
 <script src="tablice-poland.js"></script>
 <script src="tablice-app.js"></script>

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=6" />
+<link rel="stylesheet" href="wspolne.css?v=7" />
 <style>
 svg path{fill-rule:evenodd}
 .duel{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
@@ -26,6 +26,9 @@ svg path{fill-rule:evenodd}
 #map path{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke}
 #map path.a{fill:var(--gold);stroke:var(--ink);stroke-width:1.6}
 #map path.b{fill:#5DCAA5;stroke:var(--ink);stroke-width:1.6}
+#map text{text-anchor:middle;paint-order:stroke;pointer-events:none;font-weight:700}
+#map text.tlo{font-size:11px;fill:#A9C4C2;stroke:var(--ink);stroke-width:3px;stroke-linejoin:round;opacity:.85}
+#map text.glowny{font-size:15px;fill:var(--ink);stroke:#F7E6B8;stroke-width:3.5px;stroke-linejoin:round}
 .veil{position:relative;z-index:2;color:var(--dim);font-size:15px;text-align:center;padding:0 20px;line-height:1.4}
 .choice{display:flex;gap:10px;flex:none}
 .choice button{flex:1;min-height:60px;border-radius:12px;border:1px solid var(--line-2);background:var(--ink-2);
@@ -91,8 +94,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=6"></script>
-<script src="wspolne.js?v=6"></script>
+<script src="topojson-client.min.js?v=7"></script>
+<script src="wspolne.js?v=7"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 let POW=[],BY={},WOJ=[],BYW={},SET=[],BYK={},game=null;
@@ -151,12 +154,16 @@ function drawPair(q){
   const view=[q.a,q.b,...q.a.nb.map(k=>BYK[k])].filter(Boolean);
   const P=ZP.projection(view.map(p=>p.f),500,26);
   const vb=[P.lon(-40),P.lat(P.H+40),P.lon(540),P.lat(-40)];
-  let s="";
+  let s="",t="";
   SET.forEach(p=>{
     if(p.bb[2]<vb[0]||p.bb[0]>vb[2]||p.bb[3]<vb[1]||p.bb[1]>vb[3])return;
-    s+='<path class="'+(p===q.a?"a":p===q.b?"b":"")+'" d="'+P.path(p.f.geometry)+'"/>';
+    const rola=p===q.a?"a":p===q.b?"b":"";
+    s+='<path class="'+rola+'" d="'+P.path(p.f.geometry)+'"/>';
+    const x=P.x(p.lon),y=P.y(p.lat);
+    if(x<-20||x>520||y<-10||y>P.H+10)return;
+    t+='<text class="'+(rola?"glowny":"tlo")+'" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'">'+p.short+'</text>';
   });
-  const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));svg.innerHTML=s;
+  const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));svg.innerHTML=s+t;
   svg.classList.remove("hidden");$("veil").classList.add("hidden");
 }
 function answer(tak){

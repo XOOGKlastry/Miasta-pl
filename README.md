@@ -21,6 +21,12 @@ Jedenaście gier, wyzwanie dnia i ekran statystyk w jednej aplikacji (PWA), same
 
 Pozostałe pliki: `wspolne.js` i `wspolne.css` (wspólny kod nowych gier), `powiaty.topojson` (granice powiatów z PRG, uproszczenie tylko do 30 m, czyli poniżej piksela; źródło: ppatrzyk/polska-geojson), `topojson-client.min.js`, `herby.json` i `herby/` (lista herbów i miniatury budowane przez `narzedzia/pobierz_herby.py` w GitHub Actions), `woj.geojson` (granice województw), `manifest.webmanifest` (jedna instalacja dla wszystkich gier), `sw.js` (praca offline), ikony.
 
+## Zakresy wielkości miast
+
+Gry o miastach używają wspólnej listy zakresów z `wspolne.js` (`ZP.zakresy`, `ZP.wZakresie`):
+kumulatywne („wszystkie”, „powyżej 20 tys.”, „powyżej 100 tys.”) oraz rozłączne przedziały
+(40 do 100 tys., 20 do 40 tys., 5 do 20 tys., poniżej 5 tys.).
+
 ## Tryb nauki
 
 Wyniki pojedynczych pytań zapisują się w `localStorage` pod kluczem `nauka-v1` (`powiat:1407`, `miasto:Zamość`, `herb:…`, `rzeka:…`, `wojewodztwo:…`).

@@ -96,7 +96,7 @@ footer a{color:var(--dim)}
       <span class="rec" id="rec-zoom"></span>
     </a>
     <a class="game" href="herb.html">
-      <span class="ico"><svg viewBox="0 0 40 46"><path d="M3 3 H37 V22 C37 34 28 40 20 43 C12 40 3 34 3 22 Z" fill="#D83A4E" stroke="#F2C14E" stroke-width="2"/><path d="M20 12 l3 6 h-6 z M14 20 h12 l-2 8 h-8 z" fill="#F4F4F2"/></svg></span>
+      <span class="ico"><svg viewBox="0 0 40 46"><path d="M3 3 H37 V22 C37 34 28 40 20 43 C12 40 3 34 3 22 Z" fill="#1B4FA8" stroke="#E6EFEC" stroke-width="1.5"/><circle cx="18" cy="27" r="7.5" fill="none" stroke="#F2C14E" stroke-width="3.2"/><path d="M23 21 l10 -6 -3 10 z" fill="#F2C14E"/><circle cx="11" cy="21" r="2" fill="#F2C14E"/></svg></span>
       <span class="txt"><b>Jaki to herb?</b><small>Herb miasta, cztery odpowiedzi</small></span>
       <span class="rec" id="rec-herb"></span>
     </a>
@@ -165,7 +165,7 @@ try{
 }catch(e){}
 
 /* kontur Polski z granic województw */
-fetch("woj.geojson?v=6").then(r=>r.json()).then(gj=>{
+fetch("woj.geojson?v=7").then(r=>r.json()).then(gj=>{
   const k=Math.cos(52*Math.PI/180);
   const W=13.9,E=24.3,N=55.0,S=48.9;
   const sx=100/((E-W)*k), sy=100/(N-S), s=Math.min(sx,sy);
