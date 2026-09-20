@@ -1,7 +1,7 @@
 {
-  "name": "Ile miast w Polsce wymienisz",
-  "short_name": "Miasta PL",
-  "description": "Gra na czas: wymieniaj polskie miasta, każde trafione ląduje na mapie.",
+  "name": "Znasz Polskę? Gry geograficzne",
+  "short_name": "Znasz Polskę?",
+  "description": "Miasta na czas, Skąd to zdjęcie, Tablice rejestracyjne i Jaki to herb w jednej aplikacji.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

@@ -2,13 +2,13 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Skąd to zdjęcie · zgadnij polskie miasto z lotu ptaka</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Skąd to zdjęcie? · Znasz Polskę?</title>
 <meta name="theme-color" content="#0B1220" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<link rel="manifest" href="manifest-zdjecie.webmanifest" />
+<link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -20,95 +20,109 @@
   --dim:#8296B4;--gold:#E8B84B;--good:#57C08A;--bad:#E8654A;--r:12px;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;height:100%}
-body{background:
-  radial-gradient(1200px 500px at 70% -10%, rgba(232,184,75,.08), transparent 60%),
-  var(--bg);
+html,body{margin:0;padding:0}
+body{background:radial-gradient(1200px 500px at 70% -10%, rgba(232,184,75,.08), transparent 60%),var(--bg);
   color:var(--ink);font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:15px;line-height:1.5;
   -webkit-text-size-adjust:100%;overscroll-behavior:none}
 button,select,input{font:inherit;color:inherit}
 button{cursor:pointer}
-.wrap{max-width:980px;margin:0 auto;padding:16px 14px 28px;display:flex;flex-direction:column;gap:14px}
-header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.brand{display:flex;flex-direction:column;gap:2px}
-.brand .kick{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
-h1{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:30px;line-height:1;margin:0;letter-spacing:-.01em}
-.datastate{font-size:12px;color:var(--dim);text-align:right;max-width:230px}
-
-.scoreboard{display:flex;gap:10px;flex-wrap:wrap}
-.stat{background:linear-gradient(180deg,var(--bg2),rgba(17,28,46,.5));border:1px solid var(--edge);border-radius:var(--r);padding:8px 14px;min-width:84px}
-.stat .k{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
-.stat .v{font-family:"Fraunces",serif;font-weight:600;font-size:26px;line-height:1.1}
-.stat .v.warn{color:var(--bad)}
-
-.frame{position:relative;border:1px solid var(--edge);border-radius:var(--r);overflow:hidden;background:#0d1526}
-#map{height:60vh;min-height:360px}
-.frame.locked #map{cursor:default}
-.vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 120px 20px rgba(4,8,16,.55);border-radius:var(--r)}
-.round-tag{position:absolute;left:12px;top:12px;z-index:500;background:rgba(11,18,32,.82);border:1px solid var(--edge);border-radius:999px;padding:4px 12px;font-size:12px;letter-spacing:.06em;color:var(--dim)}
-.timepill{position:absolute;right:12px;top:12px;z-index:500;background:rgba(11,18,32,.82);border:1px solid var(--edge);border-radius:999px;padding:4px 12px;font-size:13px;font-variant-numeric:tabular-nums}
-.timepill.warn{color:var(--bad);border-color:var(--bad)}
-.imagery-toggle{position:absolute;right:12px;bottom:12px;z-index:500;display:flex;gap:6px}
-.imagery-toggle button{background:rgba(11,18,32,.82);border:1px solid var(--edge);border-radius:8px;color:var(--dim);padding:5px 9px;font-size:11px;letter-spacing:.05em}
-.imagery-toggle button.act{color:var(--gold);border-color:var(--gold)}
-
-.answerbar{display:flex;gap:10px;align-items:stretch}
-#guess{flex:1;min-width:0;background:var(--bg2);border:1px solid var(--edge);border-radius:var(--r);
-  padding:15px 16px;font-family:"Fraunces",serif;font-size:22px;font-weight:600;letter-spacing:.01em}
-#guess:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold)}
-#guess:disabled{opacity:.45}
-.acbox{position:relative}
-#ac{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:600;background:var(--bg2);border:1px solid var(--edge);border-radius:var(--r);overflow:hidden;display:none}
-#ac div{padding:9px 14px;cursor:pointer;font-family:"Fraunces",serif;font-size:17px;border-bottom:1px solid var(--edge)}
-#ac div:last-child{border-bottom:none}
-#ac div.sel,#ac div:hover{background:var(--edge)}
-.btn{background:transparent;border:1px solid var(--edge);border-radius:var(--r);padding:0 18px;white-space:nowrap;font-size:14px}
-.btn:hover:not(:disabled){background:var(--bg2)}
-.btn.gold{background:var(--gold);border-color:var(--gold);color:#241a02;font-weight:600}
-.btn.gold:hover{filter:brightness(1.07)}
-.btn:disabled{opacity:.4;cursor:not-allowed}
-
-.feedback{min-height:26px;font-size:15px;display:flex;align-items:center;gap:8px}
-.feedback.good{color:var(--good)}.feedback.bad{color:var(--bad)}.feedback.warn{color:var(--gold)}
-
-.setup{background:linear-gradient(180deg,var(--bg2),rgba(17,28,46,.4));border:1px solid var(--edge);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px}
-.setup h2{font-family:"Fraunces",serif;font-weight:600;font-size:20px;margin:0}
-.setup p{margin:0;color:var(--dim);font-size:14px;max-width:60ch}
-.opts{display:flex;gap:16px;flex-wrap:wrap}
-.opt{display:flex;flex-direction:column;gap:5px}
-.opt label{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
-select{background:var(--bg2);border:1px solid var(--edge);border-radius:9px;padding:9px 12px}
-
-.summary{background:linear-gradient(180deg,var(--bg2),rgba(17,28,46,.4));border:1px solid var(--edge);border-radius:var(--r);padding:18px}
-.summary .final{font-family:"Fraunces",serif;font-weight:900;font-size:46px;line-height:1}
-.summary .sub{color:var(--dim);margin:4px 0 14px}
-.rounds{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
-.rounds .r{display:flex;align-items:center;gap:10px;font-size:14px;padding:6px 0;border-bottom:1px solid var(--edge)}
-.rounds .r .ico{width:18px}
-.rounds .r .nm{flex:1;font-family:"Fraunces",serif;font-size:16px}
-.rounds .r .pt{color:var(--dim);font-variant-numeric:tabular-nums}
-
-footer{color:var(--dim);font-size:12px;line-height:1.7}
 a{color:var(--gold)}
 .hidden{display:none !important}
+
+.app{height:var(--app-h,100dvh);max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:10px;
+  padding:calc(env(safe-area-inset-top,0px) + 8px) calc(env(safe-area-inset-right,0px) + 10px) calc(env(safe-area-inset-bottom,0px) + 8px) calc(env(safe-area-inset-left,0px) + 10px)}
+header{display:flex;align-items:center;gap:10px;flex:none}
+.back{width:36px;height:36px;flex:none;display:grid;place-items:center;border:1px solid var(--edge);border-radius:10px;color:var(--ink);text-decoration:none;font-size:22px;line-height:1}
+h1{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:22px;line-height:1;margin:0;flex:1;min-width:0;letter-spacing:-.01em}
+.datastate{font-size:11px;color:var(--dim);text-align:right;max-width:44%;line-height:1.25}
+
+.scoreboard{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex:none}
+.stat{background:var(--bg2);border:1px solid var(--edge);border-radius:10px;padding:4px 8px;min-width:0}
+.stat .k{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat .v{font-family:"Fraunces",serif;font-weight:600;font-size:19px;line-height:1.15;white-space:nowrap}
+
+.play{flex:1;min-height:0;display:flex;flex-direction:column}
+.frame{position:relative;flex:1;min-height:180px;border:1px solid var(--edge);border-radius:var(--r);overflow:hidden;background:#0d1526}
+#map{position:absolute;inset:0}
+.vignette{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 90px 10px rgba(4,8,16,.5);z-index:450}
+.pill{position:absolute;z-index:500;background:rgba(11,18,32,.84);border:1px solid var(--edge);border-radius:999px;padding:4px 12px;font-size:12px;color:var(--dim)}
+.round-tag{left:10px;top:10px}
+.timepill{right:10px;top:10px;font-size:14px;color:var(--ink);font-variant-numeric:tabular-nums}
+.timepill.warn{color:var(--bad);border-color:var(--bad)}
+#skipBtn{left:10px;bottom:10px;padding:8px 14px;color:var(--ink);font-size:13px}
+#skipBtn:disabled{opacity:.4}
+.imagery-toggle{position:absolute;right:10px;bottom:10px;z-index:500;display:flex;gap:6px}
+.imagery-toggle button{background:rgba(11,18,32,.84);border:1px solid var(--edge);border-radius:8px;color:var(--dim);padding:7px 9px;font-size:11px}
+.imagery-toggle button.act{color:var(--gold);border-color:var(--gold)}
+
+.feedback{flex:none;min-height:24px;font-size:14px;display:flex;align-items:center;gap:8px;line-height:1.3}
+.feedback.good{color:var(--good)}.feedback.bad{color:var(--bad)}.feedback.warn{color:var(--gold)}
+.feedback .btn{margin-left:auto;min-height:40px;padding:0 14px}
+
+.answerbar{flex:none;display:flex;gap:8px}
+.acbox{position:relative;flex:1;min-width:0}
+#guess{width:100%;background:var(--bg2);border:1px solid var(--edge);border-radius:var(--r);
+  padding:12px 14px;font-family:"Fraunces",serif;font-size:20px;font-weight:600}
+#guess:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold)}
+#guess:disabled{opacity:.45}
+/* podpowiedzi otwierają się w górę, żeby klawiatura ich nie zasłaniała */
+#ac{position:absolute;left:0;right:0;bottom:calc(100% + 6px);z-index:600;background:var(--bg2);border:1px solid var(--edge);border-radius:var(--r);overflow:hidden;display:none;box-shadow:0 -10px 30px rgba(0,0,0,.4)}
+#ac div{padding:11px 14px;cursor:pointer;font-family:"Fraunces",serif;font-size:17px;border-bottom:1px solid var(--edge)}
+#ac div:first-child{border-bottom:none}
+#ac div.sel,#ac div:hover{background:var(--edge)}
+#ac{display:none;flex-direction:column-reverse}
+.btn{background:transparent;border:1px solid var(--edge);border-radius:var(--r);padding:0 16px;white-space:nowrap;font-size:14px;min-height:44px}
+.btn.gold{background:var(--gold);border-color:var(--gold);color:#241a02;font-weight:600}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.setup,.summary{overflow:auto;background:linear-gradient(180deg,var(--bg2),rgba(17,28,46,.4));border:1px solid var(--edge);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:14px}
+.setup h2{font-family:"Fraunces",serif;font-weight:600;font-size:21px;line-height:1.2;margin:0}
+.setup p{margin:0;color:var(--dim);font-size:14px;max-width:60ch}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.opt{display:flex;flex-direction:column;gap:5px;min-width:0}
+.opt:first-child{grid-column:1/-1}
+.opt label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+select{background:var(--bg2);border:1px solid var(--edge);border-radius:9px;padding:10px 12px;min-height:44px;width:100%}
+#startBtn{grid-column:1/-1;min-height:50px;font-size:16px}
+.summary{gap:0}
+.summary .final{font-family:"Fraunces",serif;font-weight:900;font-size:44px;line-height:1}
+.summary .sub{color:var(--dim);margin:4px 0 14px}
+.rounds{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.rounds .r{display:flex;align-items:center;gap:10px;font-size:14px;padding:6px 0;border-bottom:1px solid var(--edge)}
+.rounds .r .ico{width:18px}
+.rounds .r .nm{flex:1;min-width:0;font-family:"Fraunces",serif;font-size:16px}
+.rounds .r .pt{color:var(--dim);font-variant-numeric:tabular-nums;text-align:right}
+#againBtn{width:100%;min-height:48px}
+footer{display:none;color:var(--dim);font-size:12px;line-height:1.7}
 .leaflet-container{background:#0d1526;font-family:inherit}
-.leaflet-control-attribution{background:rgba(11,18,32,.7)!important;color:var(--dim)!important}
+.leaflet-control-attribution{background:rgba(11,18,32,.7)!important;color:var(--dim)!important;font-size:9px}
 .leaflet-control-attribution a{color:var(--dim)!important}
+.leaflet-top.leaflet-left{top:34px}
 .reveal-lbl{background:var(--gold);color:#241a02;border:none;box-shadow:0 2px 8px rgba(0,0,0,.5);font-family:"Fraunces",serif;font-weight:600;font-size:14px;padding:3px 9px;border-radius:6px}
 .reveal-lbl::before{display:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-@media(max-width:560px){h1{font-size:24px}#map{height:52vh}}
+@media (min-width:700px){
+  .app{height:auto;min-height:100dvh;padding:16px 14px 24px;gap:14px}
+  h1{font-size:30px}
+  .scoreboard{display:flex;gap:10px}
+  .stat{padding:8px 14px;min-width:96px}
+  .stat .v{font-size:26px}
+  .play{flex:none}
+  .frame{flex:none;height:60vh}
+  .opts{display:flex;flex-wrap:wrap;align-items:flex-end}
+  .opt:first-child{grid-column:auto}
+  #startBtn{min-height:44px}
+  footer{display:block}
+}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="app">
 
 <header>
-  <div class="brand">
-    <div class="kick">Polska z lotu ptaka</div>
-    <h1>Skąd to zdjęcie?</h1>
-  </div>
-  <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><a href="index.html" style="font-size:13px;color:var(--gold);text-decoration:none">→ Gra: Miasta na mapie</a><div class="datastate" id="datastate">Wczytywanie…</div></div>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Skąd to zdjęcie?</h1>
+  <div class="datastate" id="datastate">Wczytywanie…</div>
 </header>
 
 <div class="scoreboard" id="scoreboard">
@@ -118,57 +132,57 @@ a{color:var(--gold)}
   <div class="stat"><div class="k">Rekord</div><div class="v" id="best">0</div></div>
 </div>
 
-<div class="setup" id="setup">
-  <h2>Rozpoznaj polskie miasto po zdjęciu lotniczym</h2>
-  <p>Dostajesz kadr ortofotomapy bez nazw i dróg z podpisami. Zgadnij, które to miasto, i wpisz jego nazwę. Im szybciej, tym więcej punktów. Duże miasta widać z szerszego kadru, małe z bliska.</p>
-  <div class="opts">
-    <div class="opt"><label>Poziom</label>
-      <select id="scope">
-        <option value="100000">łatwy · miasta &gt; 100 tys.</option>
-        <option value="20000" selected>średni · miasta &gt; 20 tys.</option>
-        <option value="5000">trudny · miasta &gt; 5 tys.</option>
-        <option value="0">hardcore · wszystkie miasta</option>
-      </select>
-    </div>
-    <div class="opt"><label>Rundy</label>
-      <select id="rounds"><option>5</option><option selected>10</option><option>15</option><option>20</option></select>
-    </div>
-    <div class="opt"><label>Czas na rundę</label>
-      <select id="rtime">
-        <option value="20">20 s</option>
-        <option value="40" selected>40 s</option>
-        <option value="60">60 s</option>
-        <option value="0">bez limitu</option>
-      </select>
-    </div>
-    <div class="opt"><label>&nbsp;</label>
-      <button class="btn gold" id="startBtn" style="height:40px">Zagraj</button>
+<div class="play">
+  <div class="setup" id="setup">
+    <h2>Rozpoznaj polskie miasto po zdjęciu lotniczym</h2>
+    <p>Dostajesz kadr ortofotomapy bez podpisów. Wpisz nazwę miasta, im szybciej, tym więcej punktów. Duże miasta widać z szerszego kadru, małe z bliska.</p>
+    <div class="opts">
+      <div class="opt"><label for="scope">Poziom</label>
+        <select id="scope">
+          <option value="100000">łatwy: miasta powyżej 100 tys.</option>
+          <option value="20000" selected>średni: powyżej 20 tys.</option>
+          <option value="5000">trudny: powyżej 5 tys.</option>
+          <option value="0">hardcore: wszystkie miasta</option>
+        </select>
+      </div>
+      <div class="opt"><label for="rounds">Rundy</label>
+        <select id="rounds"><option>5</option><option selected>10</option><option>15</option><option>20</option></select>
+      </div>
+      <div class="opt"><label for="rtime">Czas na rundę</label>
+        <select id="rtime">
+          <option value="20">20 s</option>
+          <option value="40" selected>40 s</option>
+          <option value="60">60 s</option>
+          <option value="0">bez limitu</option>
+        </select>
+      </div>
+      <button class="btn gold" id="startBtn">Zagraj</button>
     </div>
   </div>
-</div>
 
-<div class="frame locked hidden" id="frame">
-  <div class="round-tag" id="roundTag">Runda 1</div>
-  <div class="timepill" id="timepill">0:40</div>
-  <div id="map"></div>
-  <div class="vignette"></div>
-  <div class="imagery-toggle">
-    <button id="imgGugik" class="act">GUGiK</button>
-    <button id="imgEsri">Esri</button>
+  <div class="frame hidden" id="frame">
+    <div id="map"></div>
+    <div class="vignette"></div>
+    <div class="pill round-tag" id="roundTag">Runda 1</div>
+    <div class="pill timepill" id="timepill">0:40</div>
+    <button class="pill" id="skipBtn">Nie wiem</button>
+    <div class="imagery-toggle">
+      <button id="imgGugik" class="act">GUGiK</button>
+      <button id="imgEsri">Esri</button>
+    </div>
   </div>
+
+  <div class="summary hidden" id="summary"></div>
 </div>
 
+<div class="feedback hidden" id="feedback"></div>
 <div class="answerbar hidden" id="answerbar">
-  <div class="acbox" style="flex:1">
-    <input id="guess" type="text" placeholder="Nazwa miasta…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+  <div class="acbox">
+    <input id="guess" type="text" placeholder="Nazwa miasta…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" />
     <div id="ac"></div>
   </div>
   <button class="btn gold" id="submitBtn">Zgaduję</button>
-  <button class="btn" id="skipBtn">Nie wiem</button>
 </div>
-<div class="feedback hidden" id="feedback"></div>
-
-<div class="summary hidden" id="summary"></div>
 
 <footer id="foot">
   Podkład: ortofotomapa GUGiK (WMS Geoportal), z zapasowymi zdjęciami Esri. Miasta i ich położenie: OpenStreetMap.
@@ -261,6 +275,7 @@ function startGame(){
   $("answerbar").classList.remove("hidden");
   $("feedback").classList.add("hidden");
   $("best").textContent=localStorage.getItem(bestKey())||0;
+  map.invalidateSize({pan:false});
   nextRound();
 }
 const bestKey=()=>"zdj-best-"+$("scope").value+"-"+$("rounds").value;
@@ -273,6 +288,7 @@ function nextRound(){
   const c=game.picks[game.i];game.cur=c;
   $("roundv").textContent=(game.i+1)+"/"+game.total;
   $("roundTag").textContent="Runda "+(game.i+1);
+  $("answerbar").classList.remove("hidden");
   $("guess").value="";$("guess").disabled=false;$("submitBtn").disabled=false;$("skipBtn").disabled=false;
   $("ac").style.display="none";
   $("feedback").classList.add("hidden");
@@ -342,7 +358,8 @@ function resolve(g){
   else{fb.classList.add("bad");fb.textContent="✗ To "+c.name+(c.pop?" · "+c.pop.toLocaleString("pl-PL")+" mieszk.":"");}
   // przycisk dalej
   const nextLbl=(game.i+1>=game.total)?"Podsumowanie":"Następna runda ›";
-  fb.insertAdjacentHTML("beforeend",' <button class="btn" id="nextBtn" style="margin-left:auto;height:34px">'+nextLbl+'</button>');
+  fb.insertAdjacentHTML("beforeend",' <button class="btn gold" id="nextBtn">'+nextLbl+'</button>');
+  $("answerbar").classList.add("hidden");
   $("nextBtn").onclick=nextRound;
   $("nextBtn").focus();
 }
@@ -362,7 +379,7 @@ function endGame(){
     '<div class="final">'+game.pts+' <span style="font-size:22px;color:var(--dim)">pkt</span></div>'
     +'<div class="sub">Trafione '+game.hits+' z '+game.total+' ('+acc+'%). '+(rec?"Nowy rekord!":"Rekord: "+Math.max(best,game.pts)+".")+'</div>'
     +'<div class="rounds">'+rows+'</div>'
-    +'<button class="btn gold" id="againBtn" style="height:42px">Jeszcze raz</button>';
+    +'<button class="btn gold" id="againBtn">Jeszcze raz</button>';
   $("summary").classList.remove("hidden");
   $("againBtn").onclick=()=>{$("summary").classList.add("hidden");$("setup").classList.remove("hidden");};
 }
@@ -380,13 +397,13 @@ $("guess").addEventListener("input",()=>{
   if(!acItems.length){$("ac").style.display="none";return;}
   acSel=-1;
   $("ac").innerHTML=acItems.map((n,i)=>'<div data-i="'+i+'">'+n+'</div>').join("");
-  $("ac").style.display="block";
+  $("ac").style.display="flex";
   $("ac").querySelectorAll("div").forEach(d=>d.onclick=()=>{$("guess").value=d.textContent;$("ac").style.display="none";submit();});
 });
 $("guess").addEventListener("keydown",e=>{
-  if($("ac").style.display==="block"&&acItems.length){
-    if(e.key==="ArrowDown"){e.preventDefault();acSel=(acSel+1)%acItems.length;}
-    else if(e.key==="ArrowUp"){e.preventDefault();acSel=(acSel-1+acItems.length)%acItems.length;}
+  if($("ac").style.display==="flex"&&acItems.length){
+    if(e.key==="ArrowUp"){e.preventDefault();acSel=(acSel+1)%acItems.length;}
+    else if(e.key==="ArrowDown"){e.preventDefault();acSel=(acSel-1+acItems.length)%acItems.length;}
     else if(e.key==="Enter"){if(acSel>=0){e.preventDefault();$("guess").value=acItems[acSel];$("ac").style.display="none";submit();return;}}
     else return;
     $("ac").querySelectorAll("div").forEach((d,i)=>d.classList.toggle("sel",i===acSel));
@@ -398,6 +415,13 @@ $("submitBtn").onclick=submit;
 $("skipBtn").onclick=()=>{if(!answered)resolve(null);};
 $("startBtn").onclick=startGame;
 document.addEventListener("click",e=>{if(!e.target.closest(".acbox"))$("ac").style.display="none";});
+
+(function(){
+  const vv=window.visualViewport;
+  const fit=()=>{document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");if(vv&&vv.offsetTop)scrollTo(0,0);};
+  (vv||window).addEventListener("resize",fit);fit();
+  if(window.ResizeObserver)new ResizeObserver(()=>map.invalidateSize({pan:false})).observe($("map"));
+})();
 
 loadCities();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js").catch(()=>{});
