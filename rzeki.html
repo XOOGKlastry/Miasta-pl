@@ -136,7 +136,7 @@ function answer(r,btn){
   game.res.push({c:q.c,ok,picked:r});
   const fb=$("feedback");
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
-  fb.querySelector("strong").textContent=ok?("Dobrze, "+q.c.n+" leży nad "+q.c.rzeka):(q.c.n+" leży nad "+q.c.rzeka);
+  fb.querySelector("strong").textContent=(ok?"Dobrze. ":"Niestety. ")+q.c.n+", rzeka "+q.c.rzeka;
   fb.querySelector("span").textContent=q.c.pop?fmt(q.c.pop)+" mieszkańców":"";
   $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";$("nextBtn").onclick=next;
   fb.classList.remove("hidden");
