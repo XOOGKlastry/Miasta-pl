@@ -72,11 +72,11 @@ select{background:var(--ink-2);border:1px solid var(--line-2);border-radius:10px
 .feedback .next{min-height:48px;padding:0 20px;border-radius:12px;border:none;background:var(--gold);color:#3A2A05;font-weight:700;flex:none}
 
 /* podsumowanie */
-.summary{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.summary{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:12px}
 .summary .score{font-family:"Fraunces",serif;font-weight:900;font-size:52px;line-height:1}
 .summary .score span{font-size:22px;color:var(--dim);font-weight:600}
 .summary .sub{color:var(--dim);margin:0}
-.rows{display:flex;flex-direction:column}
+.rows{display:flex;flex-direction:column;flex:1;min-height:0;overflow:auto}
 .rows .r{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}
 .rows .r .th{width:40px;height:40px;flex:none;border-radius:8px;background:var(--card);display:grid;place-items:center}
 .rows .r .th img{max-width:32px;max-height:34px}

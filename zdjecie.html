@@ -84,15 +84,15 @@ h1{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:22px;line-heig
 .opt label{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
 select{background:var(--bg2);border:1px solid var(--edge);border-radius:9px;padding:10px 12px;min-height:44px;width:100%}
 #startBtn{grid-column:1/-1;min-height:50px;font-size:16px}
-.summary{gap:0}
+.summary{gap:0;overflow:hidden}
 .summary .final{font-family:"Fraunces",serif;font-weight:900;font-size:44px;line-height:1}
 .summary .sub{color:var(--dim);margin:4px 0 14px}
-.rounds{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.rounds{display:flex;flex-direction:column;gap:2px;flex:1;min-height:0;overflow:auto;margin-top:14px}
 .rounds .r{display:flex;align-items:center;gap:10px;font-size:14px;padding:6px 0;border-bottom:1px solid var(--edge)}
 .rounds .r .ico{width:18px}
 .rounds .r .nm{flex:1;min-width:0;font-family:"Fraunces",serif;font-size:16px}
 .rounds .r .pt{color:var(--dim);font-variant-numeric:tabular-nums;text-align:right}
-#againBtn{width:100%;min-height:48px}
+#againBtn{width:100%;min-height:48px;flex:none}
 footer{display:none;color:var(--dim);font-size:12px;line-height:1.7}
 .leaflet-container{background:#0d1526;font-family:inherit}
 .leaflet-control-attribution{background:rgba(11,18,32,.7)!important;color:var(--dim)!important;font-size:9px}
@@ -378,8 +378,8 @@ function endGame(){
   $("summary").innerHTML=
     '<div class="final">'+game.pts+' <span style="font-size:22px;color:var(--dim)">pkt</span></div>'
     +'<div class="sub">Trafione '+game.hits+' z '+game.total+' ('+acc+'%). '+(rec?"Nowy rekord!":"Rekord: "+Math.max(best,game.pts)+".")+'</div>'
-    +'<div class="rounds">'+rows+'</div>'
-    +'<button class="btn gold" id="againBtn">Jeszcze raz</button>';
+    +'<button class="btn gold" id="againBtn">Jeszcze raz</button>'
+    +'<div class="rounds">'+rows+'</div>';
   $("summary").classList.remove("hidden");
   $("againBtn").onclick=()=>{$("summary").classList.add("hidden");$("setup").classList.remove("hidden");};
 }

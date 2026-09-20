@@ -12,7 +12,7 @@ Osiem gier i wyzwanie dnia w jednej aplikacji (PWA), same statyczne pliki, bez b
 | `gdzie.html` | **Gdzie to jest?**: wskazujesz miasto na pustej mapie, punkty za odległość |
 | `ksztalt.html` | **Kształt powiatu**: sam kontur powiatu, cztery odpowiedzi |
 | `dzis.html` | **Wyzwanie dnia**: 5 pytań (mapa i kształty), ten sam zestaw dla wszystkich, wynik do udostępnienia |
-| `sasiedzi.html` | **Sąsiedzi**: zaznacz wszystkie powiaty graniczące z podanym |
+| `sasiedzi.html` | **Graniczą czy nie?**: dwie nazwy powiatów, odpowiedź tak/nie, mapa po odpowiedzi |
 | `wiecej.html` | **Więcej czy mniej?**: które miasto ma więcej mieszkańców, do pierwszej pomyłki |
 
 Pozostałe pliki: `wspolne.js` i `wspolne.css` (wspólny kod nowych gier), `powiaty.topojson` (granice powiatów z PRG, uproszczenie tylko do 30 m, czyli poniżej piksela; źródło: ppatrzyk/polska-geojson), `topojson-client.min.js`, `herby.json` i `herby/` (lista herbów i miniatury budowane przez `narzedzia/pobierz_herby.py` w GitHub Actions), `woj.geojson` (granice województw), `manifest.webmanifest` (jedna instalacja dla wszystkich gier), `sw.js` (praca offline), ikony.

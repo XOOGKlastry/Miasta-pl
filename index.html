@@ -19,58 +19,54 @@
   --gold:#F2C14E;--red:#D83A4E;--r:14px;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{min-height:100dvh;background:var(--ink);color:var(--paper);
+html,body{margin:0;padding:0;height:100%}
+body{background:var(--ink);color:var(--paper);overflow:hidden;
   font-family:"Space Grotesk",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-  -webkit-text-size-adjust:100%;overscroll-behavior:none;
-  padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0)}
-.wrap{max-width:520px;margin:0 auto;padding:12px 16px 28px;display:flex;flex-direction:column;gap:18px}
+  -webkit-text-size-adjust:100%;overscroll-behavior:none}
+.wrap{height:var(--app-h,100dvh);overflow:hidden;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:10px;position:relative;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) calc(env(safe-area-inset-right,0px) + 14px) calc(env(safe-area-inset-bottom,0px) + 10px) calc(env(safe-area-inset-left,0px) + 14px)}
 
-.hero{position:relative;aspect-ratio:1.08;margin:0 -8px}
-.hero svg{position:absolute;inset:0;width:100%;height:100%}
-.hero path{fill:rgba(242,193,78,.05);stroke:var(--gold);stroke-width:.9;stroke-linejoin:round;vector-effect:non-scaling-stroke;opacity:.75}
-.hero .draw path{stroke-dasharray:1400;stroke-dashoffset:1400;animation:draw 1.8s ease-out forwards}
-@keyframes draw{to{stroke-dashoffset:0}}
-.hero h1{position:absolute;left:8px;bottom:6%;margin:0;font-family:"Fraunces",Georgia,serif;font-weight:900;
-  font-size:clamp(40px,12vw,58px);line-height:.92;letter-spacing:-.02em;text-shadow:0 2px 18px var(--ink)}
-.hero p{position:absolute;left:10px;top:4%;margin:0;max-width:17ch;color:var(--dim);font-size:15px;line-height:1.35}
+.bg{position:absolute;right:-6%;top:6%;width:86%;opacity:.13;pointer-events:none}
+.bg path{fill:none;stroke:var(--gold);stroke-width:1.1;stroke-linejoin:round;vector-effect:non-scaling-stroke}
 
-.games{display:flex;flex-direction:column;border-top:1px solid var(--line)}
-.game{display:flex;align-items:center;gap:14px;padding:14px 4px;border-bottom:1px solid var(--line);
-  color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent;border-radius:4px}
-.game:active{background:var(--ink-2)}
-.game:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.ico{width:52px;height:52px;flex:none;display:grid;place-items:center}
-.txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.txt b{font-size:19px;font-weight:700;letter-spacing:-.01em}
-.txt small{font-size:14px;color:var(--dim);line-height:1.35}
-.rec{flex:none;text-align:right;font-size:12px;color:var(--dim);line-height:1.2;min-width:44px}
-.rec strong{display:block;font-size:18px;color:var(--gold);font-variant-numeric:tabular-nums}
+header{display:flex;align-items:baseline;gap:10px;flex:none;z-index:1}
+h1{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:clamp(26px,8vw,34px);line-height:1;letter-spacing:-.02em;margin:0}
+header span{font-size:13px;color:var(--dim)}
 
-.plate{width:52px;height:20px;border-radius:3px;background:#F4F4F2;border:1.5px solid #111;display:flex;overflow:hidden}
-.plate i{width:9px;background:#1546B8;flex:none}
-.plate span{flex:1;display:grid;place-items:center;color:#111;font:700 12px/1 "Space Grotesk",sans-serif;letter-spacing:.06em}
-
-.daily{display:flex;align-items:center;gap:14px;padding:16px;border-radius:var(--r);background:var(--gold);color:#2A1E03;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.daily{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r);background:var(--gold);color:#2A1E03;text-decoration:none;flex:none;z-index:1;-webkit-tap-highlight-color:transparent}
 .daily:active{transform:scale(.99)}
 .daily .dt{flex:1;min-width:0}
-.daily b{display:block;font-family:"Fraunces",Georgia,serif;font-size:22px;font-weight:900;line-height:1.1}
-.daily small{font-size:14px;opacity:.8}
-.daily .st{font-size:26px;letter-spacing:2px;flex:none;text-align:right;font-weight:700}
-footer{font-size:13px;color:var(--dim);line-height:1.6}
-footer summary{cursor:pointer;color:var(--paper)}
-@media (prefers-reduced-motion:reduce){.hero .draw path{animation:none;stroke-dashoffset:0}}
-@media (min-width:700px){.wrap{padding-top:32px}}
+.daily b{display:block;font-family:"Fraunces",Georgia,serif;font-size:19px;font-weight:900;line-height:1.15}
+.daily small{font-size:13px;opacity:.85}
+.daily .st{font-size:22px;flex:none;font-weight:700;letter-spacing:1px}
+
+.games{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;z-index:1}
+.game{display:flex;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px solid var(--line);
+  color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
+.game:first-child{border-top:1px solid var(--line)}
+.game:active{background:var(--ink-2)}
+.game:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+.ico{width:34px;height:34px;flex:none;display:grid;place-items:center}
+.ico svg{width:100%;height:100%}
+.txt{flex:1;min-width:0}
+.txt b{display:block;font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.25}
+.txt small{display:block;font-size:12.5px;color:var(--dim);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec{flex:none;text-align:right;font-size:10px;color:var(--dim);line-height:1.1;min-width:40px}
+.rec strong{display:block;font-size:15px;color:var(--gold);font-variant-numeric:tabular-nums}
+
+.plate{width:34px;height:14px;border-radius:2px;background:#F4F4F2;border:1.2px solid #111;display:flex;overflow:hidden}
+.plate i{width:6px;background:#1546B8;flex:none}
+.plate span{flex:1;display:grid;place-items:center;color:#111;font:700 9px/1 "Space Grotesk",sans-serif;letter-spacing:.04em}
+
+footer{font-size:11px;color:var(--dim);line-height:1.4;flex:none;z-index:1}
+footer a{color:var(--dim)}
 </style>
 </head>
 <body>
 <div class="wrap">
+  <svg class="bg" id="pl" viewBox="0 0 100 100" aria-hidden="true"></svg>
 
-  <div class="hero">
-    <svg id="pl" viewBox="0 0 100 100" aria-hidden="true"></svg>
-    <p>Gry o miastach, powiatach i herbach.</p>
-    <h1>Znasz<br>Polskę?</h1>
-  </div>
+  <header><h1>Znasz Polskę?</h1><span>gry o mapie</span></header>
 
   <a class="daily" href="dzis.html" id="daily">
     <span class="dt"><b id="dailyH">Wyzwanie dnia</b><small id="dailyS">Pięć pytań, ten sam zestaw dla wszystkich</small></span>
@@ -79,55 +75,48 @@ footer summary{cursor:pointer;color:var(--paper)}
 
   <nav class="games">
     <a class="game" href="miasta.html">
-      <span class="ico"><svg width="46" height="46" viewBox="0 0 46 46"><g fill="#F2C14E" stroke="#0C1A1D" stroke-width="1.5"><circle cx="12" cy="14" r="5"/><circle cx="30" cy="10" r="3.5"/><circle cx="24" cy="26" r="6.5"/><circle cx="36" cy="30" r="3.5"/><circle cx="12" cy="34" r="3.5"/></g></svg></span>
-      <span class="txt"><b>Miasta na czas</b><small>Wymień jak najwięcej miast, każde zapala się na mapie.</small></span>
+      <span class="ico"><svg viewBox="0 0 46 46"><g fill="#F2C14E" stroke="#0C1A1D" stroke-width="1.5"><circle cx="12" cy="14" r="5"/><circle cx="30" cy="10" r="3.5"/><circle cx="24" cy="26" r="6.5"/><circle cx="36" cy="30" r="3.5"/><circle cx="12" cy="34" r="3.5"/></g></svg></span>
+      <span class="txt"><b>Miasta na czas</b><small>Wymień jak najwięcej miast w czasie</small></span>
       <span class="rec" id="rec-miasta"></span>
     </a>
     <a class="game" href="zdjecie.html">
-      <span class="ico"><svg width="46" height="46" viewBox="0 0 46 46"><rect x="4" y="4" width="38" height="38" rx="4" fill="#2C4A3C"/><path d="M4 28 L18 20 L30 30 L42 22" stroke="#8FB36E" stroke-width="5" fill="none"/><path d="M20 4 V42 M4 16 H42" stroke="#C9C2B0" stroke-width="2"/><rect x="24" y="8" width="7" height="5" fill="#B9564A"/><rect x="8" y="30" width="6" height="6" fill="#B9564A"/></svg></span>
-      <span class="txt"><b>Skąd to zdjęcie?</b><small>Rozpoznaj miasto po kadrze z ortofotomapy.</small></span>
+      <span class="ico"><svg viewBox="0 0 46 46"><rect x="4" y="4" width="38" height="38" rx="4" fill="#2C4A3C"/><path d="M4 28 L18 20 L30 30 L42 22" stroke="#8FB36E" stroke-width="5" fill="none"/><path d="M20 4 V42 M4 16 H42" stroke="#C9C2B0" stroke-width="2"/><rect x="24" y="8" width="7" height="5" fill="#B9564A"/><rect x="8" y="30" width="6" height="6" fill="#B9564A"/></svg></span>
+      <span class="txt"><b>Skąd to zdjęcie?</b><small>Miasto z lotu ptaka, bez podpisów</small></span>
       <span class="rec" id="rec-zdjecie"></span>
+    </a>
+    <a class="game" href="gdzie.html">
+      <span class="ico"><svg viewBox="0 0 46 46"><path d="M8 12 L20 6 L34 9 L40 20 L36 36 L22 40 L9 34 L5 22 Z" fill="#1D3D43" stroke="#4F7F86" stroke-width="1.5"/><path d="M23 12c-5 0-8 3.6-8 8 0 6 8 13 8 13s8-7 8-13c0-4.4-3-8-8-8z" fill="#F2C14E" stroke="#0C1A1D" stroke-width="1.5"/><circle cx="23" cy="20" r="3" fill="#0C1A1D"/></svg></span>
+      <span class="txt"><b>Gdzie to jest?</b><small>Wskaż miasto na pustej mapie</small></span>
+      <span class="rec" id="rec-gdzie"></span>
+    </a>
+    <a class="game" href="herb.html">
+      <span class="ico"><svg viewBox="0 0 40 46"><path d="M3 3 H37 V22 C37 34 28 40 20 43 C12 40 3 34 3 22 Z" fill="#D83A4E" stroke="#F2C14E" stroke-width="2"/><path d="M20 12 l3 6 h-6 z M14 20 h12 l-2 8 h-8 z" fill="#F4F4F2"/></svg></span>
+      <span class="txt"><b>Jaki to herb?</b><small>Herb miasta, cztery odpowiedzi</small></span>
+      <span class="rec" id="rec-herb"></span>
     </a>
     <a class="game" href="tablice.html">
       <span class="ico"><span class="plate"><i></i><span>WA</span></span></span>
-      <span class="txt"><b>Tablice rejestracyjne</b><small>Z którego powiatu jest ten wyróżnik?</small></span>
+      <span class="txt"><b>Tablice rejestracyjne</b><small>Z którego powiatu jest wyróżnik?</small></span>
       <span class="rec" id="rec-tablice"></span>
     </a>
-    <a class="game" href="herb.html">
-      <span class="ico"><svg width="40" height="46" viewBox="0 0 40 46"><path d="M3 3 H37 V22 C37 34 28 40 20 43 C12 40 3 34 3 22 Z" fill="#D83A4E" stroke="#F2C14E" stroke-width="2"/><path d="M20 12 l3 6 h-6 z M14 20 h12 l-2 8 h-8 z" fill="#F4F4F2"/></svg></span>
-      <span class="txt"><b>Jaki to herb?</b><small>Zgadnij miasto po herbie, cztery odpowiedzi do wyboru.</small></span>
-      <span class="rec" id="rec-herb"></span>
-    </a>
-    <a class="game" href="gdzie.html">
-      <span class="ico"><svg width="46" height="46" viewBox="0 0 46 46"><path d="M8 12 L20 6 L34 9 L40 20 L36 36 L22 40 L9 34 L5 22 Z" fill="#1D3D43" stroke="#4F7F86" stroke-width="1.5"/><path d="M23 12c-5 0-8 3.6-8 8 0 6 8 13 8 13s8-7 8-13c0-4.4-3-8-8-8z" fill="#F2C14E" stroke="#0C1A1D" stroke-width="1.5"/><circle cx="23" cy="20" r="3" fill="#0C1A1D"/></svg></span>
-      <span class="txt"><b>Gdzie to jest?</b><small>Wskaż miasto na pustej mapie, liczy się każdy kilometr.</small></span>
-      <span class="rec" id="rec-gdzie"></span>
-    </a>
     <a class="game" href="ksztalt.html">
-      <span class="ico"><svg width="46" height="46" viewBox="0 0 46 46"><path d="M10 14 L17 7 L26 10 L33 6 L39 14 L36 22 L40 30 L31 39 L22 35 L13 38 L7 29 L11 22 Z" fill="rgba(242,193,78,.2)" stroke="#F2C14E" stroke-width="2" stroke-linejoin="round"/></svg></span>
-      <span class="txt"><b>Kształt powiatu</b><small>Sam kontur, bez mapy. Który to powiat?</small></span>
+      <span class="ico"><svg viewBox="0 0 46 46"><path d="M10 14 L17 7 L26 10 L33 6 L39 14 L36 22 L40 30 L31 39 L22 35 L13 38 L7 29 L11 22 Z" fill="rgba(242,193,78,.2)" stroke="#F2C14E" stroke-width="2" stroke-linejoin="round"/></svg></span>
+      <span class="txt"><b>Kształt powiatu</b><small>Sam kontur, bez mapy</small></span>
       <span class="rec" id="rec-ksztalt"></span>
     </a>
     <a class="game" href="sasiedzi.html">
-      <span class="ico"><svg width="46" height="46" viewBox="0 0 46 46"><g stroke="#0C1A1D" stroke-width="1.5"><path d="M4 6 H20 L22 20 L6 22 Z" fill="#5DCAA5"/><path d="M20 6 H42 V18 L22 20 Z" fill="#5DCAA5"/><path d="M22 20 L42 18 V40 H26 Z" fill="#1D3D43"/><path d="M6 22 L22 20 L26 40 H4 Z" fill="#5DCAA5"/><path d="M14 14 L30 12 L32 28 L16 30 Z" fill="#F2C14E"/></g></svg></span>
-      <span class="txt"><b>Sąsiedzi</b><small>Zaznacz na mapie wszystkie powiaty graniczące z podanym.</small></span>
+      <span class="ico"><svg viewBox="0 0 46 46"><g stroke="#0C1A1D" stroke-width="1.5"><path d="M4 8 H22 V38 H4 Z" fill="#F2C14E"/><path d="M24 8 H42 V38 H24 Z" fill="#5DCAA5"/></g><path d="M23 4 V42" stroke="#E6EFEC" stroke-width="2.5" stroke-dasharray="4 3"/></svg></span>
+      <span class="txt"><b>Graniczą czy nie?</b><small>Dwa powiaty na mapie, szybka decyzja</small></span>
       <span class="rec" id="rec-sasiedzi"></span>
     </a>
     <a class="game" href="wiecej.html">
-      <span class="ico"><svg width="46" height="46" viewBox="0 0 46 46"><rect x="6" y="20" width="12" height="20" rx="2" fill="#4F7F86"/><rect x="26" y="8" width="12" height="32" rx="2" fill="#F2C14E"/><path d="M32 4 l4 5 h-8 z" fill="#E6EFEC"/></svg></span>
-      <span class="txt"><b>Więcej czy mniej?</b><small>Które miasto ma więcej mieszkańców? Do pierwszej pomyłki.</small></span>
+      <span class="ico"><svg viewBox="0 0 46 46"><rect x="6" y="20" width="12" height="20" rx="2" fill="#4F7F86"/><rect x="26" y="8" width="12" height="32" rx="2" fill="#F2C14E"/><path d="M32 4 l4 5 h-8 z" fill="#E6EFEC"/></svg></span>
+      <span class="txt"><b>Więcej czy mniej?</b><small>Które miasto jest większe</small></span>
       <span class="rec" id="rec-wiecej"></span>
     </a>
   </nav>
 
-  <footer>
-    <details>
-      <summary>Zainstaluj na telefonie</summary>
-      Android (Chrome): menu ⋮, potem „Zainstaluj aplikację”. iPhone (Safari): Udostępnij, potem „Do ekranu początkowego”.
-      Aplikacja uruchomi się na pełnym ekranie, a listy miast i herbów zostaną zapisane w telefonie po pierwszym pobraniu.
-    </details>
-    <p>Dane: OpenStreetMap (ODbL), ortofotomapa GUGiK, herby z Wikimedia Commons przez Wikidata, granice województw na bazie danych GUGiK.</p>
-  </footer>
+  <footer>Dane: OpenStreetMap, GUGiK, PRG, herby z Wikimedia Commons. Instalacja: menu przeglądarki, „Zainstaluj aplikację”.</footer>
 </div>
 
 <script>
@@ -172,6 +161,7 @@ fetch("woj.geojson?v=5").then(r=>r.json()).then(gj=>{
   svg.innerHTML='<g class="draw">'+d+'</g>';
 }).catch(()=>{});
 
+(function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
 </body>
