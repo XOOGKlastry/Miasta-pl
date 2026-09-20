@@ -1,0 +1,31 @@
+name: Herby miast
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "narzedzia/pobierz_herby.py"
+      - ".github/workflows/herby.yml"
+  schedule:
+    - cron: "0 3 1 * *"   # raz w miesiącu
+
+permissions:
+  contents: write
+
+jobs:
+  herby:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow
+      - run: python narzedzia/pobierz_herby.py
+      - name: Zapisz zmiany
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add herby.json herby
+          git diff --cached --quiet || (git commit -m "Herby: aktualizacja danych" && git pull --rebase && git push)
