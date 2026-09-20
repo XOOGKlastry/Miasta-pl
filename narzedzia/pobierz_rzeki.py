@@ -82,6 +82,17 @@ def odleglosc_do_odcinka(lat, lon, a, b):
     return math.hypot(px - (ax + t * dx), py - (ay + t * dy)) * 111.19
 
 
+def glowna(nazwa, dlugosc):
+    """„Odra Zachodnia” -> „Odra”: jeśli człon nazwy jest samodzielną, dużą rzeką"""
+    czesci = nazwa.split()
+    if len(czesci) < 2:
+        return nazwa
+    for kandydat in (czesci[0], czesci[-1]):
+        if dlugosc.get(kandydat, 0) >= 150:
+            return kandydat
+    return nazwa
+
+
 def main():
     cs = cities()
     els = rivers_osm()
@@ -113,9 +124,10 @@ def main():
         kand = [(n, d) for n, d in naj.items() if d <= MAX_KM]
         if not kand:
             continue
-        # najbliższa rzeka, ale dłuższa rzeka może wygrać, jeśli jest tylko nieco dalej
-        best = min(kand, key=lambda x: x[1] * (0.75 if dlugosc[x[0]] > 150 else 0.9 if dlugosc[x[0]] > 50 else 1.0))
-        wyniki[c["n"].lower()] = (c, best[0], round(best[1], 2))
+        # o wyborze decyduje odległość podzielona przez pierwiastek długości rzeki:
+        # mała struga tuż obok przegrywa z dużą rzeką kilkaset metrów dalej
+        best = min(kand, key=lambda x: (x[1] + 0.05) / max(1.0, dlugosc[x[0]]) ** 0.5)
+        wyniki[c["n"].lower()] = (c, glowna(best[0], dlugosc), round(best[1], 2))
     print("miast nad rzeką (OSM):", len(wyniki))
 
     out, widziane = [], {}
