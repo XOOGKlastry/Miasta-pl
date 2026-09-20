@@ -21,6 +21,8 @@ Trzynaście gier, wyzwanie dnia i ekran statystyk w jednej aplikacji (PWA), same
 | `statystyki.html` | **Statystyki**: rekordy, mapa opanowanych powiatów, najczęstsze pomyłki |
 | `wiecej.html` | **Więcej czy mniej?**: które miasto ma więcej mieszkańców, do pierwszej pomyłki |
 
+Wygląd: wszystkie gry poza Tablicami korzystają z `wspolne.css` (kolory, przyciski, paski czasu, przejścia) i pomocników `ZP.pasek` oraz `ZP.odliczanie` z `wspolne.js`.
+
 Pozostałe pliki: `wspolne.js` i `wspolne.css` (wspólny kod nowych gier), `powiaty.topojson` (granice powiatów z PRG, uproszczenie tylko do 30 m, czyli poniżej piksela; źródło: ppatrzyk/polska-geojson), `topojson-client.min.js`, `herby.json` i `herby/` (lista herbów i miniatury budowane przez `narzedzia/pobierz_herby.py` w GitHub Actions), `woj.geojson` (granice województw), `manifest.webmanifest` (jedna instalacja dla wszystkich gier), `sw.js` (praca offline), ikony.
 
 ## Zakresy wielkości miast

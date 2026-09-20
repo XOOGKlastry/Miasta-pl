@@ -24,7 +24,7 @@ function inRing(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;
 function bboxOf(ring){let a=[1e9,1e9,-1e9,-1e9];ring.forEach(([x,y])=>{if(x<a[0])a[0]=x;if(y<a[1])a[1]=y;if(x>a[2])a[2]=x;if(y>a[3])a[3]=y;});return a;}
 async function loadWoj(){
   if(WOJ)return WOJ;
-  const gj=await (await fetch("woj.geojson?v=8")).json();
+  const gj=await (await fetch("woj.geojson?v=9")).json();
   WOJ=gj.features.map(f=>{const g=f.geometry,rings=g.type==="Polygon"?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);return {name:f.properties.nazwa,rings,bb:rings.map(bboxOf),f};});
   return WOJ;
 }
@@ -90,6 +90,33 @@ function projection(features,W,pad){
   return P;
 }
 
+/* ---- pasek czasu i odliczanie (wspólne dla gier) ---- */
+function pasek(box,fill,sekundy,koniec,czyStop){
+  const t0=Date.now();
+  box.classList.remove("malo","stop");
+  const id=setInterval(()=>{
+    if(czyStop&&czyStop()){clearInterval(id);return;}
+    const left=Math.max(0,sekundy-(Date.now()-t0)/1000);
+    fill.style.width=(100*left/sekundy).toFixed(1)+"%";
+    box.classList.toggle("malo",left<=sekundy*0.25);
+    if(left<=0){clearInterval(id);koniec&&koniec();}
+  },100);
+  return id;
+}
+function odliczanie(el,tytul,podpis,n,gotowe,kolor){
+  el.classList.remove("hidden");
+  el.innerHTML='<div><b></b><div class="licz"></div><small></small></div>';
+  const b=el.querySelector("b");b.textContent=tytul;if(kolor)b.style.color=kolor;
+  el.querySelector("small").textContent=podpis||"";
+  const licz=el.querySelector(".licz");licz.textContent=n;
+  const id=setInterval(()=>{
+    n--;
+    if(n<=0){clearInterval(id);el.classList.add("hidden");gotowe&&gotowe();}
+    else{licz.textContent=n;licz.style.animation="none";void licz.offsetWidth;licz.style.animation="";}
+  },800);
+  return id;
+}
+
 /* ---- telefon: wysokość widocznego ekranu (klawiatura) ---- */
 function fitViewport(){
   const vv=window.visualViewport;
@@ -103,7 +130,7 @@ const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie",
 let POWC=null;
 async function loadPowiaty(){
   if(POWC)return POWC;
-  const t=await (await fetch("powiaty.topojson?v=8")).json();
+  const t=await (await fetch("powiaty.topojson?v=9")).json();
   const o=t.objects.powiaty,nbi=topojson.neighbors(o.geometries),fs=topojson.feature(t,o).features;
   POWC=fs.map((f,i)=>{
     const k=f.properties.k,n=f.properties.n,city=+k.slice(2)>=60;
@@ -206,5 +233,5 @@ async function wojSasiedzi(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,WOJ_KOD,loadPowiaty,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,WOJ_KOD,loadPowiaty,pasek,odliczanie,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

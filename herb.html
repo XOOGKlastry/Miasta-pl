@@ -13,83 +13,15 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=9" />
 <style>
-:root{
-  --ink:#0C1A1D;--ink-2:#12262A;--line:#1F4249;--line-2:#2F6169;--paper:#E6EFEC;--dim:#8FAAA8;
-  --gold:#F2C14E;--red:#D83A4E;--ok:#5DCAA5;--card:#E9EEEC;--r:14px;
-}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{background:var(--ink);color:var(--paper);font-family:"Space Grotesk",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
-  font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%;overscroll-behavior:none}
-button,select{font:inherit;color:inherit}
-button{cursor:pointer;-webkit-tap-highlight-color:transparent}
-.hidden{display:none !important}
-
-.app{height:100dvh;max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:10px;
-  padding:calc(env(safe-area-inset-top,0px) + 8px) calc(env(safe-area-inset-right,0px) + 12px) calc(env(safe-area-inset-bottom,0px) + 10px) calc(env(safe-area-inset-left,0px) + 12px)}
-header{display:flex;align-items:center;gap:10px;flex:none}
-.back{width:36px;height:36px;flex:none;display:grid;place-items:center;border:1px solid var(--line-2);border-radius:10px;color:var(--paper);text-decoration:none;font-size:22px;line-height:1}
-h1{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:22px;margin:0;flex:1;min-width:0;letter-spacing:-.01em}
-.round{font-size:14px;color:var(--dim);font-variant-numeric:tabular-nums}
-.stats{display:flex;gap:16px;font-size:13px;color:var(--dim);flex:none}
-.stats b{color:var(--paper);font-size:16px;font-variant-numeric:tabular-nums}
-.stats .streak b{color:var(--gold)}
-
-main{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
-
-/* ekran startowy */
-.setup{flex:1;overflow:auto;display:flex;flex-direction:column;gap:16px;padding-top:4px}
-.setup h2{font-family:"Fraunces",serif;font-weight:600;font-size:26px;line-height:1.15;margin:0}
-.setup p{margin:0;color:var(--dim);font-size:15px}
-.field{display:flex;flex-direction:column;gap:6px}
-.field span{font-size:13px;color:var(--dim)}
-select{background:var(--ink-2);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;min-height:46px;width:100%}
-.big{min-height:54px;border-radius:var(--r);border:none;background:var(--gold);color:#3A2A05;font-weight:700;font-size:17px}
-.big:disabled{opacity:.5}
-.datastate{font-size:13px;color:var(--dim)}
-
-/* tarcza */
-.shield{flex:1;min-height:140px;position:relative;border-radius:var(--r);background:var(--card);display:grid;place-items:center;overflow:hidden}
-.shield img{max-width:78%;max-height:88%;width:auto;height:auto;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18));transition:opacity .2s}
-.shield img.loading{opacity:0}
+/* karta z herbem */
+.shield{flex:1;min-height:140px;position:relative;border-radius:var(--r);background:#E9EEEC;display:grid;place-items:center;overflow:hidden;
+  box-shadow:var(--cien)}
+.shield img{max-width:78%;max-height:88%;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18));
+  opacity:1;transition:opacity var(--wolno),transform var(--wolno)}
+.shield img.loading{opacity:0;transform:scale(.96)}
 .shield .spin{position:absolute;font-size:14px;color:#5B6B68}
-.timer{position:absolute;left:0;bottom:0;height:5px;background:var(--gold);width:100%;transform-origin:left;transition:transform .25s linear}
-.timer.warn{background:var(--red)}
-
-.answers{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:none}
-.answers button{min-height:58px;padding:8px 10px;border-radius:12px;background:var(--ink-2);border:1px solid var(--line-2);
-  font-family:"Fraunces",serif;font-weight:600;font-size:17px;line-height:1.15;text-align:center;overflow-wrap:anywhere}
-.answers button:active{transform:scale(.98)}
-.answers button.right{background:var(--ok);border-color:var(--ok);color:#06231A}
-.answers button.wrong{background:var(--red);border-color:var(--red);color:#fff}
-.answers button.fade{opacity:.4}
-.answers button:disabled{cursor:default}
-
-.feedback{flex:none;display:flex;align-items:center;gap:10px;min-height:48px}
-.feedback .txt{flex:1;min-width:0;font-size:14px;color:var(--dim);line-height:1.3}
-.feedback .txt strong{display:block;color:var(--paper);font-family:"Fraunces",serif;font-size:18px}
-.feedback .next{min-height:48px;padding:0 20px;border-radius:12px;border:none;background:var(--gold);color:#3A2A05;font-weight:700;flex:none}
-
-/* podsumowanie */
-.summary{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:12px}
-.summary .score{font-family:"Fraunces",serif;font-weight:900;font-size:52px;line-height:1}
-.summary .score span{font-size:22px;color:var(--dim);font-weight:600}
-.summary .sub{color:var(--dim);margin:0}
-.rows{display:flex;flex-direction:column;flex:1;min-height:0;overflow:auto}
-.rows .r{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}
-.rows .r .th{width:40px;height:40px;flex:none;border-radius:8px;background:var(--card);display:grid;place-items:center}
-.rows .r .th img{max-width:32px;max-height:34px}
-.rows .r .nm{flex:1;min-width:0;font-family:"Fraunces",serif;font-size:17px}
-.rows .r .nm small{display:block;font-family:"Space Grotesk",sans-serif;font-size:12px;color:var(--dim)}
-.rows .r .ic{font-weight:700}
-.rows .r .ic.ok{color:var(--ok)}.rows .r .ic.no{color:var(--red)}
-.btnrow{display:flex;gap:8px}
-.btnrow button{flex:1}
-.ghost{min-height:54px;border-radius:var(--r);border:1px solid var(--line-2);background:transparent;font-size:16px}
-footer{font-size:12px;color:var(--dim);margin-top:auto}
-@media (prefers-reduced-motion:reduce){*{transition:none !important}}
-@media (min-width:700px){.app{padding-top:24px}.answers button{font-size:19px}}
 </style>
 </head>
 <body>
@@ -128,11 +60,11 @@ footer{font-size:12px;color:var(--dim);margin-top:auto}
     <footer>Herby: Wikimedia Commons przez Wikidata. Lista miast: OpenStreetMap.</footer>
   </section>
 
-  <section class="shield hidden" id="shield">
+  <section class="shield hidden stage" id="shield">
     <span class="spin" id="spin">Wczytywanie herbu…</span>
     <img id="coa" alt="Herb do rozpoznania" class="loading" />
-    <i class="timer" id="timer"></i>
   </section>
+  <div class="tbar hidden" id="tbar"><i id="tfill"></i></div>
   <div class="answers hidden" id="answers"></div>
   <div class="feedback hidden" id="feedback"></div>
 
@@ -141,7 +73,7 @@ footer{font-size:12px;color:var(--dim);margin-top:auto}
 
 </div>
 
-<script src="wspolne.js?v=8"></script>
+<script src="wspolne.js?v=9"></script>
 <script>
 const $=id=>document.getElementById(id);
 const norm=s=>s.toLowerCase()
@@ -275,7 +207,7 @@ function startGame(){
   const picks=ZP.losujNauka(pool,"herb",c=>c.name,n,$("ucz").value==="1");
   game={pool,qs:picks.map(c=>makeQuestion(c,pool)),i:-1,hits:0,streak:0,rtime:+$("rtime").value,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
-  $("stats").classList.remove("hidden");$("shield").classList.remove("hidden");$("answers").classList.remove("hidden");
+  ["stats","shield","answers"].forEach(id=>$(id).classList.remove("hidden"));
   $("hits").textContent=0;$("streak").textContent=0;refreshBest();
   next();
 }
@@ -304,23 +236,17 @@ function next(){
     const b=document.createElement("button");b.textContent=o.name;
     b.onclick=()=>answer(o,b);box.appendChild(b);
   });
-  $("timer").style.transform="scaleX(1)";$("timer").classList.remove("warn");
+  $("tbar").classList.toggle("hidden",!game.rtime);$("tfill").style.width="100%";
   preload(game.i+1);
 }
 function startTimer(){
   clearInterval(timer);
-  if(!game.rtime){$("timer").style.transform="scaleX(0)";return;}
-  const t0=Date.now();
-  timer=setInterval(()=>{
-    const left=Math.max(0,game.rtime-(Date.now()-t0)/1000);
-    $("timer").style.transform="scaleX("+(left/game.rtime)+")";
-    $("timer").classList.toggle("warn",left<=3);
-    if(left<=0){clearInterval(timer);answer(null,null);}
-  },100);
+  if(!game.rtime)return;
+  timer=ZP.pasek($("tbar"),$("tfill"),game.rtime,()=>answer(null,null),()=>!game||game.answered);
 }
 function answer(o,btn){
   if(game.answered)return;
-  game.answered=true;clearInterval(timer);
+  game.answered=true;clearInterval(timer);$("tbar").classList.add("stop");
   const q=game.qs[game.i],ok=o===q.c;
   [...$("answers").children].forEach((b,i)=>{
     b.disabled=true;
@@ -344,7 +270,7 @@ function answer(o,btn){
 }
 function endGame(){
   clearInterval(timer);
-  $("shield").classList.add("hidden");$("answers").classList.add("hidden");$("feedback").classList.add("hidden");
+  ["shield","tbar","answers","feedback"].forEach(id=>$(id).classList.add("hidden"));
   $("round").textContent="";
   const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.hits>best;
   if(rec)localStorage.setItem(k,game.hits);
