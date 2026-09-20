@@ -1,18 +1,17 @@
   ponawiam https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
   ponawiam https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
 Overpass https://overpass-api.de/api/interpreter nie udało się: https://overpass-api.de/api/interpreter
-  ponawiam https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
-miast z OSM: 1027
+miast z OSM: 1026
 odcinków rzek: 17632
 nazwanych rzek: 1506 komórek siatki: 8655
 miast nad rzeką (OSM): 833
 zapisano: 833
    Warszawa -> Wisła (2.0 km)
-   Wrocław -> Odra Południowa (0.5 km)
+   Wrocław -> Odra (0.7 km)
    Kraków -> Wisła (0.9 km)
    Poznań -> Warta (0.8 km)
-   Gdańsk -> Stara Motława (0.1 km)
-   Szczecin -> Odra Zachodnia (1.1 km)
+   Gdańsk -> Motława (1.0 km)
+   Szczecin -> Odra (1.1 km)
    Lublin -> Bystrzyca (1.0 km)
    Bydgoszcz -> Brda (0.2 km)
    Białystok -> Biała (0.4 km)
@@ -20,5 +19,5 @@ zapisano: 833
    Gdynia -> Kacza (3.3 km)
    Częstochowa -> Warta (1.4 km)
    Radom -> Mleczna (1.1 km)
-   Toruń -> Struga Toruńska (0.2 km)
+   Toruń -> Wisła (0.5 km)
    Rzeszów -> Wisłok (0.6 km)
