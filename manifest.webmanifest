@@ -1,7 +1,7 @@
 {
-  "name": "Znasz Polskę? Gry geograficzne",
-  "short_name": "Znasz Polskę?",
-  "description": "Miasta na czas, Skąd to zdjęcie, Tablice rejestracyjne i Jaki to herb w jednej aplikacji.",
+  "name": "PolskoZnawca — Cudze chwalicie, a Polskę znacie?",
+  "short_name": "PolskoZnawca",
+  "description": "Gry geograficzne o Polsce: miasta na czas, zdjęcia lotnicze Esri, tablice, herby i mapa.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

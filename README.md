@@ -1,49 +1,24 @@
-# Znasz Polskę? Gry geograficzne
+# PolskoZnawca — Cudze chwalicie, a Polskę znacie?
 
 Trzynaście gier, wyzwanie dnia i ekran statystyk w jednej aplikacji (PWA), same statyczne pliki, bez backendu i bez build stepu.
 
 | plik | gra |
 | --- | --- |
-| `index.html` | menu z listą gier i rekordami |
-| `miasta.html` | **Miasta na czas**: wpisujesz lub mówisz nazwy miast, każde zapala się na ortofoto |
-| `zdjecie.html` | **Skąd to zdjęcie?**: kadr ortofotomapy, zgadujesz miasto |
-| `tablice.html` (+ `tablice-*.js`) | **Tablice rejestracyjne**: quiz wyróżników powiatów (przeniesiony z repo `tablicerejestracyjne`) |
-| `herb.html` | **Jaki to herb?**: herb miasta i cztery odpowiedzi, błędne to miasta z okolicy |
-| `gdzie.html` | **Gdzie to jest?**: wskazujesz miasto na pustej mapie, punkty za odległość |
-| `ksztalt.html` | **Kształt powiatu**: sam kontur powiatu, cztery odpowiedzi |
-| `dzis.html` | **Wyzwanie dnia**: 5 pytań (mapa i kształty), ten sam zestaw dla wszystkich, wynik do udostępnienia |
-| `sasiedzi.html` | **Graniczą czy nie?**: dwie nazwy powiatów, odpowiedź tak/nie, mapa po odpowiedzi |
-| `zoom.html` | **Zoom out**: kadr ortofotomapy oddala się co 4 s, punkty maleją |
-| `powiaty.html` | **Wymień powiaty**: wpisujesz powiaty województwa, zapalają się na mapie |
-| `rzeki.html` | **Nad jaką rzeką?**: miasto i cztery rzeki do wyboru (dane z `rzeki.json`) |
-| `slepa.html` | **Ślepa mapa**: wskaż województwo, potem powiat w środku |
-| `turniej.html` | **Turniej**: pięć konkurencji po trzy rundy, jeden wynik |
-| `statystyki.html` | **Statystyki**: rekordy, mapa opanowanych powiatów, najczęstsze pomyłki |
-| `wiecej.html` | **Więcej czy mniej?**: które miasto ma więcej mieszkańców, do pierwszej pomyłki |
+| `index.html` | menu z kafelkami gier i rekordami |
+| `miasta.html` | **Miasta na czas**: wpisujesz lub mówisz nazwy miast, każde zapala się na mapie |
+| `zdjecie.html` | **Skąd to zdjęcie?**: kadr Esri World Imagery, zgadujesz miasto |
+| `tablice.html` (+ `tablice-*.js`) | **Tablice rejestracyjne**: quiz wyróżników powiatów |
+| `herb.html` | **Jaki to herb?**: herb miasta i cztery odpowiedzi |
+| `gdzie.html` | **Gdzie to jest?**: wskazujesz miasto na pustej mapie |
+| `ksztalt.html` | **Kształt powiatu**: sam kontur powiatu |
+| `dzis.html` | **Wyzwanie dnia**: 5 pytań, ten sam zestaw dla wszystkich |
+| `sasiedzi.html` | **Graniczą czy nie?** |
+| `zoom.html` | **Zoom out** |
+| `powiaty.html` | **Wymień powiaty** |
+| `rzeki.html` | **Nad jaką rzeką?** |
+| `slepa.html` | **Ślepa mapa** |
+| `turniej.html` | **Turniej** |
+| `statystyki.html` | **Statystyki** |
+| `wiecej.html` | **Więcej czy mniej?** |
 
-Wygląd: wszystkie gry poza Tablicami korzystają z `wspolne.css` (kolory, przyciski, paski czasu, przejścia) i pomocników `ZP.pasek` oraz `ZP.odliczanie` z `wspolne.js`.
-
-Pozostałe pliki: `wspolne.js` i `wspolne.css` (wspólny kod nowych gier), `powiaty.topojson` (granice powiatów z PRG, uproszczenie tylko do 30 m, czyli poniżej piksela; źródło: ppatrzyk/polska-geojson), `topojson-client.min.js`, `herby.json` i `herby/` (lista herbów i miniatury budowane przez `narzedzia/pobierz_herby.py` w GitHub Actions), `woj.geojson` (granice województw), `manifest.webmanifest` (jedna instalacja dla wszystkich gier), `sw.js` (praca offline), ikony.
-
-## Zakresy wielkości miast
-
-Gry o miastach używają wspólnych pól wyboru z `wspolne.js` (`ZP.zakresy`, `ZP.zakresStan`, `ZP.wZakresie`):
-duże (ponad 100 tys.), średnie (20 do 100 tys.) i małe (poniżej 20 tys.). Można zaznaczyć kilka naraz,
-domyślnie wszystkie, a wybór zapamiętuje się osobno dla każdej gry.
-
-## Tryb nauki
-
-Wyniki pojedynczych pytań zapisują się w `localStorage` pod kluczem `nauka-v1` (`powiat:1407`, `miasto:Zamość`, `herb:…`, `rzeka:…`, `wojewodztwo:…`).
-Gry losują pytania z wagą zależną od historii, więc to, co sprawia kłopot, wraca częściej. Podgląd i kasowanie postępu: `statystyki.html`.
-
-## Dane
-
-- Miasta: OpenStreetMap przez Overpass API, zapisywane w `localStorage` po pierwszym pobraniu.
-- Herby: plik z właściwości P94 w Wikidata dla miast z tagiem `wikidata` w OSM, obrazki z Wikimedia Commons.
-- Ortofotomapa: GUGiK (WMS Geoportal), zapasowo zdjęcia Esri.
-- Tablice: `tablice-powiaty.js`.
-
-## Publikacja
-
-GitHub Pages: Settings → Pages → Deploy from a branch → `main` → `/ (root)`.
-Instalacja na telefonie: Chrome, menu ⋮ → Zainstaluj aplikację; Safari, Udostępnij → Do ekranu początkowego.
+W **Miastach na czas** nie ma wyboru małe/średnie/duże — gra idzie przez wszystkie miasta. Zdjęcia lotnicze startują od Esri.
