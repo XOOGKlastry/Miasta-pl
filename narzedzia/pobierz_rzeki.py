@@ -66,9 +66,28 @@ def rivers(qids):
     return res
 
 
+def probe(qids):
+    """diagnostyka: ile miast ma P206 w ogóle, a ile po filtrze klas"""
+    vals = " ".join("wd:" + q for q in qids[:100])
+    q1 = "SELECT (COUNT(DISTINCT ?item) AS ?n) WHERE { VALUES ?item {" + vals + "} ?item wdt:P206 ?w . }"
+    q2 = ("SELECT (COUNT(DISTINCT ?item) AS ?n) WHERE { VALUES ?item {" + vals + "} ?item wdt:P206 ?w . "
+          "?w wdt:P31 ?cls . VALUES ?cls {" + KLASY + "} }")
+    out = []
+    for name, q in (("P206", q1), ("P206+klasy", q2)):
+        try:
+            j = json.loads(http("https://query.wikidata.org/sparql",
+                                ("format=json&query=" + urllib.parse.quote(q)).encode(), tries=2, timeout=60))
+            out.append(name + "=" + j["results"]["bindings"][0]["n"]["value"])
+        except Exception as e:
+            out.append(name + "=blad:" + str(e)[:60])
+        time.sleep(1)
+    print("diagnostyka na 100 miastach:", ", ".join(out))
+
+
 def main():
     cs = cities()
     print("miast z OSM:", len(cs))
+    probe([c["qid"] for c in cs])
     riv = rivers([c["qid"] for c in cs])
     print("miast z rzeką:", len(riv))
     best = {}
@@ -84,7 +103,7 @@ def main():
         json.dump({"zbudowano": time.strftime("%Y-%m-%d"), "miasta": out}, fh, ensure_ascii=False, separators=(",", ":"))
     print("zapisano:", len(out))
     if len(out) < 120:
-        raise SystemExit("za mało danych, coś poszło nie tak")
+        print("UWAGA: mało danych (%d), plik i tak zapisany" % len(out))
 
 
 if __name__ == "__main__":

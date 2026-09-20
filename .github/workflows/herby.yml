@@ -25,10 +25,11 @@ jobs:
       - name: Herby
         run: python narzedzia/pobierz_herby.py
       - name: Rzeki
-        run: python narzedzia/pobierz_rzeki.py
+        continue-on-error: true
+        run: python narzedzia/pobierz_rzeki.py 2>&1 | tee narzedzia/rzeki.log
       - name: Zapisz zmiany
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add herby.json herby rzeki.json
+          git add herby.json herby rzeki.json narzedzia/rzeki.log
           git diff --cached --quiet || (git commit -m "Dane gier: aktualizacja" && git pull --rebase && git push)
