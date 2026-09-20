@@ -1,4 +1,4 @@
-const CACHE = "znasz-polske-v1";
+const CACHE = "znasz-polske-v2";
 const ASSETS = [
   "./", "./index.html", "./miasta.html", "./zdjecie.html", "./herb.html",
   "./tablice.html", "./tablice-app.js", "./tablice-powiaty.js", "./tablice-poland.js",
