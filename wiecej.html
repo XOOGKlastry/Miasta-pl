@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Więcej czy mniej? · Znasz Polskę?</title>
+<meta name="theme-color" content="#0C1A1D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css" />
+<style>
+.duel{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;position:relative}
+.card{flex:1;min-height:0;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:14px;text-align:center;transition:border-color .2s,background .2s}
+.card .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(28px,9vw,40px);line-height:1.05;letter-spacing:-.01em;overflow-wrap:anywhere}
+.card .woj{font-size:14px;color:var(--dim)}
+.card .pop{font-family:"Fraunces",serif;font-weight:600;font-size:26px;color:var(--gold);font-variant-numeric:tabular-nums;margin-top:6px}
+.card .pop small{font-family:"Space Grotesk",sans-serif;font-size:13px;color:var(--dim);font-weight:400;display:block}
+.card .q{font-size:15px;color:var(--dim);margin-top:6px}
+.card.good{border-color:var(--ok);background:#12302A}
+.card.bad{border-color:var(--red);background:#35161C}
+.vs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;
+  background:var(--ink);border:1px solid var(--line-2);display:grid;place-items:center;font-size:13px;color:var(--dim);font-weight:700;z-index:2}
+.choice{display:flex;gap:8px;width:100%;margin-top:12px}
+.choice button{flex:1;min-height:56px;border-radius:12px;border:1px solid var(--line-2);background:var(--ink);font-weight:700;font-size:17px}
+.choice button:active{transform:scale(.98)}
+.choice button.more{background:var(--gold);border-color:var(--gold);color:#3A2A05}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.enter{animation:slideUp .3s ease-out}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Więcej czy mniej?</h1>
+</header>
+
+<div class="stats hidden" id="stats">
+  <span class="gold">Seria <b id="streak">0</b></span>
+  <span>Rekord <b id="best">0</b></span>
+</div>
+
+<main>
+  <section class="setup" id="setup">
+    <h2>Które miasto ma więcej mieszkańców?</h2>
+    <p>Znasz liczbę mieszkańców pierwszego miasta. Zgadnij, czy drugie ma ich więcej czy mniej. Gra trwa do pierwszej pomyłki, a z każdą serią pary są coraz bardziej wyrównane.</p>
+    <label class="field"><span>Poziom</span>
+      <select id="scope">
+        <option value="50000">łatwy: miasta powyżej 50 tys.</option>
+        <option value="20000" selected>średni: powyżej 20 tys.</option>
+        <option value="5000">trudny: powyżej 5 tys.</option>
+        <option value="1">wszystkie miasta</option>
+      </select>
+    </label>
+    <button class="big" id="startBtn" disabled>Zagraj</button>
+    <div class="datastate" id="datastate">Wczytywanie listy miast…</div>
+    <footer>Liczba mieszkańców według OpenStreetMap, może się różnić od najnowszych danych GUS.</footer>
+  </section>
+
+  <section class="duel hidden" id="duel">
+    <div class="card" id="cardA"></div>
+    <div class="vs">czy</div>
+    <div class="card" id="cardB"></div>
+  </section>
+
+  <section class="summary hidden" id="summary"></section>
+</main>
+</div>
+
+<script src="wspolne.js"></script>
+<script>
+const {$,shuffle,pick,fmt}=ZP;
+let CITIES=[],game=null;
+const bestKey=()=>"wiecej-best-"+$("scope").value;
+function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
+$("scope").onchange=refreshBest;
+
+ZP.loadCities(t=>$("datastate").textContent=t).then(all=>{
+  // tylko miasta ze znaną liczbą mieszkańców i bez zdublowanych nazw
+  const cnt={};all.forEach(c=>{const k=ZP.norm(c.name);cnt[k]=(cnt[k]||0)+1;});
+  CITIES=all.filter(c=>c.pop>0&&cnt[ZP.norm(c.name)]===1);
+  $("startBtn").disabled=false;refreshBest();
+});
+
+function band(streak){ // im dłuższa seria, tym bliższe liczby
+  if(streak<4)return [1.6,8];
+  if(streak<9)return [1.25,2.5];
+  if(streak<15)return [1.1,1.6];
+  return [1.03,1.3];
+}
+function challenger(a){
+  const [lo,hi]=band(game.streak);
+  const ok=c=>!game.used.has(c)&&Math.abs(c.pop-a.pop)/Math.min(c.pop,a.pop)>0.02;
+  let cand=game.pool.filter(c=>{if(!ok(c))return false;const r=Math.max(c.pop,a.pop)/Math.min(c.pop,a.pop);return r>=lo&&r<=hi;});
+  if(!cand.length)cand=game.pool.filter(ok);
+  return cand.length?pick(cand):null;
+}
+function cardHTML(c,known){
+  return '<div class="nm"></div><div class="woj"></div>'+(known?'<div class="pop"></div>':'<div class="q">ma więcej czy mniej mieszkańców?</div><div class="choice"><button class="more" data-v="1">Więcej</button><button data-v="-1">Mniej</button></div>');
+}
+function fill(el,c,known){
+  el.className="card";el.innerHTML=cardHTML(c,known);
+  el.querySelector(".nm").textContent=c.name;
+  el.querySelector(".woj").textContent=c.woj?"woj. "+c.woj:"";
+  if(known)el.querySelector(".pop").innerHTML=fmt(c.pop)+"<small>mieszkańców</small>";
+  else el.querySelectorAll(".choice button").forEach(b=>b.onclick=()=>answer(+b.dataset.v));
+}
+function startGame(){
+  const min=+$("scope").value;
+  const pool=CITIES.filter(c=>c.pop>=min);
+  if(pool.length<10){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
+  game={pool,used:new Set(),streak:0,log:[],busy:false};
+  game.a=pick(pool);game.used.add(game.a);
+  game.b=challenger(game.a);game.used.add(game.b);
+  $("setup").classList.add("hidden");$("summary").classList.add("hidden");
+  $("stats").classList.remove("hidden");$("duel").classList.remove("hidden");
+  $("streak").textContent=0;refreshBest();
+  fill($("cardA"),game.a,true);fill($("cardB"),game.b,false);
+}
+function countUp(el,to){
+  const t0=performance.now(),d=700;
+  const step=t=>{const p=Math.min(1,(t-t0)/d),e=1-Math.pow(1-p,3);el.innerHTML=fmt(to*e)+"<small>mieszkańców</small>";if(p<1)requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+function answer(dir){
+  if(game.busy)return;game.busy=true;
+  const a=game.a,b=game.b,ok=(b.pop>a.pop?1:-1)===dir;
+  const card=$("cardB");
+  card.querySelector(".q").remove();card.querySelector(".choice").remove();
+  const pop=document.createElement("div");pop.className="pop";card.appendChild(pop);countUp(pop,b.pop);
+  card.classList.add(ok?"good":"bad");
+  game.log.push({a,b,ok});
+  if(ok){
+    game.streak++;$("streak").textContent=game.streak;
+    setTimeout(()=>{
+      game.a=b;game.b=challenger(b);
+      if(!game.b)return endGame(true);
+      game.used.add(game.b);
+      fill($("cardA"),game.a,true);fill($("cardB"),game.b,false);
+      $("cardB").classList.add("enter");
+      game.busy=false;
+    },1100);
+  }else setTimeout(()=>endGame(false),1300);
+}
+function endGame(all){
+  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.streak>best;
+  if(rec)localStorage.setItem(k,game.streak);
+  refreshBest();
+  $("duel").classList.add("hidden");
+  const last=game.log[game.log.length-1];
+  const s=$("summary");
+  s.innerHTML='<div class="score">'+game.streak+' <span>'+(game.streak===1?"trafienie":"z rzędu")+'</span></div>'
+    +'<p class="sub"></p>'
+    +'<div class="btnrow"><button class="ghost" id="setBtn">Zmień poziom</button><button class="big" id="againBtn">Jeszcze raz</button></div>'
+    +'<div class="rows"></div>';
+  s.querySelector(".sub").textContent=(all?"Skończyły się miasta na tym poziomie. ":"")+(rec?"Nowy rekord.":"Rekord na tym poziomie: "+Math.max(best,game.streak)+".");
+  const rows=s.querySelector(".rows");
+  game.log.slice().reverse().forEach(r=>{
+    const d=document.createElement("div");d.className="r";
+    d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
+    d.querySelector("b").textContent=r.b.name+(r.b.pop>r.a.pop?" > ":" < ")+r.a.name;
+    d.querySelector("small").textContent=fmt(r.b.pop)+" i "+fmt(r.a.pop)+" mieszkańców";
+    const pt=d.querySelector(".pt");pt.textContent=r.ok?"✓":"✗";pt.className="pt "+(r.ok?"ok":"no");
+    rows.appendChild(d);
+  });
+  s.classList.remove("hidden");
+  $("againBtn").onclick=startGame;
+  $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
+}
+$("startBtn").onclick=startGame;
+document.addEventListener("keydown",e=>{
+  if(!game||game.busy||$("duel").classList.contains("hidden"))return;
+  if(e.key==="ArrowUp")answer(1);if(e.key==="ArrowDown")answer(-1);
+});
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

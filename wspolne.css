@@ -1,0 +1,66 @@
+/* Wspólny wygląd gier „Znasz Polskę?” (Więcej czy mniej, Kształt powiatu, Gdzie to jest) */
+:root{
+  --ink:#0C1A1D;--ink-2:#12262A;--land:#183338;--line:#1F4249;--line-2:#2F6169;--paper:#E6EFEC;--dim:#8FAAA8;
+  --gold:#F2C14E;--red:#D83A4E;--ok:#5DCAA5;--r:14px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--ink);color:var(--paper);font-family:"Space Grotesk",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  font-size:16px;line-height:1.45;-webkit-text-size-adjust:100%;overscroll-behavior:none}
+button,select{font:inherit;color:inherit}
+button{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.hidden{display:none !important}
+
+.app{height:var(--app-h,100dvh);max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:10px;
+  padding:calc(env(safe-area-inset-top,0px) + 8px) calc(env(safe-area-inset-right,0px) + 12px) calc(env(safe-area-inset-bottom,0px) + 10px) calc(env(safe-area-inset-left,0px) + 12px)}
+header{display:flex;align-items:center;gap:10px;flex:none}
+.back{width:36px;height:36px;flex:none;display:grid;place-items:center;border:1px solid var(--line-2);border-radius:10px;color:var(--paper);text-decoration:none;font-size:22px;line-height:1}
+h1{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:22px;margin:0;flex:1;min-width:0;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.round{font-size:14px;color:var(--dim);font-variant-numeric:tabular-nums;flex:none}
+.stats{display:flex;gap:16px;font-size:13px;color:var(--dim);flex:none}
+.stats b{color:var(--paper);font-size:16px;font-variant-numeric:tabular-nums}
+.stats .gold b{color:var(--gold)}
+
+main{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+
+.setup{flex:1;overflow:auto;display:flex;flex-direction:column;gap:16px;padding-top:4px}
+.setup h2{font-family:"Fraunces",serif;font-weight:600;font-size:26px;line-height:1.15;margin:0}
+.setup p{margin:0;color:var(--dim);font-size:15px}
+.field{display:flex;flex-direction:column;gap:6px}
+.field span{font-size:13px;color:var(--dim)}
+select{background:var(--ink-2);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;min-height:46px;width:100%}
+.big{min-height:54px;border-radius:var(--r);border:none;background:var(--gold);color:#3A2A05;font-weight:700;font-size:17px;padding:0 20px}
+.big:disabled{opacity:.5}
+.ghost{min-height:54px;border-radius:var(--r);border:1px solid var(--line-2);background:transparent;font-size:16px;padding:0 16px}
+.datastate{font-size:13px;color:var(--dim)}
+.setup footer{font-size:12px;color:var(--dim);margin-top:auto}
+
+.feedback{flex:none;display:flex;align-items:center;gap:10px;min-height:52px}
+.feedback .txt{flex:1;min-width:0;font-size:14px;color:var(--dim);line-height:1.3}
+.feedback .txt strong{display:block;color:var(--paper);font-family:"Fraunces",serif;font-size:18px}
+.feedback .next{min-height:48px;padding:0 20px;border-radius:12px;border:none;background:var(--gold);color:#3A2A05;font-weight:700;flex:none}
+
+.summary{flex:1;overflow:auto;display:flex;flex-direction:column;gap:12px}
+.summary .score{font-family:"Fraunces",serif;font-weight:900;font-size:52px;line-height:1}
+.summary .score span{font-size:22px;color:var(--dim);font-weight:600}
+.summary .sub{color:var(--dim);margin:0}
+.btnrow{display:flex;gap:8px}
+.btnrow button{flex:1}
+.rows{display:flex;flex-direction:column}
+.rows .r{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.rows .r .nm{flex:1;min-width:0;font-family:"Fraunces",serif;font-size:17px}
+.rows .r .nm small{display:block;font-family:"Space Grotesk",sans-serif;font-size:12px;color:var(--dim)}
+.rows .r .pt{color:var(--dim);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.ok,.rows .r .pt.ok{color:var(--ok)}.no,.rows .r .pt.no{color:var(--red)}
+
+.answers{display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:none}
+.answers button{min-height:58px;padding:8px 10px;border-radius:12px;background:var(--ink-2);border:1px solid var(--line-2);
+  font-family:"Fraunces",serif;font-weight:600;font-size:17px;line-height:1.15;text-align:center;overflow-wrap:anywhere}
+.answers button:active{transform:scale(.98)}
+.answers button.right{background:var(--ok);border-color:var(--ok);color:#06231A}
+.answers button.wrong{background:var(--red);border-color:var(--red);color:#fff}
+.answers button.fade{opacity:.4}
+.answers button:disabled{cursor:default}
+
+@media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
+@media (min-width:700px){.app{padding-top:24px}}

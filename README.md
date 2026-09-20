@@ -1,6 +1,6 @@
 # Znasz Polskę? Gry geograficzne
 
-Cztery gry w jednej aplikacji (PWA), same statyczne pliki, bez backendu i bez build stepu.
+Siedem gier w jednej aplikacji (PWA), same statyczne pliki, bez backendu i bez build stepu.
 
 | plik | gra |
 | --- | --- |
@@ -9,8 +9,11 @@ Cztery gry w jednej aplikacji (PWA), same statyczne pliki, bez backendu i bez bu
 | `zdjecie.html` | **Skąd to zdjęcie?**: kadr ortofotomapy, zgadujesz miasto |
 | `tablice.html` (+ `tablice-*.js`) | **Tablice rejestracyjne**: quiz wyróżników powiatów (przeniesiony z repo `tablicerejestracyjne`) |
 | `herb.html` | **Jaki to herb?**: herb miasta i cztery odpowiedzi, błędne to miasta z okolicy |
+| `gdzie.html` | **Gdzie to jest?**: wskazujesz miasto na pustej mapie, punkty za odległość |
+| `ksztalt.html` | **Kształt powiatu**: sam kontur powiatu, cztery odpowiedzi |
+| `wiecej.html` | **Więcej czy mniej?**: które miasto ma więcej mieszkańców, do pierwszej pomyłki |
 
-Pozostałe pliki: `woj.geojson` (granice województw), `manifest.webmanifest` (jedna instalacja dla wszystkich gier), `sw.js` (praca offline), ikony.
+Pozostałe pliki: `wspolne.js` i `wspolne.css` (wspólny kod nowych gier), `powiaty.geojson` (uproszczone granice powiatów z PRG), `woj.geojson` (granice województw), `manifest.webmanifest` (jedna instalacja dla wszystkich gier), `sw.js` (praca offline), ikony.
 
 ## Dane
 

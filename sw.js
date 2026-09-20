@@ -1,6 +1,6 @@
-const CACHE = "znasz-polske-v2";
+const CACHE = "znasz-polske-v3";
 const ASSETS = [
-  "./", "./index.html", "./miasta.html", "./zdjecie.html", "./herb.html",
+  "./", "./index.html", "./miasta.html", "./zdjecie.html", "./herb.html", "./gdzie.html", "./ksztalt.html", "./wiecej.html", "./wspolne.js", "./wspolne.css", "./powiaty.geojson",
   "./tablice.html", "./tablice-app.js", "./tablice-powiaty.js", "./tablice-poland.js",
   "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./woj.geojson"
 ];

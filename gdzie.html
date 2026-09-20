@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Gdzie to jest? · Znasz Polskę?</title>
+<meta name="theme-color" content="#0C1A1D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css" />
+<style>
+.target{flex:none;text-align:center}
+.target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(28px,8.5vw,38px);line-height:1.05;overflow-wrap:anywhere}
+.target .hint{font-size:14px;color:var(--dim);min-height:20px}
+.stage{flex:1;min-height:180px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden;touch-action:manipulation}
+#map{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+#map .w{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke}
+#map .w.on{fill:#24494F}
+#map .pin{fill:var(--paper);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
+#map .truth{fill:var(--gold);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
+#map .ln{stroke:var(--gold);stroke-width:2;stroke-dasharray:6 5;vector-effect:non-scaling-stroke}
+#map .ring{fill:none;stroke:var(--gold);stroke-width:1.2;opacity:.6;vector-effect:non-scaling-stroke}
+#map text{font-family:"Fraunces",serif;font-weight:600;font-size:24px;fill:var(--paper);paint-order:stroke;stroke:var(--ink);stroke-width:5px;stroke-linejoin:round}
+.tip{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:13px;color:var(--dim);pointer-events:none}
+#okBtn{width:100%}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Gdzie to jest?</h1>
+  <span class="round" id="round"></span>
+</header>
+
+<div class="stats hidden" id="stats">
+  <span class="gold">Punkty <b id="pts">0</b></span>
+  <span>Śr. błąd <b id="avg">–</b></span>
+  <span>Rekord <b id="best">0</b></span>
+</div>
+
+<main>
+  <section class="setup" id="setup">
+    <h2>Wskaż miasto na pustej mapie</h2>
+    <p>Dostajesz nazwę miasta, stukasz w mapę Polski z samymi granicami województw i zatwierdzasz. Im mniejszy błąd w kilometrach, tym więcej punktów, maksymalnie 1000 za rundę.</p>
+    <label class="field"><span>Poziom</span>
+      <select id="scope">
+        <option value="100000">łatwy: miasta powyżej 100 tys.</option>
+        <option value="40000" selected>średni: powyżej 40 tys.</option>
+        <option value="15000">trudny: powyżej 15 tys.</option>
+        <option value="0">wszystkie miasta</option>
+      </select>
+    </label>
+    <label class="field"><span>Podpowiedź</span>
+      <select id="hint">
+        <option value="0" selected>bez podpowiedzi</option>
+        <option value="1">pokaż województwo</option>
+      </select>
+    </label>
+    <label class="field"><span>Liczba rund</span>
+      <select id="rounds"><option>5</option><option selected>10</option><option>15</option></select>
+    </label>
+    <button class="big" id="startBtn" disabled>Zagraj</button>
+    <div class="datastate" id="datastate">Wczytywanie listy miast…</div>
+    <footer>Miasta: OpenStreetMap. Granice województw: dane GUGiK, uproszczone.</footer>
+  </section>
+
+  <div class="target hidden" id="target"><div class="nm" id="tName"></div><div class="hint" id="tHint"></div></div>
+  <section class="stage hidden" id="stage">
+    <svg id="map" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="tip" id="tip">Stuknij w mapę, możesz poprawiać</div>
+  </section>
+  <button class="big hidden" id="okBtn" disabled>Zatwierdź</button>
+  <div class="feedback hidden" id="feedback"></div>
+
+  <section class="summary hidden" id="summary"></section>
+</main>
+</div>
+
+<script src="wspolne.js"></script>
+<script>
+const {$,shuffle,fmt}=ZP;
+let CITIES=[],P=null,game=null,base="";
+const SCORE=km=>Math.round(1000*Math.exp(-km/150));
+
+ZP.loadCities(t=>$("datastate").textContent=t).then(async all=>{
+  const cnt={};all.forEach(c=>{const k=ZP.norm(c.name);cnt[k]=(cnt[k]||0)+1;});
+  CITIES=all.filter(c=>cnt[ZP.norm(c.name)]===1&&c.woj);
+  const woj=await ZP.loadWoj();
+  P=ZP.projection(woj.map(w=>w.f),600,10);
+  base=woj.map(w=>'<path class="w" data-w="'+w.name+'" d="'+P.path(w.f.geometry)+'"/>').join("");
+  $("map").setAttribute("viewBox","0 0 600 "+P.H.toFixed(0));
+  $("startBtn").disabled=false;refreshBest();
+});
+
+const bestKey=()=>"gdzie-best-"+$("scope").value+"-"+$("hint").value+"-"+$("rounds").value;
+function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
+$("scope").onchange=$("hint").onchange=$("rounds").onchange=refreshBest;
+
+function startGame(){
+  const min=+$("scope").value;
+  const pool=CITIES.filter(c=>min===0||c.pop>=min);
+  if(pool.length<5){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
+  const n=Math.min(+$("rounds").value,pool.length);
+  game={qs:shuffle(pool.slice()).slice(0,n),i:-1,pts:0,kms:[],res:[]};
+  $("setup").classList.add("hidden");$("summary").classList.add("hidden");
+  ["stats","target","stage","okBtn"].forEach(id=>$(id).classList.remove("hidden"));
+  $("pts").textContent=0;$("avg").textContent="–";refreshBest();
+  next();
+}
+function next(){
+  game.i++;
+  if(game.i>=game.qs.length)return endGame();
+  const c=game.qs[game.i];game.answered=false;game.guess=null;
+  $("round").textContent=(game.i+1)+" / "+game.qs.length;
+  $("tName").textContent=c.name;
+  $("tHint").textContent=$("hint").value==="1"?"woj. "+c.woj:"";
+  $("map").innerHTML=base+'<g id="ov"></g>';
+  if($("hint").value==="1")$("map").querySelectorAll(".w").forEach(p=>p.classList.toggle("on",p.dataset.w===c.woj));
+  $("tip").classList.remove("hidden");
+  $("feedback").classList.add("hidden");$("okBtn").classList.remove("hidden");$("okBtn").disabled=true;
+}
+$("map").addEventListener("click",e=>{
+  if(!game||game.answered)return;
+  const svg=$("map"),pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+  const q=pt.matrixTransform(svg.getScreenCTM().inverse());
+  game.guess={x:q.x,y:q.y,lon:P.lon(q.x),lat:P.lat(q.y)};
+  $("ov").innerHTML='<circle class="pin" cx="'+q.x.toFixed(1)+'" cy="'+q.y.toFixed(1)+'" r="8"/>';
+  $("tip").classList.add("hidden");$("okBtn").disabled=false;
+});
+$("okBtn").onclick=()=>{
+  if(!game||game.answered||!game.guess)return;
+  game.answered=true;
+  const c=game.qs[game.i],g=game.guess,d=ZP.km(c,g),got=SCORE(d);
+  const tx=P.x(c.lon),ty=P.y(c.lat);
+  const r50=50/111*(P.y(c.lat-.5)-P.y(c.lat+.5)); // promień 50 km w jednostkach mapy
+  $("ov").innerHTML='<circle class="ring" cx="'+tx+'" cy="'+ty+'" r="'+r50.toFixed(1)+'"/>'
+    +'<line class="ln" x1="'+g.x+'" y1="'+g.y+'" x2="'+tx+'" y2="'+ty+'"/>'
+    +'<circle class="pin" cx="'+g.x+'" cy="'+g.y+'" r="7"/>'
+    +'<circle class="truth" cx="'+tx+'" cy="'+ty+'" r="9"/>'
+    +'<text x="'+tx+'" y="'+(ty-18)+'" text-anchor="'+(tx>480?"end":tx<120?"start":"middle")+'"></text>';
+  $("ov").querySelector("text").textContent=c.name;
+  game.pts+=got;game.kms.push(d);game.res.push({c,d,got});
+  $("pts").textContent=fmt(game.pts);
+  $("avg").textContent=Math.round(game.kms.reduce((a,b)=>a+b,0)/game.kms.length)+" km";
+  $("okBtn").classList.add("hidden");
+  const fb=$("feedback");
+  fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
+  fb.querySelector("strong").textContent=(d<5?"W punkt! ":"")+"Błąd "+(d<10?d.toFixed(1):Math.round(d))+" km, +"+got+" pkt";
+  fb.querySelector("span").textContent=c.name+", woj. "+c.woj+(c.pop?", "+fmt(c.pop)+" mieszk.":"");
+  $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";
+  $("nextBtn").onclick=next;
+  fb.classList.remove("hidden");
+};
+function endGame(){
+  ["target","stage","okBtn","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  $("round").textContent="";
+  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
+  if(rec)localStorage.setItem(k,game.pts);
+  refreshBest();
+  const n=game.qs.length,avg=Math.round(game.kms.reduce((a,b)=>a+b,0)/n),s=$("summary");
+  s.innerHTML='<div class="score">'+fmt(game.pts)+' <span>z '+fmt(n*1000)+'</span></div><p class="sub"></p>'
+    +'<div class="btnrow"><button class="ghost" id="setBtn">Zmień poziom</button><button class="big" id="againBtn">Jeszcze raz</button></div><div class="rows"></div>';
+  s.querySelector(".sub").textContent="Średni błąd "+avg+" km. "+(rec?"Nowy rekord.":"Rekord w tych ustawieniach: "+fmt(Math.max(best,game.pts))+" pkt.");
+  const rows=s.querySelector(".rows");
+  game.res.forEach(r=>{
+    const d=document.createElement("div");d.className="r";
+    d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
+    d.querySelector("b").textContent=r.c.name;
+    d.querySelector("small").textContent="woj. "+r.c.woj+", błąd "+Math.round(r.d)+" km";
+    d.querySelector(".pt").textContent="+"+r.got;
+    d.querySelector(".pt").classList.add(r.got>=600?"ok":r.got<200?"no":"x");
+    rows.appendChild(d);
+  });
+  s.classList.remove("hidden");
+  $("againBtn").onclick=startGame;
+  $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
+}
+$("startBtn").onclick=startGame;
+document.addEventListener("keydown",e=>{
+  if(!game||e.key!=="Enter")return;
+  if(!game.answered&&game.guess)$("okBtn").click();else if(game.answered&&$("nextBtn"))$("nextBtn").click();
+});
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

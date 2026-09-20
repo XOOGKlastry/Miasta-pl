@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Kształt powiatu · Znasz Polskę?</title>
+<meta name="theme-color" content="#0C1A1D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css" />
+<style>
+.stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden}
+#shape{position:absolute;inset:0;width:100%;height:100%}
+#shape path{fill:rgba(242,193,78,.18);stroke:var(--gold);stroke-width:2.2;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.inset{position:absolute;right:8px;bottom:8px;width:34%;max-width:170px;background:rgba(12,26,29,.85);border:1px solid var(--line);border-radius:10px;padding:4px}
+.inset svg{display:block;width:100%;height:auto}
+.inset .w{fill:none;stroke:#4F7F86;stroke-width:.8;vector-effect:non-scaling-stroke}
+.inset .hit{fill:var(--gold);stroke:var(--gold);stroke-width:1.5;vector-effect:non-scaling-stroke}
+.tag{position:absolute;left:10px;top:10px;font-size:13px;color:var(--dim);background:rgba(12,26,29,.8);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+#hintBtn{position:absolute;left:10px;bottom:10px;min-height:40px;border-radius:999px;border:1px solid var(--line-2);background:rgba(12,26,29,.85);padding:0 14px;font-size:14px}
+#hintBtn:disabled{opacity:.4}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Kształt powiatu</h1>
+  <span class="round" id="round"></span>
+</header>
+
+<div class="stats hidden" id="stats">
+  <span class="gold">Punkty <b id="pts">0</b></span>
+  <span>Trafione <b id="hits">0</b></span>
+  <span>Rekord <b id="best">0</b></span>
+</div>
+
+<main>
+  <section class="setup" id="setup">
+    <h2>Rozpoznaj powiat po samym kształcie</h2>
+    <p>Widzisz tylko granicę powiatu, bez mapy i podpisów. Wybierz jedną z czterech nazw, błędne to sąsiednie powiaty. Odpowiedź bez podpowiedzi daje 2 punkty, z podpowiedzią (położenie na mapie Polski) 1 punkt.</p>
+    <label class="field"><span>Obszar</span>
+      <select id="area"><option value="">cała Polska</option></select>
+    </label>
+    <label class="field"><span>Jakie powiaty</span>
+      <select id="kind">
+        <option value="z" selected>powiaty ziemskie</option>
+        <option value="a">także miasta na prawach powiatu</option>
+      </select>
+    </label>
+    <label class="field"><span>Liczba rund</span>
+      <select id="rounds"><option>10</option><option selected>15</option><option>25</option></select>
+    </label>
+    <button class="big" id="startBtn" disabled>Zagraj</button>
+    <div class="datastate" id="datastate">Wczytywanie granic powiatów…</div>
+    <footer>Granice: PRG (GUGiK), uproszczone, przez repozytorium waszkiewiczja/GeoJSON-Polska.</footer>
+  </section>
+
+  <section class="stage hidden" id="stage">
+    <svg id="shape" preserveAspectRatio="xMidYMid meet"></svg>
+    <span class="tag">Który to powiat?</span>
+    <button id="hintBtn">Podpowiedź</button>
+    <div class="inset hidden" id="inset"></div>
+  </section>
+  <div class="answers hidden" id="answers"></div>
+  <div class="feedback hidden" id="feedback"></div>
+
+  <section class="summary hidden" id="summary"></section>
+</main>
+</div>
+
+<script src="wspolne.js"></script>
+<script>
+const {$,shuffle,pick}=ZP;
+const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
+let POW=[],WOJF=[],PL=null,game=null;
+
+Object.entries(WOJ_KOD).sort((a,b)=>a[1].localeCompare(b[1],"pl")).forEach(([k,n])=>{const o=document.createElement("option");o.value=k;o.textContent=n;$("area").appendChild(o);});
+
+Promise.all([fetch("powiaty.geojson").then(r=>r.json()),fetch("woj.geojson").then(r=>r.json())]).then(([pg,wg])=>{
+  WOJF=wg.features;
+  PL=ZP.projection(WOJF,300,4);
+  POW=pg.features.map(f=>{
+    const k=f.properties.k,city=+k.slice(2)>=60;
+    let b=[1e9,1e9,-1e9,-1e9];
+    const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
+    polys.forEach(p=>p[0].forEach(([x,y])=>{if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y;}));
+    return {f,k,city,woj:WOJ_KOD[k.slice(0,2)],
+      label:city?"m. "+f.properties.n:f.properties.n,
+      full:city?"miasto "+f.properties.n:"powiat "+f.properties.n,
+      lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2};
+  });
+  $("datastate").textContent=POW.length+" powiatów";
+  $("startBtn").disabled=false;refreshBest();
+}).catch(()=>{$("datastate").textContent="Nie udało się wczytać granic. Sprawdź połączenie i odśwież stronę.";});
+
+const bestKey=()=>"ksztalt-best-"+($("area").value||"pl")+"-"+$("kind").value+"-"+$("rounds").value;
+function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
+$("area").onchange=$("kind").onchange=$("rounds").onchange=refreshBest;
+
+function makeQuestion(p,pool){
+  // błędne odpowiedzi: najbliższe powiaty (także spoza wybranego obszaru, jeśli jest ich mało)
+  const src=(pool.length>=8?pool:POW).filter(o=>o!==p&&($("kind").value==="a"||!o.city));
+  const near=src.sort((x,y)=>ZP.km(p,x)-ZP.km(p,y)).slice(0,7);
+  return {p,opts:shuffle(shuffle(near).slice(0,3).concat([p]))};
+}
+function startGame(){
+  const area=$("area").value,kind=$("kind").value;
+  const pool=POW.filter(p=>(!area||p.k.startsWith(area))&&(kind==="a"||!p.city));
+  const n=Math.min(+$("rounds").value,pool.length);
+  game={pool,qs:shuffle(pool.slice()).slice(0,n).map(p=>makeQuestion(p,pool)),i:-1,pts:0,hits:0,res:[]};
+  $("setup").classList.add("hidden");$("summary").classList.add("hidden");
+  ["stats","stage","answers"].forEach(id=>$(id).classList.remove("hidden"));
+  $("pts").textContent=0;$("hits").textContent=0;refreshBest();
+  next();
+}
+function drawShape(p){
+  const P=ZP.projection([p.f],400,14);
+  const svg=$("shape");svg.setAttribute("viewBox","0 0 400 "+P.H.toFixed(0));
+  svg.innerHTML='<path d="'+P.path(p.f.geometry)+'"/>';
+}
+function drawInset(p){
+  let s='<svg viewBox="0 0 300 '+PL.H.toFixed(0)+'">';
+  WOJF.forEach(f=>s+='<path class="w" d="'+PL.path(f.geometry)+'"/>');
+  s+='<path class="hit" d="'+PL.path(p.f.geometry)+'"/>';
+  s+='<circle cx="'+PL.x(p.lon).toFixed(1)+'" cy="'+PL.y(p.lat).toFixed(1)+'" r="9" fill="none" stroke="#F2C14E" stroke-width="2"/></svg>';
+  $("inset").innerHTML=s;$("inset").classList.remove("hidden");
+}
+function next(){
+  game.i++;
+  if(game.i>=game.qs.length)return endGame();
+  const q=game.qs[game.i];game.answered=false;game.hint=false;
+  $("round").textContent=(game.i+1)+" / "+game.qs.length;
+  $("feedback").classList.add("hidden");$("inset").classList.add("hidden");
+  $("hintBtn").disabled=false;
+  drawShape(q.p);
+  const box=$("answers");box.innerHTML="";
+  q.opts.forEach(o=>{const b=document.createElement("button");b.textContent=o.label;b.onclick=()=>answer(o,b);box.appendChild(b);});
+}
+$("hintBtn").onclick=()=>{if(!game||game.answered)return;game.hint=true;$("hintBtn").disabled=true;drawInset(game.qs[game.i].p);};
+function answer(o,btn){
+  if(game.answered)return;game.answered=true;
+  const q=game.qs[game.i],ok=o===q.p,got=ok?(game.hint?1:2):0;
+  [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.p)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
+  game.pts+=got;if(ok)game.hits++;
+  $("pts").textContent=game.pts;$("hits").textContent=game.hits;
+  $("hintBtn").disabled=true;drawInset(q.p);
+  game.res.push({p:q.p,ok,got,picked:ok?null:o});
+  const fb=$("feedback");
+  fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
+  fb.querySelector("strong").textContent=ok?"Dobrze, "+q.p.full+(got===2?" (+2)":" (+1)"):"To "+q.p.full;
+  fb.querySelector("span").textContent="woj. "+q.p.woj;
+  $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";
+  $("nextBtn").onclick=next;
+  fb.classList.remove("hidden");
+}
+function endGame(){
+  ["stage","answers","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  $("round").textContent="";
+  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
+  if(rec)localStorage.setItem(k,game.pts);
+  refreshBest();
+  const max=game.qs.length*2,s=$("summary");
+  s.innerHTML='<div class="score">'+game.pts+' <span>z '+max+' pkt</span></div><p class="sub"></p>'
+    +'<div class="btnrow"><button class="ghost" id="setBtn">Zmień ustawienia</button><button class="big" id="againBtn">Jeszcze raz</button></div><div class="rows"></div>';
+  s.querySelector(".sub").textContent="Trafione "+game.hits+" z "+game.qs.length+". "+(rec?"Nowy rekord.":"Rekord w tych ustawieniach: "+Math.max(best,game.pts)+" pkt.");
+  const rows=s.querySelector(".rows");
+  game.res.forEach(r=>{
+    const d=document.createElement("div");d.className="r";
+    const P=ZP.projection([r.p.f],40,2);
+    d.innerHTML='<svg width="40" height="40" viewBox="0 0 40 '+Math.max(40,P.H).toFixed(0)+'"><path d="'+P.path(r.p.f.geometry)+'" fill="rgba(242,193,78,.25)" stroke="#F2C14E" stroke-width="1"/></svg><span class="nm"><b></b><small></small></span><span class="pt"></span>';
+    d.querySelector("b").textContent=r.p.full;
+    d.querySelector("small").textContent=r.ok?(r.got===2?"bez podpowiedzi":"z podpowiedzią"):"wybrano: "+r.picked.full;
+    const pt=d.querySelector(".pt");pt.textContent=r.ok?"+"+r.got:"✗";pt.className="pt "+(r.ok?"ok":"no");
+    rows.appendChild(d);
+  });
+  s.classList.remove("hidden");
+  $("againBtn").onclick=startGame;
+  $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
+}
+$("startBtn").onclick=startGame;
+document.addEventListener("keydown",e=>{
+  if(!game)return;
+  if(/^[1-4]$/.test(e.key)&&!game.answered){const b=$("answers").children[+e.key-1];if(b)b.click();}
+  if(e.key==="Enter"&&game.answered&&$("nextBtn"))$("nextBtn").click();
+});
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

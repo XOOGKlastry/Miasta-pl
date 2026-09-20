@@ -62,7 +62,7 @@ footer summary{cursor:pointer;color:var(--paper)}
 
   <div class="hero">
     <svg id="pl" viewBox="0 0 100 100" aria-hidden="true"></svg>
-    <p>Cztery gry o miastach, powiatach i herbach.</p>
+    <p>Siedem gier o miastach, powiatach i herbach.</p>
     <h1>Znasz<br>Polskę?</h1>
   </div>
 
@@ -87,6 +87,21 @@ footer summary{cursor:pointer;color:var(--paper)}
       <span class="txt"><b>Jaki to herb?</b><small>Zgadnij miasto po herbie, cztery odpowiedzi do wyboru.</small></span>
       <span class="rec" id="rec-herb"></span>
     </a>
+    <a class="game" href="gdzie.html">
+      <span class="ico"><svg width="46" height="46" viewBox="0 0 46 46"><path d="M8 12 L20 6 L34 9 L40 20 L36 36 L22 40 L9 34 L5 22 Z" fill="#1D3D43" stroke="#4F7F86" stroke-width="1.5"/><path d="M23 12c-5 0-8 3.6-8 8 0 6 8 13 8 13s8-7 8-13c0-4.4-3-8-8-8z" fill="#F2C14E" stroke="#0C1A1D" stroke-width="1.5"/><circle cx="23" cy="20" r="3" fill="#0C1A1D"/></svg></span>
+      <span class="txt"><b>Gdzie to jest?</b><small>Wskaż miasto na pustej mapie, liczy się każdy kilometr.</small></span>
+      <span class="rec" id="rec-gdzie"></span>
+    </a>
+    <a class="game" href="ksztalt.html">
+      <span class="ico"><svg width="46" height="46" viewBox="0 0 46 46"><path d="M10 14 L17 7 L26 10 L33 6 L39 14 L36 22 L40 30 L31 39 L22 35 L13 38 L7 29 L11 22 Z" fill="rgba(242,193,78,.2)" stroke="#F2C14E" stroke-width="2" stroke-linejoin="round"/></svg></span>
+      <span class="txt"><b>Kształt powiatu</b><small>Sam kontur, bez mapy. Który to powiat?</small></span>
+      <span class="rec" id="rec-ksztalt"></span>
+    </a>
+    <a class="game" href="wiecej.html">
+      <span class="ico"><svg width="46" height="46" viewBox="0 0 46 46"><rect x="6" y="20" width="12" height="20" rx="2" fill="#4F7F86"/><rect x="26" y="8" width="12" height="32" rx="2" fill="#F2C14E"/><path d="M32 4 l4 5 h-8 z" fill="#E6EFEC"/></svg></span>
+      <span class="txt"><b>Więcej czy mniej?</b><small>Które miasto ma więcej mieszkańców? Do pierwszej pomyłki.</small></span>
+      <span class="rec" id="rec-wiecej"></span>
+    </a>
   </nav>
 
   <footer>
@@ -107,6 +122,9 @@ try{
   setRec("rec-miasta",bestOf("pl-best-"));
   setRec("rec-zdjecie",bestOf("zdj-best-"),"pkt");
   setRec("rec-herb",bestOf("herb-best-"));
+  setRec("rec-gdzie",bestOf("gdzie-best-"),"pkt");
+  setRec("rec-ksztalt",bestOf("ksztalt-best-"),"pkt");
+  setRec("rec-wiecej",bestOf("wiecej-best-"));
   const t=JSON.parse(localStorage.getItem("tabliceApp_v2")||"{}");
   let tb=0;if(t.modeStats)for(const m in t.modeStats)tb=Math.max(tb,t.modeStats[m].rekord||0);
   setRec("rec-tablice",tb);
