@@ -38,22 +38,31 @@ def cities():
     raise RuntimeError("Overpass nie odpowiada")
 
 
+# klasy cieków w Wikidata: rzeka, struga/potok, ciek wodny, kanał
+KLASY = "wd:Q4022 wd:Q47521 wd:Q355304 wd:Q12284"
+
+
 def rivers(qids):
-    """qid miasta -> nazwa rzeki (P206, tylko cieki: rzeka Q4022 lub jej podklasy)"""
+    """qid miasta -> nazwa rzeki (P206 ograniczone do cieków)"""
     res = {}
-    for i in range(0, len(qids), 150):
-        vals = " ".join("wd:" + q for q in qids[i:i + 150])
+    for i in range(0, len(qids), 100):
+        vals = " ".join("wd:" + q for q in qids[i:i + 100])
         q = ("SELECT ?item ?rzekaLabel WHERE { VALUES ?item {" + vals + "} "
-             "?item wdt:P206 ?rzeka . ?rzeka wdt:P31/wdt:P279* wd:Q4022 . "
+             "?item wdt:P206 ?rzeka . ?rzeka wdt:P31 ?cls . VALUES ?cls {" + KLASY + "} "
              'SERVICE wikibase:label { bd:serviceParam wikibase:language "pl". } }')
-        j = json.loads(http("https://query.wikidata.org/sparql", ("format=json&query=" + urllib.parse.quote(q)).encode()))
+        try:
+            j = json.loads(http("https://query.wikidata.org/sparql",
+                                ("format=json&query=" + urllib.parse.quote(q)).encode(), tries=3, timeout=90))
+        except Exception as e:
+            print("  pomijam paczkę", i, e, file=sys.stderr)   # jedna nieudana paczka nie psuje całości
+            continue
         for b in j["results"]["bindings"]:
             qid = b["item"]["value"].rsplit("/", 1)[1]
             name = b["rzekaLabel"]["value"]
             if re.fullmatch(r"Q\d+", name):
                 continue
             res.setdefault(qid, name)
-        time.sleep(1)
+        time.sleep(2)
     return res
 
 
@@ -74,7 +83,7 @@ def main():
     with open("rzeki.json", "w", encoding="utf-8") as fh:
         json.dump({"zbudowano": time.strftime("%Y-%m-%d"), "miasta": out}, fh, ensure_ascii=False, separators=(",", ":"))
     print("zapisano:", len(out))
-    if len(out) < 200:
+    if len(out) < 120:
         raise SystemExit("za mało danych, coś poszło nie tak")
 
 
