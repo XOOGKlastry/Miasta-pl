@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=7" />
+<link rel="stylesheet" href="wspolne.css?v=8" />
 <style>
 svg path{fill-rule:evenodd}
 .stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden}
@@ -26,6 +26,14 @@ svg path{fill-rule:evenodd}
 .tag{position:absolute;left:10px;top:10px;font-size:13px;color:var(--dim);background:rgba(12,26,29,.8);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
 #hintBtn{position:absolute;left:10px;bottom:10px;min-height:40px;border-radius:999px;border:1px solid var(--line-2);background:rgba(12,26,29,.85);padding:0 14px;font-size:14px}
 #hintBtn:disabled{opacity:.4}
+#shape image{opacity:.95}
+.tbar{flex:none;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.tbar i{display:block;height:100%;background:var(--gold);width:100%}
+.tbar.malo i{background:var(--red)}
+.inputrow{display:flex;gap:8px;flex:none}
+#guess{flex:1;min-width:0;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r);padding:12px 14px;font-size:19px}
+#guess:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold)}
+#guess:disabled{opacity:.5}
 </style>
 </head>
 <body>
@@ -56,6 +64,18 @@ svg path{fill-rule:evenodd}
         <option value="a">także miasta na prawach powiatu</option>
       </select>
     </label>
+    <label class="field"><span>Podkład</span>
+      <select id="tryb">
+        <option value="e" selected>ekspert: sam kontur</option>
+        <option value="n">początkujący: zdjęcie satelitarne w obrysie</option>
+      </select>
+    </label>
+    <label class="field"><span>Odpowiadanie</span>
+      <select id="odp">
+        <option value="w" selected>cztery nazwy do wyboru</option>
+        <option value="t">wpisywanie nazwy, 20 sekund</option>
+      </select>
+    </label>
     <label class="field"><span>Tryb nauki</span>
       <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
     </label>
@@ -73,15 +93,20 @@ svg path{fill-rule:evenodd}
     <button id="hintBtn">Podpowiedź</button>
     <div class="inset hidden" id="inset"></div>
   </section>
+  <div class="tbar hidden" id="tbar"><i id="tfill"></i></div>
   <div class="answers hidden" id="answers"></div>
+  <div class="inputrow hidden" id="inputrow">
+    <input id="guess" type="text" placeholder="Nazwa powiatu" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" />
+    <button class="ghost" id="passBtn" style="min-height:auto;padding:0 14px">Nie wiem</button>
+  </div>
   <div class="feedback hidden" id="feedback"></div>
 
   <section class="summary hidden" id="summary"></section>
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=7"></script>
-<script src="wspolne.js?v=7"></script>
+<script src="topojson-client.min.js?v=8"></script>
+<script src="wspolne.js?v=8"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -97,9 +122,9 @@ Promise.all([ZP.loadPowiaty(),ZP.loadWoj()]).then(([pw,woj])=>{
   $("startBtn").disabled=false;refreshBest();
 }).catch(()=>{$("datastate").textContent="Nie udało się wczytać granic. Sprawdź połączenie i odśwież stronę.";});
 
-const bestKey=()=>"ksztalt-best-"+($("area").value||"pl")+"-"+$("kind").value+"-"+$("rounds").value;
+const bestKey=()=>"ksztalt-best-"+($("area").value||"pl")+"-"+$("kind").value+"-"+$("odp").value+"-"+$("rounds").value;
 function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
-$("area").onchange=$("kind").onchange=$("rounds").onchange=refreshBest;
+$("area").onchange=$("kind").onchange=$("rounds").onchange=$("odp").onchange=refreshBest;
 
 function makeQuestion(p,pool){
   // błędne odpowiedzi: najbliższe powiaty (także spoza wybranego obszaru, jeśli jest ich mało)
@@ -111,16 +136,32 @@ function startGame(){
   const area=$("area").value,kind=$("kind").value;
   const pool=POW.filter(p=>(!area||p.k.startsWith(area))&&(kind==="a"||!p.city));
   const n=Math.min(+$("rounds").value,pool.length);
-  game={pool,qs:ZP.losujNauka(pool,"powiat",p=>p.k,n,$("ucz").value==="1").map(p=>makeQuestion(p,pool)),i:-1,pts:0,hits:0,res:[]};
+  game={pool,wpis:$("odp").value==="t",qs:ZP.losujNauka(pool,"powiat",p=>p.k,n,$("ucz").value==="1").map(p=>makeQuestion(p,pool)),i:-1,pts:0,hits:0,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
-  ["stats","stage","answers"].forEach(id=>$(id).classList.remove("hidden"));
+  ["stats","stage"].forEach(id=>$(id).classList.remove("hidden"));
+  $("answers").classList.toggle("hidden",game.wpis);
+  $("inputrow").classList.toggle("hidden",!game.wpis);
+  $("tbar").classList.toggle("hidden",!game.wpis);
+  $("hintBtn").style.display=game.wpis?"none":"";
   $("pts").textContent=0;$("hits").textContent=0;refreshBest();
   next();
 }
 function drawShape(p){
   const P=ZP.projection([p.f],400,14);
   const svg=$("shape");svg.setAttribute("viewBox","0 0 400 "+P.H.toFixed(0));
-  svg.innerHTML='<path d="'+P.path(p.f.geometry)+'"/>';
+  const d=P.path(p.f.geometry);
+  if($("tryb").value!=="n"){svg.innerHTML='<path d="'+d+'"/>';return;}
+  // zdjęcie satelitarne przycięte dokładnie do granic powiatu
+  const b=p.bb,x0=P.x(b[0]),x1=P.x(b[2]),y0=P.y(b[3]),y1=P.y(b[1]);
+  const w=Math.max(1,x1-x0),h=Math.max(1,y1-y0);
+  const px=(b[2]-b[0])*0.001,py=(b[3]-b[1])*0.001;   // minimalny margines
+  const bbox=[b[0]-px,b[1]-py,b[2]+px,b[3]+py].map(v=>v.toFixed(5)).join(",");
+  const size=Math.round(700)+","+Math.round(700*h/w);
+  const url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export"
+    +"?bbox="+bbox+"&bboxSR=4326&imageSR=4326&size="+size+"&format=jpg&transparent=false&f=image";
+  svg.innerHTML='<defs><clipPath id="cp"><path d="'+d+'"/></clipPath></defs>'
+    +'<image href="'+url+'" x="'+(x0-px/(b[2]-b[0])*w).toFixed(1)+'" y="'+(y0-py/(b[3]-b[1])*h).toFixed(1)+'" width="'+(w*(1+0.002)).toFixed(1)+'" height="'+(h*(1+0.002)).toFixed(1)+'" preserveAspectRatio="none" clip-path="url(#cp)"/>'
+    +'<path d="'+d+'" fill="none"/>';
 }
 function drawInset(p){
   let s='<svg viewBox="0 0 300 '+PL.H.toFixed(0)+'">';
@@ -129,7 +170,9 @@ function drawInset(p){
   s+='<circle cx="'+PL.x(p.lon).toFixed(1)+'" cy="'+PL.y(p.lat).toFixed(1)+'" r="9" fill="none" stroke="#F2C14E" stroke-width="2"/></svg>';
   $("inset").innerHTML=s;$("inset").classList.remove("hidden");
 }
+const CZAS_WPIS=20;
 function next(){
+  clearInterval(game.tick);
   game.i++;
   if(game.i>=game.qs.length)return endGame();
   const q=game.qs[game.i];game.answered=false;game.hint=false;
@@ -137,34 +180,58 @@ function next(){
   $("feedback").classList.add("hidden");$("inset").classList.add("hidden");
   $("hintBtn").disabled=false;
   drawShape(q.p);
+  if(game.wpis){
+    $("guess").value="";$("guess").disabled=false;$("passBtn").disabled=false;$("guess").focus();
+    $("tbar").classList.remove("malo");$("tfill").style.width="100%";
+    const t0=Date.now();
+    game.tick=setInterval(()=>{
+      if(game.answered)return clearInterval(game.tick);
+      const left=Math.max(0,CZAS_WPIS-(Date.now()-t0)/1000);
+      $("tfill").style.width=(100*left/CZAS_WPIS).toFixed(1)+"%";
+      $("tbar").classList.toggle("malo",left<=5);
+      if(left<=0){clearInterval(game.tick);answer(null,null);}
+    },100);
+    return;
+  }
   const box=$("answers");box.innerHTML="";
   q.opts.forEach(o=>{const b=document.createElement("button");b.textContent=o.label;b.onclick=()=>answer(o,b);box.appendChild(b);});
 }
+$("guess").addEventListener("input",()=>{
+  if(!game||!game.wpis||game.answered)return;
+  const v=ZP.norm($("guess").value);
+  if(v.length<3)return;
+  const q=game.qs[game.i];
+  if(v===ZP.norm(q.p.short)||v===ZP.norm(q.p.full)||v===ZP.norm("powiat "+q.p.short))answer(q.p,null);
+});
+$("passBtn").onclick=()=>{if(game&&game.wpis&&!game.answered)answer(null,null);};
 $("hintBtn").onclick=()=>{if(!game||game.answered)return;game.hint=true;$("hintBtn").disabled=true;drawInset(game.qs[game.i].p);};
 function answer(o,btn){
-  if(game.answered)return;game.answered=true;
-  const q=game.qs[game.i],ok=o===q.p,got=ok?(game.hint?1:2):0;
-  [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.p)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
+  if(game.answered)return;game.answered=true;clearInterval(game.tick);
+  const q=game.qs[game.i],ok=o===q.p,got=ok?(game.wpis?3:(game.hint?1:2)):0;
+  if(game.wpis){$("guess").disabled=true;$("passBtn").disabled=true;$("tfill").style.width="0%";}
+  else [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.p)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
   game.pts+=got;if(ok)game.hits++;
   ZP.zapisz("powiat",q.p.k,ok&&!game.hint);
+  if(!ok&&game.wpis&&o===null)game.res;
   $("pts").textContent=game.pts;$("hits").textContent=game.hits;
   $("hintBtn").disabled=true;drawInset(q.p);
   game.res.push({p:q.p,ok,got,picked:ok?null:o});
   const fb=$("feedback");
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
-  fb.querySelector("strong").textContent=ok?"Dobrze, "+q.p.full+(got===2?" (+2)":" (+1)"):"To "+q.p.full;
+  fb.querySelector("strong").textContent=ok?"Dobrze, "+q.p.full+" (+"+got+")":"To "+q.p.full;
   fb.querySelector("span").textContent="woj. "+q.p.woj;
   $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";
   $("nextBtn").onclick=next;
   fb.classList.remove("hidden");
 }
 function endGame(){
-  ["stage","answers","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  clearInterval(game.tick);
+  ["stage","answers","inputrow","tbar","feedback"].forEach(id=>$(id).classList.add("hidden"));
   $("round").textContent="";
   const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
   if(rec)localStorage.setItem(k,game.pts);
   refreshBest();
-  const max=game.qs.length*2,s=$("summary");
+  const max=game.qs.length*(game.wpis?3:2),s=$("summary");
   s.innerHTML='<div class="score">'+game.pts+' <span>z '+max+' pkt</span></div><p class="sub"></p>'
     +'<div class="btnrow"><button class="ghost" id="setBtn">Zmień ustawienia</button><button class="big" id="againBtn">Jeszcze raz</button></div><div class="rows"></div>';
   s.querySelector(".sub").textContent="Trafione "+game.hits+" z "+game.qs.length+". "+(rec?"Nowy rekord.":"Rekord w tych ustawieniach: "+Math.max(best,game.pts)+" pkt.");

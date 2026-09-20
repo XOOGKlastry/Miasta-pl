@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=7" />
+<link rel="stylesheet" href="wspolne.css?v=8" />
 <style>
 .target{flex:none;text-align:center}
 .target .kind{font-size:13px;color:var(--dim)}
@@ -43,9 +43,9 @@
   <section class="setup" id="setup">
     <h2>Nad którą rzeką leży to miasto?</h2>
     <p>Cztery odpowiedzi, a wśród nich rzeki z tej samej okolicy. Po odpowiedzi widać położenie miasta na mapie.</p>
-    <label class="field"><span>Poziom</span>
-      <select id="scope"></select>
-    </label>
+    <div class="field"><span>Wielkość miast</span>
+      <div id="scope" data-klucz="rzeki"></div>
+    </div>
     <label class="field"><span>Tryb nauki</span>
       <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
     </label>
@@ -69,7 +69,7 @@
 </main>
 </div>
 
-<script src="wspolne.js?v=7"></script>
+<script src="wspolne.js?v=8"></script>
 <script>
 const {$,shuffle,pick,fmt}=ZP;
 let DANE=[],P=null,base="",game=null;
@@ -86,8 +86,8 @@ Promise.all([
   $("startBtn").disabled=false;refreshBest();
 });
 
-ZP.zakresy($("scope"),"20000");
-const bestKey=()=>"rzeki-best-"+$("scope").value+"-"+$("rounds").value;
+ZP.zakresy($("scope"));
+const bestKey=()=>"rzeki-best-"+ZP.zakresStan($("scope"))+"-"+$("rounds").value;
 function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
 $("scope").onchange=$("rounds").onchange=refreshBest;
 
@@ -98,7 +98,7 @@ function makeQuestion(c,pool){
   return {c,opts:shuffle(shuffle(opts).slice(0,3).concat([c.rzeka]))};
 }
 function startGame(){
-  const pool=DANE.filter(c=>ZP.wZakresie(c,$("scope").value));
+  const pool=DANE.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope"))));
   if(pool.length<8){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
   const n=Math.min(+$("rounds").value,pool.length);
   game={pool,qs:ZP.losujNauka(pool,"rzeka",c=>c.n,n,$("ucz").value==="1").map(c=>makeQuestion(c,pool)),i:-1,hits:0,streak:0,res:[]};

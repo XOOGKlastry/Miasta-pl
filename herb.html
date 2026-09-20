@@ -111,9 +111,9 @@ footer{font-size:12px;color:var(--dim);margin-top:auto}
   <section class="setup" id="setup">
     <h2>Rozpoznaj miasto po herbie</h2>
     <p>Pokazuje się herb, wybierasz jedno z czterech miast. Błędne odpowiedzi to zwykle miasta z tej samej okolicy, więc sama znajomość regionu nie wystarczy.</p>
-    <label class="field"><span>Poziom</span>
-      <select id="scope"></select>
-    </label>
+    <div class="field"><span>Wielkość miast</span>
+      <div id="scope" data-klucz="herb"></div>
+    </div>
     <label class="field"><span>Liczba herbów</span>
       <select id="rounds"><option>10</option><option selected>15</option><option>25</option></select>
     </label>
@@ -141,7 +141,7 @@ footer{font-size:12px;color:var(--dim);margin-top:auto}
 
 </div>
 
-<script src="wspolne.js?v=7"></script>
+<script src="wspolne.js?v=8"></script>
 <script>
 const $=id=>document.getElementById(id);
 const norm=s=>s.toLowerCase()
@@ -257,8 +257,8 @@ function ready(src){
 let game=null,timer=null;
 const BADK="pl-herby-bad";
 let BAD=new Set();try{BAD=new Set(JSON.parse(localStorage.getItem(BADK)||"[]"));}catch(e){}
-ZP.zakresy($("scope"),"20000");
-const bestKey=()=>"herb-best-"+$("scope").value+"-"+$("rounds").value;
+ZP.zakresy($("scope"));
+const bestKey=()=>"herb-best-"+ZP.zakresStan($("scope"))+"-"+$("rounds").value;
 function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
 $("scope").onchange=$("rounds").onchange=refreshBest;
 
@@ -269,7 +269,7 @@ function makeQuestion(c,pool){
   return {c,opts:shuffle(opts)};
 }
 function startGame(){
-  const pool=HERBY.filter(c=>ZP.wZakresie(c,$("scope").value)&&!BAD.has(c.file));
+  const pool=HERBY.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope")))&&!BAD.has(c.file));
   if(pool.length<8){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
   const n=Math.min(+$("rounds").value,pool.length);
   const picks=ZP.losujNauka(pool,"herb",c=>c.name,n,$("ucz").value==="1");

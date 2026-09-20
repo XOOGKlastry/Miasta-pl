@@ -1,6 +1,6 @@
 # Znasz Polskę? Gry geograficzne
 
-Jedenaście gier, wyzwanie dnia i ekran statystyk w jednej aplikacji (PWA), same statyczne pliki, bez backendu i bez build stepu.
+Trzynaście gier, wyzwanie dnia i ekran statystyk w jednej aplikacji (PWA), same statyczne pliki, bez backendu i bez build stepu.
 
 | plik | gra |
 | --- | --- |
@@ -16,6 +16,8 @@ Jedenaście gier, wyzwanie dnia i ekran statystyk w jednej aplikacji (PWA), same
 | `zoom.html` | **Zoom out**: kadr ortofotomapy oddala się co 4 s, punkty maleją |
 | `powiaty.html` | **Wymień powiaty**: wpisujesz powiaty województwa, zapalają się na mapie |
 | `rzeki.html` | **Nad jaką rzeką?**: miasto i cztery rzeki do wyboru (dane z `rzeki.json`) |
+| `slepa.html` | **Ślepa mapa**: wskaż województwo, potem powiat w środku |
+| `turniej.html` | **Turniej**: pięć konkurencji po trzy rundy, jeden wynik |
 | `statystyki.html` | **Statystyki**: rekordy, mapa opanowanych powiatów, najczęstsze pomyłki |
 | `wiecej.html` | **Więcej czy mniej?**: które miasto ma więcej mieszkańców, do pierwszej pomyłki |
 
@@ -23,9 +25,9 @@ Pozostałe pliki: `wspolne.js` i `wspolne.css` (wspólny kod nowych gier), `powi
 
 ## Zakresy wielkości miast
 
-Gry o miastach używają wspólnej listy zakresów z `wspolne.js` (`ZP.zakresy`, `ZP.wZakresie`):
-kumulatywne („wszystkie”, „powyżej 20 tys.”, „powyżej 100 tys.”) oraz rozłączne przedziały
-(40 do 100 tys., 20 do 40 tys., 5 do 20 tys., poniżej 5 tys.).
+Gry o miastach używają wspólnych pól wyboru z `wspolne.js` (`ZP.zakresy`, `ZP.zakresStan`, `ZP.wZakresie`):
+duże (ponad 100 tys.), średnie (20 do 100 tys.) i małe (poniżej 20 tys.). Można zaznaczyć kilka naraz,
+domyślnie wszystkie, a wybór zapamiętuje się osobno dla każdej gry.
 
 ## Tryb nauki
 

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=7" />
+<link rel="stylesheet" href="wspolne.css?v=8" />
 <style>
 .target{flex:none;text-align:center}
 .target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(28px,8.5vw,38px);line-height:1.05;overflow-wrap:anywhere}
@@ -29,6 +29,17 @@
 #map text{font-family:"Fraunces",serif;font-weight:600;font-size:24px;fill:var(--paper);paint-order:stroke;stroke:var(--ink);stroke-width:5px;stroke-linejoin:round}
 .tip{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:13px;color:var(--dim);pointer-events:none}
 #okBtn{width:100%}
+.tura{position:absolute;inset:0;z-index:700;display:grid;place-items:center;background:rgba(8,18,20,.94);text-align:center;padding:20px}
+.tura b{display:block;font-family:"Fraunces",serif;font-weight:900;font-size:34px;line-height:1.1}
+.tura .kto1{color:var(--gold)}
+.tura .kto2{color:#7FD8C6}
+.tura .licz{font-family:"Fraunces",serif;font-size:72px;font-weight:900;line-height:1}
+.tura small{display:block;color:var(--dim);font-size:15px;margin-top:6px}
+.tbar{flex:none;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.tbar i{display:block;height:100%;background:var(--gold);width:100%}
+.tbar.malo i{background:var(--red)}
+.gracz1 .tbar i{background:var(--gold)}
+.gracz2 .tbar i{background:#7FD8C6}
 </style>
 </head>
 <body>
@@ -46,9 +57,9 @@
   <section class="setup" id="setup">
     <h2>Wskaż miasto na pustej mapie</h2>
     <p>Stukasz w mapę Polski z samymi granicami województw. Im mniejszy błąd w kilometrach, tym więcej punktów, do 1000 za rundę.</p>
-    <label class="field"><span>Poziom</span>
-      <select id="scope"></select>
-    </label>
+    <div class="field"><span>Wielkość miast</span>
+      <div id="scope" data-klucz="gdzie"></div>
+    </div>
     <label class="field"><span>Podpowiedź</span>
       <select id="hint">
         <option value="0" selected>bez podpowiedzi</option>
@@ -73,7 +84,9 @@
   <section class="stage hidden" id="stage">
     <svg id="map" preserveAspectRatio="xMidYMid meet"></svg>
     <div class="tip" id="tip">Stuknij w mapę, możesz poprawiać</div>
+    <div class="tura hidden" id="tura"><div><b id="turaKto"></b><div class="licz" id="turaLicz">3</div><small id="turaInfo">Przygotuj się</small></div></div>
   </section>
+  <div class="tbar hidden" id="tbar"><i id="tfill"></i></div>
   <button class="big hidden" id="okBtn" disabled>Zatwierdź</button>
   <div class="feedback hidden" id="feedback"></div>
 
@@ -81,7 +94,7 @@
 </main>
 </div>
 
-<script src="wspolne.js?v=7"></script>
+<script src="wspolne.js?v=8"></script>
 <script>
 const {$,shuffle,fmt}=ZP;
 let CITIES=[],P=null,game=null,base="";
@@ -97,8 +110,8 @@ ZP.loadCities(t=>$("datastate").textContent=t).then(async all=>{
   $("startBtn").disabled=false;setStats();
 });
 
-ZP.zakresy($("scope"),"20000");
-const bestKey=()=>"gdzie-best-"+$("scope").value+"-"+$("hint").value+"-"+$("rounds").value;
+ZP.zakresy($("scope"));
+const bestKey=()=>"gdzie-best-"+ZP.zakresStan($("scope"))+"-"+$("hint").value+"-"+$("rounds").value;
 function refreshBest(){const b=$("best");if(b)b.textContent=localStorage.getItem(bestKey())||0;}
 $("scope").onchange=$("hint").onchange=$("rounds").onchange=refreshBest;
 
@@ -109,17 +122,47 @@ function setStats(){
   if(!game||!game.multi)refreshBest();
 }
 function startGame(){
-  const pool=CITIES.filter(c=>ZP.wZakresie(c,$("scope").value));
+  const pool=CITIES.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope"))));
   if(pool.length<5){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
   const multi=$("gracze").value==="2";
   const n=Math.min(+$("rounds").value*(multi?2:1),pool.length);
   game={multi,qs:ZP.losujNauka(pool,"miasto",c=>c.name,n,$("ucz").value==="1"),i:-1,pts:0,kms:[],res:[],gr:[0,0],grKm:[[],[]]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
   ["stats","target","stage","okBtn"].forEach(id=>$(id).classList.remove("hidden"));
+  if(multi)$("tName").insertAdjacentHTML("afterend","");
   setStats();
   next();
 }
+const TURA=35; // sekundy na odpowiedź w duecie
+function startTurnTimer(){
+  clearInterval(game.tick);
+  if(!game.multi)return;
+  $("tbar").classList.remove("hidden");
+  const t0=Date.now();
+  game.tick=setInterval(()=>{
+    if(game.answered)return clearInterval(game.tick);
+    const left=Math.max(0,TURA-(Date.now()-t0)/1000);
+    $("tfill").style.width=(100*left/TURA).toFixed(1)+"%";
+    $("tbar").classList.toggle("malo",left<=6);
+    if(left<=0){clearInterval(game.tick);if(!game.guess){const svg=$("map");game.guess={x:300,y:P.H/2,lon:P.lon(300),lat:P.lat(P.H/2)};}$("okBtn").click();}
+  },100);
+}
+function odliczanie(gracz,gotowe){
+  const el=$("tura");el.classList.remove("hidden");
+  $("turaKto").textContent="Gracz "+gracz;
+  $("turaKto").className=gracz===1?"kto1":"kto2";
+  $("turaInfo").textContent="Twoja kolej, masz "+TURA+" s";
+  let n=3;$("turaLicz").textContent=n;
+  clearInterval(game.odl);
+  game.odl=setInterval(()=>{
+    n--;
+    if(n<=0){clearInterval(game.odl);el.classList.add("hidden");gotowe();}
+    else $("turaLicz").textContent=n;
+  },800);
+}
 function next(){
+  clearInterval(game.tick);clearInterval(game.odl);
+  $("tbar").classList.add("hidden");
   game.i++;
   if(game.i>=game.qs.length)return endGame();
   const c=game.qs[game.i];game.answered=false;game.guess=null;
@@ -132,6 +175,11 @@ function next(){
   if($("hint").value==="1")$("map").querySelectorAll(".w").forEach(p=>p.classList.toggle("on",p.dataset.w===c.woj));
   $("tip").classList.remove("hidden");
   $("feedback").classList.add("hidden");$("okBtn").classList.remove("hidden");$("okBtn").disabled=true;
+  if(game.multi){
+    const gracz=game.i%2+1;
+    document.body.className="gracz"+gracz;
+    odliczanie(gracz,startTurnTimer);
+  }
 }
 $("map").addEventListener("click",e=>{
   if(!game||game.answered)return;
@@ -160,6 +208,7 @@ $("okBtn").onclick=()=>{
   if(game.multi){$("p1").textContent=fmt(game.gr[0]);$("p2").textContent=fmt(game.gr[1]);}
   else{$("pts").textContent=fmt(game.pts);$("avg").textContent=Math.round(game.kms.reduce((a,b)=>a+b,0)/game.kms.length)+" km";}
   $("okBtn").classList.add("hidden");
+  clearInterval(game.tick);$("tbar").classList.add("hidden");
   const fb=$("feedback");
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=(d<5?"W punkt! ":"")+"Błąd "+(d<10?d.toFixed(1):Math.round(d))+" km, +"+got+" pkt";
@@ -169,7 +218,8 @@ $("okBtn").onclick=()=>{
   fb.classList.remove("hidden");
 };
 function endGame(){
-  ["target","stage","okBtn","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  ["target","stage","okBtn","feedback","tbar"].forEach(id=>$(id).classList.add("hidden"));
+  clearInterval(game.tick);clearInterval(game.odl);document.body.className="";
   $("round").textContent="";
   const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=!game.multi&&game.pts>best;
   if(rec)localStorage.setItem(k,game.pts);

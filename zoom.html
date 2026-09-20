@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-<link rel="stylesheet" href="wspolne.css?v=7" />
+<link rel="stylesheet" href="wspolne.css?v=8" />
 <style>
 .stage{flex:1;min-height:170px;position:relative;border-radius:var(--r);background:#0d1526;border:1px solid var(--line);overflow:hidden}
 #map{position:absolute;inset:0}
@@ -32,6 +32,9 @@
   border-radius:var(--r);overflow:hidden;display:none;flex-direction:column-reverse;box-shadow:0 -10px 30px rgba(0,0,0,.45)}
 #ac div{padding:11px 14px;font-family:"Fraunces",serif;font-size:17px;border-bottom:1px solid var(--line)}
 #ac div:first-child{border-bottom:none}
+.zbar{flex:none;height:6px;border-radius:3px;background:var(--line);overflow:hidden;display:flex}
+.zbar i{display:block;height:100%;background:var(--gold);width:0}
+.zbar.stop i{background:var(--line-2)}
 .answerbar{display:flex;gap:8px;flex:none}
 .answerbar .big{min-height:50px;font-size:16px}
 </style>
@@ -54,10 +57,10 @@
 <main>
   <section class="setup" id="setup">
     <h2>Zgadnij miasto, zanim kadr się oddali</h2>
-    <p>Zaczynasz od kilku ulic z bliska. Co cztery sekundy widok się oddala, a pula punktów maleje. Im wcześniej odpowiesz, tym lepiej.</p>
-    <label class="field"><span>Poziom</span>
-      <select id="scope"></select>
-    </label>
+    <p>Zaczynasz od kilku ulic z bliska. Pasek pod mapą pokazuje, ile zostało do kolejnego oddalenia; z każdym krokiem pula punktów maleje.</p>
+    <div class="field"><span>Wielkość miast</span>
+      <div id="scope" data-klucz="zoom"></div>
+    </div>
     <label class="field"><span>Tryb nauki</span>
       <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
     </label>
@@ -75,6 +78,7 @@
     <span class="pill tagR" id="tagR">1000 pkt</span>
     <button class="pill" id="skipBtn">Nie wiem</button>
   </section>
+  <div class="zbar hidden" id="zbar"><i id="zfill"></i></div>
   <div class="answerbar hidden" id="answerbar">
     <div class="acbox">
       <input id="guess" type="text" placeholder="Nazwa miasta…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" />
@@ -89,7 +93,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script src="wspolne.js?v=7"></script>
+<script src="wspolne.js?v=8"></script>
 <script>
 const {$,norm,fmt}=ZP;
 const Z0=17,ZMIN=11,KROK=4000;               // start, koniec, co ile sekund oddalenie
@@ -108,18 +112,18 @@ ZP.loadCities(t=>$("datastate").textContent=t).then(all=>{
   NAMES=CITIES.map(c=>c.name).sort((a,b)=>a.localeCompare(b,"pl"));
   $("startBtn").disabled=false;refreshBest();
 });
-ZP.zakresy($("scope"),"20000");
-const bestKey=()=>"zoom-best-"+$("scope").value+"-"+$("rounds").value;
+ZP.zakresy($("scope"));
+const bestKey=()=>"zoom-best-"+ZP.zakresStan($("scope"))+"-"+$("rounds").value;
 function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
 $("scope").onchange=$("rounds").onchange=refreshBest;
 
 function startGame(){
-  const pool=CITIES.filter(c=>ZP.wZakresie(c,$("scope").value));
+  const pool=CITIES.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope"))));
   if(pool.length<5){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
   const n=Math.min(+$("rounds").value,pool.length);
   game={qs:ZP.losujNauka(pool,"miasto",c=>c.name,n,$("ucz").value==="1"),i:-1,pts:0,hits:0,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
-  ["stats","stage","answerbar"].forEach(id=>$(id).classList.remove("hidden"));
+  ["stats","stage","zbar","answerbar"].forEach(id=>$(id).classList.remove("hidden"));
   $("pts").textContent=0;$("hits").textContent=0;refreshBest();
   map.invalidateSize({pan:false});
   next();
@@ -138,13 +142,19 @@ function next(){
   const j=0.004;
   map.setView([c.lat+(Math.random()-.5)*j,c.lon+(Math.random()-.5)*j*1.7],Z0,{animate:false});
   $("guess").focus();
+  game.t0=Date.now();
+  $("zbar").classList.remove("stop");
   timer=setInterval(()=>{
     if(game.answered)return;
-    game.step++;
+    const min=(Date.now()-game.t0)%KROK;
+    $("zfill").style.width=(100-100*min/KROK).toFixed(1)+"%";
+    const krokow=Math.floor((Date.now()-game.t0)/KROK);
+    if(krokow===game.step)return;
+    game.step=krokow;
     if(Z0-game.step<ZMIN)return resolve(null);
     map.setZoom(Z0-game.step,{animate:true});
     $("tagR").textContent=(PKT[Math.min(game.step,PKT.length-1)])+" pkt";
-  },KROK);
+  },100);
 }
 /* podpowiedzi nazw, otwierają się w górę nad klawiaturą */
 let acItems=[],acSel=0;
@@ -180,6 +190,7 @@ function resolve(ok){
   ZP.zapisz("miasto",c.name,ok===true&&game.step<=2);
   $("pts").textContent=fmt(game.pts);$("hits").textContent=game.hits;
   $("ac").style.display="none";$("answerbar").classList.add("hidden");
+  $("zbar").classList.add("stop");$("zfill").style.width="100%";
   $("guess").disabled=true;$("skipBtn").disabled=true;
   map.setView([c.lat,c.lon],Math.min(13,Z0-game.step),{animate:true});
   mark.clearLayers();
@@ -194,7 +205,7 @@ function resolve(ok){
 }
 function endGame(){
   clearInterval(timer);
-  ["stage","answerbar","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  ["stage","zbar","answerbar","feedback"].forEach(id=>$(id).classList.add("hidden"));
   $("round").textContent="";
   const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
   if(rec)localStorage.setItem(k,game.pts);

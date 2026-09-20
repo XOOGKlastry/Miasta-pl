@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Ślepa mapa · Znasz Polskę?</title>
+<meta name="theme-color" content="#0C1A1D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=8" />
+<style>
+svg path{fill-rule:evenodd}
+.target{flex:none;text-align:center}
+.target .kind{font-size:13px;color:var(--dim);letter-spacing:.08em;text-transform:uppercase}
+.target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(26px,8vw,36px);line-height:1.05;overflow-wrap:anywhere}
+.stage{flex:1;min-height:180px;position:relative;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);overflow:hidden}
+#map{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+#map path{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke}
+#map path.dobrze{fill:var(--ok)}
+#map path.zle{fill:var(--red)}
+#map path.cel{fill:var(--gold)}
+#map text{text-anchor:middle;font-size:13px;font-weight:700;fill:var(--ink);paint-order:stroke;stroke:#F7E6B8;stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+.tip{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:13px;color:var(--dim);pointer-events:none}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Ślepa mapa</h1>
+  <span class="round" id="round"></span>
+</header>
+
+<div class="stats hidden" id="stats">
+  <span class="gold">Punkty <b id="pts">0</b></span>
+  <span>Trafione <b id="hits">0</b></span>
+  <span>Rekord <b id="best">0</b></span>
+</div>
+
+<main>
+  <section class="setup" id="setup">
+    <h2>Wskaż województwo, potem powiat w środku</h2>
+    <p>Najpierw stukasz w województwo na mapie Polski bez podpisów, potem mapa przybliża się do niego i szukasz konkretnego powiatu. Województwo to 1 punkt, powiat 2 punkty.</p>
+    <label class="field"><span>Tryb nauki</span>
+      <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
+    </label>
+    <label class="field"><span>Liczba rund</span>
+      <select id="rounds"><option>5</option><option selected>10</option><option>15</option></select>
+    </label>
+    <button class="big" id="startBtn" disabled>Zagraj</button>
+    <div class="datastate" id="datastate">Wczytywanie mapy…</div>
+    <footer>Granice: PRG (GUGiK). Miasta na prawach powiatu też się liczą.</footer>
+  </section>
+
+  <div class="target hidden" id="target"><div class="kind" id="tKind"></div><div class="nm" id="tName"></div></div>
+  <section class="stage hidden" id="stage">
+    <svg id="map" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="tip" id="tip">Stuknij w mapę</div>
+  </section>
+  <div class="feedback hidden" id="feedback"></div>
+
+  <section class="summary hidden" id="summary"></section>
+</main>
+</div>
+
+<script src="topojson-client.min.js?v=8"></script>
+<script src="wspolne.js?v=8"></script>
+<script>
+const {$,shuffle}=ZP;
+let POW=[],WOJ=[],PL=null,game=null;
+
+Promise.all([ZP.loadPowiaty(),ZP.loadWoj()]).then(([pw,woj])=>{
+  POW=pw;
+  const kod={};Object.entries(ZP.WOJ_KOD).forEach(([k,n])=>kod[n]=k);
+  WOJ=woj.map(w=>({f:w.f,k:kod[w.name],nazwa:w.name}));
+  PL=ZP.projection(WOJ.map(w=>w.f),500,8);
+  $("datastate").textContent=WOJ.length+" województw, "+POW.length+" powiatów";
+  $("startBtn").disabled=false;refreshBest();
+}).catch(()=>{$("datastate").textContent="Nie udało się wczytać mapy. Sprawdź połączenie i odśwież stronę.";});
+
+const bestKey=()=>"slepa-best-"+$("rounds").value;
+function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
+$("rounds").onchange=refreshBest;
+
+function startGame(){
+  const n=+$("rounds").value;
+  const cele=ZP.losujNauka(POW,"powiat",p=>p.k,n,$("ucz").value==="1");
+  game={qs:cele,i:-1,pts:0,hits:0,res:[]};
+  $("setup").classList.add("hidden");$("summary").classList.add("hidden");
+  ["stats","target","stage"].forEach(id=>$(id).classList.remove("hidden"));
+  $("pts").textContent=0;$("hits").textContent=0;refreshBest();
+  next();
+}
+function rysujPolske(){
+  const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+PL.H.toFixed(0));
+  svg.innerHTML=WOJ.map(w=>'<path data-k="'+w.k+'" data-typ="w" d="'+PL.path(w.f.geometry)+'"/>').join("");
+}
+function rysujWoj(kod){
+  const set=POW.filter(p=>p.k.startsWith(kod));
+  const P=ZP.projection(set.map(p=>p.f),500,14);game.P=P;
+  const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
+  svg.innerHTML=set.map(p=>'<path data-k="'+p.k+'" data-typ="p" d="'+P.path(p.f.geometry)+'"/>').join("");
+}
+function next(){
+  game.i++;
+  if(game.i>=game.qs.length)return endGame();
+  const p=game.qs[game.i];
+  game.etap=1;game.blad=0;
+  $("round").textContent=(game.i+1)+" / "+game.qs.length;
+  $("tKind").textContent="Województwo";
+  $("tName").textContent=p.woj;
+  $("tip").textContent="Stuknij województwo na mapie Polski";
+  $("feedback").classList.add("hidden");
+  rysujPolske();
+}
+$("map").addEventListener("click",e=>{
+  const el=e.target.closest("path");
+  if(!game||!el||game.koniec)return;
+  const p=game.qs[game.i];
+  if(game.etap===1){
+    const ok=el.dataset.k===p.k.slice(0,2);
+    el.classList.add(ok?"dobrze":"zle");
+    if(!ok){
+      game.blad=1;
+      const cel=$("map").querySelector('[data-k="'+p.k.slice(0,2)+'"]');
+      if(cel)cel.classList.add("cel");
+      setTimeout(()=>etap2(p),900);
+      return;
+    }
+    setTimeout(()=>etap2(p),450);
+  }else if(game.etap===2){
+    game.etap=0;
+    const ok=el.dataset.k===p.k;
+    el.classList.add(ok?"dobrze":"zle");
+    const cel=$("map").querySelector('[data-k="'+p.k+'"]');
+    if(cel)cel.classList.add(ok?"dobrze":"cel");
+    if(cel){
+      const P=game.P;
+      $("map").insertAdjacentHTML("beforeend",'<text x="'+P.x(p.lon).toFixed(1)+'" y="'+P.y(p.lat).toFixed(1)+'">'+p.short+'</text>');
+    }
+    const got=(game.blad?0:1)+(ok?2:0);
+    game.pts+=got;if(ok&&!game.blad)game.hits++;
+    ZP.zapisz("powiat",p.k,ok);
+    ZP.zapisz("wojewodztwo",p.k.slice(0,2),!game.blad);
+    $("pts").textContent=game.pts;$("hits").textContent=game.hits;
+    game.res.push({p,ok,blad:game.blad,got});
+    const fb=$("feedback");
+    fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
+    fb.querySelector("strong").textContent=(ok?"Dobrze, "+p.full:"To był "+p.full)+" (+"+got+")";
+    fb.querySelector("span").textContent=game.blad?"województwo wskazane błędnie":"województwo trafione";
+    $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";$("nextBtn").onclick=next;
+    fb.classList.remove("hidden");
+  }
+});
+function etap2(p){
+  game.etap=2;
+  $("tKind").textContent="Powiat w woj. "+p.woj;
+  $("tName").textContent=p.full;
+  $("tip").textContent="Stuknij powiat";
+  rysujWoj(p.k.slice(0,2));
+}
+function endGame(){
+  ["target","stage","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  $("round").textContent="";
+  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
+  if(rec)localStorage.setItem(k,game.pts);
+  refreshBest();
+  const n=game.qs.length,s=$("summary");
+  s.innerHTML='<div class="score">'+game.pts+' <span>z '+n*3+' pkt</span></div><p class="sub"></p>'
+    +'<div class="btnrow"><button class="ghost" id="setBtn">Zmień ustawienia</button><button class="big" id="againBtn">Jeszcze raz</button></div><div class="rows"></div>';
+  s.querySelector(".sub").textContent="Komplet w "+game.hits+" z "+n+" rundach. "+(rec?"Nowy rekord.":"Rekord: "+Math.max(best,game.pts)+" pkt.");
+  const rows=s.querySelector(".rows");
+  game.res.forEach(r=>{
+    const d=document.createElement("div");d.className="r";
+    d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
+    d.querySelector("b").textContent=r.p.full;
+    d.querySelector("small").textContent="woj. "+r.p.woj+(r.blad?", województwo nietrafione":"")+(r.ok?"":", powiat nietrafiony");
+    const pt=d.querySelector(".pt");pt.textContent="+"+r.got;pt.className="pt "+(r.got===3?"ok":r.got?"":"no");
+    rows.appendChild(d);
+  });
+  s.classList.remove("hidden");
+  $("againBtn").onclick=startGame;
+  $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
+}
+$("startBtn").onclick=startGame;
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>
