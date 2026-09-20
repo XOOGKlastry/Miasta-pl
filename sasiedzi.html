@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=5" />
+<link rel="stylesheet" href="wspolne.css?v=6" />
 <style>
 svg path{fill-rule:evenodd}
 .duel{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
@@ -55,8 +55,14 @@ svg path{fill-rule:evenodd}
   <section class="setup" id="setup">
     <h2>Czy te dwa powiaty mają wspólną granicę?</h2>
     <p>Dostajesz dwie nazwy i odpowiadasz tak albo nie. Mapa pokazuje się dopiero po odpowiedzi, razem z położeniem obu powiatów.</p>
-    <label class="field"><span>Obszar</span>
+    <label class="field"><span>Co porównujemy</span>
+      <select id="tryb"><option value="p" selected>powiaty</option><option value="w">województwa (łatwe)</option></select>
+    </label>
+    <label class="field" id="areaField"><span>Obszar</span>
       <select id="area"><option value="">cała Polska</option></select>
+    </label>
+    <label class="field"><span>Tryb nauki</span>
+      <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
     </label>
     <label class="field"><span>Liczba pytań</span>
       <select id="rounds"><option>10</option><option selected>15</option><option>25</option></select>
@@ -85,34 +91,44 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=5"></script>
-<script src="wspolne.js?v=5"></script>
+<script src="topojson-client.min.js?v=6"></script>
+<script src="wspolne.js?v=6"></script>
 <script>
 const {$,shuffle,pick}=ZP;
-let POW=[],BY={},game=null;
+let POW=[],BY={},WOJ=[],BYW={},SET=[],BYK={},game=null;
 Object.entries(ZP.WOJ_KOD).sort((a,b)=>a[1].localeCompare(b[1],"pl")).forEach(([k,n])=>{const o=document.createElement("option");o.value=k;o.textContent=n;$("area").appendChild(o);});
 
-ZP.loadPowiaty().then(pw=>{
+Promise.all([ZP.loadPowiaty(),ZP.loadWoj(),ZP.wojSasiedzi()]).then(([pw,woj,wnb])=>{
   POW=pw;POW.forEach(p=>BY[p.k]=p);
-  $("datastate").textContent=POW.length+" powiatów";
+  const kod={};Object.entries(ZP.WOJ_KOD).forEach(([k,n])=>kod[n]=k);
+  WOJ=woj.map(w=>{
+    const k=kod[w.name];let b=[1e9,1e9,-1e9,-1e9];
+    w.rings.forEach(r=>r.forEach(([x,y])=>{if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y;}));
+    return {f:w.f,k,city:false,nb:wnb[k]||[],woj:w.name,bb:b,lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2,
+      full:"woj. "+w.name,short:w.name};
+  });
+  WOJ.forEach(w=>BYW[w.k]=w);
+  $("datastate").textContent=POW.length+" powiatów i "+WOJ.length+" województw";
   $("startBtn").disabled=false;refreshBest();
 }).catch(()=>{$("datastate").textContent="Nie udało się wczytać granic. Sprawdź połączenie i odśwież stronę.";});
 
-const bestKey=()=>"sasiedzi-best-"+($("area").value||"pl")+"-"+$("rounds").value;
+const bestKey=()=>"sasiedzi-best-"+$("tryb").value+"-"+($("tryb").value==="w"?"pl":($("area").value||"pl"))+"-"+$("rounds").value;
 function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
 $("area").onchange=$("rounds").onchange=refreshBest;
+$("tryb").onchange=()=>{$("areaField").style.display=$("tryb").value==="w"?"none":"";refreshBest();};
 
 function makePair(a,tak){
-  if(tak){const b=BY[pick(a.nb)];return b?{a,b,ok:true}:null;}
+  if(tak){const b=BYK[pick(a.nb)];return b?{a,b,ok:true}:null;}
   // fałszywa para: blisko, ale bez wspólnej granicy (zwykle sąsiad sąsiada)
-  const near=POW.filter(o=>o!==a&&a.nb.indexOf(o.k)<0).sort((x,y)=>ZP.km(a,x)-ZP.km(a,y)).slice(0,10);
+  const near=SET.filter(o=>o!==a&&a.nb.indexOf(o.k)<0).sort((x,y)=>ZP.km(a,x)-ZP.km(a,y)).slice(0,$("tryb").value==="w"?5:10);
   return near.length?{a,b:pick(near),ok:false}:null;
 }
 function startGame(){
-  const area=$("area").value;
-  const pool=POW.filter(p=>!p.city&&p.nb.length>=2&&(!area||p.k.startsWith(area)));
+  const woj=$("tryb").value==="w",area=$("area").value;
+  SET=woj?WOJ:POW;BYK=woj?BYW:BY;
+  const pool=SET.filter(p=>!p.city&&p.nb.length>=2&&(woj||!area||p.k.startsWith(area)));
   const n=Math.min(+$("rounds").value,pool.length*2);
-  const base=shuffle(pool.concat(pool)).slice(0,n);
+  const base=ZP.losujNauka(pool.concat(pool),woj?"wojewodztwo":"powiat",p=>p.k,n,$("ucz").value==="1");
   const qs=[];
   base.forEach((p,i)=>{const q=makePair(p,i%2===0);if(q)qs.push(q);});
   game={qs:shuffle(qs),i:-1,hits:0,streak:0,res:[]};
@@ -132,11 +148,11 @@ function next(){
   [...$("choice").children].forEach(b=>b.disabled=false);
 }
 function drawPair(q){
-  const view=[q.a,q.b,...q.a.nb.map(k=>BY[k])];
+  const view=[q.a,q.b,...q.a.nb.map(k=>BYK[k])].filter(Boolean);
   const P=ZP.projection(view.map(p=>p.f),500,26);
   const vb=[P.lon(-40),P.lat(P.H+40),P.lon(540),P.lat(-40)];
   let s="";
-  POW.forEach(p=>{
+  SET.forEach(p=>{
     if(p.bb[2]<vb[0]||p.bb[0]>vb[2]||p.bb[3]<vb[1]||p.bb[1]>vb[3])return;
     s+='<path class="'+(p===q.a?"a":p===q.b?"b":"")+'" d="'+P.path(p.f.geometry)+'"/>';
   });
@@ -149,13 +165,14 @@ function answer(tak){
   [...$("choice").children].forEach(b=>b.disabled=true);
   drawPair(q);
   if(ok){game.hits++;game.streak++;}else game.streak=0;
+  ZP.zapisz($("tryb").value==="w"?"wojewodztwo":"powiat",q.a.k,ok);
   $("hits").textContent=game.hits;$("streak").textContent=game.streak;
   game.res.push({q,ok});
   const d=Math.round(ZP.km(q.a,q.b));
   const fb=$("feedback");
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=(ok?"Dobrze. ":"Niestety. ")+(q.ok?"Mają wspólną granicę":"Nie graniczą ze sobą");
-  fb.querySelector("span").textContent=(q.a.woj===q.b.woj?"oba w woj. "+q.a.woj:q.a.woj+" i "+q.b.woj)+", środki oddalone o "+d+" km";
+  fb.querySelector("span").textContent=($("tryb").value==="w"?"":(q.a.woj===q.b.woj?"oba w woj. "+q.a.woj+", ":q.a.woj+" i "+q.b.woj+", "))+"środki oddalone o "+d+" km";
   $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";$("nextBtn").onclick=next;
   $("choice").classList.add("hidden");fb.classList.remove("hidden");
 }

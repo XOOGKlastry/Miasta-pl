@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=5" />
+<link rel="stylesheet" href="wspolne.css?v=6" />
 <style>
 .target{flex:none;text-align:center}
 .target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(28px,8.5vw,38px);line-height:1.05;overflow-wrap:anywhere}
@@ -40,11 +40,7 @@
   <span class="round" id="round"></span>
 </header>
 
-<div class="stats hidden" id="stats">
-  <span class="gold">Punkty <b id="pts">0</b></span>
-  <span>Śr. błąd <b id="avg">–</b></span>
-  <span>Rekord <b id="best">0</b></span>
-</div>
+<div class="stats hidden" id="stats"></div>
 
 <main>
   <section class="setup" id="setup">
@@ -63,6 +59,12 @@
         <option value="0" selected>bez podpowiedzi</option>
         <option value="1">pokaż województwo</option>
       </select>
+    </label>
+    <label class="field"><span>Tryb nauki</span>
+      <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
+    </label>
+    <label class="field"><span>Gracze</span>
+      <select id="gracze"><option value="1" selected>sam</option><option value="2">dwie osoby na jednym telefonie</option></select>
     </label>
     <label class="field"><span>Liczba rund</span>
       <select id="rounds"><option>5</option><option selected>10</option><option>15</option></select>
@@ -84,7 +86,7 @@
 </main>
 </div>
 
-<script src="wspolne.js?v=5"></script>
+<script src="wspolne.js?v=6"></script>
 <script>
 const {$,shuffle,fmt}=ZP;
 let CITIES=[],P=null,game=null,base="";
@@ -97,22 +99,29 @@ ZP.loadCities(t=>$("datastate").textContent=t).then(async all=>{
   P=ZP.projection(woj.map(w=>w.f),600,10);
   base=woj.map(w=>'<path class="w" data-w="'+w.name+'" d="'+P.path(w.f.geometry)+'"/>').join("");
   $("map").setAttribute("viewBox","0 0 600 "+P.H.toFixed(0));
-  $("startBtn").disabled=false;refreshBest();
+  $("startBtn").disabled=false;setStats();
 });
 
 const bestKey=()=>"gdzie-best-"+$("scope").value+"-"+$("hint").value+"-"+$("rounds").value;
-function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
+function refreshBest(){const b=$("best");if(b)b.textContent=localStorage.getItem(bestKey())||0;}
 $("scope").onchange=$("hint").onchange=$("rounds").onchange=refreshBest;
 
+function setStats(){
+  $("stats").innerHTML=game&&game.multi
+    ? '<span class="gold">Gracz 1 <b id="p1">0</b></span><span>Gracz 2 <b id="p2">0</b></span><span>Runda <b id="avg">–</b></span>'
+    : '<span class="gold">Punkty <b id="pts">0</b></span><span>Śr. błąd <b id="avg">–</b></span><span>Rekord <b id="best">0</b></span>';
+  if(!game||!game.multi)refreshBest();
+}
 function startGame(){
   const min=+$("scope").value;
   const pool=CITIES.filter(c=>min===0||c.pop>=min);
   if(pool.length<5){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
-  const n=Math.min(+$("rounds").value,pool.length);
-  game={qs:shuffle(pool.slice()).slice(0,n),i:-1,pts:0,kms:[],res:[]};
+  const multi=$("gracze").value==="2";
+  const n=Math.min(+$("rounds").value*(multi?2:1),pool.length);
+  game={multi,qs:ZP.losujNauka(pool,"miasto",c=>c.name,n,$("ucz").value==="1"),i:-1,pts:0,kms:[],res:[],gr:[0,0],grKm:[[],[]]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
   ["stats","target","stage","okBtn"].forEach(id=>$(id).classList.remove("hidden"));
-  $("pts").textContent=0;$("avg").textContent="–";refreshBest();
+  setStats();
   next();
 }
 function next(){
@@ -121,7 +130,9 @@ function next(){
   const c=game.qs[game.i];game.answered=false;game.guess=null;
   $("round").textContent=(game.i+1)+" / "+game.qs.length;
   $("tName").textContent=c.name;
-  $("tHint").textContent=$("hint").value==="1"?"woj. "+c.woj:"";
+  const kto=game.multi?"Gracz "+(game.i%2+1):"";
+  $("tHint").textContent=[kto,$("hint").value==="1"?"woj. "+c.woj:""].filter(Boolean).join(" · ");
+  if(game.multi)$("avg").textContent=Math.floor(game.i/2)+1+"/"+(game.qs.length/2);
   $("map").innerHTML=base+'<g id="ov"></g>';
   if($("hint").value==="1")$("map").querySelectorAll(".w").forEach(p=>p.classList.toggle("on",p.dataset.w===c.woj));
   $("tip").classList.remove("hidden");
@@ -147,9 +158,12 @@ $("okBtn").onclick=()=>{
     +'<circle class="truth" cx="'+tx+'" cy="'+ty+'" r="9"/>'
     +'<text x="'+tx+'" y="'+(ty-18)+'" text-anchor="'+(tx>480?"end":tx<120?"start":"middle")+'"></text>';
   $("ov").querySelector("text").textContent=c.name;
-  game.pts+=got;game.kms.push(d);game.res.push({c,d,got});
-  $("pts").textContent=fmt(game.pts);
-  $("avg").textContent=Math.round(game.kms.reduce((a,b)=>a+b,0)/game.kms.length)+" km";
+  const gr=game.multi?game.i%2:0;
+  game.pts+=got;game.kms.push(d);game.res.push({c,d,got,g:gr});
+  game.gr[gr]+=got;game.grKm[gr].push(d);
+  ZP.zapisz("miasto",c.name,d<=30);
+  if(game.multi){$("p1").textContent=fmt(game.gr[0]);$("p2").textContent=fmt(game.gr[1]);}
+  else{$("pts").textContent=fmt(game.pts);$("avg").textContent=Math.round(game.kms.reduce((a,b)=>a+b,0)/game.kms.length)+" km";}
   $("okBtn").classList.add("hidden");
   const fb=$("feedback");
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
@@ -162,19 +176,23 @@ $("okBtn").onclick=()=>{
 function endGame(){
   ["target","stage","okBtn","feedback"].forEach(id=>$(id).classList.add("hidden"));
   $("round").textContent="";
-  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
+  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=!game.multi&&game.pts>best;
   if(rec)localStorage.setItem(k,game.pts);
-  refreshBest();
   const n=game.qs.length,avg=Math.round(game.kms.reduce((a,b)=>a+b,0)/n),s=$("summary");
-  s.innerHTML='<div class="score">'+fmt(game.pts)+' <span>z '+fmt(n*1000)+'</span></div><p class="sub"></p>'
+  const naglowek=game.multi
+    ? '<div class="score">'+fmt(game.gr[0])+' <span>:</span> '+fmt(game.gr[1])+'</div>'
+    : '<div class="score">'+fmt(game.pts)+' <span>z '+fmt(n*1000)+'</span></div>';
+  s.innerHTML=naglowek+'<p class="sub"></p>'
     +'<div class="btnrow"><button class="ghost" id="setBtn">Zmień poziom</button><button class="big" id="againBtn">Jeszcze raz</button></div><div class="rows"></div>';
-  s.querySelector(".sub").textContent="Średni błąd "+avg+" km. "+(rec?"Nowy rekord.":"Rekord w tych ustawieniach: "+fmt(Math.max(best,game.pts))+" pkt.");
+  s.querySelector(".sub").textContent=game.multi
+    ? (game.gr[0]===game.gr[1]?"Remis.":"Wygrywa gracz "+(game.gr[0]>game.gr[1]?1:2)+". ")+"Średni błąd: gracz 1 "+Math.round(game.grKm[0].reduce((a,b)=>a+b,0)/game.grKm[0].length)+" km, gracz 2 "+Math.round(game.grKm[1].reduce((a,b)=>a+b,0)/game.grKm[1].length)+" km."
+    : "Średni błąd "+avg+" km. "+(rec?"Nowy rekord.":"Rekord w tych ustawieniach: "+fmt(Math.max(best,game.pts))+" pkt.");
   const rows=s.querySelector(".rows");
   game.res.forEach(r=>{
     const d=document.createElement("div");d.className="r";
     d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
     d.querySelector("b").textContent=r.c.name;
-    d.querySelector("small").textContent="woj. "+r.c.woj+", błąd "+Math.round(r.d)+" km";
+    d.querySelector("small").textContent=(game.multi?"gracz "+(r.g+1)+", ":"")+"woj. "+r.c.woj+", błąd "+Math.round(r.d)+" km";
     d.querySelector(".pt").textContent="+"+r.got;
     d.querySelector(".pt").classList.add(r.got>=600?"ok":r.got<200?"no":"x");
     rows.appendChild(d);

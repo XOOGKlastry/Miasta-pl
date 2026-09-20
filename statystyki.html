@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Statystyki · Znasz Polskę?</title>
+<meta name="theme-color" content="#0C1A1D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=6" />
+<style>
+svg path{fill-rule:evenodd}
+.stage{flex:none;height:38%;min-height:150px;position:relative;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);overflow:hidden}
+#map{position:absolute;inset:0;width:100%;height:100%}
+#map path{stroke:#0C1A1D;stroke-width:.6;vector-effect:non-scaling-stroke}
+#map path.nowe{fill:#1D3D43}
+#map path.slabo{fill:var(--red)}
+#map path.srednio{fill:#E8A33A}
+#map path.dobrze{fill:var(--ok)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--dim);flex:none}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.scroll{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px}
+h2{font-size:13px;font-weight:500;color:var(--dim);margin:0 0 4px;letter-spacing:.04em;text-transform:uppercase}
+.kafle{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.kafel{background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.kafel b{display:block;font-family:"Fraunces",serif;font-size:22px;line-height:1.1;color:var(--gold)}
+.kafel small{font-size:12px;color:var(--dim)}
+.lista .r{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:15px}
+.lista .r span:last-child{margin-left:auto;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.lista a{color:inherit;text-decoration:none;flex:1;min-width:0}
+.pasek{height:8px;border-radius:4px;overflow:hidden;display:flex;background:var(--line)}
+.pasek i{display:block;height:100%}
+.katego{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.katego .top{display:flex;justify-content:space-between;font-size:14px}
+.katego .top span{color:var(--dim);font-size:12px}
+.pusto{color:var(--dim);font-size:14px}
+#clearBtn{min-height:46px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Statystyki</h1>
+</header>
+
+<main>
+  <section class="stage"><svg id="map" preserveAspectRatio="xMidYMid meet"></svg></section>
+  <div class="legend">
+    <span><i style="background:var(--ok)"></i>umiem</span>
+    <span><i style="background:#E8A33A"></i>niepewnie</span>
+    <span><i style="background:var(--red)"></i>mylę</span>
+    <span><i style="background:#1D3D43"></i>jeszcze nie było</span>
+  </div>
+
+  <div class="scroll">
+    <div>
+      <h2>W sumie</h2>
+      <div class="kafle" id="kafle"></div>
+    </div>
+    <div>
+      <h2>Postęp w nauce</h2>
+      <div id="katego"></div>
+    </div>
+    <div>
+      <h2>Najczęściej mylone</h2>
+      <div class="lista" id="myle"></div>
+    </div>
+    <div>
+      <h2>Rekordy</h2>
+      <div class="lista" id="rekordy"></div>
+    </div>
+    <button class="ghost" id="clearBtn">Wyczyść postęp nauki</button>
+  </div>
+</main>
+</div>
+
+<script src="topojson-client.min.js?v=6"></script>
+<script src="wspolne.js?v=6"></script>
+<script>
+const {$,fmt}=ZP;
+const ETYK={powiat:"Powiaty",miasto:"Miasta na mapie",herb:"Herby",rzeka:"Rzeki",wojewodztwo:"Województwa"};
+
+function bestOf(prefix){let b=0;for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.startsWith(prefix))b=Math.max(b,+localStorage.getItem(k)||0);}return b;}
+function rekordy(){
+  const g=[
+    ["Miasta na czas","pl-best-","miasta.html",""],
+    ["Skąd to zdjęcie?","zdj-best-","zdjecie.html"," pkt"],
+    ["Gdzie to jest?","gdzie-best-","gdzie.html"," pkt"],
+    ["Zoom out","zoom-best-","zoom.html"," pkt"],
+    ["Jaki to herb?","herb-best-","herb.html",""],
+    ["Kształt powiatu","ksztalt-best-","ksztalt.html"," pkt"],
+    ["Graniczą czy nie?","sasiedzi-best-","sasiedzi.html",""],
+    ["Wymień powiaty","powiaty-best-","powiaty.html",""],
+    ["Nad jaką rzeką?","rzeki-best-","rzeki.html",""],
+    ["Więcej czy mniej?","wiecej-best-","wiecej.html"," z rzędu"]
+  ];
+  let html="";
+  g.forEach(([nm,pre,url,unit])=>{
+    const v=bestOf(pre);
+    html+='<div class="r"><a href="'+url+'">'+nm+'</a><span>'+(v?fmt(v)+unit:"–")+'</span></div>';
+  });
+  try{
+    const t=JSON.parse(localStorage.getItem("tabliceApp_v2")||"{}");
+    let tb=0;if(t.modeStats)for(const m in t.modeStats)tb=Math.max(tb,t.modeStats[m].rekord||0);
+    html+='<div class="r"><a href="tablice.html">Tablice rejestracyjne</a><span>'+(tb?fmt(tb):"–")+'</span></div>';
+  }catch(e){}
+  const b=+(localStorage.getItem("dzis-best")||0);
+  let ser=0;try{ser=(JSON.parse(localStorage.getItem("dzis-seria")||'{"n":0}')).n||0;}catch(e){}
+  html+='<div class="r"><a href="dzis.html">Wyzwanie dnia</a><span>'+(b?fmt(b)+" pkt":"–")+'</span></div>';
+  $("rekordy").innerHTML=html;
+  return {dzienBest:b,seria:ser};
+}
+
+function kategorie(){
+  let html="";
+  Object.keys(ETYK).forEach(kind=>{
+    const s=ZP.statystyki(kind),razem=s.dobrze+s.srednio+s.slabo;
+    if(!razem)return;
+    const p=n=>(100*n/razem).toFixed(1)+"%";
+    html+='<div class="katego"><div class="top"><b>'+ETYK[kind]+'</b><span>'+s.dobrze+" z "+razem+' umiem</span></div>'
+      +'<div class="pasek"><i style="width:'+p(s.dobrze)+';background:var(--ok)"></i><i style="width:'+p(s.srednio)+';background:#E8A33A"></i><i style="width:'+p(s.slabo)+';background:var(--red)"></i></div></div>';
+  });
+  $("katego").innerHTML=html||'<div class="pusto">Zagraj w dowolną grę, a tutaj pojawi się postęp.</div>';
+}
+function myle(){
+  const s=ZP.nauka();
+  const arr=Object.entries(s).map(([k,r])=>({kind:k.split(":")[0],id:k.slice(k.indexOf(":")+1),...r}))
+    .filter(r=>r.no>0).sort((a,b)=>(b.no-b.ok)-(a.no-a.ok)).slice(0,10);
+  $("myle").innerHTML=arr.length?arr.map(r=>'<div class="r"><span>'+(ETYK[r.kind]||r.kind)+": "+(r.kind==="powiat"?(NAZWY[r.id]||r.id):r.id)+'</span><span>'+r.no+" pomyłek, "+r.ok+' trafień</span></div>').join("")
+    :'<div class="pusto">Na razie bez pomyłek.</div>';
+}
+let NAZWY={};
+function kafle(rek){
+  const s=ZP.statystyki(),ile=s.ok+s.no;
+  $("kafle").innerHTML=
+    '<div class="kafel"><b>'+fmt(ile)+'</b><small>odpowiedzi w sumie</small></div>'
+   +'<div class="kafel"><b>'+(ile?Math.round(100*s.ok/ile):0)+'%</b><small>trafionych</small></div>'
+   +'<div class="kafel"><b>'+s.dobrze+'</b><small>rzeczy opanowanych</small></div>'
+   +'<div class="kafel"><b>'+rek.seria+'</b><small>dni z rzędu w wyzwaniu</small></div>';
+}
+ZP.loadPowiaty().then(pw=>{
+  pw.forEach(p=>NAZWY[p.k]=p.full);
+  const P=ZP.projection(pw.map(p=>p.f),500,6);
+  $("map").setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
+  $("map").innerHTML=pw.map(p=>'<path class="'+ZP.opanowane("powiat",p.k)+'" d="'+P.path(p.f.geometry)+'"/>').join("");
+  myle();
+}).catch(()=>{});
+const rek=rekordy();kafle(rek);kategorie();myle();
+$("clearBtn").onclick=()=>{
+  if(!confirm("Skasować postęp nauki? Rekordy zostaną zachowane."))return;
+  localStorage.removeItem("nauka-v1");location.reload();
+};
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

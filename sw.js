@@ -1,10 +1,10 @@
 // Działa offline, ale zawsze najpierw próbuje sieci, żeby poprawki docierały od razu.
-const CACHE = "znasz-polske-v5";
+const CACHE = "znasz-polske-v6";
 const ASSETS = [
   "./", "./index.html", "./miasta.html", "./zdjecie.html", "./herb.html", "./gdzie.html", "./ksztalt.html",
-  "./wiecej.html", "./sasiedzi.html", "./dzis.html", "./tablice.html",
+  "./wiecej.html", "./sasiedzi.html", "./dzis.html", "./zoom.html", "./powiaty.html", "./rzeki.html", "./statystyki.html", "./tablice.html",
   "./tablice-app.js", "./tablice-powiaty.js", "./tablice-poland.js",
-  "./wspolne.js?v=5", "./wspolne.css?v=5", "./topojson-client.min.js?v=5", "./powiaty.topojson?v=5", "./woj.geojson?v=5",
+  "./wspolne.js?v=6", "./wspolne.css?v=6", "./topojson-client.min.js?v=6", "./powiaty.topojson?v=6", "./woj.geojson?v=6",
   "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"
 ];
 

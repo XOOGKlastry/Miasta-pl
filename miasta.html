@@ -270,7 +270,7 @@ function wojOf(lon,lat){
 }
 async function loadWoj(){
   try{
-    const r=await fetch("woj.geojson?v=5");
+    const r=await fetch("woj.geojson?v=6");
     const gj=await r.json();
     wojLayer=L.geoJSON(gj,{style:{color:"#F2C14E",weight:1.4,opacity:.85,fill:false,dashArray:"4 3"},interactive:false}).addTo(map);
     WOJ=gj.features.map(f=>{

@@ -122,6 +122,9 @@ footer{font-size:12px;color:var(--dim);margin-top:auto}
     <label class="field"><span>Liczba herbów</span>
       <select id="rounds"><option>10</option><option selected>15</option><option>25</option></select>
     </label>
+    <label class="field"><span>Tryb nauki</span>
+      <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
+    </label>
     <label class="field"><span>Czas na odpowiedź</span>
       <select id="rtime"><option value="8">8 s</option><option value="15" selected>15 s</option><option value="0">bez limitu</option></select>
     </label>
@@ -273,7 +276,7 @@ function startGame(){
   const pool=HERBY.filter(c=>(min===0||c.pop>=min)&&!BAD.has(c.file));
   if(pool.length<8){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
   const n=Math.min(+$("rounds").value,pool.length);
-  const picks=shuffle(pool.slice()).slice(0,n);
+  const picks=ZP.losujNauka(pool,"herb",c=>c.name,n,$("ucz").value==="1");
   game={pool,qs:picks.map(c=>makeQuestion(c,pool)),i:-1,hits:0,streak:0,rtime:+$("rtime").value,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
   $("stats").classList.remove("hidden");$("shield").classList.remove("hidden");$("answers").classList.remove("hidden");
@@ -330,6 +333,7 @@ function answer(o,btn){
     else b.classList.add("fade");
   });
   if(ok){game.hits++;game.streak++;}else game.streak=0;
+  ZP.zapisz("herb",q.c.name,ok);
   $("hits").textContent=game.hits;$("streak").textContent=game.streak;
   game.res.push({c:q.c,ok,picked:o?o.name:null});
   const fb=$("feedback");

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=5" />
+<link rel="stylesheet" href="wspolne.css?v=6" />
 <style>
 svg path{fill-rule:evenodd}
 .stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden}
@@ -56,6 +56,9 @@ svg path{fill-rule:evenodd}
         <option value="a">także miasta na prawach powiatu</option>
       </select>
     </label>
+    <label class="field"><span>Tryb nauki</span>
+      <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
+    </label>
     <label class="field"><span>Liczba rund</span>
       <select id="rounds"><option>10</option><option selected>15</option><option>25</option></select>
     </label>
@@ -77,8 +80,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=5"></script>
-<script src="wspolne.js?v=5"></script>
+<script src="topojson-client.min.js?v=6"></script>
+<script src="wspolne.js?v=6"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -108,7 +111,7 @@ function startGame(){
   const area=$("area").value,kind=$("kind").value;
   const pool=POW.filter(p=>(!area||p.k.startsWith(area))&&(kind==="a"||!p.city));
   const n=Math.min(+$("rounds").value,pool.length);
-  game={pool,qs:shuffle(pool.slice()).slice(0,n).map(p=>makeQuestion(p,pool)),i:-1,pts:0,hits:0,res:[]};
+  game={pool,qs:ZP.losujNauka(pool,"powiat",p=>p.k,n,$("ucz").value==="1").map(p=>makeQuestion(p,pool)),i:-1,pts:0,hits:0,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
   ["stats","stage","answers"].forEach(id=>$(id).classList.remove("hidden"));
   $("pts").textContent=0;$("hits").textContent=0;refreshBest();
@@ -143,6 +146,7 @@ function answer(o,btn){
   const q=game.qs[game.i],ok=o===q.p,got=ok?(game.hint?1:2):0;
   [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.p)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
   game.pts+=got;if(ok)game.hits++;
+  ZP.zapisz("powiat",q.p.k,ok&&!game.hint);
   $("pts").textContent=game.pts;$("hits").textContent=game.hits;
   $("hintBtn").disabled=true;drawInset(q.p);
   game.res.push({p:q.p,ok,got,picked:ok?null:o});

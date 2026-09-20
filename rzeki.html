@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Nad jaką rzeką? · Znasz Polskę?</title>
+<meta name="theme-color" content="#0C1A1D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=6" />
+<style>
+.target{flex:none;text-align:center}
+.target .kind{font-size:13px;color:var(--dim)}
+.target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(28px,8.5vw,38px);line-height:1.05;overflow-wrap:anywhere}
+.stage{flex:1;min-height:140px;position:relative;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);overflow:hidden;display:grid;place-items:center}
+#map{position:absolute;inset:0;width:100%;height:100%}
+#map .w{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke}
+#map .dot{fill:var(--gold);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Nad jaką rzeką?</h1>
+  <span class="round" id="round"></span>
+</header>
+
+<div class="stats hidden" id="stats">
+  <span class="gold">Trafione <b id="hits">0</b></span>
+  <span>Seria <b id="streak">0</b></span>
+  <span>Rekord <b id="best">0</b></span>
+</div>
+
+<main>
+  <section class="setup" id="setup">
+    <h2>Nad którą rzeką leży to miasto?</h2>
+    <p>Cztery odpowiedzi, a wśród nich rzeki z tej samej okolicy. Po odpowiedzi widać położenie miasta na mapie.</p>
+    <label class="field"><span>Poziom</span>
+      <select id="scope">
+        <option value="100000">łatwy: miasta powyżej 100 tys.</option>
+        <option value="30000" selected>średni: powyżej 30 tys.</option>
+        <option value="10000">trudny: powyżej 10 tys.</option>
+        <option value="0">wszystkie miasta z listy</option>
+      </select>
+    </label>
+    <label class="field"><span>Tryb nauki</span>
+      <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
+    </label>
+    <label class="field"><span>Liczba pytań</span>
+      <select id="rounds"><option>10</option><option selected>15</option><option>25</option></select>
+    </label>
+    <button class="big" id="startBtn" disabled>Zagraj</button>
+    <div class="datastate" id="datastate">Wczytywanie listy rzek…</div>
+    <footer>Rzeki: Wikidata (własność P206), lista miast: OpenStreetMap. Dane odświeżane automatycznie raz w miesiącu.</footer>
+  </section>
+
+  <div class="target hidden" id="target"><div class="kind">Nad jaką rzeką leży</div><div class="nm" id="tName"></div></div>
+  <section class="stage hidden" id="stage">
+    <svg id="map" preserveAspectRatio="xMidYMid meet" class="hidden"></svg>
+    <div class="datastate" id="veil">Mapa pokaże się po odpowiedzi</div>
+  </section>
+  <div class="answers hidden" id="answers"></div>
+  <div class="feedback hidden" id="feedback"></div>
+
+  <section class="summary hidden" id="summary"></section>
+</main>
+</div>
+
+<script src="wspolne.js?v=6"></script>
+<script>
+const {$,shuffle,pick,fmt}=ZP;
+let DANE=[],P=null,base="",game=null;
+
+Promise.all([
+  fetch("rzeki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null),
+  ZP.loadWoj()
+]).then(([j,woj])=>{
+  P=ZP.projection(woj.map(w=>w.f),500,8);
+  base=woj.map(w=>'<path class="w" d="'+P.path(w.f.geometry)+'"/>').join("");
+  if(!j||!j.miasta||j.miasta.length<50){$("datastate").textContent="Lista rzek jeszcze się nie zbudowała. Spróbuj później.";return;}
+  DANE=j.miasta;
+  $("datastate").textContent=DANE.length+" miast z rzeką (lista z "+new Date(j.zbudowano).toLocaleDateString("pl-PL")+")";
+  $("startBtn").disabled=false;refreshBest();
+});
+
+const bestKey=()=>"rzeki-best-"+$("scope").value+"-"+$("rounds").value;
+function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
+$("scope").onchange=$("rounds").onchange=refreshBest;
+
+function makeQuestion(c,pool){
+  const near=pool.filter(o=>o!==c&&o.rzeka!==c.rzeka).sort((x,y)=>ZP.km(c,x)-ZP.km(c,y));
+  const opts=[],seen=new Set([c.rzeka]);
+  for(const o of near){if(seen.has(o.rzeka))continue;seen.add(o.rzeka);opts.push(o.rzeka);if(opts.length===8)break;}
+  return {c,opts:shuffle(shuffle(opts).slice(0,3).concat([c.rzeka]))};
+}
+function startGame(){
+  const min=+$("scope").value,pool=DANE.filter(c=>c.pop>=min);
+  if(pool.length<8){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
+  const n=Math.min(+$("rounds").value,pool.length);
+  game={pool,qs:ZP.losujNauka(pool,"rzeka",c=>c.n,n,$("ucz").value==="1").map(c=>makeQuestion(c,pool)),i:-1,hits:0,streak:0,res:[]};
+  $("setup").classList.add("hidden");$("summary").classList.add("hidden");
+  ["stats","target","stage","answers"].forEach(id=>$(id).classList.remove("hidden"));
+  $("hits").textContent=0;$("streak").textContent=0;refreshBest();
+  next();
+}
+function next(){
+  game.i++;
+  if(game.i>=game.qs.length)return endGame();
+  const q=game.qs[game.i];game.answered=false;
+  $("round").textContent=(game.i+1)+" / "+game.qs.length;
+  $("tName").textContent=q.c.n;
+  $("map").classList.add("hidden");$("veil").classList.remove("hidden");
+  $("feedback").classList.add("hidden");
+  const box=$("answers");box.innerHTML="";
+  q.opts.forEach(r=>{const b=document.createElement("button");b.textContent=r;b.onclick=()=>answer(r,b);box.appendChild(b);});
+}
+function answer(r,btn){
+  if(game.answered)return;game.answered=true;
+  const q=game.qs[game.i],ok=r===q.c.rzeka;
+  [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.c.rzeka)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
+  if(ok){game.hits++;game.streak++;}else game.streak=0;
+  ZP.zapisz("rzeka",q.c.n,ok);
+  $("hits").textContent=game.hits;$("streak").textContent=game.streak;
+  const svg=$("map");
+  svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
+  svg.innerHTML=base+'<circle class="dot" cx="'+P.x(q.c.lon).toFixed(1)+'" cy="'+P.y(q.c.lat).toFixed(1)+'" r="7"/>';
+  svg.classList.remove("hidden");$("veil").classList.add("hidden");
+  game.res.push({c:q.c,ok,picked:r});
+  const fb=$("feedback");
+  fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
+  fb.querySelector("strong").textContent=ok?("Dobrze, "+q.c.n+" leży nad "+q.c.rzeka):(q.c.n+" leży nad "+q.c.rzeka);
+  fb.querySelector("span").textContent=q.c.pop?fmt(q.c.pop)+" mieszkańców":"";
+  $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";$("nextBtn").onclick=next;
+  fb.classList.remove("hidden");
+}
+function endGame(){
+  ["target","stage","answers","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  $("round").textContent="";
+  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.hits>best;
+  if(rec)localStorage.setItem(k,game.hits);
+  refreshBest();
+  const n=game.qs.length,s=$("summary");
+  s.innerHTML='<div class="score">'+game.hits+' <span>z '+n+'</span></div><p class="sub"></p>'
+    +'<div class="btnrow"><button class="ghost" id="setBtn">Zmień poziom</button><button class="big" id="againBtn">Jeszcze raz</button></div><div class="rows"></div>';
+  s.querySelector(".sub").textContent=Math.round(game.hits/n*100)+"% trafień. "+(rec?"Nowy rekord.":"Rekord: "+Math.max(best,game.hits)+".");
+  const rows=s.querySelector(".rows");
+  game.res.forEach(r=>{
+    const d=document.createElement("div");d.className="r";
+    d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
+    d.querySelector("b").textContent=r.c.n+": "+r.c.rzeka;
+    d.querySelector("small").textContent=r.ok?"trafione":"wybrano: "+r.picked;
+    const pt=d.querySelector(".pt");pt.textContent=r.ok?"✓":"✗";pt.className="pt "+(r.ok?"ok":"no");
+    rows.appendChild(d);
+  });
+  s.classList.remove("hidden");
+  $("againBtn").onclick=startGame;
+  $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
+}
+$("startBtn").onclick=startGame;
+document.addEventListener("keydown",e=>{
+  if(!game)return;
+  if(/^[1-4]$/.test(e.key)&&!game.answered){const b=$("answers").children[+e.key-1];if(b)b.click();}
+  if(e.key==="Enter"&&game.answered&&$("nextBtn"))$("nextBtn").click();
+});
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>
