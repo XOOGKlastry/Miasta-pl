@@ -1,11 +1,11 @@
 // Działa offline, ale zawsze najpierw próbuje sieci, żeby poprawki docierały od razu.
-const CACHE = "znasz-polske-v9";
+const CACHE = "polskoznawca-v11";
 const ASSETS = [
   "./", "./index.html", "./miasta.html", "./zdjecie.html", "./herb.html", "./gdzie.html", "./ksztalt.html",
   "./wiecej.html", "./sasiedzi.html", "./dzis.html", "./zoom.html", "./powiaty.html", "./rzeki.html", "./statystyki.html", "./slepa.html", "./turniej.html", "./tablice.html",
   "./tablice-app.js", "./tablice-powiaty.js", "./tablice-poland.js",
-  "./wspolne.js?v=9", "./wspolne.css?v=9", "./topojson-client.min.js?v=9", "./powiaty.topojson?v=9", "./woj.geojson?v=9",
-  "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"
+  "./wspolne.js?v=11", "./wspolne.css?v=9", "./topojson-client.min.js?v=9", "./powiaty.topojson?v=9", "./woj.geojson?v=11",
+  "./manifest.webmanifest", "./icon.svg"
 ];
 
 self.addEventListener("install", e => {
@@ -29,9 +29,8 @@ self.addEventListener("fetch", e => {
   const url = new URL(e.request.url);
   const own = url.origin === location.origin;
   const img = url.hostname === "upload.wikimedia.org" || url.hostname === "commons.wikimedia.org";
-  if (!own && !img) return; // mapy, Overpass, Wikidata: bez pośrednictwa
+  if (!own && !img) return;
   if (own) {
-    // najpierw sieć (z pominięciem pamięci przeglądarki), offline z pamięci aplikacji
     e.respondWith(
       fetch(e.request, { cache: "no-cache" }).then(res => {
         if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); }
@@ -40,7 +39,6 @@ self.addEventListener("fetch", e => {
     );
     return;
   }
-  // obrazki herbów z Commons: z pamięci, gdy już były
   e.respondWith(
     caches.match(e.request).then(hit => hit || fetch(e.request).then(res => {
       if (res.ok) { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)); }
