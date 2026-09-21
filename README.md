@@ -30,3 +30,14 @@ W **Miastach na czas** nie ma wyboru małe/średnie/duże — gra idzie przez ws
 - Kształt: zawsze zdjęcie satelitarne przycięte do granic; do wyboru powiaty albo gminy (`gminy.topojson` z PRG, budowany przez `narzedzia/gminy.sh` w GitHub Actions).
 - Miasta na czas: ekran startowy tylko z czasem i województwem, potem „Mówię” albo „Piszę”; w trakcie gry sam pasek czasu i mapa, która dopasowuje się do klawiatury.
 - Ikona aplikacji: PolandBall (`icon.svg`, `icon-192.png`, `icon-512.png`).
+
+
+## Zmiany: Z lotu ptaka, Co to za miasto?, gminy na mapie
+
+- „Skąd to zdjęcie?” nazywa się teraz **Z lotu ptaka** i ma tryb zoom out (dawna osobna gra; `zoom.html` przekierowuje).
+- Wpisywanie jest domyślne; przycisk „Pokaż” odsłania cztery odpowiedzi kosztem punktów. Domyślnie 5 rund.
+- **Gdzie to jest?** ma mapę Leaflet z podkładem CARTO bez podpisów i przybliżanie.
+- **Gdzie ten powiat?** i **Gdzie ta gmina?** (`slepa.html`, `slepa.html?tryb=g`).
+- **Nad jaką rzeką?** rysuje przebieg rzeki po odpowiedzi (`rzeki-geo.json`, budowany razem z `rzeki.json`).
+- **Co to za miasto?** (`miasto.html`): zdjęcia z Wikidata (P18, P948) i Wikimedia Commons, z autorem i licencją; dane budowane przez `narzedzia/pobierz_miejsca.py`.
+- Wpisywanie nazw w „Miastach na czas” i „Wymień powiaty” nie przechwytuje krótszej nazwy, gdy dłuższa zaczyna się tak samo (Opole i Opole Lubelskie).

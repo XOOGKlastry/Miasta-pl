@@ -93,53 +93,125 @@ def glowna(nazwa, dlugosc):
     return nazwa
 
 
+def rdp(pts, tol):
+    """upraszczanie linii (Douglas-Peucker), tolerancja w stopniach"""
+    if len(pts) < 3:
+        return pts
+    keep = [False] * len(pts)
+    keep[0] = keep[-1] = True
+    stos = [(0, len(pts) - 1)]
+    while stos:
+        i, j = stos.pop()
+        a, b = pts[i], pts[j]
+        dmax, idx = 0.0, -1
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        dd = dx * dx + dy * dy
+        for k in range(i + 1, j):
+            p = pts[k]
+            if dd == 0:
+                d = math.hypot(p[0] - a[0], p[1] - a[1])
+            else:
+                t = max(0, min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / dd))
+                d = math.hypot(p[0] - a[0] - t * dx, p[1] - a[1] - t * dy)
+            if d > dmax:
+                dmax, idx = d, k
+        if dmax > tol and idx > 0:
+            keep[idx] = True
+            stos += [(i, idx), (idx, j)]
+    return [p for p, k in zip(pts, keep) if k]
+
+
 def main():
     cs = cities()
     els = rivers_osm()
 
     dlugosc = defaultdict(float)         # nazwa rzeki -> długość w km
-    siatka = defaultdict(list)           # komórka -> [(nazwa, punkt A, punkt B)]
-    for e in els:
+    siatka = defaultdict(list)           # komórka -> [(nazwa, punkt A, punkt B, nr odcinka)]
+    drogi = {}                           # nr odcinka -> (nazwa, punkty)
+    po_nazwie = defaultdict(list)
+    for wi, e in enumerate(els):
         name = (e.get("tags", {}).get("name") or "").strip()
         geo = e.get("geometry") or []
         if not name or len(geo) < 2:
             continue
         pts = [(p["lat"], p["lon"]) for p in geo]
+        drogi[wi] = (name, pts)
+        po_nazwie[name].append(wi)
         for a, b in zip(pts, pts[1:]):
             dlugosc[name] += km(a[0], a[1], b[0], b[1])
             for key in {(int(p[0] / KOMORKA), int(p[1] / KOMORKA)) for p in (a, b)}:
-                siatka[key].append((name, a, b))
+                siatka[key].append((name, a, b, wi))
+
+    # spójne fragmenty rzek o tej samej nazwie (odcinki stykające się końcami)
+    rodzic = {}
+    def znajdz(x):
+        while rodzic.get(x, x) != x:
+            rodzic[x] = rodzic.get(rodzic[x], rodzic[x])
+            x = rodzic[x]
+        return x
+    for name, lista in po_nazwie.items():
+        konce = {}
+        for wi in lista:
+            pts = drogi[wi][1]
+            for p in (pts[0], pts[-1]):
+                k = (round(p[0], 6), round(p[1], 6))
+                if k in konce:
+                    a, b = znajdz(wi), znajdz(konce[k])
+                    if a != b:
+                        rodzic[a] = b
+                else:
+                    konce[k] = wi
+    skladowe = defaultdict(list)
+    for wi in drogi:
+        skladowe[znajdz(wi)].append(wi)
     print("nazwanych rzek:", len(dlugosc), "komórek siatki:", len(siatka))
 
     wyniki = {}
     for c in cs:
         ci, cj = int(c["lat"] / KOMORKA), int(c["lon"] / KOMORKA)
-        naj = {}
+        naj, najw = {}, {}
         for i in range(ci - 1, ci + 2):
             for j in range(cj - 1, cj + 2):
-                for name, a, b in siatka.get((i, j), ()):
+                for name, a, b, wi in siatka.get((i, j), ()):
                     d = odleglosc_do_odcinka(c["lat"], c["lon"], a, b)
                     if d < naj.get(name, 1e9):
                         naj[name] = d
+                        najw[name] = wi
         kand = [(n, d) for n, d in naj.items() if d <= MAX_KM]
         if not kand:
             continue
         # o wyborze decyduje odległość podzielona przez pierwiastek długości rzeki:
         # mała struga tuż obok przegrywa z dużą rzeką kilkaset metrów dalej
         best = min(kand, key=lambda x: (x[1] + 0.05) / max(1.0, dlugosc[x[0]]) ** 0.5)
-        wyniki[c["n"].lower()] = (c, glowna(best[0], dlugosc), round(best[1], 2))
+        nazwa = glowna(best[0], dlugosc)
+        wi = najw[best[0]]
+        if nazwa != best[0]:
+            # „Odra Zachodnia” -> przebieg Odry: najbliższy odcinek rzeki głównej
+            wi = min(po_nazwie[nazwa], key=lambda w: min(
+                odleglosc_do_odcinka(c["lat"], c["lon"], a, b) for a, b in zip(drogi[w][1], drogi[w][1][1:])))
+        wyniki[c["n"].lower()] = (c, nazwa, round(best[1], 2), znajdz(wi))
     print("miast nad rzeką (OSM):", len(wyniki))
 
-    out, widziane = [], {}
-    for key, (c, rzeka, d) in wyniki.items():
+    out, widziane, geo = [], {}, {}
+    for key, (c, rzeka, d, skl) in wyniki.items():
         if key in widziane and widziane[key]["pop"] >= c["pop"]:
             continue
-        rec = {"n": c["n"], "lat": c["lat"], "lon": c["lon"], "pop": c["pop"], "rzeka": rzeka, "km": d}
+        rid = str(skl)
+        if rid not in geo:
+            linie = []
+            for w in skladowe[skl]:
+                pts = rdp([(p[1], p[0]) for p in drogi[w][1]], 0.006)
+                linie.append([[round(x, 3), round(y, 3)] for x, y in pts])
+            geo[rid] = linie
+        rec = {"n": c["n"], "lat": c["lat"], "lon": c["lon"], "pop": c["pop"], "rzeka": rzeka, "km": d, "rid": rid}
         widziane[key] = rec
     out = sorted(widziane.values(), key=lambda r: -r["pop"])
     with open("rzeki.json", "w", encoding="utf-8") as fh:
         json.dump({"zbudowano": time.strftime("%Y-%m-%d"), "miasta": out}, fh, ensure_ascii=False, separators=(",", ":"))
-    print("zapisano:", len(out))
+    uzyte = {r["rid"] for r in out}
+    with open("rzeki-geo.json", "w", encoding="utf-8") as fh:
+        json.dump({k: v for k, v in geo.items() if k in uzyte}, fh, separators=(",", ":"))
+    print("zapisano:", len(out), "przebiegów rzek:", len(uzyte))
     for r in out[:15]:
         print("  ", r["n"], "->", r["rzeka"], "(%.1f km)" % r["km"])
     if len(out) < 200:

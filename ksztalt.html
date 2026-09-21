@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=10" />
+<link rel="stylesheet" href="wspolne.css?v=11" />
 <style>
 svg path{fill-rule:evenodd}
 .stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden}
@@ -69,15 +69,15 @@ svg path{fill-rule:evenodd}
     </label>
     <label class="field"><span>Odpowiadanie</span>
       <select id="odp">
-        <option value="w" selected>cztery nazwy do wyboru</option>
-        <option value="t">wpisywanie nazwy, 20 sekund</option>
+        <option value="t" selected>wpisuję nazwę, 20 s (podpowiedź za punkty)</option>
+        <option value="w">od razu cztery nazwy</option>
       </select>
     </label>
     <label class="field"><span>Tryb nauki</span>
       <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
     </label>
     <label class="field"><span>Liczba rund</span>
-      <select id="rounds"><option>10</option><option selected>15</option><option>25</option></select>
+      <select id="rounds"><option selected>5</option><option>10</option><option>15</option><option>25</option></select>
     </label>
     <button class="big" id="startBtn" disabled>Zagraj</button>
     <div class="datastate" id="datastate">Wczytywanie granic powiatów…</div>
@@ -94,7 +94,8 @@ svg path{fill-rule:evenodd}
   <div class="answers hidden" id="answers"></div>
   <div class="inputrow hidden" id="inputrow">
     <input id="guess" type="text" placeholder="Nazwa powiatu" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" />
-    <button class="ghost" id="passBtn" style="min-height:auto;padding:0 14px">Nie wiem</button>
+    <button class="ghost" id="pokazBtn" style="min-height:auto;padding:0 10px;font-size:12.5px;line-height:1.15;border-color:var(--gold);color:var(--gold)">Pokaż<br>(−2 pkt)</button>
+    <button class="ghost" id="passBtn" style="min-height:auto;padding:0 12px;font-size:13px">Nie wiem</button>
   </div>
   <div class="feedback hidden" id="feedback"></div>
 
@@ -102,8 +103,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=10"></script>
-<script src="wspolne.js?v=10"></script>
+<script src="topojson-client.min.js?v=11"></script>
+<script src="wspolne.js?v=11"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -116,20 +117,7 @@ const TYP_GMINY={"1":"gmina miejska","2":"gmina wiejska","3":"gmina miejsko-wiej
 async function ladujGminy(){
   if(GMINY)return GMINY;
   $("datastate").textContent="Wczytywanie granic gmin…";
-  const t=await (await fetch("gminy.topojson?v=10")).json();
-  const o=t.objects.gminy||Object.values(t.objects).sort((a,b)=>(b.geometries||[]).length-(a.geometries||[]).length)[0];
-  const fs=topojson.feature(t,o).features;
-  const powNazwa={};POWIATY.forEach(p=>powNazwa[p.k]=p.full);
-  const ile={};fs.forEach(f=>{const n=f.properties.n;ile[n]=(ile[n]||0)+1;});
-  GMINY=fs.map(f=>{
-    const k=String(f.properties.k),n=f.properties.n,typ=k.slice(-1);
-    let b=[1e9,1e9,-1e9,-1e9];
-    const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
-    polys.forEach(p=>p[0].forEach(([x,y])=>{if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y;}));
-    const dopisek=ile[n]>1?(typ==="1"?" (miasto)":typ==="2"?" (wiejska)":""):"";
-    return {f,k,n,city:false,woj:ZP.WOJ_KOD[k.slice(0,2)],bb:b,lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2,
-      short:n,label:n+dopisek,full:"gmina "+n+dopisek,typ:TYP_GMINY[typ]||"gmina",powiat:powNazwa[k.slice(0,4)]||""};
-  }).filter(g=>g.k.slice(-1)<"4");
+  GMINY=await ZP.loadGminy();
   return GMINY;
 }
 function ustawJedn(){
@@ -215,7 +203,8 @@ function next(){
   $("hintBtn").disabled=false;
   drawShape(q.p);
   if(game.wpis){
-    $("guess").value="";$("guess").disabled=false;$("passBtn").disabled=false;$("guess").focus();
+    $("guess").value="";$("guess").disabled=false;$("passBtn").disabled=false;$("pokazBtn").disabled=false;$("guess").focus();
+    game.pokazano=false;$("answers").classList.add("hidden");
     $("tbar").classList.remove("malo");$("tfill").style.width="100%";
     const t0=Date.now();
     game.tick=setInterval(()=>{
@@ -227,9 +216,16 @@ function next(){
     },100);
     return;
   }
-  const box=$("answers");box.innerHTML="";
+  budujOpcje(q);
+}
+function budujOpcje(q){
+  const box=$("answers");box.innerHTML="";box.classList.remove("hidden");
   q.opts.forEach(o=>{const b=document.createElement("button");b.textContent=o.label;b.onclick=()=>answer(o,b);box.appendChild(b);});
 }
+$("pokazBtn").onclick=()=>{
+  if(!game||!game.wpis||game.answered||game.pokazano)return;
+  game.pokazano=true;$("pokazBtn").disabled=true;budujOpcje(game.qs[game.i]);
+};
 $("guess").addEventListener("input",()=>{
   if(!game||!game.wpis||game.answered)return;
   const v=ZP.norm($("guess").value);
@@ -241,9 +237,9 @@ $("passBtn").onclick=()=>{if(game&&game.wpis&&!game.answered)answer(null,null);}
 $("hintBtn").onclick=()=>{if(!game||game.answered)return;game.hint=true;$("hintBtn").disabled=true;drawInset(game.qs[game.i].p);};
 function answer(o,btn){
   if(game.answered)return;game.answered=true;clearInterval(game.tick);
-  const q=game.qs[game.i],ok=o===q.p,got=ok?(game.wpis?3:(game.hint?1:2)):0;
-  if(game.wpis){$("guess").disabled=true;$("passBtn").disabled=true;$("tfill").style.width="0%";}
-  else [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.p)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
+  const q=game.qs[game.i],ok=o===q.p,got=ok?(game.wpis?(game.pokazano||game.hint?1:3):(game.hint?1:2)):0;
+  if(game.wpis){$("guess").disabled=true;$("passBtn").disabled=true;$("pokazBtn").disabled=true;$("tfill").style.width="0%";}
+  [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.p)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
   game.pts+=got;if(ok)game.hits++;
   ZP.zapisz(game.rodzaj,q.p.k,ok&&!game.hint);
   if(!ok&&game.wpis&&o===null)game.res;

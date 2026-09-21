@@ -37,5 +37,5 @@ jobs:
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add herby.json herby rzeki.json narzedzia/rzeki.log
+          git add herby.json herby rzeki.json rzeki-geo.json narzedzia/rzeki.log
           git diff --cached --quiet || (git commit -m "Dane gier: aktualizacja" && git pull --rebase && git push)

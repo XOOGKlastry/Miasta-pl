@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=10" />
+<link rel="stylesheet" href="wspolne.css?v=11" />
 <style>
 svg path{fill-rule:evenodd}
 .stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);overflow:hidden}
@@ -74,8 +74,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=10"></script>
-<script src="wspolne.js?v=10"></script>
+<script src="topojson-client.min.js?v=11"></script>
+<script src="wspolne.js?v=11"></script>
 <script>
 const {$,norm}=ZP;
 let POW=[],game=null,tick=null;
@@ -118,6 +118,7 @@ function startGame(){
   const set=POW.filter(p=>p.k.startsWith(area));
   const P=ZP.projection(set.map(p=>p.f),500,12);
   game={set,P,found:new Set(),dur:+$("dur").value,over:false};
+  game.lap=ZP.lapacz(set.map(x=>norm(x.short)),k=>{const x=set.find(y=>norm(y.short)===k);return x&&game.found.has(x.k);});
   game.end=Date.now()+game.dur*1000;
   $("map").setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
@@ -128,12 +129,19 @@ function startGame(){
   $("guess").value="";$("guess").focus();
   clearInterval(tick);tick=setInterval(clock,250);clock();
 }
-$("guess").addEventListener("input",()=>{
-  if(!game||game.over)return;
-  const v=norm($("guess").value);
-  if(v.length<3)return;
-  const p=game.set.find(x=>norm(x.short)===v||norm(x.full)===v||norm("powiat "+x.short)===v);
+let czekaj=null;
+function lap(pauza){
+  const r=game.lap($("guess").value.replace(/^\s*(powiat|miasto)\s+/i,""));
+  if(r.stan==="nic")return;
+  const p=game.set.find(x=>norm(x.short)===r.klucz);
   if(!p)return;
+  if(r.stan==="czekaj"&&pauza!==true){if(game.found.has(p.k))return;czekaj=setTimeout(()=>lap(true),1200);return;}
+  przyjmij(p);
+}
+$("guess").addEventListener("input",()=>{if(!game||game.over)return;clearTimeout(czekaj);lap();});
+$("guess").addEventListener("keydown",e=>{if(e.key==="Enter"&&game&&!game.over){e.preventDefault();clearTimeout(czekaj);lap(true);}});
+function przyjmij(p){
+  clearTimeout(czekaj);
   $("guess").value="";
   if(game.found.has(p.k)){$("msg").textContent=p.full+" już był";$("msg").className="dup";return;}
   game.found.add(p.k);
@@ -144,7 +152,7 @@ $("guess").addEventListener("input",()=>{
   $("msg").textContent=p.full;$("msg").className="good";
   draw();
   if(game.found.size===game.set.length)finish();
-});
+}
 $("endBtn").onclick=()=>finish();
 function finish(){
   if(!game||game.over)return;

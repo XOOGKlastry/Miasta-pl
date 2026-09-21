@@ -32,6 +32,9 @@ h1{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:clamp(18px,5.2
 .daily b{display:block;font-family:"Fraunces",Georgia,serif;font-size:16px;font-weight:900}
 .daily small{font-size:11px;opacity:.85}
 .daily .st{margin-left:auto;font-size:18px;font-weight:700}
+.daily.turniej{background:var(--ink-2);border:1px solid var(--gold);color:var(--paper);padding:7px 12px}
+.daily.turniej b{color:var(--gold);font-size:15px}
+.daily.turniej small{color:var(--dim)}
 .games{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr 1fr;grid-auto-rows:1fr;gap:7px;z-index:1}
 .game{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:8px 6px;
   border:1px solid var(--line);border-radius:14px;background:var(--ink-2);color:inherit;text-decoration:none;min-width:0;text-align:center}
@@ -60,20 +63,24 @@ footer{font-size:10px;color:var(--dim);flex:none;text-align:center}
     <span><b id="dailyH">Wyzwanie dnia</b><small id="dailyS">Pięć pytań, ten sam zestaw dla wszystkich</small></span>
     <span class="st" id="dailyR">›</span>
   </a>
+  <a class="daily turniej" href="turniej.html">
+    <span><b>Turniej</b><small>Pięć konkurencji po kolei, jeden wynik</small></span>
+    <span class="st">🏆</span>
+  </a>
   <nav class="games">
     <a class="game" href="miasta.html"><span class="ico"><svg viewBox="0 0 46 46"><g fill="#F2C14E"><circle cx="12" cy="14" r="5"/><circle cx="30" cy="10" r="3.5"/><circle cx="24" cy="26" r="6.5"/><circle cx="36" cy="30" r="3.5"/><circle cx="12" cy="34" r="3.5"/></g></svg></span><span class="txt">Miasta na czas</span></a>
-    <a class="game" href="zdjecie.html"><span class="ico"><svg viewBox="0 0 46 46"><rect x="4" y="4" width="38" height="38" rx="4" fill="#2C4A3C"/><path d="M4 28 L18 20 L30 30 L42 22" stroke="#8FB36E" stroke-width="5" fill="none"/></svg></span><span class="txt">Skąd to zdjęcie?</span></a>
+    <a class="game" href="zdjecie.html"><span class="ico"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="5" fill="#3F5A33"/><path d="M3 30 L20 22 L43 34 V43 H3Z" fill="#6E8B45"/><path d="M3 12 L43 20" stroke="#B9B2A0" stroke-width="3"/><path d="M24 3 L18 43" stroke="#B9B2A0" stroke-width="2.5"/><rect x="27" y="7" width="8" height="6" fill="#B24A3E"/><rect x="8" y="16" width="6" height="7" fill="#C9C2B0"/><rect x="29" y="24" width="7" height="5" fill="#B24A3E"/><path d="M3 40 C14 36 26 44 43 38" stroke="#5AA9E6" stroke-width="3" fill="none"/></svg></span><span class="txt">Z lotu ptaka</span></a>
+    <a class="game" href="miasto.html"><span class="ico"><svg viewBox="0 0 46 46"><rect x="3" y="8" width="40" height="30" rx="4" fill="#1D3D43" stroke="#F2C14E" stroke-width="2"/><path d="M9 34 V22 L14 17 L19 22 V34 M22 34 V14 L26 9 L30 14 V34 M33 34 V24 H38 V34" fill="#E8F1EE"/><circle cx="36" cy="14" r="3" fill="#F2C14E"/></svg></span><span class="txt">Co to za miasto?</span></a>
     <a class="game" href="gdzie.html"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 12 L20 6 L34 9 L40 20 L36 36 L22 40 L9 34 L5 22 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M23 12c-5 0-8 3.6-8 8 0 6 8 13 8 13s8-7 8-13c0-4.4-3-8-8-8z" fill="#F2C14E"/></svg></span><span class="txt">Gdzie to jest?</span></a>
-    <a class="game" href="zoom.html"><span class="ico"><svg viewBox="0 0 46 46"><circle cx="20" cy="20" r="13" fill="#2C4A3C" stroke="#F2C14E" stroke-width="2.5"/><path d="M30 30 L41 41" stroke="#F2C14E" stroke-width="4" stroke-linecap="round"/></svg></span><span class="txt">Zoom out</span></a>
     <a class="game" href="herb.html"><span class="ico"><img src="herby/tychy.webp" alt=""></span><span class="txt">Jaki to herb?</span></a>
     <a class="game" href="tablice.html"><span class="ico"><span class="plate"><i></i><span>WA</span></span></span><span class="txt">Tablice</span></a>
-    <a class="game" href="ksztalt.html"><span class="ico"><svg viewBox="0 0 46 46"><path d="M10 14 L17 7 L26 10 L33 6 L39 14 L36 22 L40 30 L31 39 L22 35 L13 38 L7 29 L11 22 Z" fill="none" stroke="#F2C14E" stroke-width="2"/></svg></span><span class="txt">Kształt powiatu</span></a>
+    <a class="game" href="ksztalt.html"><span class="ico"><svg viewBox="0 0 46 46"><path d="M10 14 L17 7 L26 10 L33 6 L39 14 L36 22 L40 30 L31 39 L22 35 L13 38 L7 29 L11 22 Z" fill="#3F5A33" stroke="#F2C14E" stroke-width="2"/></svg></span><span class="txt">Kształt powiatu i gminy</span></a>
+    <a class="game" href="slepa.html"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 8 H38 V38 H8 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M8 8 H23 V23 H8 Z" fill="#5DCAA5" opacity=".7"/><circle cx="30" cy="30" r="5" fill="#F2C14E"/></svg></span><span class="txt">Gdzie ten powiat?</span></a>
+    <a class="game" href="slepa.html?tryb=g"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 8 H38 V38 H8 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M8 23 H23 M23 8 V38 M23 30 H38" stroke="#4F7F86"/><path d="M23 23 H38 V30 H23 Z" fill="#5DCAA5" opacity=".8"/><circle cx="30" cy="26" r="3.5" fill="#F2C14E"/></svg></span><span class="txt">Gdzie ta gmina?</span></a>
     <a class="game" href="powiaty.html"><span class="ico"><svg viewBox="0 0 46 46"><path d="M6 8 H40 V38 H6 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M6 8 H22 V22 H6 Z" fill="#F2C14E"/></svg></span><span class="txt">Wymień powiaty</span></a>
     <a class="game" href="rzeki.html"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 6 C18 14, 4 22, 14 30 C22 36, 18 40, 22 44" stroke="#5AA9E6" stroke-width="5" fill="none"/><circle cx="30" cy="18" r="5" fill="#F2C14E"/></svg></span><span class="txt">Nad jaką rzeką?</span></a>
     <a class="game" href="sasiedzi.html"><span class="ico"><svg viewBox="0 0 46 46"><path d="M4 8 H22 V38 H4 Z" fill="#F2C14E"/><path d="M24 8 H42 V38 H24 Z" fill="#5DCAA5"/></svg></span><span class="txt">Graniczą czy nie?</span></a>
-    <a class="game" href="slepa.html"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 8 H38 V38 H8 Z" fill="#1D3D43" stroke="#4F7F86"/><circle cx="30" cy="30" r="5" fill="#F2C14E"/></svg></span><span class="txt">Ślepa mapa</span></a>
-    <a class="game" href="turniej.html"><span class="ico"><svg viewBox="0 0 46 46"><path d="M12 6 H34 V16 C34 25 28 29 23 30 C18 29 12 25 12 16 Z" fill="#F2C14E"/></svg></span><span class="txt">Turniej</span></a>
-    <a class="game" href="wiecej.html"><span class="ico"><svg viewBox="0 0 46 46"><rect x="6" y="20" width="12" height="20" rx="2" fill="#4F7F86"/><rect x="26" y="8" width="12" height="32" rx="2" fill="#F2C14E"/></svg></span><span class="txt">Więcej czy mniej?</span></a>
+    <a class="game" href="wiecej.html"><span class="ico"><svg viewBox="0 0 46 46"><path d="M23 6 V38 M14 40 H32" stroke="#E8F1EE" stroke-width="2.5" stroke-linecap="round"/><path d="M8 13 H38" stroke="#E8F1EE" stroke-width="2.5" stroke-linecap="round" transform="rotate(-8 23 13)"/><circle cx="23" cy="6" r="2.5" fill="#E8F1EE"/><path d="M8 12 L3 25 H14 Z M38 8 L33 21 H44 Z" fill="none" stroke="#E8F1EE" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 25 A5.5 3.5 0 0 0 14 25 Z" fill="#F2C14E"/><path d="M33 21 A5.5 3.5 0 0 0 44 21 Z" fill="#4F7F86"/></svg></span><span class="txt">Więcej czy mniej?</span></a>
   </nav>
   <footer>Dane: OpenStreetMap, Esri, GUGiK, PRG, Wikimedia Commons.</footer>
 </div>
@@ -89,7 +96,7 @@ try{
     document.getElementById("dailyR").style.fontSize="14px";
   }else if(ser.n>0){document.getElementById("dailyS").textContent="Seria "+ser.n+", nie przerwij jej dzisiaj";}
 }catch(e){}
-fetch("woj.geojson?v=10").then(r=>r.json()).then(gj=>{
+fetch("woj.geojson?v=11").then(r=>r.json()).then(gj=>{
   const k=Math.cos(52*Math.PI/180),W=13.9,E=24.3,N=55.0,S=48.9;
   const s=Math.min(100/((E-W)*k),100/(N-S));
   const ox=(100-(E-W)*k*s)/2, oy=(100-(N-S)*s)/2;

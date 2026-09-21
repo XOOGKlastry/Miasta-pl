@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=10" />
+<link rel="stylesheet" href="wspolne.css?v=11" />
 <style>
 .target{flex:none;text-align:center}
 .target .kind{font-size:13px;color:var(--dim)}
@@ -21,6 +21,9 @@
 .stage{flex:1;min-height:140px;position:relative;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);overflow:hidden;display:grid;place-items:center}
 #map{position:absolute;inset:0;width:100%;height:100%}
 #map .w{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke}
+#map .rz{fill:none;stroke:#5AA9E6;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;
+  stroke-dasharray:2000;stroke-dashoffset:2000;animation:rysuj 1.4s ease-out forwards}
+@keyframes rysuj{to{stroke-dashoffset:0}}
 #map .dot{fill:var(--gold);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
 </style>
 </head>
@@ -34,8 +37,9 @@
 </header>
 
 <div class="stats hidden" id="stats">
-  <span class="gold">Trafione <b id="hits">0</b></span>
-  <span>Seria <b id="streak">0</b></span>
+  <span class="gold">Punkty <b id="pts">0</b></span>
+  <span>Trafione <b id="hits">0</b></span>
+  <span class="hidden">Seria <b id="streak">0</b></span>
   <span>Rekord <b id="best">0</b></span>
 </div>
 
@@ -47,13 +51,13 @@
       <div id="scope" data-klucz="rzeki"></div>
     </div>
     <label class="field"><span>Odpowiadanie</span>
-      <select id="odp"><option value="w" selected>cztery do wyboru</option><option value="t">wpisywanie nazwy (ekspert)</option></select>
+      <select id="odp"><option value="t" selected>wpisuję nazwę (podpowiedź za punkty)</option><option value="w">od razu cztery odpowiedzi</option></select>
     </label>
     <label class="field"><span>Tryb nauki</span>
       <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
     </label>
     <label class="field"><span>Liczba pytań</span>
-      <select id="rounds"><option>10</option><option selected>15</option><option>25</option></select>
+      <select id="rounds"><option selected>5</option><option>10</option><option>15</option><option>25</option></select>
     </label>
     <button class="big" id="startBtn" disabled>Zagraj</button>
     <div class="datastate" id="datastate">Wczytywanie listy rzek…</div>
@@ -73,7 +77,7 @@
 </main>
 </div>
 
-<script src="wspolne.js?v=10"></script>
+<script src="wspolne.js?v=11"></script>
 <script>
 const {$,shuffle,pick,fmt}=ZP;
 let DANE=[],P=null,base="",game=null,POLE=null;
@@ -95,6 +99,11 @@ const bestKey=()=>"rzeki-best-"+ZP.zakresStan($("scope"))+"-"+$("rounds").value+
 function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
 $("scope").onchange=$("rounds").onchange=$("odp").onchange=refreshBest;
 
+let GEO=null;
+function przebiegi(){
+  if(!GEO)GEO=fetch("rzeki-geo.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({}));
+  return GEO;
+}
 function makeQuestion(c,pool){
   const near=pool.filter(o=>o!==c&&o.rzeka!==c.rzeka).sort((x,y)=>ZP.km(c,x)-ZP.km(c,y));
   const opts=[],seen=new Set([c.rzeka]);
@@ -109,10 +118,11 @@ function startGame(){
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
   ["stats","target","stage"].forEach(id=>$(id).classList.remove("hidden"));
   $("answers").classList.toggle("hidden",game.wpis);$("wpis").classList.toggle("hidden",!game.wpis);
+  game.pts=0;$("pts").textContent=0;
   if(game.wpis&&!POLE)POLE=ZP.poleWpisu($("wpis"),()=>DANE.map(c=>c.rzeka),v=>{
     const q=game.qs[game.i];
     answer(ZP.pasuje(v,q.c.rzeka)?q.c.rzeka:(v||"nie wiem"),null);
-  },{placeholder:"Nazwa rzeki…"});
+  },{placeholder:"Nazwa rzeki…",pokazEtykieta:"Pokaż<br>(−2 pkt)",pokaz:()=>{game.pokazano=true;budujOpcje(game.qs[game.i]);}});
   $("hits").textContent=0;$("streak").textContent=0;refreshBest();
   next();
 }
@@ -124,8 +134,13 @@ function next(){
   $("tName").textContent=q.c.n;
   $("map").classList.add("hidden");$("veil").classList.remove("hidden");
   $("feedback").classList.add("hidden");
+  game.pokazano=false;
   const box=$("answers");box.innerHTML="";
-  if(game.wpis){POLE.wyczysc();POLE.wylacz(false);POLE.focus();return;}
+  if(game.wpis){box.classList.add("hidden");POLE.wyczysc();POLE.wylacz(false);POLE.focus();return;}
+  budujOpcje(q);
+}
+function budujOpcje(q){
+  const box=$("answers");box.innerHTML="";box.classList.remove("hidden");
   q.opts.forEach(r=>{const b=document.createElement("button");b.textContent=r;b.onclick=()=>answer(r,b);box.appendChild(b);});
 }
 function answer(r,btn){
@@ -133,6 +148,8 @@ function answer(r,btn){
   const q=game.qs[game.i],ok=r===q.c.rzeka;
   if(game.wpis)POLE.wylacz(true);
   [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.c.rzeka)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
+  const got=ok?(game.wpis&&!game.pokazano?3:1):0;
+  game.pts+=got;$("pts").textContent=game.pts;
   if(ok){game.hits++;game.streak++;}else game.streak=0;
   ZP.zapisz("rzeka",q.c.n,ok);
   $("hits").textContent=game.hits;$("streak").textContent=game.streak;
@@ -140,10 +157,16 @@ function answer(r,btn){
   svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
   svg.innerHTML=base+'<circle class="dot" cx="'+P.x(q.c.lon).toFixed(1)+'" cy="'+P.y(q.c.lat).toFixed(1)+'" r="7"/>';
   svg.classList.remove("hidden");$("veil").classList.add("hidden");
+  // przebieg rzeki po odpowiedzi
+  przebiegi().then(g=>{
+    const linie=g[q.c.rid];if(!linie||game.qs[game.i]!==q)return;
+    const d=linie.map(l=>"M"+l.map(([x,y])=>P.x(x).toFixed(1)+" "+P.y(y).toFixed(1)).join("L")).join("");
+    const dot=svg.querySelector(".dot");if(dot)dot.insertAdjacentHTML("beforebegin",'<path class="rz" d="'+d+'"/>');
+  });
   game.res.push({c:q.c,ok,picked:r});
   const fb=$("feedback");
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
-  fb.querySelector("strong").textContent=(ok?"Dobrze. ":"Niestety. ")+q.c.n+", rzeka "+q.c.rzeka;
+  fb.querySelector("strong").textContent=(ok?"Dobrze (+"+got+"). ":"Niestety. ")+q.c.n+", rzeka "+q.c.rzeka;
   fb.querySelector("span").textContent=q.c.pop?fmt(q.c.pop)+" mieszkańców":"";
   $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";$("nextBtn").onclick=next;
   fb.classList.remove("hidden");
@@ -151,13 +174,13 @@ function answer(r,btn){
 function endGame(){
   ["target","stage","answers","wpis","feedback"].forEach(id=>$(id).classList.add("hidden"));
   $("round").textContent="";
-  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.hits>best;
-  if(rec)localStorage.setItem(k,game.hits);
+  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
+  if(rec)localStorage.setItem(k,game.pts);
   refreshBest();
   const n=game.qs.length,s=$("summary");
-  s.innerHTML='<div class="score">'+game.hits+' <span>z '+n+'</span></div><p class="sub"></p>'
+  s.innerHTML='<div class="score">'+game.pts+' <span>pkt</span></div><p class="sub"></p>'
     +'<div class="btnrow"><button class="ghost" id="setBtn">Zmień poziom</button><button class="big" id="againBtn">Jeszcze raz</button></div><div class="rows"></div>';
-  s.querySelector(".sub").textContent=Math.round(game.hits/n*100)+"% trafień. "+(rec?"Nowy rekord.":"Rekord: "+Math.max(best,game.hits)+".");
+  s.querySelector(".sub").textContent="Trafione "+game.hits+" z "+n+". "+(rec?"Nowy rekord.":"Rekord: "+Math.max(best,game.pts)+" pkt.");
   const rows=s.querySelector(".rows");
   game.res.forEach(r=>{
     const d=document.createElement("div");d.className="r";

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=10" />
+<link rel="stylesheet" href="wspolne.css?v=11" />
 <style>
 svg path{fill-rule:evenodd}
 .dots{display:flex;gap:4px;flex:none}
@@ -65,7 +65,7 @@ svg path{fill-rule:evenodd}
       <div id="scope" data-klucz="turniej"></div>
     </div>
     <label class="field"><span>Odpowiadanie</span>
-      <select id="odp"><option value="w" selected>cztery do wyboru</option><option value="t">wpisywanie nazw (ekspert)</option></select>
+      <select id="odp"><option value="t" selected>wpisuję nazwy (podpowiedź za punkty)</option><option value="w">od razu cztery odpowiedzi</option></select>
     </label>
     <label class="field"><span>Tryb nauki</span>
       <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
@@ -95,8 +95,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=10"></script>
-<script src="wspolne.js?v=10"></script>
+<script src="topojson-client.min.js?v=11"></script>
+<script src="wspolne.js?v=11"></script>
 <script>
 const {$,shuffle,pick,fmt}=ZP;
 const SCORE=km=>Math.round(1000*Math.exp(-km/150));
@@ -178,13 +178,13 @@ function wpisz(lista,poprawne){
   if(!POLE)POLE=ZP.poleWpisu($("wpis"),()=>NAZWY_WPIS,v=>{
     if(game.answered)return;game.answered=true;POLE.wylacz(true);
     zapisz(ZP.pasuje(v,POPRAWNE)?1000:0,ZP.pasuje(v,POPRAWNE));
-  });
+  },{pokazEtykieta:"Pokaż<br>(−650)",pokaz:()=>{game.pokazano=true;game.opcjeTeraz&&game.opcjeTeraz();}});
   $("wpis").classList.remove("hidden");POLE.wyczysc();POLE.wylacz(false);POLE.focus();
 }
 function next(){
   game.i++;hidePola();
   if(game.i>=game.qs.length)return endGame();
-  const q=game.qs[game.i];game.answered=false;game.guess=null;
+  const q=game.qs[game.i];game.answered=false;game.guess=null;game.pokazano=false;game.opcjeTeraz=null;
   $("round").textContent=(game.i+1)+" / "+game.qs.length;
   $("kon").textContent=NAZWY[q.typ].split(" ")[0];
   paintDots();
@@ -201,19 +201,22 @@ function next(){
     $("shape").setAttribute("viewBox","0 0 400 "+S.H.toFixed(0));
     $("shape").innerHTML='<path d="'+S.path(q.p.f.geometry)+'"/>';
     $("shape").classList.remove("hidden");
+    game.opcjeTeraz=()=>opcje(q.opts.map(o=>o.label),o=>o===q.p.label);
     if(game.wpis)return wpisz(POW.map(p=>p.short),[q.p.short,q.p.full]);
-    return opcje(q.opts.map(o=>o.label),o=>o===q.p.label);
+    return game.opcjeTeraz();
   }
   if(q.typ==="h"){
     $("tKind").textContent="Jaki to herb?";$("tName").textContent="Które miasto?";
     $("coa").src=q.c.img;$("coa").classList.remove("hidden");
+    game.opcjeTeraz=()=>opcje(q.opts.map(o=>o.name),o=>o===q.c.name);
     if(game.wpis)return wpisz(HERBY.map(c=>c.name),[q.c.name]);
-    return opcje(q.opts.map(o=>o.name),o=>o===q.c.name);
+    return game.opcjeTeraz();
   }
   if(q.typ==="r"){
     $("tKind").textContent="Nad jaką rzeką?";$("tName").textContent=q.c.n;
+    game.opcjeTeraz=()=>opcje(q.opts.map(o=>o.rzeka),o=>o===q.c.rzeka);
     if(game.wpis)return wpisz(RZEKI.map(c=>c.rzeka),[q.c.rzeka]);
-    return opcje(q.opts.map(o=>o.rzeka),o=>o===q.c.rzeka);
+    return game.opcjeTeraz();
   }
   if(q.typ==="w"){
     $("tKind").textContent="Więcej czy mniej?";$("tName").textContent="Kto ma więcej mieszkańców?";
@@ -231,8 +234,9 @@ function opcje(teksty,czyOk){
     b.onclick=()=>{
       if(game.answered)return;game.answered=true;
       const ok=czyOk(t,i);
+      if(POLE&&game.wpis)POLE.wylacz(true);
       [...box.children].forEach((x,j)=>{x.disabled=true;if(czyOk(teksty[j],j))x.classList.add("right");else if(x===b)x.classList.add("wrong");else x.classList.add("fade");});
-      zapisz(ok?1000:0,ok);
+      zapisz(ok?(game.pokazano?350:1000):0,ok);
     };
     box.appendChild(b);
   });

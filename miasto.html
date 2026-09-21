@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Co to za miasto? · PolskoZnawca</title>
+<meta name="theme-color" content="#0C1A1D" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=11" />
+<style>
+.foto{flex:1;min-height:150px;position:relative;border-radius:var(--r);overflow:hidden;background:#0d1a1d;box-shadow:var(--cien)}
+.foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity var(--wolno),transform 6s ease-out}
+.foto img.loading{opacity:0}
+.foto img.jest{transform:scale(1.04)}
+.foto .spin{position:absolute;inset:0;display:grid;place-items:center;color:var(--dim);font-size:14px}
+.foto .autor{position:absolute;left:0;right:0;bottom:0;padding:14px 10px 6px;font-size:10px;color:#cfd8d6;
+  background:linear-gradient(transparent,rgba(0,0,0,.65));white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.foto .tag{position:absolute;left:10px;top:10px;font-size:12.5px;color:var(--paper);background:rgba(10,24,27,.8);
+  border:1px solid var(--line-2);border-radius:999px;padding:4px 12px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Co to za miasto?</h1>
+  <span class="round" id="round"></span>
+</header>
+
+<div class="stats hidden" id="stats">
+  <span class="gold">Punkty <b id="pts">0</b></span>
+  <span>Trafione <b id="hits">0</b></span>
+  <span>Rekord <b id="best">0</b></span>
+</div>
+
+<main>
+  <section class="setup" id="setup">
+    <h2>Rynki, zamki, katedry: które to miasto?</h2>
+    <p>Zdjęcie charakterystycznego miejsca, a Ty wpisujesz nazwę miasta. Za podpowiedź w postaci czterech nazw tracisz część punktów.</p>
+    <div class="field"><span>Wielkość miast</span>
+      <div id="scope" data-klucz="miasto"></div>
+    </div>
+    <label class="field"><span>Odpowiadanie</span>
+      <select id="odp"><option value="t" selected>wpisuję nazwę (podpowiedź za punkty)</option><option value="w">od razu cztery odpowiedzi</option></select>
+    </label>
+    <label class="field"><span>Liczba zdjęć</span>
+      <select id="rounds"><option selected>5</option><option>10</option><option>15</option><option>25</option></select>
+    </label>
+    <button class="big" id="startBtn" disabled>Zagraj</button>
+    <div class="datastate" id="datastate">Wczytywanie zdjęć…</div>
+    <footer>Zdjęcia: Wikimedia Commons (autor i licencja przy każdym zdjęciu), wybór z Wikidata. Lista miast: OpenStreetMap.</footer>
+  </section>
+
+  <section class="foto hidden" id="foto">
+    <span class="spin" id="spin">Wczytywanie zdjęcia…</span>
+    <img id="zdj" alt="Zdjęcie do rozpoznania" class="loading" />
+    <span class="tag" id="tag">Runda 1</span>
+    <div class="autor" id="autor"></div>
+  </section>
+  <div class="answers hidden" id="answers"></div>
+  <div class="wpis hidden" id="wpis"></div>
+  <div class="feedback hidden" id="feedback"></div>
+
+  <section class="summary hidden" id="summary"></section>
+</main>
+</div>
+
+<script src="wspolne.js?v=11"></script>
+<script>
+const {$,shuffle,fmt}=ZP;
+let DANE=[],game=null,POLE=null;
+
+fetch("miejsca.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null).then(j=>{
+  ZP.zakresy($("scope"));
+  if(!j||!j.miasta||j.miasta.length<5){$("datastate").textContent="Zdjęcia jeszcze się pobierają. Spróbuj za kilka minut.";return;}
+  DANE=j.miasta;
+  $("datastate").textContent=DANE.length+" miast ze zdjęciami (lista z "+new Date(j.zbudowano).toLocaleDateString("pl-PL")+")";
+  $("startBtn").disabled=false;refreshBest();
+});
+const bestKey=()=>"miasto-best-"+ZP.zakresStan($("scope"))+"-"+$("rounds").value+($("odp").value==="t"?"-t":"");
+function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
+$("scope").onchange=$("rounds").onchange=$("odp").onchange=refreshBest;
+
+function makeQuestion(c,pool){
+  const near=pool.filter(o=>o!==c).sort((x,y)=>ZP.km(c,x)-ZP.km(c,y)).slice(0,8);
+  return {c,z:c.zdjecia[Math.floor(Math.random()*c.zdjecia.length)],opts:shuffle(shuffle(near).slice(0,3).concat([c]))};
+}
+function startGame(){
+  const pool=DANE.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope"))));
+  const src=pool.length>=8?pool:DANE;
+  const n=Math.min(+$("rounds").value,src.length);
+  game={wpis:$("odp").value==="t",qs:ZP.losujNauka(src,"miejsce",c=>c.n,n,true).map(c=>makeQuestion(c,DANE)),i:-1,pts:0,hits:0,res:[]};
+  $("setup").classList.add("hidden");$("summary").classList.add("hidden");
+  ["stats","foto"].forEach(id=>$(id).classList.remove("hidden"));
+  $("wpis").classList.toggle("hidden",!game.wpis);
+  if(game.wpis&&!POLE)POLE=ZP.poleWpisu($("wpis"),()=>DANE.map(c=>c.n),v=>{
+    const q=game.qs[game.i];
+    answer(ZP.pasuje(v,q.c.n)?q.c:(v?{n:v}:null),null);
+  },{placeholder:"Nazwa miasta…",pokazEtykieta:"Pokaż<br>(−2 pkt)",pokaz:()=>{game.pokazano=true;opcje(game.qs[game.i]);}});
+  $("pts").textContent=0;$("hits").textContent=0;refreshBest();
+  next();
+}
+function opcje(q){
+  const box=$("answers");box.innerHTML="";box.classList.remove("hidden");
+  q.opts.forEach(o=>{const b=document.createElement("button");b.textContent=o.n;b.onclick=()=>answer(o,b);box.appendChild(b);});
+}
+function next(){
+  game.i++;
+  if(game.i>=game.qs.length)return endGame();
+  const q=game.qs[game.i];game.answered=false;game.pokazano=false;
+  $("round").textContent=(game.i+1)+" / "+game.qs.length;
+  $("tag").textContent="Runda "+(game.i+1);
+  $("feedback").classList.add("hidden");
+  const img=$("zdj");img.classList.add("loading");img.classList.remove("jest");$("spin").classList.remove("hidden");
+  img.onload=()=>{img.classList.remove("loading");$("spin").classList.add("hidden");requestAnimationFrame(()=>img.classList.add("jest"));};
+  img.src=q.z.img;
+  $("autor").textContent="Fot. "+(q.z.autor||"autor nieznany")+(q.z.licencja?", "+q.z.licencja:"")+", Wikimedia Commons";
+  $("answers").innerHTML="";$("answers").classList.toggle("hidden",game.wpis);
+  if(game.wpis){POLE.wyczysc();POLE.wylacz(false);POLE.focus();}
+  else opcje(q);
+  const nast=game.qs[game.i+1];if(nast){const pre=new Image();pre.src=nast.z.img;}
+}
+function answer(o,btn){
+  if(game.answered)return;game.answered=true;
+  const q=game.qs[game.i],ok=o===q.c;
+  if(game.wpis)POLE.wylacz(true);
+  [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.c)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
+  const got=ok?(game.wpis&&!game.pokazano?3:1):0;
+  game.pts+=got;if(ok)game.hits++;
+  ZP.zapisz("miejsce",q.c.n,ok&&!game.pokazano);
+  $("pts").textContent=game.pts;$("hits").textContent=game.hits;
+  game.res.push({c:q.c,ok,got,picked:o?o.n:null});
+  const fb=$("feedback");
+  fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
+  fb.querySelector("strong").textContent=ok?("Dobrze, "+q.c.n+" (+"+got+")"):("To "+q.c.n);
+  fb.querySelector("span").textContent=q.c.pop?fmt(q.c.pop)+" mieszkańców":"";
+  $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";$("nextBtn").onclick=next;
+  fb.classList.remove("hidden");
+}
+function endGame(){
+  ["foto","answers","wpis","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  $("round").textContent="";
+  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
+  if(rec)localStorage.setItem(k,game.pts);
+  refreshBest();
+  const n=game.qs.length,s=$("summary");
+  s.innerHTML='<div class="score">'+game.pts+' <span>pkt</span></div><p class="sub"></p>'
+    +'<div class="btnrow"><button class="ghost" id="setBtn">Ustawienia</button><button class="big" id="againBtn">Jeszcze raz</button></div><div class="rows"></div>';
+  s.querySelector(".sub").textContent="Trafione "+game.hits+" z "+n+". "+(rec?"Nowy rekord.":"Rekord: "+Math.max(best,game.pts)+" pkt.");
+  const rows=s.querySelector(".rows");
+  game.res.forEach(r=>{
+    const d=document.createElement("div");d.className="r";
+    d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
+    d.querySelector("b").textContent=r.c.n;
+    d.querySelector("small").textContent=r.ok?(r.got===3?"wpisane":"z podpowiedzią"):(r.picked?"odpowiedź: "+r.picked:"bez odpowiedzi");
+    const pt=d.querySelector(".pt");pt.textContent=r.ok?"+"+r.got:"0";pt.className="pt "+(r.ok?"ok":"no");
+    rows.appendChild(d);
+  });
+  s.classList.remove("hidden");
+  $("againBtn").onclick=startGame;
+  $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
+}
+$("startBtn").onclick=startGame;
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

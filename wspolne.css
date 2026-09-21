@@ -114,7 +114,9 @@ input[type=text]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2p
 .wpis input{width:100%;min-height:54px;font-family:"Fraunces",serif;font-size:19px;font-weight:600}
 .wpis input:disabled{opacity:.5}
 .wpis .ok{min-height:54px;padding:0 16px;font-size:16px}
-.wpis .pas{min-height:54px;padding:0 12px;font-size:14px}
+.wpis .pas,.wpis .pokaz{min-height:54px;padding:0 10px;font-size:12.5px;line-height:1.15}
+.wpis .pokaz{border-color:var(--gold);color:var(--gold)}
+.wpis .pokaz:disabled{opacity:.35}
 .wpis .ac{position:absolute;left:0;right:0;bottom:calc(100% + 6px);z-index:600;background:var(--ink-2);border:1px solid var(--line-2);
   border-radius:var(--r);overflow:hidden;display:none;flex-direction:column-reverse;box-shadow:var(--cien);animation:wejscie var(--szybko) both}
 .wpis .ac div{padding:11px 14px;font-family:"Fraunces",serif;font-size:17px;border-bottom:1px solid var(--line);cursor:pointer}

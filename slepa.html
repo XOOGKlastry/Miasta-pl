@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Ślepa mapa · Znasz Polskę?</title>
+<title>Gdzie ten powiat? · PolskoZnawca</title>
 <meta name="theme-color" content="#0C1A1D" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=10" />
+<link rel="stylesheet" href="wspolne.css?v=11" />
 <style>
 svg path{fill-rule:evenodd}
 .target{flex:none;text-align:center}
@@ -34,7 +34,7 @@ svg path{fill-rule:evenodd}
 
 <header>
   <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
-  <h1>Ślepa mapa</h1>
+  <h1 id="tytul">Gdzie ten powiat?</h1>
   <span class="round" id="round"></span>
 </header>
 
@@ -46,13 +46,13 @@ svg path{fill-rule:evenodd}
 
 <main>
   <section class="setup" id="setup">
-    <h2>Wskaż województwo, potem powiat w środku</h2>
-    <p>Najpierw stukasz w województwo na mapie Polski bez podpisów, potem mapa przybliża się do niego i szukasz konkretnego powiatu. Województwo to 1 punkt, powiat 2 punkty.</p>
+    <h2 id="h2">Wskaż województwo, potem powiat w środku</h2>
+    <p id="opis">Najpierw stukasz w województwo na mapie Polski bez podpisów, potem mapa przybliża się do niego i szukasz konkretnego powiatu. Województwo to 1 punkt, powiat 2 punkty.</p>
     <label class="field"><span>Tryb nauki</span>
       <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
     </label>
     <label class="field"><span>Liczba rund</span>
-      <select id="rounds"><option>5</option><option selected>10</option><option>15</option></select>
+      <select id="rounds"><option selected>5</option><option>10</option><option>15</option><option>25</option></select>
     </label>
     <button class="big" id="startBtn" disabled>Zagraj</button>
     <div class="datastate" id="datastate">Wczytywanie mapy…</div>
@@ -70,28 +70,35 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=10"></script>
-<script src="wspolne.js?v=10"></script>
+<script src="topojson-client.min.js?v=11"></script>
+<script src="wspolne.js?v=11"></script>
 <script>
 const {$,shuffle}=ZP;
-let POW=[],WOJ=[],PL=null,game=null;
+let POW=[],WOJ=[],PL=null,game=null,GM=null;
+const GMINA=new URLSearchParams(location.search).get("tryb")==="g";
+if(GMINA){
+  document.title="Gdzie ta gmina? · PolskoZnawca";
+  $("tytul").textContent="Gdzie ta gmina?";
+  $("h2").textContent="Województwo, potem powiat, na końcu gmina";
+  $("opis").textContent="Trzy kroki na mapie bez podpisów: województwo (1 pkt), powiat (1 pkt) i gmina w tym powiecie (2 pkt).";
+}
 
-Promise.all([ZP.loadPowiaty(),ZP.loadWoj()]).then(([pw,woj])=>{
-  POW=pw;
+Promise.all([ZP.loadPowiaty(),ZP.loadWoj(),GMINA?ZP.loadGminy():null]).then(([pw,woj,gm])=>{
+  POW=pw;GM=gm;
   const kod={};Object.entries(ZP.WOJ_KOD).forEach(([k,n])=>kod[n]=k);
   WOJ=woj.map(w=>({f:w.f,k:kod[w.name],nazwa:w.name}));
   PL=ZP.projection(WOJ.map(w=>w.f),500,8);
-  $("datastate").textContent=WOJ.length+" województw, "+POW.length+" powiatów";
+  $("datastate").textContent=WOJ.length+" województw, "+POW.length+" powiatów"+(GM?", "+GM.length+" gmin":"");
   $("startBtn").disabled=false;refreshBest();
 }).catch(()=>{$("datastate").textContent="Nie udało się wczytać mapy. Sprawdź połączenie i odśwież stronę.";});
 
-const bestKey=()=>"slepa-best-"+$("rounds").value;
+const bestKey=()=>"slepa-best-"+(GMINA?"g-":"")+$("rounds").value;
 function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
 $("rounds").onchange=refreshBest;
 
 function startGame(){
   const n=+$("rounds").value;
-  const cele=ZP.losujNauka(POW,"powiat",p=>p.k,n,$("ucz").value==="1");
+  const cele=GMINA?ZP.losujNauka(GM,"gmina",g=>g.k,n,$("ucz").value==="1"):ZP.losujNauka(POW,"powiat",p=>p.k,n,$("ucz").value==="1");
   game={qs:cele,i:-1,pts:0,hits:0,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
   ["stats","target","stage"].forEach(id=>$(id).classList.remove("hidden"));
@@ -101,6 +108,12 @@ function startGame(){
 function rysujPolske(){
   const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+PL.H.toFixed(0));
   svg.innerHTML=WOJ.map(w=>'<path data-k="'+w.k+'" data-typ="w" d="'+PL.path(w.f.geometry)+'"/>').join("");
+}
+function rysujPowiat(kod){
+  const set=GM.filter(g=>g.k.startsWith(kod));
+  const P=ZP.projection(set.map(p=>p.f),500,14);game.P=P;
+  const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
+  svg.innerHTML=set.map(p=>'<path data-k="'+p.k+'" data-typ="g" d="'+P.path(p.f.geometry)+'"/>').join("");
 }
 function rysujWoj(kod){
   const set=POW.filter(p=>p.k.startsWith(kod));
@@ -112,7 +125,7 @@ function next(){
   game.i++;
   if(game.i>=game.qs.length)return endGame();
   const p=game.qs[game.i];
-  game.etap=1;game.blad=0;
+  game.etap=1;game.blad=0;game.bladP=0;
   $("round").textContent=(game.i+1)+" / "+game.qs.length;
   $("tKind").textContent="Województwo";
   $("tName").textContent=p.woj;
@@ -135,7 +148,18 @@ $("map").addEventListener("click",e=>{
       return;
     }
     setTimeout(()=>etap2(p),450);
-  }else if(game.etap===2){
+  }else if(game.etap===2&&GMINA){
+    const ok=el.dataset.k===p.k.slice(0,4);
+    el.classList.add(ok?"dobrze":"zle");
+    if(!ok){game.bladP=1;const cel=$("map").querySelector('[data-k="'+p.k.slice(0,4)+'"]');if(cel)cel.classList.add("cel");}
+    game.etap=3;
+    setTimeout(()=>{
+      $("tKind").textContent="Gmina, "+(p.powiat||"powiat");
+      $("tName").textContent=p.full;
+      $("tip").textContent="Stuknij gminę";
+      rysujPowiat(p.k.slice(0,4));
+    },ok?450:900);
+  }else if(game.etap===2||game.etap===3){
     game.etap=0;
     const ok=el.dataset.k===p.k;
     el.classList.add(ok?"dobrze":"zle");
@@ -145,9 +169,9 @@ $("map").addEventListener("click",e=>{
       const P=game.P;
       $("map").insertAdjacentHTML("beforeend",'<text x="'+P.x(p.lon).toFixed(1)+'" y="'+P.y(p.lat).toFixed(1)+'">'+p.short+'</text>');
     }
-    const got=(game.blad?0:1)+(ok?2:0);
+    const got=(game.blad?0:1)+(GMINA?(game.bladP?0:1):0)+(ok?2:0);
     game.pts+=got;if(ok&&!game.blad)game.hits++;
-    ZP.zapisz("powiat",p.k,ok);
+    ZP.zapisz(GMINA?"gmina":"powiat",p.k,ok);
     ZP.zapisz("wojewodztwo",p.k.slice(0,2),!game.blad);
     $("pts").textContent=game.pts;$("hits").textContent=game.hits;
     game.res.push({p,ok,blad:game.blad,got});
@@ -162,7 +186,7 @@ $("map").addEventListener("click",e=>{
 function etap2(p){
   game.etap=2;
   $("tKind").textContent="Powiat w woj. "+p.woj;
-  $("tName").textContent=p.full;
+  $("tName").textContent=GMINA?(p.powiat||"powiat"):p.full;
   $("tip").textContent="Stuknij powiat";
   rysujWoj(p.k.slice(0,2));
 }
@@ -173,7 +197,7 @@ function endGame(){
   if(rec)localStorage.setItem(k,game.pts);
   refreshBest();
   const n=game.qs.length,s=$("summary");
-  s.innerHTML='<div class="score">'+game.pts+' <span>z '+n*3+' pkt</span></div><p class="sub"></p>'
+  s.innerHTML='<div class="score">'+game.pts+' <span>z '+n*(GMINA?4:3)+' pkt</span></div><p class="sub"></p>'
     +'<div class="btnrow"><button class="ghost" id="setBtn">Zmień ustawienia</button><button class="big" id="againBtn">Jeszcze raz</button></div><div class="rows"></div>';
   s.querySelector(".sub").textContent="Komplet w "+game.hits+" z "+n+" rundach. "+(rec?"Nowy rekord.":"Rekord: "+Math.max(best,game.pts)+" pkt.");
   const rows=s.querySelector(".rows");
@@ -182,7 +206,7 @@ function endGame(){
     d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
     d.querySelector("b").textContent=r.p.full;
     d.querySelector("small").textContent="woj. "+r.p.woj+(r.blad?", województwo nietrafione":"")+(r.ok?"":", powiat nietrafiony");
-    const pt=d.querySelector(".pt");pt.textContent="+"+r.got;pt.className="pt "+(r.got===3?"ok":r.got?"":"no");
+    const pt=d.querySelector(".pt");pt.textContent="+"+r.got;pt.className="pt "+(r.got===(GMINA?4:3)?"ok":r.got?"":"no");
     rows.appendChild(d);
   });
   s.classList.remove("hidden");

@@ -24,7 +24,7 @@ function inRing(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;
 function bboxOf(ring){let a=[1e9,1e9,-1e9,-1e9];ring.forEach(([x,y])=>{if(x<a[0])a[0]=x;if(y<a[1])a[1]=y;if(x>a[2])a[2]=x;if(y>a[3])a[3]=y;});return a;}
 async function loadWoj(){
   if(WOJ)return WOJ;
-  const gj=await (await fetch("woj.geojson?v=10")).json();
+  const gj=await (await fetch("woj.geojson?v=11")).json();
   WOJ=gj.features.map(f=>{const g=f.geometry,rings=g.type==="Polygon"?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);return {name:f.properties.nazwa,rings,bb:rings.map(bboxOf),f};});
   return WOJ;
 }
@@ -122,8 +122,11 @@ function poleWpisu(el,nazwy,onOdp,opts){
   opts=opts||{};
   el.classList.add("wpis");
   el.innerHTML='<div class="acbox"><input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go"><div class="ac"></div></div>'
-    +'<button class="big ok">OK</button>'+(opts.pas===false?'':'<button class="ghost pas">Nie wiem</button>');
-  const inp=el.querySelector("input"),ac=el.querySelector(".ac"),ok=el.querySelector(".ok"),pas=el.querySelector(".pas");
+    +'<button class="big ok">OK</button>'
+    +(opts.pokaz?'<button class="ghost pokaz"></button>':'')
+    +(opts.pas===false?'':'<button class="ghost pas">Nie wiem</button>');
+  const inp=el.querySelector("input"),ac=el.querySelector(".ac"),ok=el.querySelector(".ok"),pas=el.querySelector(".pas"),pok=el.querySelector(".pokaz");
+  if(pok){pok.innerHTML=opts.pokazEtykieta||"Pokaż<br>odpowiedzi";pok.onclick=()=>{if(!wyl){ac.style.display="none";pok.disabled=true;opts.pokaz();}};}
   inp.placeholder=opts.placeholder||"Wpisz nazwę…";
   let items=[],sel=0,wyl=false;
   const lista=()=>typeof nazwy==="function"?nazwy():nazwy;
@@ -158,7 +161,7 @@ function poleWpisu(el,nazwy,onOdp,opts){
   return {
     focus(){inp.focus();},
     wyczysc(){inp.value="";ac.style.display="none";},
-    wylacz(b){wyl=!!b;inp.disabled=!!b;ok.disabled=!!b;if(pas)pas.disabled=!!b;if(b)ac.style.display="none";},
+    wylacz(b){wyl=!!b;inp.disabled=!!b;ok.disabled=!!b;if(pas)pas.disabled=!!b;if(pok)pok.disabled=!!b;if(b)ac.style.display="none";},
     input:inp
   };
 }
@@ -167,6 +170,21 @@ function pasuje(wpis,poprawne){
   if(!wpis)return false;
   const v=norm(String(wpis).replace(/^(powiat|gmina|miasto|m\.)\s+/i,""));
   return [].concat(poprawne).some(p=>norm(String(p).replace(/^(powiat|gmina|miasto|m\.)\s+/i,""))===v);
+}
+
+/* ---- łapanie nazw w trakcie pisania bez wpadki na wspólnym początku ----
+   klucze: tablica znormalizowanych nazw; zwraca obiekt, który sprawdza tekst:
+   „od razu” gdy żadna dłuższa, jeszcze nieodgadnięta nazwa tak się nie zaczyna,
+   w przeciwnym razie „czekaj” (zatwierdzenie Enterem albo po krótkiej przerwie) */
+function lapacz(klucze,czyZaliczone){
+  const lista=[...new Set(klucze)];
+  return function(tekst){
+    const k=norm(tekst);
+    if(k.length<3)return {stan:"nic"};
+    const dluzsze=lista.some(x=>x!==k&&x.startsWith(k)&&!czyZaliczone(x));
+    if(lista.indexOf(k)<0)return {stan:"nic"};
+    return {stan:dluzsze?"czekaj":"od razu",klucz:k};
+  };
 }
 
 /* ---- telefon: wysokość widocznego ekranu (klawiatura) ---- */
@@ -182,7 +200,7 @@ const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie",
 let POWC=null;
 async function loadPowiaty(){
   if(POWC)return POWC;
-  const t=await (await fetch("powiaty.topojson?v=10")).json();
+  const t=await (await fetch("powiaty.topojson?v=11")).json();
   const o=t.objects.powiaty,nbi=topojson.neighbors(o.geometries),fs=topojson.feature(t,o).features;
   POWC=fs.map((f,i)=>{
     const k=f.properties.k,n=f.properties.n,city=+k.slice(2)>=60;
@@ -281,9 +299,32 @@ async function wojSasiedzi(){
   return out;
 }
 
+/* ---- gminy: pełne granice PRG ---- */
+const TYP_GMINY={"1":"gmina miejska","2":"gmina wiejska","3":"gmina miejsko-wiejska"};
+let GMC=null;
+async function loadGminy(){
+  if(GMC)return GMC;
+  const pw=await loadPowiaty();
+  const t=await (await fetch("gminy.topojson?v=11")).json();
+  const o=t.objects.gminy||Object.values(t.objects).sort((a,b)=>(b.geometries||[]).length-(a.geometries||[]).length)[0];
+  const fs=topojson.feature(t,o).features;
+  const powNazwa={};pw.forEach(p=>powNazwa[p.k]=p.full);
+  const ile={};fs.forEach(f=>{const n=f.properties.n;ile[n]=(ile[n]||0)+1;});
+  GMC=fs.filter(f=>f.geometry&&String(f.properties.k).slice(-1)<"4").map(f=>{
+    const k=String(f.properties.k),n=f.properties.n,typ=k.slice(-1);
+    let b=[1e9,1e9,-1e9,-1e9];
+    const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
+    polys.forEach(p=>p[0].forEach(([x,y])=>{if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y;}));
+    const dopisek=ile[n]>1?(typ==="1"?" (miasto)":typ==="2"?" (wiejska)":""):"";
+    return {f,k,n,city:false,woj:WOJ_KOD[k.slice(0,2)],bb:b,lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2,
+      short:n,label:n+dopisek,full:"gmina "+n+dopisek,typ:TYP_GMINY[typ]||"gmina",powiat:powNazwa[k.slice(0,4)]||""};
+  });
+  return GMC;
+}
+
 /* ---- losowanie powtarzalne (to samo dla wszystkich w danym dniu) ---- */
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,WOJ_KOD,loadPowiaty,pasek,odliczanie,poleWpisu,pasuje,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();
