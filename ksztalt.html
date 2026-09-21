@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=9" />
+<link rel="stylesheet" href="wspolne.css?v=10" />
 <style>
 svg path{fill-rule:evenodd}
 .stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden}
@@ -41,7 +41,7 @@ svg path{fill-rule:evenodd}
 
 <header>
   <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
-  <h1>Kształt powiatu</h1>
+  <h1 id="tytul">Kształt powiatu</h1>
   <span class="round" id="round"></span>
 </header>
 
@@ -53,21 +53,18 @@ svg path{fill-rule:evenodd}
 
 <main>
   <section class="setup" id="setup">
-    <h2>Rozpoznaj powiat po samym kształcie</h2>
+    <h2>Rozpoznaj powiat albo gminę po kształcie</h2>
     <p>Widzisz tylko kontur powiatu, bez mapy i podpisów. Odpowiedź bez podpowiedzi to 2 punkty, z podpowiedzią 1 punkt.</p>
     <label class="field"><span>Obszar</span>
       <select id="area"><option value="">cała Polska</option></select>
     </label>
-    <label class="field"><span>Jakie powiaty</span>
+    <label class="field"><span>Co zgadujesz</span>
+      <select id="jedn"><option value="p" selected>powiaty</option><option value="g">gminy</option></select>
+    </label>
+    <label class="field" id="kindField"><span>Jakie powiaty</span>
       <select id="kind">
         <option value="z" selected>powiaty ziemskie</option>
         <option value="a">także miasta na prawach powiatu</option>
-      </select>
-    </label>
-    <label class="field"><span>Podkład</span>
-      <select id="tryb">
-        <option value="e" selected>ekspert: sam kontur</option>
-        <option value="n">początkujący: zdjęcie satelitarne w obrysie</option>
       </select>
     </label>
     <label class="field"><span>Odpowiadanie</span>
@@ -89,7 +86,7 @@ svg path{fill-rule:evenodd}
 
   <section class="stage hidden" id="stage">
     <svg id="shape" preserveAspectRatio="xMidYMid meet"></svg>
-    <span class="tag">Który to powiat?</span>
+    <span class="tag" id="pytanie">Który to powiat?</span>
     <button id="hintBtn">Podpowiedź</button>
     <div class="inset hidden" id="inset"></div>
   </section>
@@ -105,8 +102,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=9"></script>
-<script src="wspolne.js?v=9"></script>
+<script src="topojson-client.min.js?v=10"></script>
+<script src="wspolne.js?v=10"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -114,29 +111,66 @@ let POW=[],WOJF=[],PL=null,game=null;
 
 Object.entries(WOJ_KOD).sort((a,b)=>a[1].localeCompare(b[1],"pl")).forEach(([k,n])=>{const o=document.createElement("option");o.value=k;o.textContent=n;$("area").appendChild(o);});
 
+let POWIATY=[],GMINY=null;
+const TYP_GMINY={"1":"gmina miejska","2":"gmina wiejska","3":"gmina miejsko-wiejska","4":"miasto w gminie","5":"obszar wiejski"};
+async function ladujGminy(){
+  if(GMINY)return GMINY;
+  $("datastate").textContent="Wczytywanie granic gmin…";
+  const t=await (await fetch("gminy.topojson?v=10")).json();
+  const o=t.objects.gminy||Object.values(t.objects).sort((a,b)=>(b.geometries||[]).length-(a.geometries||[]).length)[0];
+  const fs=topojson.feature(t,o).features;
+  const powNazwa={};POWIATY.forEach(p=>powNazwa[p.k]=p.full);
+  const ile={};fs.forEach(f=>{const n=f.properties.n;ile[n]=(ile[n]||0)+1;});
+  GMINY=fs.map(f=>{
+    const k=String(f.properties.k),n=f.properties.n,typ=k.slice(-1);
+    let b=[1e9,1e9,-1e9,-1e9];
+    const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
+    polys.forEach(p=>p[0].forEach(([x,y])=>{if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y;}));
+    const dopisek=ile[n]>1?(typ==="1"?" (miasto)":typ==="2"?" (wiejska)":""):"";
+    return {f,k,n,city:false,woj:ZP.WOJ_KOD[k.slice(0,2)],bb:b,lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2,
+      short:n,label:n+dopisek,full:"gmina "+n+dopisek,typ:TYP_GMINY[typ]||"gmina",powiat:powNazwa[k.slice(0,4)]||""};
+  }).filter(g=>g.k.slice(-1)<"4");
+  return GMINY;
+}
+function ustawJedn(){
+  const g=$("jedn").value==="g";
+  $("kindField").style.display=g?"none":"";
+  $("tytul").textContent=g?"Kształt gminy":"Kształt powiatu";
+  refreshBest();
+}
+$("jedn").onchange=ustawJedn;
 Promise.all([ZP.loadPowiaty(),ZP.loadWoj()]).then(([pw,woj])=>{
   WOJF=woj.map(w=>w.f);
   PL=ZP.projection(WOJF,300,4);
-  POW=pw;
-  $("datastate").textContent=POW.length+" powiatów";
+  POW=POWIATY=pw;
+  $("datastate").textContent=POW.length+" powiatów, gminy wczytają się po wybraniu";
   $("startBtn").disabled=false;refreshBest();
 }).catch(()=>{$("datastate").textContent="Nie udało się wczytać granic. Sprawdź połączenie i odśwież stronę.";});
 
-const bestKey=()=>"ksztalt-best-"+($("area").value||"pl")+"-"+$("kind").value+"-"+$("odp").value+"-"+$("rounds").value;
+const bestKey=()=>"ksztalt-best-"+($("jedn").value==="g"?"g-":"")+($("area").value||"pl")+"-"+$("kind").value+"-"+$("odp").value+"-"+$("rounds").value;
 function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
 $("area").onchange=$("kind").onchange=$("rounds").onchange=$("odp").onchange=refreshBest;
 
 function makeQuestion(p,pool){
   // błędne odpowiedzi: najbliższe powiaty (także spoza wybranego obszaru, jeśli jest ich mało)
-  const src=(pool.length>=8?pool:POW).filter(o=>o!==p&&($("kind").value==="a"||!o.city));
+  const src=(pool.length>=8?pool:POW).filter(o=>o!==p&&o.label!==p.label&&($("jedn").value==="g"||$("kind").value==="a"||!o.city));
   const near=src.sort((x,y)=>ZP.km(p,x)-ZP.km(p,y)).slice(0,7);
   return {p,opts:shuffle(shuffle(near).slice(0,3).concat([p]))};
 }
-function startGame(){
+async function startGame(){
+  const gminy=$("jedn").value==="g";
+  if(gminy){
+    $("startBtn").disabled=true;
+    try{POW=await ladujGminy();}catch(e){$("datastate").textContent="Granice gmin jeszcze się budują. Spróbuj za kilka minut.";$("startBtn").disabled=false;return;}
+    $("startBtn").disabled=false;$("datastate").textContent=POW.length+" gmin";
+  }else POW=POWIATY;
   const area=$("area").value,kind=$("kind").value;
-  const pool=POW.filter(p=>(!area||p.k.startsWith(area))&&(kind==="a"||!p.city));
+  const pool=POW.filter(p=>(!area||p.k.startsWith(area))&&(gminy||kind==="a"||!p.city));
   const n=Math.min(+$("rounds").value,pool.length);
-  game={pool,wpis:$("odp").value==="t",qs:ZP.losujNauka(pool,"powiat",p=>p.k,n,$("ucz").value==="1").map(p=>makeQuestion(p,pool)),i:-1,pts:0,hits:0,res:[]};
+  const rodzaj=gminy?"gmina":"powiat";
+  $("pytanie").textContent=gminy?"Która to gmina?":"Który to powiat?";
+  $("guess").placeholder=gminy?"Nazwa gminy":"Nazwa powiatu";
+  game={pool,rodzaj,wpis:$("odp").value==="t",qs:ZP.losujNauka(pool,rodzaj,p=>p.k,n,$("ucz").value==="1").map(p=>makeQuestion(p,pool)),i:-1,pts:0,hits:0,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
   ["stats","stage"].forEach(id=>$(id).classList.remove("hidden"));
   $("answers").classList.toggle("hidden",game.wpis);
@@ -150,7 +184,7 @@ function drawShape(p){
   const P=ZP.projection([p.f],400,14);
   const svg=$("shape");svg.setAttribute("viewBox","0 0 400 "+P.H.toFixed(0));
   const d=P.path(p.f.geometry);
-  if($("tryb").value!=="n"){svg.innerHTML='<path d="'+d+'"/>';return;}
+
   // zdjęcie satelitarne przycięte dokładnie do granic powiatu
   const b=p.bb,x0=P.x(b[0]),x1=P.x(b[2]),y0=P.y(b[3]),y1=P.y(b[1]);
   const w=Math.max(1,x1-x0),h=Math.max(1,y1-y0);
@@ -201,7 +235,7 @@ $("guess").addEventListener("input",()=>{
   const v=ZP.norm($("guess").value);
   if(v.length<3)return;
   const q=game.qs[game.i];
-  if(v===ZP.norm(q.p.short)||v===ZP.norm(q.p.full)||v===ZP.norm("powiat "+q.p.short))answer(q.p,null);
+  if(ZP.pasuje($("guess").value,[q.p.short,q.p.full,q.p.label]))answer(q.p,null);
 });
 $("passBtn").onclick=()=>{if(game&&game.wpis&&!game.answered)answer(null,null);};
 $("hintBtn").onclick=()=>{if(!game||game.answered)return;game.hint=true;$("hintBtn").disabled=true;drawInset(game.qs[game.i].p);};
@@ -211,7 +245,7 @@ function answer(o,btn){
   if(game.wpis){$("guess").disabled=true;$("passBtn").disabled=true;$("tfill").style.width="0%";}
   else [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.p)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
   game.pts+=got;if(ok)game.hits++;
-  ZP.zapisz("powiat",q.p.k,ok&&!game.hint);
+  ZP.zapisz(game.rodzaj,q.p.k,ok&&!game.hint);
   if(!ok&&game.wpis&&o===null)game.res;
   $("pts").textContent=game.pts;$("hits").textContent=game.hits;
   $("hintBtn").disabled=true;drawInset(q.p);
@@ -219,7 +253,7 @@ function answer(o,btn){
   const fb=$("feedback");
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=ok?"Dobrze, "+q.p.full+" (+"+got+")":"To "+q.p.full;
-  fb.querySelector("span").textContent="woj. "+q.p.woj;
+  fb.querySelector("span").textContent=(q.p.typ?q.p.typ+", "+q.p.powiat+", ":"")+"woj. "+q.p.woj;
   $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";
   $("nextBtn").onclick=next;
   fb.classList.remove("hidden");

@@ -24,7 +24,7 @@ function inRing(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;
 function bboxOf(ring){let a=[1e9,1e9,-1e9,-1e9];ring.forEach(([x,y])=>{if(x<a[0])a[0]=x;if(y<a[1])a[1]=y;if(x>a[2])a[2]=x;if(y>a[3])a[3]=y;});return a;}
 async function loadWoj(){
   if(WOJ)return WOJ;
-  const gj=await (await fetch("woj.geojson?v=9")).json();
+  const gj=await (await fetch("woj.geojson?v=10")).json();
   WOJ=gj.features.map(f=>{const g=f.geometry,rings=g.type==="Polygon"?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);return {name:f.properties.nazwa,rings,bb:rings.map(bboxOf),f};});
   return WOJ;
 }
@@ -117,6 +117,58 @@ function odliczanie(el,tytul,podpis,n,gotowe,kolor){
   return id;
 }
 
+/* ---- pole do wpisywania odpowiedzi (tryb ekspert) z podpowiedziami nad polem ---- */
+function poleWpisu(el,nazwy,onOdp,opts){
+  opts=opts||{};
+  el.classList.add("wpis");
+  el.innerHTML='<div class="acbox"><input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go"><div class="ac"></div></div>'
+    +'<button class="big ok">OK</button>'+(opts.pas===false?'':'<button class="ghost pas">Nie wiem</button>');
+  const inp=el.querySelector("input"),ac=el.querySelector(".ac"),ok=el.querySelector(".ok"),pas=el.querySelector(".pas");
+  inp.placeholder=opts.placeholder||"Wpisz nazwę…";
+  let items=[],sel=0,wyl=false;
+  const lista=()=>typeof nazwy==="function"?nazwy():nazwy;
+  function pokaz(){
+    const v=norm(inp.value);
+    if(v.length<2||opts.bezPodpowiedzi){ac.style.display="none";items=[];return;}
+    items=[...new Set(lista().filter(n=>norm(n).startsWith(v)))].sort((a,b)=>a.localeCompare(b,"pl")).slice(0,4);
+    if(!items.length){ac.style.display="none";return;}
+    sel=0;
+    ac.innerHTML=items.map(n=>'<div></div>').join("");
+    [...ac.children].forEach((d,i)=>{d.textContent=items[i];d.onclick=()=>{inp.value=items[i];ac.style.display="none";wyslij();};});
+    ac.children[0].classList.add("sel");
+    ac.style.display="flex";
+  }
+  function wyslij(){
+    if(wyl)return;
+    const v=inp.value.trim();
+    if(!v){inp.focus();return;}
+    ac.style.display="none";
+    onOdp(v);
+  }
+  inp.addEventListener("input",pokaz);
+  inp.addEventListener("keydown",e=>{
+    if(e.key==="Enter"){e.preventDefault();if(ac.style.display==="flex"&&items.length)inp.value=items[sel];wyslij();}
+    if(ac.style.display==="flex"&&items.length&&(e.key==="ArrowUp"||e.key==="ArrowDown")){
+      e.preventDefault();sel=(sel+(e.key==="ArrowUp"?1:items.length-1))%items.length;
+      [...ac.children].forEach((d,i)=>d.classList.toggle("sel",i===sel));
+    }
+  });
+  ok.onclick=wyslij;
+  if(pas)pas.onclick=()=>{if(!wyl){ac.style.display="none";onOdp(null);}};
+  return {
+    focus(){inp.focus();},
+    wyczysc(){inp.value="";ac.style.display="none";},
+    wylacz(b){wyl=!!b;inp.disabled=!!b;ok.disabled=!!b;if(pas)pas.disabled=!!b;if(b)ac.style.display="none";},
+    input:inp
+  };
+}
+// czy wpisana nazwa pasuje do poprawnej (bez polskich znaków, wielkości liter i słowa „powiat”)
+function pasuje(wpis,poprawne){
+  if(!wpis)return false;
+  const v=norm(String(wpis).replace(/^(powiat|gmina|miasto|m\.)\s+/i,""));
+  return [].concat(poprawne).some(p=>norm(String(p).replace(/^(powiat|gmina|miasto|m\.)\s+/i,""))===v);
+}
+
 /* ---- telefon: wysokość widocznego ekranu (klawiatura) ---- */
 function fitViewport(){
   const vv=window.visualViewport;
@@ -130,7 +182,7 @@ const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie",
 let POWC=null;
 async function loadPowiaty(){
   if(POWC)return POWC;
-  const t=await (await fetch("powiaty.topojson?v=9")).json();
+  const t=await (await fetch("powiaty.topojson?v=10")).json();
   const o=t.objects.powiaty,nbi=topojson.neighbors(o.geometries),fs=topojson.feature(t,o).features;
   POWC=fs.map((f,i)=>{
     const k=f.properties.k,n=f.properties.n,city=+k.slice(2)>=60;
@@ -233,5 +285,5 @@ async function wojSasiedzi(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,WOJ_KOD,loadPowiaty,pasek,odliczanie,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,WOJ_KOD,loadPowiaty,pasek,odliczanie,poleWpisu,pasuje,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

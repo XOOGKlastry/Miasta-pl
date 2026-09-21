@@ -22,3 +22,11 @@ Trzynaście gier, wyzwanie dnia i ekran statystyk w jednej aplikacji (PWA), same
 | `wiecej.html` | **Więcej czy mniej?** |
 
 W **Miastach na czas** nie ma wyboru małe/średnie/duże — gra idzie przez wszystkie miasta. Zdjęcia lotnicze startują od Esri.
+
+
+## Zmiany: tryby odpowiadania, gminy, PolandBall
+
+- Gry, w których czeka się na odpowiedź, mają wybór „cztery do wyboru” albo „wpisywanie nazwy (ekspert)”: herby, rzeki, zdjęcia, Zoom out, kształty, turniej. Wspólne pole wpisywania: `ZP.poleWpisu`, porównanie nazw: `ZP.pasuje`.
+- Kształt: zawsze zdjęcie satelitarne przycięte do granic; do wyboru powiaty albo gminy (`gminy.topojson` z PRG, budowany przez `narzedzia/gminy.sh` w GitHub Actions).
+- Miasta na czas: ekran startowy tylko z czasem i województwem, potem „Mówię” albo „Piszę”; w trakcie gry sam pasek czasu i mapa, która dopasowuje się do klawiatury.
+- Ikona aplikacji: PolandBall (`icon.svg`, `icon-192.png`, `icon-512.png`).

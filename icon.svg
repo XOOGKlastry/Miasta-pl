@@ -1,13 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
-  <rect width="192" height="192" rx="40" fill="#0A1628"/>
-  <g transform="translate(16 18)">
-    <path d="M28 44c6-16 24-22 40-24 16-2 30 0 44 8 10 6 18 3 26-4 3 8 6 18 4 28 8 4 16 12 18 22 2 10-4 18-10 24 3 10 1 22-6 30-8 10-20 14-32 16-8 8-22 16-36 16-18 0-30-8-40-20-10 2-22-4-28-14-6-12-2-24 2-34-6-8-8-18-6-28 2-10 8-16 10-20z" fill="#F3EFE6"/>
-    <path d="M18 88c2 28 8 40 18 52 10 12 22 20 40 20 14 0 28-8 36-16 12-2 24-6 32-16 7-8 9-20 6-30 2-4 4-8 5-12H18z" fill="#CC1F32"/>
+  <rect width="192" height="192" rx="40" fill="#0A181B"/>
+  <ellipse cx="96" cy="166" rx="50" ry="8" fill="#000" opacity=".35"/>
+  <defs><clipPath id="kula"><circle cx="96" cy="98" r="64"/></clipPath></defs>
+  <g clip-path="url(#kula)" transform="rotate(-9 96 98)">
+    <rect x="0" y="0" width="192" height="98" fill="#F4F4F2"/>
+    <rect x="0" y="98" width="192" height="94" fill="#DC1E35"/>
+    <ellipse cx="72" cy="66" rx="30" ry="14" fill="#fff" opacity=".6"/>
+    <path d="M40 140 A64 64 0 0 0 152 140 L152 192 L40 192Z" fill="#000" opacity=".12"/>
   </g>
-  <g fill="#F3EFE6" transform="translate(96 90)">
-    <path d="M0-26c2-1 3 1 3 4v5l7-5c3-2 5 1 4 4l-5 7 9-2c3-1 5 3 3 5l-9 5 7 6c2 2 0 6-3 5l-9-3 2 9c1 3-3 5-5 2l-4-9-4 9c-2 3-6 1-5-2l2-9-9 3c-3 1-5-3-3-5l7-6-9-5c-2-2 0-6 3-5l9 2-5-7c-1-3 1-6 4-4l7 5v-5c0-3 1-5 3-4z"/>
-    <path d="M-8-4c-6 4-9 11-7 18 2 7 9 13 15 15 6-2 13-8 15-15 2-7-1-14-7-18-3 5-7 7-13 7s-10-2-13-7z"/>
-    <rect x="-3" y="-32" width="6" height="7" rx="1"/>
-    <path d="M-9-29 h18 l-3-5 h-12z"/>
-  </g>
+  <circle cx="96" cy="98" r="64" fill="none" stroke="#111" stroke-width="5"/>
+  <ellipse cx="78" cy="84" rx="11" ry="15" fill="#fff" stroke="#111" stroke-width="4.5"/>
+  <ellipse cx="114" cy="80" rx="11" ry="15" fill="#fff" stroke="#111" stroke-width="4.5"/>
 </svg>

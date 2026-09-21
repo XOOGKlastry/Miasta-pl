@@ -15,12 +15,12 @@ ogr2ogr -f GeoJSON -t_srs EPSG:4326 -lco COORDINATE_PRECISION=6 \
   -sql "SELECT JPT_KOD_JE AS k, JPT_NAZWA_ AS n FROM \"$(basename "$SHP" .shp)\"" \
   gminy_raw.geojson "$SHP"
 cd "$GITHUB_WORKSPACE"
-npx -y mapshaper@0.6 /tmp/prg/gminy_raw.geojson name=gminy -simplify interval=30 keep-shapes \
-  -o format=topojson quantization=1500000 gminy.topojson
+npx -y mapshaper@0.6 -i /tmp/prg/gminy_raw.geojson name=gminy -simplify interval=40 keep-shapes \
+  -o format=topojson quantization=1200000 gminy.topojson
 python3 - <<'PY'
 import json
 t=json.load(open("gminy.topojson"))
-g=t["objects"]["gminy"]["geometries"]
+g=max(t["objects"].values(),key=lambda o:len(o.get("geometries",[])))["geometries"]
 print("gmin:",len(g),"rozmiar:",round(len(open("gminy.topojson").read())/1e6,2),"MB")
 print([x["properties"] for x in g[:5]])
 PY

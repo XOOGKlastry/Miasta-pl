@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=9" />
+<link rel="stylesheet" href="wspolne.css?v=10" />
 <style>
 .target{flex:none;text-align:center}
 .target .kind{font-size:13px;color:var(--dim)}
@@ -46,6 +46,9 @@
     <div class="field"><span>Wielkość miast</span>
       <div id="scope" data-klucz="rzeki"></div>
     </div>
+    <label class="field"><span>Odpowiadanie</span>
+      <select id="odp"><option value="w" selected>cztery do wyboru</option><option value="t">wpisywanie nazwy (ekspert)</option></select>
+    </label>
     <label class="field"><span>Tryb nauki</span>
       <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
     </label>
@@ -63,16 +66,17 @@
     <div class="datastate" id="veil">Mapa pokaże się po odpowiedzi</div>
   </section>
   <div class="answers hidden" id="answers"></div>
+  <div class="wpis hidden" id="wpis"></div>
   <div class="feedback hidden" id="feedback"></div>
 
   <section class="summary hidden" id="summary"></section>
 </main>
 </div>
 
-<script src="wspolne.js?v=9"></script>
+<script src="wspolne.js?v=10"></script>
 <script>
 const {$,shuffle,pick,fmt}=ZP;
-let DANE=[],P=null,base="",game=null;
+let DANE=[],P=null,base="",game=null,POLE=null;
 
 Promise.all([
   fetch("rzeki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null),
@@ -87,9 +91,9 @@ Promise.all([
 });
 
 ZP.zakresy($("scope"));
-const bestKey=()=>"rzeki-best-"+ZP.zakresStan($("scope"))+"-"+$("rounds").value;
+const bestKey=()=>"rzeki-best-"+ZP.zakresStan($("scope"))+"-"+$("rounds").value+($("odp").value==="t"?"-t":"");
 function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
-$("scope").onchange=$("rounds").onchange=refreshBest;
+$("scope").onchange=$("rounds").onchange=$("odp").onchange=refreshBest;
 
 function makeQuestion(c,pool){
   const near=pool.filter(o=>o!==c&&o.rzeka!==c.rzeka).sort((x,y)=>ZP.km(c,x)-ZP.km(c,y));
@@ -101,9 +105,14 @@ function startGame(){
   const pool=DANE.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope"))));
   if(pool.length<8){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
   const n=Math.min(+$("rounds").value,pool.length);
-  game={pool,qs:ZP.losujNauka(pool,"rzeka",c=>c.n,n,$("ucz").value==="1").map(c=>makeQuestion(c,pool)),i:-1,hits:0,streak:0,res:[]};
+  game={pool,wpis:$("odp").value==="t",qs:ZP.losujNauka(pool,"rzeka",c=>c.n,n,$("ucz").value==="1").map(c=>makeQuestion(c,pool)),i:-1,hits:0,streak:0,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
-  ["stats","target","stage","answers"].forEach(id=>$(id).classList.remove("hidden"));
+  ["stats","target","stage"].forEach(id=>$(id).classList.remove("hidden"));
+  $("answers").classList.toggle("hidden",game.wpis);$("wpis").classList.toggle("hidden",!game.wpis);
+  if(game.wpis&&!POLE)POLE=ZP.poleWpisu($("wpis"),()=>DANE.map(c=>c.rzeka),v=>{
+    const q=game.qs[game.i];
+    answer(ZP.pasuje(v,q.c.rzeka)?q.c.rzeka:(v||"nie wiem"),null);
+  },{placeholder:"Nazwa rzeki…"});
   $("hits").textContent=0;$("streak").textContent=0;refreshBest();
   next();
 }
@@ -116,11 +125,13 @@ function next(){
   $("map").classList.add("hidden");$("veil").classList.remove("hidden");
   $("feedback").classList.add("hidden");
   const box=$("answers");box.innerHTML="";
+  if(game.wpis){POLE.wyczysc();POLE.wylacz(false);POLE.focus();return;}
   q.opts.forEach(r=>{const b=document.createElement("button");b.textContent=r;b.onclick=()=>answer(r,b);box.appendChild(b);});
 }
 function answer(r,btn){
   if(game.answered)return;game.answered=true;
   const q=game.qs[game.i],ok=r===q.c.rzeka;
+  if(game.wpis)POLE.wylacz(true);
   [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.c.rzeka)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
   if(ok){game.hits++;game.streak++;}else game.streak=0;
   ZP.zapisz("rzeka",q.c.n,ok);
@@ -138,7 +149,7 @@ function answer(r,btn){
   fb.classList.remove("hidden");
 }
 function endGame(){
-  ["target","stage","answers","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  ["target","stage","answers","wpis","feedback"].forEach(id=>$(id).classList.add("hidden"));
   $("round").textContent="";
   const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.hits>best;
   if(rec)localStorage.setItem(k,game.hits);

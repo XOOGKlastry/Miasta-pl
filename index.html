@@ -8,8 +8,8 @@
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <link rel="manifest" href="manifest.webmanifest" />
-<link rel="apple-touch-icon" href="icon.svg?v=13" />
-<link rel="icon" href="icon.svg?v=13" />
+<link rel="apple-touch-icon" href="icon-192.png?v=14" />
+<link rel="icon" href="icon.svg?v=14" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -51,7 +51,7 @@ footer{font-size:10px;color:var(--dim);flex:none;text-align:center}
   <svg class="bg" id="pl" viewBox="0 0 100 100" aria-hidden="true"></svg>
   <header>
     <div class="brand">
-      <img src="icon.svg?v=13" width="36" height="36" alt="">
+      <img src="icon.svg?v=14" width="36" height="36" alt="">
       <div><h1>PolskoZnawca</h1><span class="tag">Cudze chwalicie, a Polskę znacie?</span></div>
     </div>
     <a href="statystyki.html">statystyki ›</a>
@@ -89,7 +89,7 @@ try{
     document.getElementById("dailyR").style.fontSize="14px";
   }else if(ser.n>0){document.getElementById("dailyS").textContent="Seria "+ser.n+", nie przerwij jej dzisiaj";}
 }catch(e){}
-fetch("woj.geojson?v=11").then(r=>r.json()).then(gj=>{
+fetch("woj.geojson?v=10").then(r=>r.json()).then(gj=>{
   const k=Math.cos(52*Math.PI/180),W=13.9,E=24.3,N=55.0,S=48.9;
   const s=Math.min(100/((E-W)*k),100/(N-S));
   const ox=(100-(E-W)*k*s)/2, oy=(100-(N-S)*s)/2;

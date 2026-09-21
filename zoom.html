@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-<link rel="stylesheet" href="wspolne.css?v=9" />
+<link rel="stylesheet" href="wspolne.css?v=10" />
 <style>
 .stage{flex:1;min-height:170px;position:relative;border-radius:var(--r);background:#0d1526;border:1px solid var(--line);overflow:hidden}
 #map{position:absolute;inset:0}
@@ -61,6 +61,9 @@
     <div class="field"><span>Wielkość miast</span>
       <div id="scope" data-klucz="zoom"></div>
     </div>
+    <label class="field"><span>Odpowiadanie</span>
+      <select id="odp"><option value="w" selected>cztery do wyboru</option><option value="t">wpisywanie nazwy (ekspert)</option></select>
+    </label>
     <label class="field"><span>Tryb nauki</span>
       <select id="ucz"><option value="1" selected>tak, powtarzaj to, co mylę</option><option value="0">nie, losuj po równo</option></select>
     </label>
@@ -79,6 +82,7 @@
     <button class="pill" id="skipBtn">Nie wiem</button>
   </section>
   <div class="zbar hidden" id="zbar"><i id="zfill"></i></div>
+  <div class="answers hidden" id="answers"></div>
   <div class="answerbar hidden" id="answerbar">
     <div class="acbox">
       <input id="guess" type="text" placeholder="Nazwa miasta…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go" />
@@ -93,7 +97,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script src="wspolne.js?v=9"></script>
+<script src="wspolne.js?v=10"></script>
 <script>
 const {$,norm,fmt}=ZP;
 const Z0=17,ZMIN=11,KROK=4000;               // start, koniec, co ile sekund oddalenie
@@ -113,7 +117,7 @@ ZP.loadCities(t=>$("datastate").textContent=t).then(all=>{
   $("startBtn").disabled=false;refreshBest();
 });
 ZP.zakresy($("scope"));
-const bestKey=()=>"zoom-best-"+ZP.zakresStan($("scope"))+"-"+$("rounds").value;
+const bestKey=()=>"zoom-best-"+ZP.zakresStan($("scope"))+"-"+$("rounds").value+($("odp").value==="t"?"-t":"");
 function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
 $("scope").onchange=$("rounds").onchange=refreshBest;
 
@@ -121,9 +125,9 @@ function startGame(){
   const pool=CITIES.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope"))));
   if(pool.length<5){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
   const n=Math.min(+$("rounds").value,pool.length);
-  game={qs:ZP.losujNauka(pool,"miasto",c=>c.name,n,$("ucz").value==="1"),i:-1,pts:0,hits:0,res:[]};
+  game={pool,wpis:$("odp").value==="t",qs:ZP.losujNauka(pool,"miasto",c=>c.name,n,$("ucz").value==="1"),i:-1,pts:0,hits:0,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
-  ["stats","stage","zbar","answerbar"].forEach(id=>$(id).classList.remove("hidden"));
+  ["stats","stage","zbar"].forEach(id=>$(id).classList.remove("hidden"));
   $("pts").textContent=0;$("hits").textContent=0;refreshBest();
   map.invalidateSize({pan:false});
   next();
@@ -136,12 +140,23 @@ function next(){
   $("round").textContent=(game.i+1)+" / "+game.qs.length;
   $("tagL").textContent="Runda "+(game.i+1);
   $("tagR").textContent=PKT[0]+" pkt";
-  $("feedback").classList.add("hidden");$("answerbar").classList.remove("hidden");
+  $("feedback").classList.add("hidden");
+  $("answerbar").classList.toggle("hidden",!game.wpis);
+  const box=$("answers");box.innerHTML="";box.classList.toggle("hidden",game.wpis);
+  if(!game.wpis){
+    const near=game.pool.filter(o=>norm(o.name)!==norm(c.name)).sort((x,y)=>ZP.km(c,x)-ZP.km(c,y)).slice(0,10);
+    const opts=ZP.shuffle(ZP.shuffle(near).slice(0,3).concat([c]));
+    opts.forEach(o=>{const b=document.createElement("button");b.textContent=o.name;b.onclick=()=>{
+      if(game.answered)return;
+      [...box.children].forEach((x,i)=>{x.disabled=true;if(opts[i]===c)x.classList.add("right");else if(x===b)x.classList.add("wrong");else x.classList.add("fade");});
+      resolve(o===c);
+    };box.appendChild(b);});
+  }
   $("guess").value="";$("guess").disabled=false;$("submitBtn").disabled=false;$("skipBtn").disabled=false;
   $("ac").style.display="none";
   const j=0.004;
   map.setView([c.lat+(Math.random()-.5)*j,c.lon+(Math.random()-.5)*j*1.7],Z0,{animate:false});
-  $("guess").focus();
+  if(game.wpis)$("guess").focus();
   game.t0=Date.now();
   $("zbar").classList.remove("stop");
   timer=setInterval(()=>{
@@ -185,6 +200,7 @@ $("submitBtn").onclick=submit;
 $("skipBtn").onclick=()=>{if(game&&!game.answered)resolve(null);};
 function resolve(ok){
   game.answered=true;clearInterval(timer);
+  [...$("answers").children].forEach(x=>{x.disabled=true;if(x.textContent===game.qs[game.i].name)x.classList.add("right");else if(!x.classList.contains("wrong"))x.classList.add("fade");});
   const c=game.qs[game.i],got=ok===true?PKT[Math.min(game.step,PKT.length-1)]:0;
   game.pts+=got;if(ok===true)game.hits++;
   ZP.zapisz("miasto",c.name,ok===true&&game.step<=2);
@@ -205,7 +221,7 @@ function resolve(ok){
 }
 function endGame(){
   clearInterval(timer);
-  ["stage","zbar","answerbar","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  ["stage","zbar","answerbar","answers","feedback"].forEach(id=>$(id).classList.add("hidden"));
   $("round").textContent="";
   const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
   if(rec)localStorage.setItem(k,game.pts);
