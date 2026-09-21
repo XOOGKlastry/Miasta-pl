@@ -4,13 +4,19 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "narzedzia/**"
+      - "narzedzia/pobierz_herby.py"
+      - "narzedzia/pobierz_rzeki.py"
       - ".github/workflows/herby.yml"
   schedule:
     - cron: "0 3 1 * *"   # raz w miesiącu
 
 permissions:
   contents: write
+
+# jeden zapis do repo naraz, żeby automaty sobie nie przeszkadzały
+concurrency:
+  group: zapis-danych
+  cancel-in-progress: false
 
 jobs:
   dane:

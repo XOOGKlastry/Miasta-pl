@@ -10,6 +10,11 @@ on:
 permissions:
   contents: write
 
+# jeden zapis do repo naraz, żeby automaty sobie nie przeszkadzały
+concurrency:
+  group: zapis-danych
+  cancel-in-progress: false
+
 jobs:
   gminy:
     runs-on: ubuntu-latest
