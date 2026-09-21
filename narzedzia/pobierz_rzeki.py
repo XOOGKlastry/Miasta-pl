@@ -130,7 +130,9 @@ def main():
     drogi = {}                           # nr odcinka -> (nazwa, punkty)
     po_nazwie = defaultdict(list)
     for wi, e in enumerate(els):
-        name = (e.get("tags", {}).get("name") or "").strip()
+        t = e.get("tags", {})
+        # na odcinkach granicznych nazwa bywa dwujęzyczna („Odra / Oder”): bierzemy polską
+        name = (t.get("name:pl") or t.get("name") or "").split(" / ")[0].split(";")[0].strip()
         geo = e.get("geometry") or []
         if not name or len(geo) < 2:
             continue
