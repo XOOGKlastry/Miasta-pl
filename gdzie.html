@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-<link rel="stylesheet" href="wspolne.css?v=11" />
+<link rel="stylesheet" href="wspolne.css?v=12" />
 <style>
 .target{flex:none;text-align:center}
 .target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(28px,8.5vw,38px);line-height:1.05;overflow-wrap:anywhere}
@@ -96,14 +96,15 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script src="wspolne.js?v=11"></script>
+<script src="wspolne.js?v=12"></script>
 <script>
 const {$,shuffle,fmt}=ZP;
 let CITIES=[],P=null,game=null,base="";
 /* lekka mapa bez podpisów: same drogi, woda i granice województw; można przybliżać */
 const PL_B=L.latLngBounds([48.9,13.9],[55.0,24.3]);
 const map=L.map("map",{zoomControl:true,attributionControl:true,minZoom:5,maxZoom:12,maxBounds:PL_B.pad(0.4),zoomSnap:0.25});
-L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png",{maxZoom:12,attribution:"© OpenStreetMap, © CARTO"}).addTo(map);
+// jasny podkład bez podpisów (same drogi i granice), bez klucza API
+L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",{maxZoom:16,attribution:"Esri"}).addTo(map);
 map.fitBounds(PL_B);
 let wojWarstwa=null;
 const ov=L.layerGroup().addTo(map);
@@ -130,7 +131,7 @@ function setStats(){
   if(!game||!game.multi)refreshBest();
 }
 function startGame(){
-  const pool=CITIES.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope"))));
+  const pool=CITIES.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope")))&&ZP.wObszarze(c));
   if(pool.length<5){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
   const multi=$("gracze").value==="2";
   const n=Math.min(+$("rounds").value*(multi?2:1),pool.length);
@@ -258,6 +259,7 @@ document.addEventListener("keydown",e=>{
   if(!game||e.key!=="Enter")return;
   if(!game.answered&&game.guess)$("okBtn").click();else if(game.answered&&$("nextBtn"))$("nextBtn").click();
 });
+ZP.kreatorGry({klucz:"gdzie",kroki:["obszar","wielkosc",{pole:"gracze",tytul:"Kto gra?",domyslny:"1",opcje:[{v:"1",t:"Sam",opis:"własny rekord",ilu:'<div class="kr-ikona">🧭</div>'},{v:"2",t:"We dwoje",opis:"na zmianę, jeden telefon",ilu:'<div class="kr-ikona">⚔️</div>'}]},"rundy"]});
 ZP.fitViewport();ZP.registerSW();
 if(window.ResizeObserver)new ResizeObserver(()=>map.invalidateSize({pan:false})).observe($("map"));
 </script>

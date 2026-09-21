@@ -108,15 +108,16 @@ input[type=text]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2p
 @keyframes puls{0%{transform:scale(1)}45%{transform:scale(1.04)}100%{transform:scale(1)}}
 @keyframes drgnij{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 
-/* ── pole do wpisywania (tryb ekspert) ── */
+/* ── pole do wpisywania: po lewej wpis, po prawej podpowiedzi ── */
 .wpis{display:flex;gap:8px;flex:none}
 .wpis .acbox{position:relative;flex:1;min-width:0}
-.wpis input{width:100%;min-height:54px;font-family:"Fraunces",serif;font-size:19px;font-weight:600}
+.wpis input{width:100%;min-height:56px;font-family:"Fraunces",serif;font-size:19px;font-weight:600}
 .wpis input:disabled{opacity:.5}
-.wpis .ok{min-height:54px;padding:0 16px;font-size:16px}
-.wpis .pas,.wpis .pokaz{min-height:54px;padding:0 10px;font-size:12.5px;line-height:1.15}
-.wpis .pokaz{border-color:var(--gold);color:var(--gold)}
-.wpis .pokaz:disabled{opacity:.35}
+.wpis .pokaz,.pokazBtn{flex:none;min-height:56px;width:104px;padding:0 8px;border-radius:var(--r);border:1px dashed var(--gold);
+  background:rgba(242,193,78,.08);color:var(--gold);font-size:12.5px;font-weight:700;line-height:1.2;
+  transition:background var(--szybko),transform var(--szybko),opacity var(--szybko)}
+.wpis .pokaz:active,.pokazBtn:active{transform:scale(.97)}
+.wpis .pokaz:disabled,.pokazBtn:disabled{opacity:.35}
 .wpis .ac{position:absolute;left:0;right:0;bottom:calc(100% + 6px);z-index:600;background:var(--ink-2);border:1px solid var(--line-2);
   border-radius:var(--r);overflow:hidden;display:none;flex-direction:column-reverse;box-shadow:var(--cien);animation:wejscie var(--szybko) both}
 .wpis .ac div{padding:11px 14px;font-family:"Fraunces",serif;font-size:17px;border-bottom:1px solid var(--line);cursor:pointer}
@@ -159,3 +160,87 @@ input[type=text]:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2p
   h1{font-size:25px}
   .answers button{font-size:19px}
 }
+
+/* ── poświata po odpowiedzi ── */
+#zp-poswiata{position:fixed;inset:0;pointer-events:none;z-index:3000;opacity:0}
+#zp-poswiata.dobrze{box-shadow:inset 0 0 70px 18px rgba(93,202,165,.75);animation:poswiata .9s ease-out both}
+#zp-poswiata.zle{box-shadow:inset 0 0 70px 18px rgba(224,70,90,.8);animation:poswiata .8s ease-out both}
+@keyframes poswiata{0%{opacity:0}15%{opacity:1}100%{opacity:0}}
+#zp-konfetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:3100}
+
+/* ── kontur z podkładem: chwila na wczytanie zdjęcia ── */
+svg.laduje image{opacity:0}
+svg image{transition:opacity .5s}
+svg .cien{fill:rgba(242,193,78,.10);stroke:none}
+svg .obrys{fill:none !important;stroke:var(--gold);stroke-width:2.2;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+svg.laduje .cien{animation:migotanie 1s ease-in-out infinite}
+@keyframes migotanie{0%,100%{fill:rgba(242,193,78,.06)}50%{fill:rgba(242,193,78,.2)}}
+.czeka{opacity:.35;pointer-events:none;transition:opacity .3s}
+
+/* ── kreator ustawień ── */
+.setup.z-kreatorem{overflow:hidden;gap:0}
+.kreator{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px}
+.kr-kropki{display:flex;gap:6px;justify-content:center;flex:none;padding-top:2px}
+.kr-kropki i{width:28px;height:5px;border-radius:3px;background:var(--line);transition:background var(--wolno),width var(--wolno)}
+.kr-kropki i.byl{background:var(--gold);opacity:.55}
+.kr-kropki i.teraz{background:var(--gold);width:44px}
+.kr-ekran{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:10px;animation:krWejscie .34s cubic-bezier(.2,.7,.3,1) both}
+.kr-ekran.wstecz{animation-name:krWstecz}
+@keyframes krWejscie{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
+@keyframes krWstecz{from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:none}}
+.kr-ekran h2{font-family:"Fraunces",serif;font-weight:900;font-size:30px;line-height:1.1;margin:6px 0 0;letter-spacing:-.01em}
+.kr-ekran p{margin:0;color:var(--dim);font-size:15px}
+.kr-karty{display:grid;gap:10px;margin-top:6px}
+.kr-karty.dwie{grid-template-columns:1fr 1fr}
+.kr-karty.trzy{grid-template-columns:1fr 1fr 1fr}
+.kr-karta{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:14px 8px;min-height:150px;
+  border-radius:18px;border:1.5px solid var(--line-2);background:var(--ink-2);text-align:center;overflow:hidden;
+  transition:transform var(--szybko),border-color var(--szybko),background var(--szybko),box-shadow var(--szybko)}
+.kr-karta.maly{min-height:140px;padding:10px 6px}
+.kr-karta:active{transform:scale(.97)}
+.kr-karta b{font-family:"Fraunces",serif;font-size:19px;line-height:1.1}
+.kr-karta small{font-size:12px;color:var(--dim);line-height:1.2}
+.kr-karta.wybrana{border-color:var(--gold);background:linear-gradient(180deg,#2A3E36,var(--ink-2));box-shadow:0 0 0 1px var(--gold),0 8px 24px rgba(242,193,78,.14)}
+.kr-karta.wybrana b{color:var(--gold)}
+.kr-karta.wybrana::after{content:"✓";position:absolute;top:8px;right:10px;width:22px;height:22px;border-radius:50%;background:var(--gold);color:var(--gold-ink);font-size:13px;font-weight:900;display:grid;place-items:center}
+.kr-pl{width:78%;max-width:120px;height:auto}
+.kr-pl path{fill:rgba(242,193,78,.16);stroke:var(--gold);stroke-width:2;stroke-linejoin:round}
+.kr-podzial path.g{fill:none;stroke:var(--gold);stroke-width:1.2;opacity:.7}
+.kr-miasto{width:100%;max-width:110px;height:auto}
+.kr-miasto path{fill:#2E6068;stroke:var(--paper);stroke-width:1.6;stroke-linejoin:round}
+.kr-miasto path.z{fill:none;stroke:var(--dim)}
+.kr-miasto path.o,.kr-miasto path.d{fill:none;stroke:var(--gold);stroke-width:2}
+.kr-miasto circle.t{fill:#3E7A4E;stroke:var(--paper);stroke-width:1.4}
+.kr-karta.wybrana .kr-miasto path:not(.z):not(.o):not(.d){fill:#3C6E62}
+.kr-woje{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:4px}
+.kr-woj{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px 5px;border-radius:12px;border:1.5px solid var(--line-2);background:var(--ink-2);
+  transition:transform var(--szybko),border-color var(--szybko),background var(--szybko)}
+.kr-woj:active{transform:scale(.95)}
+.kr-woj svg{width:78%;height:40px}
+.kr-woj svg path{fill:rgba(143,170,168,.18);stroke:var(--dim);stroke-width:1.2;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.kr-woj span{font-size:9.5px;line-height:1.1;color:var(--dim);word-break:break-word}
+.kr-woj.wybrana{border-color:var(--gold);background:#24413F}
+.kr-woj.wybrana svg path{fill:rgba(242,193,78,.45);stroke:var(--gold)}
+.kr-woj.wybrana span{color:var(--gold)}
+.kr-rundy{display:flex;flex-direction:column;align-items:center;gap:14px;margin-top:18px;padding:0 6px}
+.kr-liczba{font-family:"Fraunces",serif;font-weight:900;font-size:96px;line-height:1;color:var(--gold)}
+.kr-liczba.skok{animation:puls .3s}
+.kr-rundy input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:5px;background:var(--line);outline:none}
+.kr-rundy input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;border-radius:50%;background:linear-gradient(180deg,var(--gold-2),var(--gold));border:3px solid var(--ink);box-shadow:0 4px 12px rgba(0,0,0,.4);cursor:grab}
+.kr-rundy input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:var(--gold);border:3px solid var(--ink)}
+.kr-skala{display:flex;justify-content:space-between;width:100%;font-size:13px;color:var(--dim);font-variant-numeric:tabular-nums}
+.kr-dol{display:flex;gap:8px;flex:none}
+.kr-dol .big{flex:1}
+.kr-dol .ghost{flex:none;padding:0 18px}
+.kr-stan{min-height:16px;text-align:center}
+/* animowane ilustracje trybów „Z lotu ptaka” */
+.kr-anim{width:100%;aspect-ratio:1.3;border-radius:12px;overflow:hidden;position:relative;background:#2c4a3c}
+.kr-anim .foto{position:absolute;inset:-40%;background-size:cover;background-position:center}
+.kr-anim.przesun .foto{animation:krPrzesun 4s ease-in-out infinite}
+.kr-anim.oddal .foto{inset:0;animation:krOddal 4s ease-in-out infinite}
+.kr-anim .reka{position:absolute;left:50%;top:50%;font-size:26px;transform:translate(-50%,-50%);filter:drop-shadow(0 2px 3px rgba(0,0,0,.6));animation:krReka 4s ease-in-out infinite}
+.kr-anim.oddal .reka{animation:none;font-size:22px}
+@keyframes krPrzesun{0%,100%{transform:translate(0,0)}35%{transform:translate(18%,10%)}70%{transform:translate(-12%,-8%)}}
+@keyframes krReka{0%,100%{transform:translate(-50%,-50%)}35%{transform:translate(-20%,-30%)}70%{transform:translate(-75%,-65%)}}
+@keyframes krOddal{0%{transform:scale(2.6)}80%,100%{transform:scale(1)}}
+.kr-ikona{font-size:44px;line-height:1.1;margin-bottom:4px}

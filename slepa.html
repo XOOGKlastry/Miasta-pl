@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=11" />
+<link rel="stylesheet" href="wspolne.css?v=12" />
 <style>
 svg path{fill-rule:evenodd}
 .target{flex:none;text-align:center}
@@ -25,7 +25,14 @@ svg path{fill-rule:evenodd}
 #map path.dobrze{fill:var(--ok)}
 #map path.zle{fill:var(--red)}
 #map path.cel{fill:var(--gold)}
-#map text{text-anchor:middle;font-size:13px;font-weight:700;fill:var(--ink);paint-order:stroke;stroke:#F7E6B8;stroke-width:3px;stroke-linejoin:round;pointer-events:none}
+#map path{transition:fill .35s}
+#map text{text-anchor:middle;dominant-baseline:middle;font-size:12px;font-weight:600;fill:#CFE0DD;paint-order:stroke;stroke:#0A181B;stroke-width:3.2px;stroke-linejoin:round;pointer-events:none;
+  opacity:0;animation:etykieta .45s ease-out forwards}
+#map text.cel{font-size:17px;font-weight:800;fill:#0A181B;stroke:#FFE7A3;stroke-width:4px}
+@keyframes etykieta{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+#map.pojaw{animation:pojaw .45s ease-out}
+@keyframes pojaw{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+.target.zmiana{animation:wejscie .35s both}
 .tip{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:13px;color:var(--dim);pointer-events:none}
 </style>
 </head>
@@ -70,8 +77,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=11"></script>
-<script src="wspolne.js?v=11"></script>
+<script src="topojson-client.min.js?v=12"></script>
+<script src="wspolne.js?v=12"></script>
 <script>
 const {$,shuffle}=ZP;
 let POW=[],WOJ=[],PL=null,game=null,GM=null;
@@ -98,13 +105,47 @@ $("rounds").onchange=refreshBest;
 
 function startGame(){
   const n=+$("rounds").value;
-  const cele=GMINA?ZP.losujNauka(GM,"gmina",g=>g.k,n,$("ucz").value==="1"):ZP.losujNauka(POW,"powiat",p=>p.k,n,$("ucz").value==="1");
+  const cele=GMINA?ZP.losujNauka(GM.filter(g=>ZP.wObszarze(g)),"gmina",g=>g.k,n,$("ucz").value==="1"):ZP.losujNauka(POW.filter(p=>ZP.wObszarze(p)),"powiat",p=>p.k,n,$("ucz").value==="1");
   game={qs:cele,i:-1,pts:0,hits:0,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
   ["stats","target","stage"].forEach(id=>$(id).classList.remove("hidden"));
   $("pts").textContent=0;$("hits").textContent=0;refreshBest();
   next();
 }
+function srodek(f){
+  // środek ciężkości największego wielokąta (podpis wewnątrz kształtu)
+  const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
+  let best=null,bestA=-1;
+  polys.forEach(pl=>{const r=pl[0];let a=0,cx=0,cy=0;
+    for(let i=0,j=r.length-1;i<r.length;j=i++){const x0=r[j][0],y0=r[j][1],x1=r[i][0],y1=r[i][1],c=x0*y1-x1*y0;a+=c;cx+=(x0+x1)*c;cy+=(y0+y1)*c;}
+    if(Math.abs(a)>bestA){bestA=Math.abs(a);best=a?[cx/(3*a),cy/(3*a)]:r[0];}});
+  return best;
+}
+function ramka(P,f){
+  let b=[1e9,1e9,-1e9,-1e9];
+  const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
+  polys.forEach(pl=>pl[0].forEach(([x,y])=>{const X=P.x(x),Y=P.y(y);if(X<b[0])b[0]=X;if(Y<b[1])b[1]=Y;if(X>b[2])b[2]=X;if(Y>b[3])b[3]=Y;}));
+  return b;
+}
+function podpisy(P,items,celK){
+  let s='<g>';
+  items.forEach(it=>{const [lo,la]=srodek(it.f);
+    s+='<text class="'+(it.k===celK?"cel":"")+'" x="'+P.x(lo).toFixed(1)+'" y="'+P.y(la).toFixed(1)+'" style="animation-delay:'+(it.k===celK?0:.15)+'s">'+(it.nazwa||it.short||it.n)+'</text>';});
+  $("map").insertAdjacentHTML("beforeend",s+'</g>');
+}
+function przybliz(b,gotowe){
+  // płynne przybliżenie do wskazanego obszaru, potem rysujemy go na nowo w pełnej skali
+  const svg=$("map"),v0=svg.getAttribute("viewBox").split(" ").map(Number);
+  const pad=0.08*Math.max(b[2]-b[0],b[3]-b[1]);
+  const v1=[b[0]-pad,b[1]-pad,b[2]-b[0]+2*pad,b[3]-b[1]+2*pad];
+  const t0=performance.now(),T=650;
+  (function krok(t){
+    const q=Math.min(1,(t-t0)/T),e=q<.5?2*q*q:1-Math.pow(-2*q+2,2)/2;
+    svg.setAttribute("viewBox",v0.map((v,i)=>(v+(v1[i]-v)*e).toFixed(2)).join(" "));
+    if(q<1)requestAnimationFrame(krok);else gotowe();
+  })(t0);
+}
+function pokazNowa(){const svg=$("map");svg.classList.remove("pojaw");void svg.getBoundingClientRect();svg.classList.add("pojaw");}
 function rysujPolske(){
   const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+PL.H.toFixed(0));
   svg.innerHTML=WOJ.map(w=>'<path data-k="'+w.k+'" data-typ="w" d="'+PL.path(w.f.geometry)+'"/>').join("");
@@ -114,12 +155,14 @@ function rysujPowiat(kod){
   const P=ZP.projection(set.map(p=>p.f),500,14);game.P=P;
   const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
   svg.innerHTML=set.map(p=>'<path data-k="'+p.k+'" data-typ="g" d="'+P.path(p.f.geometry)+'"/>').join("");
+  game.zestaw=set;pokazNowa();
 }
 function rysujWoj(kod){
   const set=POW.filter(p=>p.k.startsWith(kod));
   const P=ZP.projection(set.map(p=>p.f),500,14);game.P=P;
   const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
   svg.innerHTML=set.map(p=>'<path data-k="'+p.k+'" data-typ="p" d="'+P.path(p.f.geometry)+'"/>').join("");
+  game.zestaw=set;pokazNowa();
 }
 function next(){
   game.i++;
@@ -138,37 +181,34 @@ $("map").addEventListener("click",e=>{
   if(!game||!el||game.koniec)return;
   const p=game.qs[game.i];
   if(game.etap===1){
-    const ok=el.dataset.k===p.k.slice(0,2);
+    game.etap=-1;
+    const kod=p.k.slice(0,2),ok=el.dataset.k===kod;
     el.classList.add(ok?"dobrze":"zle");
-    if(!ok){
-      game.blad=1;
-      const cel=$("map").querySelector('[data-k="'+p.k.slice(0,2)+'"]');
-      if(cel)cel.classList.add("cel");
-      setTimeout(()=>etap2(p),900);
-      return;
-    }
-    setTimeout(()=>etap2(p),450);
+    if(!ok){game.blad=1;const cel=$("map").querySelector('[data-k="'+kod+'"]');if(cel)cel.classList.add("cel");}
+    podpisy(PL,WOJ,kod);
+    const w=WOJ.find(x=>x.k===kod);
+    setTimeout(()=>przybliz(ramka(PL,w.f),()=>etap2(p)),ok?900:1500);
   }else if(game.etap===2&&GMINA){
-    const ok=el.dataset.k===p.k.slice(0,4);
+    game.etap=-1;
+    const kod=p.k.slice(0,4),ok=el.dataset.k===kod;
     el.classList.add(ok?"dobrze":"zle");
-    if(!ok){game.bladP=1;const cel=$("map").querySelector('[data-k="'+p.k.slice(0,4)+'"]');if(cel)cel.classList.add("cel");}
-    game.etap=3;
-    setTimeout(()=>{
+    if(!ok){game.bladP=1;const cel=$("map").querySelector('[data-k="'+kod+'"]');if(cel)cel.classList.add("cel");}
+    podpisy(game.P,game.zestaw,kod);
+    const pw=game.zestaw.find(x=>x.k===kod);
+    setTimeout(()=>przybliz(ramka(game.P,pw.f),()=>{
+      game.etap=3;
       $("tKind").textContent="Gmina, "+(p.powiat||"powiat");
       $("tName").textContent=p.full;
       $("tip").textContent="Stuknij gminę";
-      rysujPowiat(p.k.slice(0,4));
-    },ok?450:900);
+      rysujPowiat(kod);
+    }),ok?900:1500);
   }else if(game.etap===2||game.etap===3){
     game.etap=0;
     const ok=el.dataset.k===p.k;
     el.classList.add(ok?"dobrze":"zle");
     const cel=$("map").querySelector('[data-k="'+p.k+'"]');
     if(cel)cel.classList.add(ok?"dobrze":"cel");
-    if(cel){
-      const P=game.P;
-      $("map").insertAdjacentHTML("beforeend",'<text x="'+P.x(p.lon).toFixed(1)+'" y="'+P.y(p.lat).toFixed(1)+'">'+p.short+'</text>');
-    }
+    podpisy(game.P,game.zestaw,p.k);
     const got=(game.blad?0:1)+(GMINA?(game.bladP?0:1):0)+(ok?2:0);
     game.pts+=got;if(ok&&!game.blad)game.hits++;
     ZP.zapisz(GMINA?"gmina":"powiat",p.k,ok);
@@ -185,6 +225,7 @@ $("map").addEventListener("click",e=>{
 });
 function etap2(p){
   game.etap=2;
+  $("target").classList.remove("zmiana");void $("target").offsetWidth;$("target").classList.add("zmiana");
   $("tKind").textContent="Powiat w woj. "+p.woj;
   $("tName").textContent=GMINA?(p.powiat||"powiat"):p.full;
   $("tip").textContent="Stuknij powiat";
@@ -214,6 +255,7 @@ function endGame(){
   $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
 }
 $("startBtn").onclick=startGame;
+ZP.kreatorGry({klucz:(new URLSearchParams(location.search).get("tryb")==="g"?"slepa-g":"slepa"),kroki:["obszar","rundy"]});
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>

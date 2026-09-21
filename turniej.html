@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=11" />
+<link rel="stylesheet" href="wspolne.css?v=12" />
 <style>
 svg path{fill-rule:evenodd}
 .dots{display:flex;gap:4px;flex:none}
@@ -31,7 +31,7 @@ svg path{fill-rule:evenodd}
 #map .truth{fill:var(--gold);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
 #map .ln{stroke:var(--gold);stroke-width:2;stroke-dasharray:6 5;vector-effect:non-scaling-stroke}
 #map text{font-family:"Fraunces",serif;font-weight:600;font-size:22px;fill:var(--paper);paint-order:stroke;stroke:var(--ink);stroke-width:5px;stroke-linejoin:round}
-#shape path{fill:rgba(242,193,78,.18);stroke:var(--gold);stroke-width:2.2;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+#shape .obrys{stroke:var(--gold);stroke-width:2.2;stroke-linejoin:round;vector-effect:non-scaling-stroke;fill:none}
 #map{cursor:crosshair}
 .tip{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:12px;color:var(--dim);pointer-events:none;z-index:3}
 .duel{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;padding:10px;position:relative;z-index:2}
@@ -95,8 +95,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=11"></script>
-<script src="wspolne.js?v=11"></script>
+<script src="topojson-client.min.js?v=12"></script>
+<script src="wspolne.js?v=12"></script>
 <script>
 const {$,shuffle,pick,fmt}=ZP;
 const SCORE=km=>Math.round(1000*Math.exp(-km/150));
@@ -134,9 +134,9 @@ function czteryNaj(c,pool,klucz){
 }
 function budujRundy(){
   const stan=ZP.zakresStan($("scope")),ucz=$("ucz").value==="1";
-  const miasta=CITIES.filter(c=>ZP.wZakresie(c,stan));
-  const herby=HERBY.filter(c=>ZP.wZakresie(c,stan));
-  const rzeki=RZEKI.filter(c=>ZP.wZakresie(c,stan));
+  const miasta=CITIES.filter(c=>ZP.wZakresie(c,stan)&&ZP.wObszarze(c));
+  const herby=HERBY.filter(c=>ZP.wZakresie(c,stan)&&ZP.wObszarze(c));
+  const rzeki=RZEKI.filter(c=>ZP.wZakresie(c,stan)&&ZP.wObszarze(c));
   const qs=[];
   ZP.losujNauka(miasta,"miasto",c=>c.name,3,ucz).forEach(c=>qs.push({typ:"g",c}));
   ZP.losujNauka(POW,"powiat",p=>p.k,3,ucz).forEach(p=>{
@@ -178,7 +178,7 @@ function wpisz(lista,poprawne){
   if(!POLE)POLE=ZP.poleWpisu($("wpis"),()=>NAZWY_WPIS,v=>{
     if(game.answered)return;game.answered=true;POLE.wylacz(true);
     zapisz(ZP.pasuje(v,POPRAWNE)?1000:0,ZP.pasuje(v,POPRAWNE));
-  },{pokazEtykieta:"Pokaż<br>(−650)",pokaz:()=>{game.pokazano=true;game.opcjeTeraz&&game.opcjeTeraz();}});
+  },{poprawne:()=>POPRAWNE,pokazEtykieta:"Pokaż podpowiedzi<br><small>−650 pkt</small>",pokaz:()=>{game.pokazano=true;game.opcjeTeraz&&game.opcjeTeraz();}});
   $("wpis").classList.remove("hidden");POLE.wyczysc();POLE.wylacz(false);POLE.focus();
 }
 function next(){
@@ -197,13 +197,14 @@ function next(){
   }
   if(q.typ==="k"){
     $("tKind").textContent="Kształt powiatu";$("tName").textContent="Który to powiat?";
-    const S=ZP.projection([q.p.f],400,14);
-    $("shape").setAttribute("viewBox","0 0 400 "+S.H.toFixed(0));
-    $("shape").innerHTML='<path d="'+S.path(q.p.f.geometry)+'"/>';
     $("shape").classList.remove("hidden");
     game.opcjeTeraz=()=>opcje(q.opts.map(o=>o.label),o=>o===q.p.label);
-    if(game.wpis)return wpisz(POW.map(p=>p.short),[q.p.short,q.p.full]);
-    return game.opcjeTeraz();
+    const nr=game.i;
+    // chwila na wczytanie zdjęcia satelitarnego (najwyżej 3 s)
+    return ZP.ksztaltZPodkladem($("shape"),q.p.f,q.p.bb,400).then(()=>{
+      if(game.i!==nr||game.answered)return;
+      if(game.wpis)wpisz(POW.map(p=>p.short),[q.p.short,q.p.full]);else game.opcjeTeraz();
+    });
   }
   if(q.typ==="h"){
     $("tKind").textContent="Jaki to herb?";$("tName").textContent="Które miasto?";
@@ -301,6 +302,7 @@ function endGame(){
   $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
 }
 $("startBtn").onclick=startGame;
+ZP.kreatorGry({klucz:"turniej",kroki:["obszar","wielkosc"]});
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>

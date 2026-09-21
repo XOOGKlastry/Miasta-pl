@@ -13,12 +13,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=11" />
+<link rel="stylesheet" href="wspolne.css?v=12" />
 <style>
 svg path{fill-rule:evenodd}
 .stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden}
 #shape{position:absolute;inset:0;width:100%;height:100%}
-#shape path{fill:rgba(242,193,78,.18);stroke:var(--gold);stroke-width:2.2;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+#shape .obrys{stroke:var(--gold);stroke-width:2.2;stroke-linejoin:round;vector-effect:non-scaling-stroke;fill:none}
 .inset{position:absolute;right:8px;bottom:8px;width:34%;max-width:170px;background:rgba(12,26,29,.85);border:1px solid var(--line);border-radius:10px;padding:4px}
 .inset svg{display:block;width:100%;height:auto}
 .inset .w{fill:none;stroke:#4F7F86;stroke-width:.8;vector-effect:non-scaling-stroke}
@@ -94,8 +94,8 @@ svg path{fill-rule:evenodd}
   <div class="answers hidden" id="answers"></div>
   <div class="inputrow hidden" id="inputrow">
     <input id="guess" type="text" placeholder="Nazwa powiatu" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" />
-    <button class="ghost" id="pokazBtn" style="min-height:auto;padding:0 10px;font-size:12.5px;line-height:1.15;border-color:var(--gold);color:var(--gold)">Pokaż<br>(−2 pkt)</button>
-    <button class="ghost" id="passBtn" style="min-height:auto;padding:0 12px;font-size:13px">Nie wiem</button>
+    <button class="pokazBtn" id="pokazBtn">Pokaż podpowiedzi<br><small>−2 pkt</small></button>
+    <button id="passBtn" hidden></button>
   </div>
   <div class="feedback hidden" id="feedback"></div>
 
@@ -103,8 +103,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=11"></script>
-<script src="wspolne.js?v=11"></script>
+<script src="topojson-client.min.js?v=12"></script>
+<script src="wspolne.js?v=12"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -153,7 +153,7 @@ async function startGame(){
     $("startBtn").disabled=false;$("datastate").textContent=POW.length+" gmin";
   }else POW=POWIATY;
   const area=$("area").value,kind=$("kind").value;
-  const pool=POW.filter(p=>(!area||p.k.startsWith(area))&&(gminy||kind==="a"||!p.city));
+  const pool=POW.filter(p=>(!area||p.k.startsWith(area))&&ZP.wObszarze(p)&&(gminy||kind==="a"||!p.city));
   const n=Math.min(+$("rounds").value,pool.length);
   const rodzaj=gminy?"gmina":"powiat";
   $("pytanie").textContent=gminy?"Która to gmina?":"Który to powiat?";
@@ -169,21 +169,7 @@ async function startGame(){
   next();
 }
 function drawShape(p){
-  const P=ZP.projection([p.f],400,14);
-  const svg=$("shape");svg.setAttribute("viewBox","0 0 400 "+P.H.toFixed(0));
-  const d=P.path(p.f.geometry);
-
-  // zdjęcie satelitarne przycięte dokładnie do granic powiatu
-  const b=p.bb,x0=P.x(b[0]),x1=P.x(b[2]),y0=P.y(b[3]),y1=P.y(b[1]);
-  const w=Math.max(1,x1-x0),h=Math.max(1,y1-y0);
-  const px=(b[2]-b[0])*0.001,py=(b[3]-b[1])*0.001;   // minimalny margines
-  const bbox=[b[0]-px,b[1]-py,b[2]+px,b[3]+py].map(v=>v.toFixed(5)).join(",");
-  const size=Math.round(700)+","+Math.round(700*h/w);
-  const url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export"
-    +"?bbox="+bbox+"&bboxSR=4326&imageSR=4326&size="+size+"&format=jpg&transparent=false&f=image";
-  svg.innerHTML='<defs><clipPath id="cp"><path d="'+d+'"/></clipPath></defs>'
-    +'<image href="'+url+'" x="'+(x0-px/(b[2]-b[0])*w).toFixed(1)+'" y="'+(y0-py/(b[3]-b[1])*h).toFixed(1)+'" width="'+(w*(1+0.002)).toFixed(1)+'" height="'+(h*(1+0.002)).toFixed(1)+'" preserveAspectRatio="none" clip-path="url(#cp)"/>'
-    +'<path d="'+d+'" fill="none"/>';
+  return ZP.ksztaltZPodkladem($("shape"),p.f,p.bb,400);
 }
 function drawInset(p){
   let s='<svg viewBox="0 0 300 '+PL.H.toFixed(0)+'">';
@@ -201,7 +187,14 @@ function next(){
   $("round").textContent=(game.i+1)+" / "+game.qs.length;
   $("feedback").classList.add("hidden");$("inset").classList.add("hidden");
   $("hintBtn").disabled=false;
-  drawShape(q.p);
+  // odpowiadać można dopiero, gdy wczyta się zdjęcie satelitarne (najwyżej 3 s)
+  ["answers","inputrow"].forEach(id=>$(id).classList.add("czeka"));
+  $("answers").innerHTML="";
+  const nr=game.i;
+  drawShape(q.p).then(()=>{if(game&&game.i===nr&&!game.answered)startRundy(q);});
+}
+function startRundy(q){
+  ["answers","inputrow"].forEach(id=>$(id).classList.remove("czeka"));
   if(game.wpis){
     $("guess").value="";$("guess").disabled=false;$("passBtn").disabled=false;$("pokazBtn").disabled=false;$("guess").focus();
     game.pokazano=false;$("answers").classList.add("hidden");
@@ -285,6 +278,7 @@ document.addEventListener("keydown",e=>{
   if(/^[1-4]$/.test(e.key)&&!game.answered){const b=$("answers").children[+e.key-1];if(b)b.click();}
   if(e.key==="Enter"&&game.answered&&$("nextBtn"))$("nextBtn").click();
 });
+ZP.kreatorGry({klucz:"ksztalt",kroki:[{pole:"jedn",tytul:"Co zgadujesz?",domyslny:"p",opcje:[{v:"p",t:"Powiaty",opis:"380 kształtów",ilu:'<svg viewBox="0 0 100 92" class="kr-pl"><path d="M22 18 L48 10 L70 20 L84 44 L72 74 L42 82 L18 62 L12 38 Z"/></svg>'},{v:"g",t:"Gminy",opis:"2477 kształtów, dla wytrwałych",ilu:'<svg viewBox="0 0 100 92" class="kr-pl"><path d="M30 20 L52 14 L66 30 L62 52 L70 70 L48 78 L30 64 L22 40 Z"/></svg>'}]},"obszar","rundy"]});
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>

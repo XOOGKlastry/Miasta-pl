@@ -24,7 +24,7 @@ function inRing(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;
 function bboxOf(ring){let a=[1e9,1e9,-1e9,-1e9];ring.forEach(([x,y])=>{if(x<a[0])a[0]=x;if(y<a[1])a[1]=y;if(x>a[2])a[2]=x;if(y>a[3])a[3]=y;});return a;}
 async function loadWoj(){
   if(WOJ)return WOJ;
-  const gj=await (await fetch("woj.geojson?v=11")).json();
+  const gj=await (await fetch("woj.geojson?v=12")).json();
   WOJ=gj.features.map(f=>{const g=f.geometry,rings=g.type==="Polygon"?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);return {name:f.properties.nazwa,rings,bb:rings.map(bboxOf),f};});
   return WOJ;
 }
@@ -122,15 +122,14 @@ function poleWpisu(el,nazwy,onOdp,opts){
   opts=opts||{};
   el.classList.add("wpis");
   el.innerHTML='<div class="acbox"><input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go"><div class="ac"></div></div>'
-    +'<button class="big ok">OK</button>'
-    +(opts.pokaz?'<button class="ghost pokaz"></button>':'')
-    +(opts.pas===false?'':'<button class="ghost pas">Nie wiem</button>');
-  const inp=el.querySelector("input"),ac=el.querySelector(".ac"),ok=el.querySelector(".ok"),pas=el.querySelector(".pas"),pok=el.querySelector(".pokaz");
-  if(pok){pok.innerHTML=opts.pokazEtykieta||"Pokaż<br>odpowiedzi";pok.onclick=()=>{if(!wyl){ac.style.display="none";pok.disabled=true;opts.pokaz();}};}
+    +(opts.pokaz?'<button class="pokaz"></button>':'');
+  const inp=el.querySelector("input"),ac=el.querySelector(".ac"),pok=el.querySelector(".pokaz");
+  if(pok){pok.innerHTML=opts.pokazEtykieta||'Pokaż<br>podpowiedzi';pok.onclick=()=>{if(!wyl){ac.style.display="none";pok.disabled=true;opts.pokaz();}};}
   inp.placeholder=opts.placeholder||"Wpisz nazwę…";
   let items=[],sel=0,wyl=false;
   const lista=()=>typeof nazwy==="function"?nazwy():nazwy;
   function pokaz(){
+    if(wyl){ac.style.display="none";return;}
     const v=norm(inp.value);
     if(v.length<2||opts.bezPodpowiedzi){ac.style.display="none";items=[];return;}
     items=[...new Set(lista().filter(n=>norm(n).startsWith(v)))].sort((a,b)=>a.localeCompare(b,"pl")).slice(0,4);
@@ -148,7 +147,11 @@ function poleWpisu(el,nazwy,onOdp,opts){
     ac.style.display="none";
     onOdp(v);
   }
-  inp.addEventListener("input",pokaz);
+  inp.addEventListener("input",()=>{
+    // poprawna odpowiedź przechodzi od razu, bez zatwierdzania
+    if(opts.poprawne&&!wyl&&pasuje(inp.value,opts.poprawne())){ac.style.display="none";onOdp(inp.value.trim());return;}
+    pokaz();
+  });
   inp.addEventListener("keydown",e=>{
     if(e.key==="Enter"){e.preventDefault();if(ac.style.display==="flex"&&items.length)inp.value=items[sel];wyslij();}
     if(ac.style.display==="flex"&&items.length&&(e.key==="ArrowUp"||e.key==="ArrowDown")){
@@ -156,12 +159,11 @@ function poleWpisu(el,nazwy,onOdp,opts){
       [...ac.children].forEach((d,i)=>d.classList.toggle("sel",i===sel));
     }
   });
-  ok.onclick=wyslij;
-  if(pas)pas.onclick=()=>{if(!wyl){ac.style.display="none";onOdp(null);}};
+
   return {
     focus(){inp.focus();},
     wyczysc(){inp.value="";ac.style.display="none";},
-    wylacz(b){wyl=!!b;inp.disabled=!!b;ok.disabled=!!b;if(pas)pas.disabled=!!b;if(pok)pok.disabled=!!b;if(b)ac.style.display="none";},
+    wylacz(b){wyl=!!b;inp.disabled=!!b;if(pok)pok.disabled=!!b;if(b)ac.style.display="none";},
     input:inp
   };
 }
@@ -187,6 +189,231 @@ function lapacz(klucze,czyZaliczone){
   };
 }
 
+/* ---- kontur z podkładem satelitarnym Esri; obietnica spełnia się po wczytaniu zdjęcia (najwyżej 3 s) ---- */
+function ksztaltZPodkladem(svg,feature,bb,W){
+  W=W||400;
+  const P=projection([feature],W,14);
+  svg.setAttribute("viewBox","0 0 "+W+" "+P.H.toFixed(0));
+  const d=P.path(feature.geometry);
+  const b=bb,x0=P.x(b[0]),x1=P.x(b[2]),y0=P.y(b[3]),y1=P.y(b[1]);
+  const w=Math.max(1,x1-x0),h=Math.max(1,y1-y0);
+  const bbox=[b[0],b[1],b[2],b[3]].map(v=>v.toFixed(5)).join(",");
+  const url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/export"
+    +"?bbox="+bbox+"&bboxSR=4326&imageSR=4326&size=700,"+Math.round(700*h/w)+"&format=jpg&transparent=false&f=image";
+  const id="cp"+Math.random().toString(36).slice(2,7);
+  svg.classList.add("laduje");
+  svg.innerHTML='<defs><clipPath id="'+id+'"><path d="'+d+'"/></clipPath></defs>'
+    +'<path class="cien" d="'+d+'"/>'
+    +'<image href="'+url+'" x="'+x0.toFixed(1)+'" y="'+y0.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" preserveAspectRatio="none" clip-path="url(#'+id+')"/>'
+    +'<path class="obrys" d="'+d+'" fill="none"/>';
+  return new Promise(ok=>{
+    let done=false;const fin=()=>{if(done)return;done=true;svg.classList.remove("laduje");ok();};
+    const im=svg.querySelector("image");
+    im.addEventListener("load",()=>setTimeout(fin,250));im.addEventListener("error",fin);
+    setTimeout(fin,3000);
+  });
+}
+
+/* ---- poświata po odpowiedzi, fanfary i wiwaty po świetnym wyniku ---- */
+let poswiataT=null,poswiataOk=true,sesja={ok:0,wszystkie:0};
+function poswiata(ok){
+  poswiataOk=poswiataOk&&ok;
+  clearTimeout(poswiataT);
+  poswiataT=setTimeout(()=>{
+    let el=document.getElementById("zp-poswiata");
+    if(!el){el=document.createElement("div");el.id="zp-poswiata";document.body.appendChild(el);}
+    el.className="";void el.offsetWidth;el.className=poswiataOk?"dobrze":"zle";
+    if(navigator.vibrate&&!poswiataOk)try{navigator.vibrate(60);}catch(e){}
+    poswiataOk=true;
+  },40);
+}
+let AC=null;
+function audio(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume();return AC;}catch(e){return null;}}
+document.addEventListener("pointerdown",()=>audio(),{once:true});
+function fanfary(){
+  // konfetti
+  const c=document.createElement("canvas");c.id="zp-konfetti";document.body.appendChild(c);
+  const dpr=Math.min(2,window.devicePixelRatio||1);c.width=innerWidth*dpr;c.height=innerHeight*dpr;
+  const g=c.getContext("2d");g.scale(dpr,dpr);
+  const kol=["#F2C14E","#FFD86B","#5DCAA5","#E8F1EE","#DC1E35","#7FD8C6"];
+  const cz=[...Array(140)].map(()=>({x:innerWidth/2+(Math.random()-.5)*120,y:innerHeight*.35,vx:(Math.random()-.5)*11,vy:-Math.random()*13-4,
+    r:Math.random()*6+4,a:Math.random()*6,va:(Math.random()-.5)*.3,k:kol[Math.floor(Math.random()*kol.length)]}));
+  const t0=performance.now();
+  (function klatka(t){
+    const dt=t-t0;g.clearRect(0,0,innerWidth,innerHeight);
+    cz.forEach(p=>{p.vy+=.32;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.a+=p.va;
+      g.save();g.translate(p.x,p.y);g.rotate(p.a);g.globalAlpha=Math.max(0,1-dt/3200);g.fillStyle=p.k;g.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);g.restore();});
+    if(dt<3200)requestAnimationFrame(klatka);else c.remove();
+  })(t0);
+  // fanfara i wiwaty z syntezatora (bez plików dźwiękowych)
+  const a=audio();if(!a)return;
+  const t=a.currentTime+.05;
+  [[523.25,0,.16],[659.25,.16,.16],[783.99,.32,.16],[1046.5,.5,.55],[783.99,1.08,.14],[1046.5,1.24,.7]].forEach(([f,s,d])=>{
+    [1,2.01].forEach((m,i)=>{
+      const o=a.createOscillator(),v=a.createGain();o.type=i?"triangle":"sawtooth";o.frequency.value=f*m;
+      v.gain.setValueAtTime(0,t+s);v.gain.linearRampToValueAtTime(i?.05:.09,t+s+.02);v.gain.exponentialRampToValueAtTime(.001,t+s+d);
+      o.connect(v).connect(a.destination);o.start(t+s);o.stop(t+s+d+.05);
+    });
+  });
+  const len=2.4,buf=a.createBuffer(1,a.sampleRate*len,a.sampleRate),dd=buf.getChannelData(0);
+  for(let i=0;i<dd.length;i++){const x=i/a.sampleRate;dd[i]=(Math.random()*2-1)*(.55+.45*Math.sin(x*23+Math.sin(x*7)*3))*Math.min(1,x*3)*Math.max(0,1-(x-1)/1.4);}
+  const src=a.createBufferSource(),bp=a.createBiquadFilter(),v=a.createGain();
+  src.buffer=buf;bp.type="bandpass";bp.frequency.value=1400;bp.Q.value=.7;v.gain.value=.22;
+  src.connect(bp).connect(v).connect(a.destination);src.start(t+.4);
+}
+// po pokazaniu podsumowania: fanfary, gdy wynik był bardzo dobry (co najmniej 80% trafień)
+function obserwujKoniec(){
+  const sprawdz=()=>{
+    const s=sesja;sesja={ok:0,wszystkie:0};
+    if(s.wszystkie>=3&&s.ok/s.wszystkie>=0.8)setTimeout(fanfary,250);
+  };
+  ["summary","done"].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    let byl=el.classList.contains("hidden");
+    new MutationObserver(()=>{const teraz=el.classList.contains("hidden");if(byl&&!teraz)sprawdz();byl=teraz;}).observe(el,{attributes:true,attributeFilter:["class"]});
+  });
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujKoniec);else obserwujKoniec();
+
+/* ---- obszar gry: puste = cała Polska, inaczej lista nazw województw ---- */
+let OBSZAR=[];
+function wObszarze(it){
+  if(!OBSZAR.length)return true;
+  if(!it)return false;
+  if(!it.woj&&it.lat!=null&&it.lon!=null)it.woj=wojOf(it.lon,it.lat);
+  return OBSZAR.indexOf(it.woj)>=0;
+}
+
+/* ---- kreator ustawień: kolejne ekrany zamiast formularza ---- */
+const ILU={
+  pl:'<svg viewBox="0 0 100 92" class="kr-pl"><path d="M14 22 L30 10 L52 6 L74 12 L92 22 L88 48 L94 70 L78 86 L56 82 L34 88 L14 76 L6 52 Z"/></svg>',
+  woj:'<svg viewBox="0 0 100 92" class="kr-pl kr-podzial"><path d="M14 22 L30 10 L52 6 L74 12 L92 22 L88 48 L94 70 L78 86 L56 82 L34 88 L14 76 L6 52 Z"/><path class="g" d="M30 10 L36 40 L14 52 M36 40 L60 44 L74 12 M60 44 L88 48 M60 44 L56 82 M36 40 L34 88"/></svg>',
+  m:'<svg viewBox="0 0 120 70" class="kr-miasto"><path class="z" d="M0 62 H120"/><path d="M18 62 V44 L30 34 L42 44 V62 Z"/><path class="d" d="M26 62 V52 H34 V62"/><path d="M58 62 V48 L68 40 L78 48 V62 Z"/><circle class="t" cx="96" cy="46" r="9"/><path class="z" d="M96 55 V62"/></svg>',
+  s:'<svg viewBox="0 0 120 70" class="kr-miasto"><path class="z" d="M0 62 H120"/><path d="M8 62 V46 L18 38 L28 46 V62 Z"/><path d="M34 62 V30 H58 V62 Z"/><path class="o" d="M39 36 H44 M48 36 H53 M39 44 H44 M48 44 H53 M39 52 H44 M48 52 H53"/><path d="M66 62 V26 L72 14 L78 26 V62 Z"/><path d="M84 62 V40 H110 V62 Z"/><path class="o" d="M89 46 H94 M100 46 H105 M89 54 H94 M100 54 H105"/></svg>',
+  d:'<svg viewBox="0 0 120 70" class="kr-miasto"><path class="z" d="M0 62 H120"/><path d="M6 62 V34 H24 V62 Z"/><path d="M28 62 V8 H48 V62 Z"/><path class="o" d="M33 16 H43 M33 24 H43 M33 32 H43 M33 40 H43 M33 48 H43"/><path d="M52 62 V20 L62 4 L72 20 V62 Z"/><path d="M76 62 V26 H96 V62 Z"/><path class="o" d="M81 34 H91 M81 42 H91 M81 50 H91"/><path d="M100 62 V40 H116 V62 Z"/></svg>'
+};
+function kreatorGry(cfg){
+  const setup=document.getElementById("setup");if(!setup)return;
+  const pamiec="kreator-"+cfg.klucz;
+  let zap={};try{zap=JSON.parse(localStorage.getItem(pamiec)||"{}");}catch(e){}
+  const w={woj:zap.woj||[],wielkosc:zap.wielkosc||"dsm",rundy:zap.rundy||5,wybor:zap.wybor||{}};
+  // stary formularz zostaje ukryty, bo gra czyta z niego ustawienia
+  const stare=document.createElement("div");stare.className="hidden";stare.id="stareUstawienia";
+  [...setup.childNodes].forEach(n=>stare.appendChild(n));
+  setup.appendChild(stare);
+  const k=document.createElement("div");k.className="kreator";setup.appendChild(k);
+  setup.classList.add("z-kreatorem");
+  const kroki=cfg.kroki;
+  let i=0,podWoj=false,WOJL=[];
+  loadWoj().then(l=>{WOJL=l;if(kroki[i]==="obszar"&&podWoj)rysuj();}).catch(()=>{});
+  function zapamietaj(){try{localStorage.setItem(pamiec,JSON.stringify(w));}catch(e){}}
+  function kropki(){return '<div class="kr-kropki">'+kroki.map((_,j)=>'<i class="'+(j<i?"byl":j===i?"teraz":"")+'"></i>').join("")+'</div>';}
+  function rysuj(kier){
+    const krok=kroki[i],ost=i===kroki.length-1;
+    let tyt="",pod="",tresc="",dalej=true;
+    if(krok==="obszar"&&!podWoj){
+      tyt="Gdzie grasz?";pod="Cała Polska albo wybrane województwa.";
+      tresc='<div class="kr-karty dwie">'
+        +'<button class="kr-karta'+(w.woj.length?"":" wybrana")+'" data-a="pl">'+ILU.pl+'<b>Cała Polska</b><small>wszystkie województwa</small></button>'
+        +'<button class="kr-karta'+(w.woj.length?" wybrana":"")+'" data-a="woj">'+ILU.woj+'<b>Województwa</b><small>'+(w.woj.length?"wybrano "+w.woj.length:"wybierz na mapie")+'</small></button></div>';
+      dalej=false;
+    }else if(krok==="obszar"){
+      tyt="Które województwa?";pod="Zaznacz jedno albo kilka.";
+      tresc='<div class="kr-woje">'+(WOJL.length?WOJL.map(x=>{
+        const P=projection([x.f],60,3);
+        return '<button class="kr-woj'+(w.woj.indexOf(x.name)>=0?" wybrana":"")+'" data-w="'+x.name+'"><svg viewBox="0 0 60 '+P.H.toFixed(0)+'"><path d="'+P.path(x.f.geometry,0.8)+'"/></svg><span>'+x.name+'</span></button>';
+      }).join(""):'<div class="datastate">Wczytywanie mapy…</div>')+'</div>';
+      dalej=w.woj.length>0;
+    }else if(krok==="wielkosc"){
+      tyt="Jakie miasta?";pod="Można zaznaczyć kilka naraz.";
+      tresc='<div class="kr-karty trzy">'+[["m","Małe","do 20 tys."],["s","Średnie","20 do 100 tys."],["d","Duże","ponad 100 tys."]].map(([v,t,o])=>
+        '<button class="kr-karta maly'+(w.wielkosc.indexOf(v)>=0?" wybrana":"")+'" data-v="'+v+'">'+ILU[v]+'<b>'+t+'</b><small>'+o+'</small></button>').join("")+'</div>';
+      dalej=w.wielkosc.length>0;
+    }else if(krok==="rundy"){
+      tyt="Ile rund?";pod="Przesuń albo przewiń kółkiem.";
+      tresc='<div class="kr-rundy"><div class="kr-liczba">'+w.rundy+'</div>'
+        +'<input type="range" min="5" max="'+(cfg.maxRund||25)+'" step="5" value="'+w.rundy+'">'
+        +'<div class="kr-skala">'+[...Array(((cfg.maxRund||25)-5)/5+1)].map((_,j)=>'<span>'+(5+j*5)+'</span>').join("")+'</div></div>';
+    }else if(typeof krok==="object"){
+      tyt=krok.tytul;pod=krok.opis||"";
+      const akt=w.wybor[krok.pole]!=null?w.wybor[krok.pole]:krok.domyslny;
+      tresc='<div class="kr-karty '+(krok.opcje.length===2?"dwie":"trzy")+'">'+krok.opcje.map(o=>
+        '<button class="kr-karta'+(String(o.v)===String(akt)?" wybrana":"")+'" data-o="'+o.v+'">'+(o.ilu||"")+'<b>'+o.t+'</b><small>'+(o.opis||"")+'</small></button>').join("")+'</div>';
+      dalej=!krok.auto;
+    }
+    k.innerHTML=kropki()+'<div class="kr-ekran '+(kier<0?"wstecz":"")+'"><h2>'+tyt+'</h2><p>'+pod+'</p>'+tresc+'</div>'
+      +'<div class="kr-dol">'+(i>0||podWoj?'<button class="ghost kr-wstecz">Wstecz</button>':'')
+      +(dalej||krok==="obszar"&&podWoj?'<button class="big kr-dalej"'+(krok==="obszar"&&podWoj&&!w.woj.length?" disabled":"")+'>'+(ost?"Zagraj":"Dalej")+'</button>':'')+'</div>'
+      +'<div class="datastate kr-stan"></div>';
+    // obsługa
+    k.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{
+      if(b.dataset.a==="pl"){w.woj=[];dalejKrok();}else{podWoj=true;rysuj(1);}
+    });
+    k.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{
+      const n=b.dataset.w,ix=w.woj.indexOf(n);
+      if(ix>=0)w.woj.splice(ix,1);else w.woj.push(n);
+      b.classList.toggle("wybrana");
+      const d=k.querySelector(".kr-dalej");if(d)d.disabled=!w.woj.length;
+    });
+    k.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{
+      const v=b.dataset.v;
+      w.wielkosc=w.wielkosc.indexOf(v)>=0?w.wielkosc.replace(v,""):w.wielkosc+v;
+      b.classList.toggle("wybrana");
+      const d=k.querySelector(".kr-dalej");if(d)d.disabled=!w.wielkosc.length;
+    });
+    k.querySelectorAll("[data-o]").forEach(b=>b.onclick=()=>{
+      w.wybor[krok.pole]=b.dataset.o;
+      k.querySelectorAll("[data-o]").forEach(x=>x.classList.toggle("wybrana",x===b));
+      if(krok.auto!==false)setTimeout(dalejKrok,180);
+    });
+    const r=k.querySelector('input[type=range]');
+    if(r){
+      const pisz=()=>{w.rundy=+r.value;const l=k.querySelector(".kr-liczba");l.textContent=r.value;l.classList.remove("skok");void l.offsetWidth;l.classList.add("skok");};
+      r.oninput=pisz;
+      k.querySelector(".kr-rundy").addEventListener("wheel",e=>{e.preventDefault();r.value=Math.max(+r.min,Math.min(+r.max,+r.value+(e.deltaY<0?5:-5)));pisz();},{passive:false});
+    }
+    const wst=k.querySelector(".kr-wstecz");
+    if(wst)wst.onclick=()=>{if(krok==="obszar"&&podWoj){podWoj=false;rysuj(-1);}else{i=Math.max(0,i-1);podWoj=false;rysuj(-1);}};
+    const d=k.querySelector(".kr-dalej");if(d)d.onclick=dalejKrok;
+  }
+  function dalejKrok(){
+    if(i<kroki.length-1){i++;podWoj=false;rysuj(1);return;}
+    start();
+  }
+  function start(){
+    zapamietaj();
+    OBSZAR=w.woj.slice();
+    const sc=document.getElementById("scope");
+    if(sc)sc.querySelectorAll("input").forEach(x=>{x.checked=w.wielkosc.indexOf(x.value)>=0;});
+    const rs=document.getElementById("rounds");
+    if(rs){if(![...rs.options].some(o=>+o.value===w.rundy)){const o=document.createElement("option");o.value=o.textContent=w.rundy;rs.appendChild(o);}rs.value=String(w.rundy);}
+    kroki.forEach(kr=>{if(typeof kr==="object"&&kr.pole){
+      const el=document.getElementById(kr.pole),v=w.wybor[kr.pole]!=null?w.wybor[kr.pole]:kr.domyslny;
+      if(el){el.value=v;el.dispatchEvent(new Event("change"));}
+    }});
+    const go=()=>{
+      if(cfg.start)return cfg.start(w);
+      const b=document.getElementById("startBtn");
+      if(b&&!b.disabled){b.click();return true;}
+      return false;
+    };
+    if(go()===false){
+      const stan=k.querySelector(".kr-stan");
+      const id=setInterval(()=>{
+        const ds=document.getElementById("datastate");if(stan)stan.textContent="Wczytywanie danych… "+(ds?ds.textContent:"");
+        if(go()!==false)clearInterval(id);
+      },300);
+    }
+  }
+  // powrót do ustawień po grze: od pierwszego ekranu
+  let ukryty=setup.classList.contains("hidden");
+  new MutationObserver(()=>{const u=setup.classList.contains("hidden");if(ukryty&&!u){i=0;podWoj=false;rysuj();}ukryty=u;})
+    .observe(setup,{attributes:true,attributeFilter:["class"]});
+  rysuj();
+  return w;
+}
+function obszarNazwa(){return OBSZAR.length?(OBSZAR.length===1?"woj. "+OBSZAR[0]:OBSZAR.length+" województw"):"cała Polska";}
+
 /* ---- telefon: wysokość widocznego ekranu (klawiatura) ---- */
 function fitViewport(){
   const vv=window.visualViewport;
@@ -200,7 +427,7 @@ const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie",
 let POWC=null;
 async function loadPowiaty(){
   if(POWC)return POWC;
-  const t=await (await fetch("powiaty.topojson?v=11")).json();
+  const t=await (await fetch("powiaty.topojson?v=12")).json();
   const o=t.objects.powiaty,nbi=topojson.neighbors(o.geometries),fs=topojson.feature(t,o).features;
   POWC=fs.map((f,i)=>{
     const k=f.properties.k,n=f.properties.n,city=+k.slice(2)>=60;
@@ -251,7 +478,8 @@ function nauka(){
   if(!NAU){try{NAU=JSON.parse(localStorage.getItem(NAUKA)||"{}");}catch(e){NAU={};}}
   return NAU;
 }
-function zapisz(kind,id,ok){
+function zapisz(kind,id,ok,cicho){
+  if(!cicho){poswiata(ok);sesja.wszystkie++;if(ok)sesja.ok++;}
   const s=nauka(),k=kind+":"+id,r=s[k]||{ok:0,no:0};
   if(ok)r.ok++;else r.no++;
   r.t=Date.now();s[k]=r;
@@ -305,7 +533,7 @@ let GMC=null;
 async function loadGminy(){
   if(GMC)return GMC;
   const pw=await loadPowiaty();
-  const t=await (await fetch("gminy.topojson?v=11")).json();
+  const t=await (await fetch("gminy.topojson?v=12")).json();
   const o=t.objects.gminy||Object.values(t.objects).sort((a,b)=>(b.geometries||[]).length-(a.geometries||[]).length)[0];
   const fs=topojson.feature(t,o).features;
   const powNazwa={};pw.forEach(p=>powNazwa[p.k]=p.full);
@@ -326,5 +554,5 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

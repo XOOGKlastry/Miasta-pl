@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=11" />
+<link rel="stylesheet" href="wspolne.css?v=12" />
 <style>
 .foto{flex:1;min-height:150px;position:relative;border-radius:var(--r);overflow:hidden;background:#0d1a1d;box-shadow:var(--cien)}
 .foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity var(--wolno),transform 6s ease-out}
@@ -73,7 +73,7 @@
 </main>
 </div>
 
-<script src="wspolne.js?v=11"></script>
+<script src="wspolne.js?v=12"></script>
 <script>
 const {$,shuffle,fmt}=ZP;
 let DANE=[],game=null,POLE=null;
@@ -94,7 +94,7 @@ function makeQuestion(c,pool){
   return {c,z:c.zdjecia[Math.floor(Math.random()*c.zdjecia.length)],opts:shuffle(shuffle(near).slice(0,3).concat([c]))};
 }
 function startGame(){
-  const pool=DANE.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope"))));
+  const pool=DANE.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope")))&&ZP.wObszarze(c));
   const src=pool.length>=8?pool:DANE;
   const n=Math.min(+$("rounds").value,src.length);
   game={wpis:$("odp").value==="t",qs:ZP.losujNauka(src,"miejsce",c=>c.n,n,true).map(c=>makeQuestion(c,DANE)),i:-1,pts:0,hits:0,res:[]};
@@ -104,7 +104,7 @@ function startGame(){
   if(game.wpis&&!POLE)POLE=ZP.poleWpisu($("wpis"),()=>DANE.map(c=>c.n),v=>{
     const q=game.qs[game.i];
     answer(ZP.pasuje(v,q.c.n)?q.c:(v?{n:v}:null),null);
-  },{placeholder:"Nazwa miasta…",pokazEtykieta:"Pokaż<br>(−2 pkt)",pokaz:()=>{game.pokazano=true;opcje(game.qs[game.i]);}});
+  },{placeholder:"Nazwa miasta…",poprawne:()=>[game.qs[game.i].c.n],pokazEtykieta:"Pokaż podpowiedzi<br><small>−2 pkt</small>",pokaz:()=>{game.pokazano=true;opcje(game.qs[game.i]);}});
   $("pts").textContent=0;$("hits").textContent=0;refreshBest();
   next();
 }
@@ -169,6 +169,7 @@ function endGame(){
   $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
 }
 $("startBtn").onclick=startGame;
+ZP.kreatorGry({klucz:"miasto",kroki:["obszar","wielkosc","rundy"]});
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>

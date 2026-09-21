@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-<link rel="stylesheet" href="wspolne.css?v=11" />
+<link rel="stylesheet" href="wspolne.css?v=12" />
 <style>
 .setup .tryby{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .tryb{min-height:118px;border-radius:18px;border:1px solid var(--line-2);background:var(--ink-2);display:flex;flex-direction:column;
@@ -51,23 +51,32 @@
 #heard{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #stopBtn{min-height:52px;padding:0 14px;flex:none}
 
-.side{display:flex;flex-direction:column;gap:10px}
-.side .panel{padding:12px}
-.side h2{font-size:12px;font-weight:500;color:var(--dim);margin:0 0 6px;letter-spacing:.06em;text-transform:uppercase}
-.result .score{font-family:"Fraunces",serif;font-weight:900;font-size:44px;line-height:1}
-.result .sub{color:var(--dim);margin:6px 0 12px;font-size:14px}
-.list{max-height:none;overflow:auto;font-size:14px}
-.list .row{display:flex;justify-content:space-between;gap:8px;border-bottom:1px solid var(--line);padding:4px 0}
-.list .row span:last-child{color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
-.empty{color:var(--dim);font-size:14px}
-.wojrow{display:flex;align-items:center;gap:8px;font-size:13px;padding:3px 0}
+.side{display:flex;flex-direction:column;gap:12px}
+.uchwyt{width:44px;height:5px;border-radius:3px;background:var(--line-2);margin:0 auto 2px}
+.wynik{display:flex;align-items:center;gap:16px}
+.kolo{position:relative;width:96px;height:96px;flex:none}
+.kolo svg{width:100%;height:100%;transform:rotate(-90deg)}
+.kolo circle{fill:none;stroke-width:9}
+.kolo .tlo{stroke:var(--line)}
+.kolo .pas{stroke:var(--gold);stroke-linecap:round;transition:stroke-dashoffset 1.2s cubic-bezier(.2,.7,.3,1)}
+.kolo b{position:absolute;inset:0;display:grid;place-items:center;font-family:"Fraunces",serif;font-size:24px}
+.liczby .score{font-family:"Fraunces",serif;font-weight:900;font-size:44px;line-height:1}
+.liczby .score span{font-size:20px;color:var(--dim);font-weight:600}
+.liczby .sub{color:var(--dim);margin:4px 0 0;font-size:14px}
+.link{background:none;border:none;color:var(--gold);font-size:14px;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+.side h2{font-size:12px;font-weight:600;color:var(--dim);margin:6px 0 0;letter-spacing:.08em;text-transform:uppercase}
+.woje{display:flex;flex-direction:column;gap:2px}
+.wojrow{display:flex;align-items:center;gap:10px;font-size:14px;padding:3px 0}
 .wojrow .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.wojrow .mini{width:64px;height:4px;background:var(--line);border-radius:2px;overflow:hidden;flex:none}
-.wojrow .mini i{display:block;height:100%;background:var(--gold);width:0}
-.wojrow .ct{width:56px;text-align:right;color:var(--dim);font-variant-numeric:tabular-nums;flex:none}
-.side{position:fixed;left:0;right:0;bottom:0;z-index:1200;max-height:82%;overflow:auto;max-width:560px;margin:0 auto;
-  background:var(--ink);border-top:1px solid var(--line-2);border-radius:20px 20px 0 0;
-  padding:14px 12px calc(env(safe-area-inset-bottom,0px) + 14px);
+.wojrow .mini{width:90px;height:6px;background:var(--line);border-radius:3px;overflow:hidden;flex:none}
+.wojrow .mini i{display:block;height:100%;background:var(--gold);width:0;border-radius:3px}
+.wojrow .ct{width:58px;text-align:right;color:var(--dim);font-variant-numeric:tabular-nums;flex:none;font-size:13px}
+.chipy{display:flex;flex-wrap:wrap;gap:6px}
+.chipy span{background:var(--ink-2);border:1px solid var(--line-2);border-radius:999px;padding:5px 11px;font-size:14px}
+.empty{color:var(--dim);font-size:14px}
+.side{position:fixed;left:0;right:0;bottom:0;z-index:1200;max-height:86%;overflow:auto;max-width:560px;margin:0 auto;
+  background:var(--ink);border-top:1px solid var(--line-2);border-radius:22px 22px 0 0;
+  padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 16px);
   transform:translateY(105%);transition:transform var(--wolno);box-shadow:0 -20px 40px rgba(0,0,0,.45)}
 .side.open{transform:none}
 #shade{display:none}
@@ -134,32 +143,27 @@
 </div>
 
 <aside class="side" id="side">
-  <div class="panel" id="resultPanel">
-    <div class="result">
-      <div class="score" id="rBig">0</div>
-      <p class="sub" id="rSub"></p>
-      <div class="btnrow">
-        <button class="ghost" id="menuBtn">Ustawienia</button>
-        <button class="big" id="againBtn">Jeszcze raz</button>
-      </div>
-      <button class="ghost" id="revealBtn" style="width:100%;margin-top:8px;min-height:46px">Pokaż pominięte na mapie</button>
-    </div>
+  <div class="uchwyt"></div>
+  <div class="wynik" id="resultPanel">
+    <div class="kolo" id="kolo"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" class="tlo"/><circle cx="50" cy="50" r="44" class="pas" id="koloPas"/></svg><b id="koloProc">0%</b></div>
+    <div class="liczby"><div class="score" id="rBig">0</div><p class="sub" id="rSub"></p></div>
   </div>
-  <div class="panel">
-    <h2>Postęp w województwach</h2>
-    <div class="list" id="wojList"></div>
+  <div class="btnrow">
+    <button class="ghost" id="menuBtn">Ustawienia</button>
+    <button class="big" id="againBtn">Jeszcze raz</button>
   </div>
-  <div class="panel">
-    <h2 id="listHead">Trafione miasta</h2>
-    <div class="list" id="found"></div>
-  </div>
+  <button class="link" id="revealBtn">Pokaż pominięte miasta na mapie</button>
+  <h2 id="wojHead">Województwa</h2>
+  <div class="woje" id="wojList"></div>
+  <h2 id="listHead">Trafione miasta</h2>
+  <div class="chipy" id="found"></div>
 </aside>
 <div id="shade"></div>
 
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script src="wspolne.js?v=11"></script>
+<script src="wspolne.js?v=12"></script>
 <script>
 const FALLBACK=[["Warszawa",52.23,21.01,1790658],["Kraków",50.06,19.94,804237],["Łódź",51.77,19.46,658444],["Wrocław",51.11,17.03,672929],["Poznań",52.41,16.93,546859],["Gdańsk",54.35,18.65,486492],["Szczecin",53.43,14.55,396168],["Bydgoszcz",53.12,18.00,339053],["Lublin",51.25,22.57,331243],["Białystok",53.13,23.16,294143],["Katowice",50.26,19.02,286960],["Gdynia",54.52,18.53,239866],["Częstochowa",50.81,19.12,214342],["Radom",51.40,21.15,201601],["Rzeszów",50.04,22.00,196374],["Toruń",53.01,18.60,196935],["Sosnowiec",50.28,19.13,190533],["Kielce",50.87,20.63,190411],["Gliwice",50.29,18.67,174071],["Olsztyn",53.78,20.49,169793],["Zabrze",50.32,18.79,169422],["Bielsko-Biała",49.82,19.05,169756],["Bytom",50.35,18.92,158056],["Zielona Góra",51.94,15.51,140403],["Rybnik",50.10,18.55,136318],["Ruda Śląska",50.26,18.86,131902],["Opole",50.67,17.93,127653],["Tychy",50.13,18.99,126162],["Gorzów Wielkopolski",52.73,15.24,119020],["Dąbrowa Górnicza",50.32,19.20,116508],["Elbląg",54.16,19.40,117390],["Płock",52.55,19.71,116962],["Wałbrzych",50.77,16.28,110479],["Włocławek",52.65,19.07,106928],["Tarnów",50.01,20.99,105922],["Chorzów",50.30,18.95,105320],["Koszalin",54.19,16.18,105580],["Kalisz",51.76,18.09,97905],["Legnica",51.21,16.16,96854],["Grudziądz",53.48,18.75,92552],["Jaworzno",50.20,19.27,89545],["Słupsk",54.46,17.03,89026],["Jastrzębie-Zdrój",49.95,18.60,84652],["Nowy Sącz",49.62,20.70,82831],["Jelenia Góra",50.90,15.73,77366],["Siedlce",52.17,22.29,77354],["Mysłowice",50.21,19.13,73015],["Konin",52.22,18.25,71427],["Piła",53.15,16.74,71846],["Piotrków Trybunalski",51.40,19.70,71252],["Inowrocław",52.80,18.26,70000],["Lubin",51.40,16.20,69000],["Ostrów Wielkopolski",51.65,17.81,71000],["Suwałki",54.10,22.93,69000],["Stargard",53.34,15.05,67000],["Gniezno",52.53,17.60,67000],["Ostrowiec Świętokrzyski",50.93,21.39,66000],["Siemianowice Śląskie",50.33,19.03,65000],["Głogów",51.66,16.08,64000],["Pabianice",51.66,19.35,63000],["Leszno",51.84,16.58,62000],["Zamość",50.72,23.25,62000],["Łomża",53.18,22.06,61000],["Żory",50.05,18.70,60000],["Pruszków",52.17,20.81,62000],["Ełk",53.83,22.36,61000],["Tomaszów Mazowiecki",51.53,20.01,60000],["Chełm",51.13,23.47,59000],["Mielec",50.29,21.42,58000],["Kędzierzyn-Koźle",50.35,18.23,58000],["Przemyśl",49.78,22.77,58000],["Stalowa Wola",50.58,22.05,57000],["Tczew",54.09,18.78,58000],["Biała Podlaska",52.03,23.12,56000],["Bełchatów",51.37,19.37,54000],["Świdnica",50.84,16.49,54000],["Będzin",50.33,19.13,54000],["Zgierz",51.86,19.41,54000],["Piekary Śląskie",50.38,18.95,53000],["Racibórz",50.09,18.22,53000],["Legionowo",52.40,20.93,52000],["Ostrołęka",53.09,21.57,51000],["Świnoujście",53.91,14.25,40000],["Starachowice",51.05,21.07,48000],["Wejherowo",54.60,18.24,49000],["Zawiercie",50.49,19.42,48000],["Puławy",51.42,21.97,46000],["Skierniewice",51.96,20.15,47000],["Starogard Gdański",53.97,18.53,47000],["Tarnobrzeg",50.57,21.68,46000],["Krosno",49.69,21.77,45000],["Nysa",50.47,17.33,43000],["Kutno",52.23,19.36,42000],["Sieradz",51.60,18.73,41000],["Ciechanów",52.88,20.62,43000],["Szczecinek",53.71,16.70,40000],["Świętochłowice",50.29,18.92,48000],["Nowa Sól",51.80,15.72,38000],["Żyrardów",52.05,20.44,40000],["Zduńska Wola",51.60,18.94,41000],["Malbork",54.04,19.03,38000],["Kołobrzeg",54.18,15.58,46000],["Piaseczno",52.08,21.02,48000],["Otwock",52.11,21.26,44000],["Oświęcim",50.03,19.22,37000],["Chrzanów",50.14,19.40,36000],["Olkusz",50.28,19.57,35000],["Wodzisław Śląski",50.00,18.47,47000],["Kwidzyn",53.73,18.93,37000],["Knurów",50.22,18.66,38000],["Sanok",49.56,22.21,37000],["Wołomin",52.35,21.24,37000],["Grodzisk Mazowiecki",52.11,20.62,32000],["Mińsk Mazowiecki",52.18,21.57,40000],["Sochaczew",52.23,20.24,37000],["Bolesławiec",51.26,15.57,38000],["Dębica",50.05,21.41,45000],["Jarosław",50.02,22.68,37000],["Jasło",49.75,21.47,34000],["Łuków",51.93,22.38,29000],["Lubartów",51.46,22.61,21000],["Kraśnik",50.92,22.22,33000],["Świdnik",51.22,22.70,39000],["Puck",54.72,18.41,11000],["Rumia",54.57,18.40,50000],["Sopot",54.44,18.56,35000],["Reda",54.61,18.35,26000],["Pruszcz Gdański",54.26,18.64,32000],["Chojnice",53.70,17.56,39000],["Lębork",54.54,17.75,34000],["Bytów",54.17,17.49,17000],["Iława",53.60,19.57,32000],["Ostróda",53.70,19.97,32000],["Giżycko",54.04,21.77,29000],["Kętrzyn",54.07,21.38,27000],["Bartoszyce",54.25,20.81,23000],["Mrągowo",53.87,21.30,21000],["Szczytno",53.56,21.00,23000],["Działdowo",53.24,20.18,21000],["Braniewo",54.38,19.83,17000],["Augustów",53.84,23.00,30000],["Bielsk Podlaski",52.77,23.19,25000],["Hajnówka",52.74,23.58,21000],["Zambrów",52.98,22.24,22000],["Grajewo",53.65,22.45,21000],["Sokółka",53.41,23.50,18000],["Włodawa",51.55,23.55,13000],["Krasnystaw",50.98,23.17,18000],["Hrubieszów",50.81,23.89,17000],["Tomaszów Lubelski",50.45,23.42,19000],["Biłgoraj",50.54,22.72,26000],["Nowy Targ",49.48,20.03,33000],["Zakopane",49.30,19.95,27000],["Wadowice",49.88,19.49,18000],["Andrychów",49.85,19.34,20000],["Żywiec",49.69,19.19,31000],["Cieszyn",49.75,18.63,34000],["Pszczyna",49.98,18.95,25000],["Mikołów",50.17,18.90,40000],["Lubliniec",50.67,18.68,23000],["Tarnowskie Góry",50.44,18.86,60000],["Kluczbork",50.97,18.22,23000],["Brzeg",50.86,17.47,35000],["Strzelce Opolskie",50.51,18.30,18000],["Prudnik",50.32,17.58,21000],["Głubczyce",50.20,17.83,12000],["Namysłów",51.08,17.72,16000],["Oleśnica",51.21,17.38,37000],["Oława",50.94,17.29,32000],["Dzierżoniów",50.73,16.65,33000],["Kłodzko",50.44,16.65,26000],["Ząbkowice Śląskie",50.59,16.81,15000],["Jawor",51.05,16.19,22000],["Złotoryja",51.13,15.92,15000],["Lubań",51.12,15.29,20000],["Zgorzelec",51.15,15.01,30000],["Kamienna Góra",50.79,16.03,18000],["Świebodzice",50.86,16.32,22000],["Wałcz",53.27,16.47,24000],["Chodzież",52.99,16.92,18000],["Wągrowiec",52.81,17.20,24000],["Śrem",52.09,17.02,29000],["Środa Wielkopolska",52.23,17.28,23000],["Września",52.33,17.57,30000],["Jarocin",51.97,17.50,25000],["Krotoszyn",51.70,17.44,28000],["Rawicz",51.61,16.86,20000],["Kościan",52.09,16.65,23000],["Nowy Tomyśl",52.32,16.13,14000],["Grodzisk Wielkopolski",52.22,16.37,14000],["Swarzędz",52.41,17.08,31000],["Luboń",52.34,16.88,32000],["Oborniki",52.65,16.81,18000],["Szamotuły",52.61,16.58,18000],["Turek",52.02,18.50,26000],["Koło",52.20,18.64,21000],["Kępno",51.28,17.99,14000],["Wolsztyn",52.11,16.12,13000],["Międzyrzecz",52.44,15.58,18000],["Świebodzin",52.25,15.53,21000],["Sulechów",52.08,15.62,17000],["Żary",51.64,15.14,36000],["Żagań",51.62,15.32,25000],["Gubin",51.95,14.74,16000],["Krosno Odrzańskie",52.05,15.09,11000],["Kostrzyn nad Odrą",52.59,14.65,17000],["Słubice",52.35,14.57,16000],["Choszczno",53.17,15.42,15000],["Myślibórz",52.92,14.87,11000],["Gryfino",53.25,14.49,21000],["Police",53.55,14.57,32000],["Goleniów",53.56,14.83,22000],["Nowogard",53.67,15.12,16000],["Kamień Pomorski",53.97,14.77,8000],["Gryfice",53.92,15.20,16000],["Białogard",54.01,15.99,23000],["Świdwin",53.78,15.78,15000],["Darłowo",54.42,16.41,13000],["Sławno",54.36,16.68,12000],["Ustka",54.58,16.86,15000],["Człuchów",53.67,17.36,13000],["Kościerzyna",54.12,18.00,23000],["Kartuzy",54.33,18.20,15000],["Chełmno",53.35,18.42,18000],["Świecie",53.41,18.45,24000],["Brodnica",53.26,19.40,27000],["Rypin",53.07,19.41,16000],["Lipno",52.85,19.18,14000],["Ciechocinek",52.88,18.79,10000],["Sierpc",52.86,19.67,18000],["Mława",53.11,20.38,30000],["Płońsk",52.62,20.38,22000],["Pułtusk",52.70,21.08,19000],["Wyszków",52.59,21.46,26000],["Nowy Dwór Mazowiecki",52.44,20.72,28000],["Ostrów Mazowiecka",52.80,21.89,22000],["Sokołów Podlaski",52.41,22.25,18000],["Garwolin",51.90,21.61,17000],["Dęblin",51.56,21.85,15000],["Kozienice",51.58,21.55,17000],["Grójec",51.86,20.87,16000],["Marki",52.32,21.11,37000],["Ząbki",52.29,21.11,38000],["Konstancin-Jeziorna",52.09,21.12,17000],["Rawa Mazowiecka",51.77,20.25,17000],["Łowicz",52.11,19.94,27000],["Radomsko",51.07,19.44,44000],["Opoczno",51.38,20.29,21000],["Końskie",51.19,20.41,19000],["Skarżysko-Kamienna",51.11,20.88,44000],["Sandomierz",50.68,21.75,23000],["Busko-Zdrój",50.47,20.72,16000],["Jędrzejów",50.64,20.30,15000],["Bochnia",49.97,20.43,30000],["Brzesko",49.97,20.61,17000],["Wieliczka",49.98,20.06,23000],["Skawina",49.98,19.83,24000],["Myślenice",49.83,19.94,18000],["Limanowa",49.71,20.42,15000],["Gorlice",49.66,21.16,26000],["Krynica-Zdrój",49.42,20.96,11000],["Łańcut",50.07,22.23,17000]];
 
@@ -208,7 +212,7 @@ function wojOf(lon,lat){
 }
 async function loadWoj(){
   try{
-    const r=await fetch("woj.geojson?v=11");
+    const r=await fetch("woj.geojson?v=12");
     const gj=await r.json();
     wojLayer=L.geoJSON(gj,{style:{color:"#F2C14E",weight:1.4,opacity:.85,fill:false,dashArray:"4 3"},interactive:false}).addTo(map);
     WOJ=gj.features.map(f=>{
@@ -266,7 +270,7 @@ function refreshScope(){
   if(!ALL.length)return;
   if(WOJ.length&&ALL.some(c=>c.woj===undefined))ALL.forEach(c=>{if(c.woj===undefined)c.woj=wojOf(c.lon,c.lat);});
   const w=$("woj").value;
-  const pool=ALL.filter(c=>!w||c.woj===w);
+  const pool=ALL.filter(c=>ZP.wObszarze(c));
   byKey=new Map();
   pool.forEach(c=>{
     const k=norm(c.name);if(!k)return;
@@ -285,7 +289,7 @@ function refreshScope(){
     if(f)map.fitBounds(f.getBounds());
   }else map.fitBounds(PL_BOUNDS);
 }
-const bestKey=()=>"pl-best-dsm-"+($("woj").value||"pl");
+const bestKey=()=>"pl-best-dsm-"+(ZP.OBSZAR.length?ZP.OBSZAR.slice().sort().join(","):"pl");
 $("woj").addEventListener("change",()=>{if(!running)refreshScope();});
 
 /* ---------- rysowanie ---------- */
@@ -321,8 +325,8 @@ function start(t){
   $("setup").classList.add("hidden");
   ["stage","gra"].forEach(id=>$(id).classList.remove("hidden"));
   map.invalidateSize({pan:false});
-  const w=$("woj").value;
-  if(w&&wojLayer){const f=wojLayer.getLayers().find(l=>l.feature.properties.nazwa===w);if(f)map.fitBounds(f.getBounds());}
+  const wyb=wojLayer?wojLayer.getLayers().filter(l=>ZP.OBSZAR.indexOf(l.feature.properties.nazwa)>=0):[];
+  if(wyb.length){let bb=wyb[0].getBounds();wyb.forEach(l=>bb.extend(l.getBounds()));map.fitBounds(bb);}
   else map.fitBounds(PL_BOUNDS);
   const d=+$("dur").value;endless=(d===0);
   left=d;deadline=Date.now()+d*1000;startedAt=Date.now();
@@ -352,8 +356,12 @@ function stop(){
   const k=bestKey(),best=+(localStorage.getItem(k)||0);
   const rec=found.length>best;
   if(rec){localStorage.setItem(k,found.length);$("best").textContent=found.length;}
-  $("rBig").textContent=found.length+" z "+targets.length;
-  $("rSub").textContent=pct+"% miast"+($("woj").value?" w województwie "+$("woj").value:" w Polsce")+". "+(rec?"Nowy rekord.":"Rekord: "+Math.max(best,found.length)+".");
+  $("rBig").innerHTML=found.length+' <span>z '+targets.length+'</span>';
+  $("koloProc").textContent=pct+"%";
+  const obw=2*Math.PI*44;$("koloPas").style.strokeDasharray=obw;$("koloPas").style.strokeDashoffset=obw;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{$("koloPas").style.strokeDashoffset=obw*(1-pct/100);}));
+  if(rec&&found.length>=5||pct>=60)setTimeout(ZP.fanfary,500);
+  $("rSub").textContent=(ZP.OBSZAR.length===1?"woj. "+ZP.OBSZAR[0]:ZP.OBSZAR.length?ZP.OBSZAR.length+" województw":"cała Polska")+". "+(rec?"Nowy rekord!":"Rekord: "+Math.max(best,found.length)+".");
   setMsg("","");
   $("guess").blur();openSide(true);
 }
@@ -447,19 +455,21 @@ $("mic").addEventListener("pointerdown",e=>{
 /* ---------- listy ---------- */
 function renderFound(){
   const box=$("found");
-  $("listHead").textContent="Trafione miasta ("+found.length+")";
-  if(!found.length){box.innerHTML='<div class="empty">Jeszcze pusto.</div>';return;}
-  box.innerHTML=found.slice().reverse().map(t=>
-    '<div class="row"><span>'+t.name+'</span><span>'+(t.woj?t.woj.slice(0,4)+". ":"")+(t.pop?Math.round(t.pop/1000)+" tys.":"")+'</span></div>').join("");
+  $("listHead").textContent="Trafione miasta: "+found.length;
+  if(!found.length){box.innerHTML='<div class="empty">Tym razem żadne.</div>';return;}
+  box.innerHTML="";
+  found.slice().sort((a,b)=>(b.pop||0)-(a.pop||0)).forEach(t=>{const s=document.createElement("span");s.textContent=t.name;box.appendChild(s);});
 }
 function renderWoj(){
   const box=$("wojList");
   if(!WOJ.length||!targets.length){box.innerHTML='<div class="empty">Brak danych o granicach.</div>';return;}
   const tot={},hits={};
   targets.forEach(t=>{const w=t.woj||"poza granicami";tot[w]=(tot[w]||0)+1;if(t.hit)hits[w]=(hits[w]||0)+1;});
-  box.innerHTML=Object.keys(tot).sort((a,b)=>a.localeCompare(b,"pl")).map(w=>{
+  const klucze=Object.keys(tot).filter(w=>w!=="poza granicami").sort((a,b)=>(hits[b]||0)/tot[b]-(hits[a]||0)/tot[a]);
+  $("wojHead").style.display=klucze.length>1?"":"none";box.style.display=klucze.length>1?"":"none";
+  box.innerHTML=klucze.map(w=>{
     const h=hits[w]||0,pc=Math.round(h/tot[w]*100);
-    return '<div class="wojrow"><span class="nm">'+w+'</span><span class="mini"><i style="width:'+pc+'%"></i></span><span class="ct">'+h+"/"+tot[w]+'</span></div>';
+    return '<div class="wojrow"><span class="nm">'+w+'</span><span class="mini"><i style="width:'+pc+'%"></i></span><span class="ct">'+h+" z "+tot[w]+'</span></div>';
   }).join("");
 }
 
@@ -491,6 +501,10 @@ $("shade").onclick=()=>{if(!running)openSide(false);};
   if(window.ResizeObserver)new ResizeObserver(()=>map.invalidateSize({pan:false})).observe($("map"));
 })();
 
+ZP.kreatorGry({klucz:"miasta",kroki:["obszar",
+  {pole:"dur",tytul:"Ile czasu?",domyslny:"180",opcje:[{v:"60",t:"1 minuta",opis:"sprint",ilu:'<div class="kr-ikona">⚡</div>'},{v:"180",t:"3 minuty",opis:"standard",ilu:'<div class="kr-ikona">⏱️</div>'},{v:"0",t:"Bez limitu",opis:"do wyczerpania",ilu:'<div class="kr-ikona">☕</div>'}]},
+  {pole:"wejscie",tytul:"Jak podajesz nazwy?",domyslny:"pisz",opcje:[{v:"mow",t:"Mówię",opis:"nazwy na głos",ilu:'<div class="kr-ikona">🎤</div>'},{v:"pisz",t:"Piszę",opis:"na klawiaturze",ilu:'<div class="kr-ikona">⌨️</div>'}]}],
+  start:w=>{refreshScope();if(!targets.length)return false;start(w.wybor.wejscie==="mow"?"mow":"pisz");}});
 loadWoj().then(loadCities);
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=11" />
+<link rel="stylesheet" href="wspolne.css?v=12" />
 <style>
 /* karta z herbem */
 .shield{flex:1;min-height:140px;position:relative;border-radius:var(--r);background:#E9EEEC;display:grid;place-items:center;overflow:hidden;
@@ -77,7 +77,7 @@
 
 </div>
 
-<script src="wspolne.js?v=11"></script>
+<script src="wspolne.js?v=12"></script>
 <script>
 const $=id=>document.getElementById(id);
 const norm=s=>s.toLowerCase()
@@ -205,7 +205,7 @@ function makeQuestion(c,pool){
   return {c,opts:shuffle(opts)};
 }
 function startGame(){
-  const pool=HERBY.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope")))&&!BAD.has(c.file));
+  const pool=HERBY.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope")))&&ZP.wObszarze(c)&&!BAD.has(c.file));
   if(pool.length<8){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
   const n=Math.min(+$("rounds").value,pool.length);
   const picks=ZP.losujNauka(pool,"herb",c=>c.name,n,$("ucz").value==="1");
@@ -217,7 +217,7 @@ function startGame(){
   if(game.wpis&&!POLE)POLE=ZP.poleWpisu($("wpis"),()=>HERBY.map(c=>c.name),v=>{
     const q=game.qs[game.i];
     if(ZP.pasuje(v,q.c.name))answer(q.c,null);else answer(v===null?null:{name:v},null);
-  },{placeholder:"Nazwa miasta…",pokazEtykieta:"Pokaż<br>(−2 pkt)",pokaz:()=>{
+  },{placeholder:"Nazwa miasta…",poprawne:()=>[game.qs[game.i].c.name],pokazEtykieta:"Pokaż podpowiedzi<br><small>−2 pkt</small>",pokaz:()=>{
     game.pokazano=true;$("answers").classList.remove("hidden");budujOpcje(game.qs[game.i]);
   }});
   $("hits").textContent=0;$("streak").textContent=0;refreshBest();
@@ -319,6 +319,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Enter"&&game.answered&&$("nextBtn"))$("nextBtn").click();
 });
 
+ZP.kreatorGry({klucz:"herb",kroki:["obszar","wielkosc",{pole:"rtime",tytul:"Ile czasu na herb?",domyslny:"15",opcje:[{v:"8",t:"8 s",opis:"dla szybkich",ilu:'<div class="kr-ikona">⚡</div>'},{v:"15",t:"15 s",opis:"w sam raz",ilu:'<div class="kr-ikona">⏱️</div>'},{v:"0",t:"Bez limitu",opis:"na spokojnie",ilu:'<div class="kr-ikona">☕</div>'}]},"rundy"]});
 loadData();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>

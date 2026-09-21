@@ -41,3 +41,12 @@ W **Miastach na czas** nie ma wyboru małe/średnie/duże — gra idzie przez ws
 - **Nad jaką rzeką?** rysuje przebieg rzeki po odpowiedzi (`rzeki-geo.json`, budowany razem z `rzeki.json`).
 - **Co to za miasto?** (`miasto.html`): zdjęcia z Wikidata (P18, P948) i Wikimedia Commons, z autorem i licencją; dane budowane przez `narzedzia/pobierz_miejsca.py`.
 - Wpisywanie nazw w „Miastach na czas” i „Wymień powiaty” nie przechwytuje krótszej nazwy, gdy dłuższa zaczyna się tak samo (Opole i Opole Lubelskie).
+
+
+## Kreator ustawień, poświata, fanfary
+
+- Każda gra zaczyna się od kreatora (`ZP.kreatorGry` w `wspolne.js`): obszar (cała Polska albo wybrane województwa z obrysami), wielkość miast (makiety małych, średnich i dużych miast), opcje danej gry i liczba rund na suwaku (domyślnie 5). Wybory zapamiętują się osobno dla każdej gry. Stary formularz zostaje ukryty i kreator wypełnia go przed startem.
+- Wybrany obszar: `ZP.OBSZAR`, filtr `ZP.wObszarze(obiekt)`.
+- Wpisywanie odpowiedzi: po lewej pole, po prawej „Pokaż podpowiedzi”; poprawna nazwa przechodzi sama, bez zatwierdzania.
+- Po każdej odpowiedzi zielona albo czerwona poświata (`ZP.zapisz` wywołuje `ZP.poswiata`); po wyniku co najmniej 80% fanfary, wiwaty i konfetti (`ZP.fanfary`, dźwięk syntezowany w przeglądarce).
+- Kontury (kształt, turniej): odpowiedzi odblokowują się po wczytaniu zdjęcia Esri, najwyżej po 3 s (`ZP.ksztaltZPodkladem`).

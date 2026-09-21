@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=11" />
+<link rel="stylesheet" href="wspolne.css?v=12" />
 <style>
 .duel{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;position:relative}
 .card{flex:1;min-height:0;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);
@@ -70,7 +70,7 @@
 </main>
 </div>
 
-<script src="wspolne.js?v=11"></script>
+<script src="wspolne.js?v=12"></script>
 <script>
 const {$,shuffle,pick,fmt}=ZP;
 let CITIES=[],game=null;
@@ -110,7 +110,7 @@ function fill(el,c,known){
   else el.querySelectorAll(".choice button").forEach(b=>b.onclick=()=>answer(+b.dataset.v));
 }
 function startGame(){
-  const pool=CITIES.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope"))));
+  const pool=CITIES.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope")))&&ZP.wObszarze(c));
   if(pool.length<10){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
   game={pool,used:new Set(),streak:0,log:[],busy:false};
   game.a=pick(pool);game.used.add(game.a);
@@ -175,6 +175,7 @@ document.addEventListener("keydown",e=>{
   if(!game||game.busy||$("duel").classList.contains("hidden"))return;
   if(e.key==="ArrowUp")answer(1);if(e.key==="ArrowDown")answer(-1);
 });
+ZP.kreatorGry({klucz:"wiecej",kroki:["obszar","wielkosc"]});
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>
