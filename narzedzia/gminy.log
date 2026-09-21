@@ -1,0 +1,49 @@
+Pobieram PRG…
+-rw-r--r-- 1 runner runner 377736438 Sep 21 07:32 prg.zip
+Plik gmin: ./A03_Granice_gmin.shp
+INFO: Open of `./A03_Granice_gmin.shp'
+      using driver `ESRI Shapefile' successful.
+
+Layer name: A03_Granice_gmin
+Metadata:
+  DBF_DATE_LAST_UPDATE=2026-09-17
+Geometry: Polygon
+Feature Count: 2479
+Extent: (14.122985, 49.002043) - (24.145783, 54.836417)
+Layer SRS WKT:
+GEOGCRS["ETRS89",
+    ENSEMBLE["European Terrestrial Reference System 1989 ensemble",
+        MEMBER["European Terrestrial Reference Frame 1989"],
+        MEMBER["European Terrestrial Reference Frame 1990"],
+        MEMBER["European Terrestrial Reference Frame 1991"],
+        MEMBER["European Terrestrial Reference Frame 1992"],
+        MEMBER["European Terrestrial Reference Frame 1993"],
+        MEMBER["European Terrestrial Reference Frame 1994"],
+        MEMBER["European Terrestrial Reference Frame 1996"],
+        MEMBER["European Terrestrial Reference Frame 1997"],
+        MEMBER["European Terrestrial Reference Frame 2000"],
+        MEMBER["European Terrestrial Reference Frame 2005"],
+        MEMBER["European Terrestrial Reference Frame 2014"],
+        ELLIPSOID["GRS 1980",6378137,298.257222101,
+            LENGTHUNIT["metre",1]],
+        ENSEMBLEACCURACY[0.1]],
+    PRIMEM["Greenwich",0,
+        ANGLEUNIT["degree",0.0174532925199433]],
+    CS[ellipsoidal,2],
+        AXIS["geodetic latitude (Lat)",north,
+            ORDER[1],
+            ANGLEUNIT["degree",0.0174532925199433]],
+        AXIS["geodetic longitude (Lon)",east,
+            ORDER[2],
+            ANGLEUNIT["degree",0.0174532925199433]],
+    USAGE[
+        SCOPE["Spatial referencing."],
+        AREA["Europe - onshore and offshore: Albania; Andorra; Austria; Belgium; Bosnia and Herzegovina; Bulgaria; Croatia; Cyprus; Czechia; Denmark; Estonia; Faroe Islands; Finland; France; Germany; Gibraltar; Greece; Hungary; Ireland; Italy; Kosovo; Latvia; Liechtenstein; Lithuania; Luxembourg; Malta; Moldova; Monaco; Montenegro; Netherlands; North Macedonia; Norway including Svalbard and Jan Mayen; Poland; Portugal; Romania; San Marino; Serbia; Slovakia; Slovenia; Spain; Sweden; Switzerland; United Kingdom (UK) including Channel Islands and Isle of Man; Vatican City State."],
+        BBOX[32.88,-16.1,84.73,40.18]],
+    ID["EPSG",4258]]
+npm warn deprecated geographiclib@1.48.0: This package has been split into geographic-geodesic + geographiclib-dms; use one or both of these instead of geographiclib.  WARNING: there's a potential buffer overrun on this package.  SWITCH TO THE NEW PACKAGES NOW.
+[simplify] Repaired 14 intersections
+[o] Wrote gminy.topojson
+Traceback (most recent call last):
+  File "<stdin>", line 3, in <module>
+KeyError: 'gminy'
