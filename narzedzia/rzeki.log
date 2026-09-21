@@ -1,23 +1,19 @@
   ponawiam https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
   ponawiam https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
 Overpass https://overpass-api.de/api/interpreter nie udało się: https://overpass-api.de/api/interpreter
-miast z OSM: 1026
-odcinków rzek: 17632
-nazwanych rzek: 1506 komórek siatki: 8655
-miast nad rzeką (OSM): 833
-zapisano: 833
-   Warszawa -> Wisła (2.0 km)
-   Wrocław -> Odra (0.7 km)
-   Kraków -> Wisła (0.9 km)
-   Poznań -> Warta (0.8 km)
-   Gdańsk -> Motława (1.0 km)
-   Szczecin -> Odra (1.1 km)
-   Lublin -> Bystrzyca (1.0 km)
-   Bydgoszcz -> Brda (0.2 km)
-   Białystok -> Biała (0.4 km)
-   Katowice -> Rawa (0.1 km)
-   Gdynia -> Kacza (3.3 km)
-   Częstochowa -> Warta (1.4 km)
-   Radom -> Mleczna (1.1 km)
-   Toruń -> Wisła (0.5 km)
-   Rzeszów -> Wisłok (0.6 km)
+  ponawiam https://overpass.kumi.systems/api/interpreter Remote end closed connection without response
+  ponawiam https://overpass.kumi.systems/api/interpreter HTTP Error 504: Gateway Timeout
+Overpass https://overpass.kumi.systems/api/interpreter nie udało się: https://overpass.kumi.systems/api/interpreter
+miast z OSM: 1027
+Traceback (most recent call last):
+  File "/home/runner/work/Miasta-pl/Miasta-pl/narzedzia/pobierz_rzeki.py", line 150, in <module>
+    main()
+  File "/home/runner/work/Miasta-pl/Miasta-pl/narzedzia/pobierz_rzeki.py", line 98, in main
+    els = rivers_osm()
+          ^^^^^^^^^^^^
+  File "/home/runner/work/Miasta-pl/Miasta-pl/narzedzia/pobierz_rzeki.py", line 61, in rivers_osm
+    els = overpass(q, timeout=900)["elements"]
+          ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/Miasta-pl/Miasta-pl/narzedzia/pobierz_rzeki.py", line 39, in overpass
+    raise RuntimeError("Overpass nie odpowiada: %s" % last)
+RuntimeError: Overpass nie odpowiada: nie udało się: https://overpass.kumi.systems/api/interpreter
