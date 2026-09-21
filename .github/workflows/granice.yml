@@ -1,0 +1,32 @@
+name: Granice gmin (PRG)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "narzedzia/gminy.sh"
+      - ".github/workflows/granice.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  gminy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq gdal-bin unzip
+      - name: Gminy
+        run: bash narzedzia/gminy.sh 2>&1 | tee narzedzia/gminy.log
+      - name: Zapisz zmiany
+        if: always()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add narzedzia/gminy.log
+          [ -f gminy.topojson ] && git add gminy.topojson || true
+          git diff --cached --quiet || (git commit -m "Granice gmin: PRG" && git pull --rebase && git push)
