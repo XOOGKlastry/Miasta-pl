@@ -1,8 +1,10 @@
+  ponawiam https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
+  ponawiam https://overpass-api.de/api/interpreter HTTP Error 504: Gateway Timeout
 miast z OSM: 1027
 odcinków rzek: 17630
 nazwanych rzek: 1506 komórek siatki: 8655
 miast nad rzeką (OSM): 833
-zapisano: 833
+zapisano: 833 przebiegów rzek: 472
    Warszawa -> Wisła (2.0 km)
    Wrocław -> Odra (0.7 km)
    Kraków -> Wisła (0.9 km)
