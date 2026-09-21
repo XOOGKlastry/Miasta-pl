@@ -152,7 +152,12 @@ def main():
     # łączymy odcinki tej samej rzeki, których końce leżą bliżej niż ok. 2,5 km
     # (przerwy przy zaporach, jeziorach i rozwidleniach koryta)
     TOL = 0.025
+    # ramiona dużych rzek („Odra Zachodnia”, „Martwa Wisła”) łączymy z rzeką główną,
+    # żeby przebieg sięgał aż do ujścia
+    grupy = defaultdict(list)
     for name, lista in po_nazwie.items():
+        grupy[glowna(name, dlugosc)].extend(lista)
+    for name, lista in grupy.items():
         kratki = defaultdict(list)
         for wi in lista:
             pts = drogi[wi][1]

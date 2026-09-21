@@ -135,7 +135,9 @@ function lap(pauza){
   if(r.stan==="nic")return;
   const p=game.set.find(x=>norm(x.short)===r.klucz);
   if(!p)return;
-  if(r.stan==="czekaj"&&pauza!==true){if(game.found.has(p.k))return;czekaj=setTimeout(()=>lap(true),1200);return;}
+  // już wpisany: nie czyść pola w trakcie pisania dłuższej nazwy, komunikat dopiero po przerwie
+  if(game.found.has(p.k)&&pauza!==true){czekaj=setTimeout(()=>lap(true),1600);return;}
+  if(r.stan==="czekaj"&&pauza!==true){czekaj=setTimeout(()=>lap(true),1200);return;}
   przyjmij(p);
 }
 $("guess").addEventListener("input",()=>{if(!game||game.over)return;clearTimeout(czekaj);lap();});

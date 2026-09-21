@@ -375,9 +375,15 @@ function lap(pauza){
   const r=LAP($("guess").value);
   if(r.stan==="nic")return;
   const t=byKey.get(r.klucz);
+  // już trafione (np. „Opole”, gdy ktoś pisze „Opole Lubelskie”): nie przerywaj pisania,
+  // komunikat dopiero po chwili bez pisania
+  if(t&&t.hit){
+    if(pauza===true){setMsg(t.name+" już było","dup");$("guess").value="";}
+    else czekaj=setTimeout(()=>lap(true),1600);
+    return;
+  }
   if(r.stan==="od razu"||pauza===true){przyjmij(r.klucz);return;}
   // jest dłuższa nazwa o tym samym początku: poczekaj, czy ktoś pisze dalej
-  if(t&&t.hit)return;
   czekaj=setTimeout(()=>lap(true),1200);
 }
 $("guess").addEventListener("input",()=>{

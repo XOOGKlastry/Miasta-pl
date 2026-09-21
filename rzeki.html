@@ -67,7 +67,7 @@
   <div class="target hidden" id="target"><div class="kind">Nad jaką rzeką leży</div><div class="nm" id="tName"></div></div>
   <section class="stage hidden" id="stage">
     <svg id="map" preserveAspectRatio="xMidYMid meet" class="hidden"></svg>
-    <div class="datastate" id="veil">Mapa pokaże się po odpowiedzi</div>
+    <div class="datastate hidden" id="veil"></div>
   </section>
   <div class="answers hidden" id="answers"></div>
   <div class="wpis hidden" id="wpis"></div>
@@ -132,7 +132,9 @@ function next(){
   const q=game.qs[game.i];game.answered=false;
   $("round").textContent=(game.i+1)+" / "+game.qs.length;
   $("tName").textContent=q.c.n;
-  $("map").classList.add("hidden");$("veil").classList.remove("hidden");
+  {const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
+   svg.innerHTML=base+'<circle class="dot" cx="'+P.x(q.c.lon).toFixed(1)+'" cy="'+P.y(q.c.lat).toFixed(1)+'" r="7"/>';
+   svg.classList.remove("hidden");$("veil").classList.add("hidden");}
   $("feedback").classList.add("hidden");
   game.pokazano=false;
   const box=$("answers");box.innerHTML="";
