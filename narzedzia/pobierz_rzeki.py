@@ -149,18 +149,23 @@ def main():
             rodzic[x] = rodzic.get(rodzic[x], rodzic[x])
             x = rodzic[x]
         return x
+    # łączymy odcinki tej samej rzeki, których końce leżą bliżej niż ok. 2,5 km
+    # (przerwy przy zaporach, jeziorach i rozwidleniach koryta)
+    TOL = 0.025
     for name, lista in po_nazwie.items():
-        konce = {}
+        kratki = defaultdict(list)
         for wi in lista:
             pts = drogi[wi][1]
             for p in (pts[0], pts[-1]):
-                k = (round(p[0], 6), round(p[1], 6))
-                if k in konce:
-                    a, b = znajdz(wi), znajdz(konce[k])
-                    if a != b:
-                        rodzic[a] = b
-                else:
-                    konce[k] = wi
+                ki, kj = int(p[0] / TOL), int(p[1] / TOL)
+                for di in (-1, 0, 1):
+                    for dj in (-1, 0, 1):
+                        for (q, wj) in kratki.get((ki + di, kj + dj), ()):
+                            if abs(q[0] - p[0]) < TOL and abs(q[1] - p[1]) < TOL * 1.6:
+                                a, b = znajdz(wi), znajdz(wj)
+                                if a != b:
+                                    rodzic[a] = b
+                kratki[(ki, kj)].append((p, wi))
     skladowe = defaultdict(list)
     for wi in drogi:
         skladowe[znajdz(wi)].append(wi)
