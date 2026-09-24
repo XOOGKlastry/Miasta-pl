@@ -24,7 +24,7 @@ function inRing(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;
 function bboxOf(ring){let a=[1e9,1e9,-1e9,-1e9];ring.forEach(([x,y])=>{if(x<a[0])a[0]=x;if(y<a[1])a[1]=y;if(x>a[2])a[2]=x;if(y>a[3])a[3]=y;});return a;}
 async function loadWoj(){
   if(WOJ)return WOJ;
-  const gj=await (await fetch("woj.geojson?v=12")).json();
+  const gj=await (await fetch("woj.geojson?v=13")).json();
   WOJ=gj.features.map(f=>{const g=f.geometry,rings=g.type==="Polygon"?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);return {name:f.properties.nazwa,rings,bb:rings.map(bboxOf),f};});
   return WOJ;
 }
@@ -117,6 +117,10 @@ function odliczanie(el,tytul,podpis,n,gotowe,kolor){
   return id;
 }
 
+/* ---- fokus tylko na komputerze: na telefonie klawiatura otwiera się dopiero po stuknięciu w pole ---- */
+const DOTYK=window.matchMedia&&window.matchMedia("(pointer:coarse)").matches;
+function fokus(el){if(el&&!DOTYK)try{el.focus({preventScroll:true});}catch(e){}}
+
 /* ---- pole do wpisywania odpowiedzi (tryb ekspert) z podpowiedziami nad polem ---- */
 function poleWpisu(el,nazwy,onOdp,opts){
   opts=opts||{};
@@ -143,7 +147,7 @@ function poleWpisu(el,nazwy,onOdp,opts){
   function wyslij(){
     if(wyl)return;
     const v=inp.value.trim();
-    if(!v){inp.focus();return;}
+    if(!v){fokus(inp);return;}
     ac.style.display="none";
     onOdp(v);
   }
@@ -153,7 +157,7 @@ function poleWpisu(el,nazwy,onOdp,opts){
     pokaz();
   });
   inp.addEventListener("keydown",e=>{
-    if(e.key==="Enter"){e.preventDefault();if(ac.style.display==="flex"&&items.length)inp.value=items[sel];wyslij();}
+    if(e.key==="Enter"){e.preventDefault();e.stopPropagation();if(wyl)return;if(ac.style.display==="flex"&&items.length)inp.value=items[sel];wyslij();}
     if(ac.style.display==="flex"&&items.length&&(e.key==="ArrowUp"||e.key==="ArrowDown")){
       e.preventDefault();sel=(sel+(e.key==="ArrowUp"?1:items.length-1))%items.length;
       [...ac.children].forEach((d,i)=>d.classList.toggle("sel",i===sel));
@@ -161,7 +165,7 @@ function poleWpisu(el,nazwy,onOdp,opts){
   });
 
   return {
-    focus(){inp.focus();},
+    focus(){fokus(inp);},
     wyczysc(){inp.value="";ac.style.display="none";},
     wylacz(b){wyl=!!b;inp.disabled=!!b;if(pok)pok.disabled=!!b;if(b)ac.style.display="none";},
     input:inp
@@ -265,6 +269,7 @@ function fanfary(){
 function obserwujKoniec(){
   const sprawdz=()=>{
     const s=sesja;sesja={ok:0,wszystkie:0};
+    if(POJ){setTimeout(koniecRundyPoj,500);return;}
     if(s.wszystkie>=3&&s.ok/s.wszystkie>=0.8)setTimeout(fanfary,250);
   };
   ["summary","done"].forEach(id=>{
@@ -274,6 +279,77 @@ function obserwujKoniec(){
   });
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujKoniec);else obserwujKoniec();
+
+/* ---- mapa „Gdzie to jest?”: ciemny podkład Esri bez podpisów, granice województw, przybliżanie ---- */
+function mapaGdzie(el){
+  const PL_B=L.latLngBounds([48.9,13.9],[55.0,24.3]);
+  const map=L.map(el,{zoomControl:true,attributionControl:true,minZoom:5,maxZoom:12,maxBounds:PL_B.pad(0.4),zoomSnap:0.25});
+  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",{maxZoom:16,attribution:"Esri"}).addTo(map);
+  map.fitBounds(PL_B);
+  loadWoj().then(w=>L.geoJSON({type:"FeatureCollection",features:w.map(x=>x.f)},{style:()=>({color:"#6FA3AA",weight:1.2,opacity:.8,fill:false}),interactive:false}).addTo(map)).catch(()=>{});
+  const ov=L.layerGroup().addTo(map),PIN={radius:8,color:"#0A181B",weight:2,fillColor:"#E8F1EE",fillOpacity:1};
+  let aktywna=false,cb=null;
+  map.on("click",e=>{
+    if(!aktywna)return;
+    ov.clearLayers();L.circleMarker(e.latlng,PIN).addTo(ov);
+    cb&&cb({lat:e.latlng.lat,lon:e.latlng.lng});
+  });
+  if(window.ResizeObserver)new ResizeObserver(()=>map.invalidateSize({pan:false})).observe(map.getContainer());
+  return {map,
+    start(){aktywna=true;ov.clearLayers();map.invalidateSize({pan:false});map.flyToBounds(PL_B,{duration:.4});},
+    naKlik(f){cb=f;},
+    pokaz(c,g){
+      aktywna=false;ov.clearLayers();
+      L.circle([c.lat,c.lon],{radius:50000,color:"#F2C14E",weight:1,opacity:.6,fill:false,interactive:false}).addTo(ov);
+      L.polyline([[g.lat,g.lon],[c.lat,c.lon]],{color:"#F2C14E",weight:2,dashArray:"6 5",interactive:false}).addTo(ov);
+      L.circleMarker([g.lat,g.lon],PIN).addTo(ov);
+      L.circleMarker([c.lat,c.lon],{radius:9,color:"#0A181B",weight:2,fillColor:"#F2C14E",fillOpacity:1}).addTo(ov)
+        .bindTooltip(c.name,{permanent:true,direction:"top",className:"nazwa",offset:[0,-8]});
+      map.flyToBounds(L.latLngBounds([[g.lat,g.lon],[c.lat,c.lon]]).pad(0.5),{maxZoom:9,duration:.6});
+    }
+  };
+}
+
+/* ---- pojedynek na jednym telefonie: obaj gracze dostają te same pytania ---- */
+let POJ=null;const LOS=Math.random;
+function ziarno(s){Math.random=seeded("pojedynek-"+s);}
+function planszaPoj(html,przyciski){
+  let el=document.getElementById("zp-poj");
+  if(!el){el=document.createElement("div");el.id="zp-poj";document.body.appendChild(el);}
+  el.innerHTML='<div class="okno">'+html+'<div class="btnrow">'+przyciski.map((b,i)=>'<button class="'+(b.glowny?"big":"ghost")+'" data-i="'+i+'">'+b.t+'</button>').join("")+'</div></div>';
+  el.classList.remove("hidden");
+  el.querySelectorAll("[data-i]").forEach(x=>x.onclick=()=>{el.classList.add("hidden");przyciski[+x.dataset.i].f();});
+}
+function znaczek(){
+  let z=document.getElementById("zp-gracz");
+  if(!POJ){if(z)z.remove();return;}
+  if(!z){z=document.createElement("div");z.id="zp-gracz";document.body.appendChild(z);}
+  z.textContent="Gracz "+POJ.gracz;z.className="g"+POJ.gracz;
+}
+function odliczPoj(tytul,gotowe){
+  let el=document.getElementById("zp-odl");
+  if(!el){el=document.createElement("div");el.id="zp-odl";el.className="odlicz";document.body.appendChild(el);}
+  odliczanie(el,tytul,"te same pytania dla obojga",3,gotowe,POJ&&POJ.gracz===2?"#7FD8C6":"#F2C14E");
+}
+function wynikZPodsumowania(){
+  const s=document.querySelector("#summary .score,#done .score");
+  if(!s)return 0;
+  const m=s.textContent.replace(/\s/g,"").match(/-?\d+/);return m?+m[0]:0;
+}
+function koniecRundyPoj(){
+  const w=wynikZPodsumowania();
+  if(POJ.gracz===1){
+    POJ.wyniki[0]=w;
+    planszaPoj('<b class="kto2">Gracz 2</b><p>Gracz 1 zdobył <strong>'+fmt(w)+'</strong>. Teraz Twoja kolej: te same pytania, w tej samej kolejności.</p>',
+      [{t:"Zaczynam",glowny:true,f:()=>{POJ.gracz=2;znaczek();ziarno(POJ.seed);odliczPoj("Gracz 2",()=>{const b=document.getElementById("againBtn");if(b)b.click();});}}]);
+  }else{
+    POJ.wyniki[1]=w;Math.random=LOS;
+    const [a,b]=POJ.wyniki,remis=a===b,wyg=a>b?1:2;
+    planszaPoj('<b>'+(remis?"Remis!":"Wygrywa gracz "+wyg+"!")+'</b><div class="tabela"><div class="'+(wyg===1&&!remis?"lider":"")+'"><span>Gracz 1</span><strong>'+fmt(a)+'</strong></div><div class="'+(wyg===2&&!remis?"lider":"")+'"><span>Gracz 2</span><strong>'+fmt(b)+'</strong></div></div>',
+      [{t:"Koniec",f:()=>{POJ=null;znaczek();}},{t:"Rewanż",glowny:true,f:()=>{POJ={gracz:1,seed:(LOS()*1e9)|0,wyniki:[]};znaczek();ziarno(POJ.seed);odliczPoj("Gracz 1",()=>{const b=document.getElementById("againBtn");if(b)b.click();});}}]);
+    if(!remis)setTimeout(fanfary,300);
+  }
+}
 
 /* ---- obszar gry: puste = cała Polska, inaczej lista nazw województw ---- */
 let OBSZAR=[];
@@ -329,6 +405,13 @@ function kreatorGry(cfg){
       tresc='<div class="kr-karty trzy">'+[["m","Małe","do 20 tys."],["s","Średnie","20 do 100 tys."],["d","Duże","ponad 100 tys."]].map(([v,t,o])=>
         '<button class="kr-karta maly'+(w.wielkosc.indexOf(v)>=0?" wybrana":"")+'" data-v="'+v+'">'+ILU[v]+'<b>'+t+'</b><small>'+o+'</small></button>').join("")+'</div>';
       dalej=w.wielkosc.length>0;
+    }else if(krok==="pojedynek"){
+      tyt="Kto gra?";pod="W pojedynku obie osoby dostają te same pytania, jedna po drugiej.";
+      const akt=w.wybor.pojedynek||"1";
+      tresc='<div class="kr-karty dwie">'
+        +'<button class="kr-karta'+(akt==="1"?" wybrana":"")+'" data-p="1"><div class="kr-ikona">🧭</div><b>Sam</b><small>własny rekord</small></button>'
+        +'<button class="kr-karta'+(akt==="2"?" wybrana":"")+'" data-p="2"><div class="kr-ikona">⚔️</div><b>Pojedynek</b><small>dwie osoby, jeden telefon</small></button></div>';
+      dalej=false;
     }else if(krok==="rundy"){
       tyt="Ile rund?";pod="Przesuń albo przewiń kółkiem.";
       tresc='<div class="kr-rundy"><div class="kr-liczba">'+w.rundy+'</div>'
@@ -354,6 +437,11 @@ function kreatorGry(cfg){
       if(ix>=0)w.woj.splice(ix,1);else w.woj.push(n);
       b.classList.toggle("wybrana");
       const d=k.querySelector(".kr-dalej");if(d)d.disabled=!w.woj.length;
+    });
+    k.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{
+      w.wybor.pojedynek=b.dataset.p;
+      k.querySelectorAll("[data-p]").forEach(x=>x.classList.toggle("wybrana",x===b));
+      setTimeout(dalejKrok,180);
     });
     k.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>{
       const v=b.dataset.v;
@@ -391,12 +479,24 @@ function kreatorGry(cfg){
       const el=document.getElementById(kr.pole),v=w.wybor[kr.pole]!=null?w.wybor[kr.pole]:kr.domyslny;
       if(el){el.value=v;el.dispatchEvent(new Event("change"));}
     }});
-    const go=()=>{
+    // pojedynek: bez trybu nauki (inaczej drugi gracz dostałby inne pytania) i ze wspólnym ziarnem losowania
+    if(kroki.indexOf("pojedynek")>=0&&w.wybor.pojedynek==="2"){
+      POJ={gracz:1,seed:(LOS()*1e9)|0,wyniki:[]};
+      const u=document.getElementById("ucz");if(u)u.value="0";
+    }else{POJ=null;Math.random=LOS;}
+    znaczek();
+    const go0=()=>{
+      if(POJ)ziarno(POJ.seed);
       if(cfg.start)return cfg.start(w);
       const b=document.getElementById("startBtn");
       if(b&&!b.disabled){b.click();return true;}
       return false;
     };
+    const go=()=>go0();
+    if(POJ){
+      odliczPoj("Gracz 1",()=>{if(go()===false){const id=setInterval(()=>{if(go()!==false)clearInterval(id);},300);}});
+      return;
+    }
     if(go()===false){
       const stan=k.querySelector(".kr-stan");
       const id=setInterval(()=>{
@@ -427,7 +527,7 @@ const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie",
 let POWC=null;
 async function loadPowiaty(){
   if(POWC)return POWC;
-  const t=await (await fetch("powiaty.topojson?v=12")).json();
+  const t=await (await fetch("powiaty.topojson?v=13")).json();
   const o=t.objects.powiaty,nbi=topojson.neighbors(o.geometries),fs=topojson.feature(t,o).features;
   POWC=fs.map((f,i)=>{
     const k=f.properties.k,n=f.properties.n,city=+k.slice(2)>=60;
@@ -533,12 +633,13 @@ let GMC=null;
 async function loadGminy(){
   if(GMC)return GMC;
   const pw=await loadPowiaty();
-  const t=await (await fetch("gminy.topojson?v=12")).json();
+  const t=await (await fetch("gminy.topojson?v=13")).json();
   const o=t.objects.gminy||Object.values(t.objects).sort((a,b)=>(b.geometries||[]).length-(a.geometries||[]).length)[0];
   const fs=topojson.feature(t,o).features;
   const powNazwa={};pw.forEach(p=>powNazwa[p.k]=p.full);
   const ile={};fs.forEach(f=>{const n=f.properties.n;ile[n]=(ile[n]||0)+1;});
-  GMC=fs.filter(f=>f.geometry&&String(f.properties.k).slice(-1)<"4").map(f=>{
+  // bez miast na prawach powiatu: tam gmina i powiat to ten sam obszar i ta sama nazwa
+  GMC=fs.filter(f=>f.geometry&&String(f.properties.k).slice(-1)<"4"&&+String(f.properties.k).slice(2,4)<60).map(f=>{
     const k=String(f.properties.k),n=f.properties.n,typ=k.slice(-1);
     let b=[1e9,1e9,-1e9,-1e9];
     const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
@@ -554,5 +655,5 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

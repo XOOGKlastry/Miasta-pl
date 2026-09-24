@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=12" />
+<link rel="stylesheet" href="wspolne.css?v=13" />
 <style>
 svg path{fill-rule:evenodd}
 .stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden}
@@ -103,8 +103,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=12"></script>
-<script src="wspolne.js?v=12"></script>
+<script src="topojson-client.min.js?v=13"></script>
+<script src="wspolne.js?v=13"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -196,7 +196,7 @@ function next(){
 function startRundy(q){
   ["answers","inputrow"].forEach(id=>$(id).classList.remove("czeka"));
   if(game.wpis){
-    $("guess").value="";$("guess").disabled=false;$("passBtn").disabled=false;$("pokazBtn").disabled=false;$("guess").focus();
+    $("guess").value="";$("guess").disabled=false;$("passBtn").disabled=false;$("pokazBtn").disabled=false;ZP.fokus($("guess"));
     game.pokazano=false;$("answers").classList.add("hidden");
     $("tbar").classList.remove("malo");$("tfill").style.width="100%";
     const t0=Date.now();
@@ -273,12 +273,19 @@ function endGame(){
   $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
 }
 $("startBtn").onclick=startGame;
+$("guess").addEventListener("keydown",e=>{
+  if(e.key!=="Enter")return;
+  e.preventDefault();e.stopPropagation();
+  if(!game||!game.wpis||game.answered||!$("guess").value.trim())return;
+  const q=game.qs[game.i];
+  answer(ZP.pasuje($("guess").value,[q.p.short,q.p.full,q.p.label])?q.p:{label:$("guess").value},null);
+});
 document.addEventListener("keydown",e=>{
-  if(!game)return;
+  if(!game||e.target.tagName==="INPUT")return;
   if(/^[1-4]$/.test(e.key)&&!game.answered){const b=$("answers").children[+e.key-1];if(b)b.click();}
   if(e.key==="Enter"&&game.answered&&$("nextBtn"))$("nextBtn").click();
 });
-ZP.kreatorGry({klucz:"ksztalt",kroki:[{pole:"jedn",tytul:"Co zgadujesz?",domyslny:"p",opcje:[{v:"p",t:"Powiaty",opis:"380 kształtów",ilu:'<svg viewBox="0 0 100 92" class="kr-pl"><path d="M22 18 L48 10 L70 20 L84 44 L72 74 L42 82 L18 62 L12 38 Z"/></svg>'},{v:"g",t:"Gminy",opis:"2477 kształtów, dla wytrwałych",ilu:'<svg viewBox="0 0 100 92" class="kr-pl"><path d="M30 20 L52 14 L66 30 L62 52 L70 70 L48 78 L30 64 L22 40 Z"/></svg>'}]},"obszar","rundy"]});
+ZP.kreatorGry({klucz:"ksztalt",kroki:["pojedynek",{pole:"jedn",tytul:"Co zgadujesz?",domyslny:"p",opcje:[{v:"p",t:"Powiaty",opis:"380 kształtów",ilu:'<svg viewBox="0 0 100 92" class="kr-pl"><path d="M22 18 L48 10 L70 20 L84 44 L72 74 L42 82 L18 62 L12 38 Z"/></svg>'},{v:"g",t:"Gminy",opis:"2477 kształtów, dla wytrwałych",ilu:'<svg viewBox="0 0 100 92" class="kr-pl"><path d="M30 20 L52 14 L66 30 L62 52 L70 70 L48 78 L30 64 L22 40 Z"/></svg>'}]},"obszar","rundy"]});
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>

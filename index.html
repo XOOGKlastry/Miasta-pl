@@ -96,7 +96,7 @@ try{
     document.getElementById("dailyR").style.fontSize="14px";
   }else if(ser.n>0){document.getElementById("dailyS").textContent="Seria "+ser.n+", nie przerwij jej dzisiaj";}
 }catch(e){}
-fetch("woj.geojson?v=12").then(r=>r.json()).then(gj=>{
+fetch("woj.geojson?v=13").then(r=>r.json()).then(gj=>{
   const k=Math.cos(52*Math.PI/180),W=13.9,E=24.3,N=55.0,S=48.9;
   const s=Math.min(100/((E-W)*k),100/(N-S));
   const ox=(100-(E-W)*k*s)/2, oy=(100-(N-S)*s)/2;

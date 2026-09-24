@@ -13,7 +13,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=12" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<link rel="stylesheet" href="wspolne.css?v=13" />
 <style>
 svg path{fill-rule:evenodd}
 .dots{display:flex;gap:4px;flex:none}
@@ -33,6 +34,11 @@ svg path{fill-rule:evenodd}
 #map text{font-family:"Fraunces",serif;font-weight:600;font-size:22px;fill:var(--paper);paint-order:stroke;stroke:var(--ink);stroke-width:5px;stroke-linejoin:round}
 #shape .obrys{stroke:var(--gold);stroke-width:2.2;stroke-linejoin:round;vector-effect:non-scaling-stroke;fill:none}
 #map{cursor:crosshair}
+#lmap{position:absolute;inset:0;z-index:1;background:#1b1f22}
+#lmap .leaflet-container,#lmap{font-family:inherit}
+.leaflet-bar a{background:var(--ink-2);color:var(--paper);border-color:var(--line-2)}
+.nazwa{background:var(--gold);color:var(--gold-ink);border:none;font-family:"Fraunces",serif;font-weight:700;font-size:14px;padding:3px 9px;border-radius:6px}
+.nazwa::before{display:none}
 .tip{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-size:12px;color:var(--dim);pointer-events:none;z-index:3}
 .duel{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;padding:10px;position:relative;z-index:2}
 .duel .karta{background:var(--ink-2);border:1px solid var(--line-2);border-radius:12px;padding:12px 8px;text-align:center}
@@ -77,7 +83,8 @@ svg path{fill-rule:evenodd}
 
   <div class="target hidden" id="target"><div class="kind" id="tKind"></div><div class="nm" id="tName"></div></div>
   <section class="stage hidden" id="stage">
-    <svg id="map" preserveAspectRatio="xMidYMid meet" class="hidden"></svg>
+    <div id="lmap" class="hidden"></div>
+    <svg id="map" class="hidden"></svg>
     <svg id="shape" preserveAspectRatio="xMidYMid meet" class="hidden"></svg>
     <img id="coa" class="hidden" alt="Herb" />
     <div class="duel hidden" id="duel">
@@ -95,8 +102,9 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=12"></script>
-<script src="wspolne.js?v=12"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="topojson-client.min.js?v=13"></script>
+<script src="wspolne.js?v=13"></script>
 <script>
 const {$,shuffle,pick,fmt}=ZP;
 const SCORE=km=>Math.round(1000*Math.exp(-km/150));
@@ -171,7 +179,7 @@ function paintDots(){
     d.className=r?(r.pts>=700?"g":r.pts>=300?"y":"r"):(i===game.i?"now":"");
   });
 }
-function hidePola(){["map","shape","coa","duel","tip","answers","wpis","okBtn","feedback"].forEach(id=>$(id).classList.add("hidden"));}
+function hidePola(){["lmap","map","shape","coa","duel","tip","answers","wpis","okBtn","feedback"].forEach(id=>$(id).classList.add("hidden"));}
 let POLE=null,NAZWY_WPIS=[],POPRAWNE=[];
 function wpisz(lista,poprawne){
   NAZWY_WPIS=lista;POPRAWNE=poprawne;
@@ -190,8 +198,9 @@ function next(){
   paintDots();
   if(q.typ==="g"){
     $("tKind").textContent="Gdzie to jest?";$("tName").textContent=q.c.name;
-    $("map").setAttribute("viewBox","0 0 600 "+P.H.toFixed(0));$("map").innerHTML=base+'<g id="ov"></g>';
-    $("map").classList.remove("hidden");$("tip").classList.remove("hidden");
+    $("lmap").classList.remove("hidden");$("tip").classList.remove("hidden");
+    if(!MAPA){MAPA=ZP.mapaGdzie($("lmap"));MAPA.naKlik(g=>{if(!game||game.answered)return;game.guess=g;$("tip").classList.add("hidden");$("okBtn").disabled=false;});}
+    MAPA.start();
     $("okBtn").classList.remove("hidden");$("okBtn").disabled=true;
     return;
   }
@@ -242,19 +251,11 @@ function opcje(teksty,czyOk){
     box.appendChild(b);
   });
 }
-$("map").addEventListener("click",e=>{
-  if(!game||game.answered||game.qs[game.i].typ!=="g")return;
-  const svg=$("map"),pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
-  const q=pt.matrixTransform(svg.getScreenCTM().inverse());
-  game.guess={x:q.x,y:q.y,lon:P.lon(q.x),lat:P.lat(q.y)};
-  $("ov").innerHTML='<circle class="pin" cx="'+q.x.toFixed(1)+'" cy="'+q.y.toFixed(1)+'" r="8"/>';
-  $("tip").classList.add("hidden");$("okBtn").disabled=false;
-});
+let MAPA=null;
 $("okBtn").onclick=()=>{
   if(!game||game.answered||!game.guess)return;game.answered=true;
-  const c=game.qs[game.i].c,g=game.guess,d=ZP.km(c,g),pts=SCORE(d),tx=P.x(c.lon),ty=P.y(c.lat);
-  $("ov").innerHTML='<line class="ln" x1="'+g.x+'" y1="'+g.y+'" x2="'+tx+'" y2="'+ty+'"/><circle class="pin" cx="'+g.x+'" cy="'+g.y+'" r="7"/><circle class="truth" cx="'+tx+'" cy="'+ty+'" r="9"/><text x="'+tx+'" y="'+(ty-18)+'" text-anchor="'+(tx>480?"end":tx<120?"start":"middle")+'"></text>';
-  $("ov").querySelector("text").textContent=c.name;
+  const c=game.qs[game.i].c,g=game.guess,d=ZP.km(c,g),pts=SCORE(d);
+  MAPA.pokaz(c,g);
   $("okBtn").classList.add("hidden");
   zapisz(pts,d<=30,Math.round(d));
 };
@@ -302,7 +303,7 @@ function endGame(){
   $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
 }
 $("startBtn").onclick=startGame;
-ZP.kreatorGry({klucz:"turniej",kroki:["obszar","wielkosc"]});
+ZP.kreatorGry({klucz:"turniej",kroki:["pojedynek","obszar","wielkosc"]});
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=12" />
+<link rel="stylesheet" href="wspolne.css?v=13" />
 <style>
 svg path{fill-rule:evenodd}
 .target{flex:none;text-align:center}
@@ -33,6 +33,18 @@ svg path{fill-rule:evenodd}
 #map.pojaw{animation:pojaw .45s ease-out}
 @keyframes pojaw{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 .target.zmiana{animation:wejscie .35s both}
+/* lupa: powiększenie gęsto położonych małych jednostek (Śląsk, Trójmiasto, miasta na prawach powiatu) */
+.lupa{position:absolute;width:40%;aspect-ratio:1;z-index:5;border-radius:12px;overflow:hidden;background:var(--ink-3);
+  border:2px solid var(--gold);box-shadow:0 8px 22px rgba(0,0,0,.5);animation:wejscie .4s .2s both}
+.lupa.pg{right:8px;top:8px}
+.lupa.pd{right:8px;bottom:34px}
+.lupa svg{width:100%;height:100%;display:block;cursor:crosshair}
+.lupa path{fill:#1D3D43;stroke:#6FA3AA;stroke-width:1.2;vector-effect:non-scaling-stroke;transition:fill .35s}
+.lupa path.dobrze{fill:var(--ok)}.lupa path.zle{fill:var(--red)}.lupa path.cel{fill:var(--gold)}
+.lupa span{position:absolute;left:6px;top:4px;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);pointer-events:none}
+.lupa text{text-anchor:middle;dominant-baseline:middle;font-weight:600;fill:#CFE0DD;paint-order:stroke;stroke:#0A181B;stroke-linejoin:round;pointer-events:none;animation:etykieta .45s ease-out forwards;opacity:0}
+.lupa text.cel{font-weight:800;fill:#0A181B;stroke:#FFE7A3}
+#map .ramka-lupy{fill:none;stroke:var(--gold);stroke-width:1.5;stroke-dasharray:4 3;vector-effect:non-scaling-stroke;pointer-events:none}
 .tip{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:13px;color:var(--dim);pointer-events:none}
 </style>
 </head>
@@ -77,8 +89,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=12"></script>
-<script src="wspolne.js?v=12"></script>
+<script src="topojson-client.min.js?v=13"></script>
+<script src="wspolne.js?v=13"></script>
 <script>
 const {$,shuffle}=ZP;
 let POW=[],WOJ=[],PL=null,game=null,GM=null;
@@ -128,12 +140,21 @@ function ramka(P,f){
   return b;
 }
 function podpisy(P,items,celK){
+  // podpisy także w lupach, w skali dopasowanej do przybliżenia
+  document.querySelectorAll("#stage .lupa svg").forEach(sv=>{
+    const [vx,vy,vw,vh]=sv.getAttribute("viewBox").split(" ").map(Number),f=vw/14;
+    let g='<g>';
+    items.forEach(it=>{const [lo,la]=srodek(it.f),x=P.x(lo),y=P.y(la);if(x<vx||x>vx+vw||y<vy||y>vy+vh)return;
+      g+='<text class="'+(it.k===celK?"cel":"")+'" x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" style="font-size:'+(it.k===celK?f*1.3:f).toFixed(2)+'px;stroke-width:'+(f/4).toFixed(2)+'px">'+(it.nazwa||it.short||it.n)+'</text>';});
+    sv.insertAdjacentHTML("beforeend",g+'</g>');
+  });
   let s='<g>';
   items.forEach(it=>{const [lo,la]=srodek(it.f);
     s+='<text class="'+(it.k===celK?"cel":"")+'" x="'+P.x(lo).toFixed(1)+'" y="'+P.y(la).toFixed(1)+'" style="animation-delay:'+(it.k===celK?0:.15)+'s">'+(it.nazwa||it.short||it.n)+'</text>';});
   $("map").insertAdjacentHTML("beforeend",s+'</g>');
 }
 function przybliz(b,gotowe){
+  usunLupy();
   // płynne przybliżenie do wskazanego obszaru, potem rysujemy go na nowo w pełnej skali
   const svg=$("map"),v0=svg.getAttribute("viewBox").split(" ").map(Number);
   const pad=0.08*Math.max(b[2]-b[0],b[3]-b[1]);
@@ -145,8 +166,41 @@ function przybliz(b,gotowe){
     if(q<1)requestAnimationFrame(krok);else gotowe();
   })(t0);
 }
+function oznacz(k,cls){document.querySelectorAll('#stage [data-k="'+k+'"]').forEach(x=>x.classList.add(cls));}
+function usunLupy(){document.querySelectorAll("#stage .lupa").forEach(x=>x.remove());document.querySelectorAll("#map .ramka-lupy").forEach(x=>x.remove());}
+function lupy(set,P,typ){
+  usunLupy();
+  const W=500,it=set.map(u=>{const b=ramka(P,u.f);return {u,b,w:b[2]-b[0],h:b[3]-b[1],cx:(b[0]+b[2])/2,cy:(b[1]+b[3])/2};});
+  const male=it.filter(x=>Math.max(x.w,x.h)<W*0.075);
+  // grupowanie małych jednostek leżących blisko siebie
+  const grupy=[];
+  male.forEach(x=>{
+    const g=grupy.find(g=>g.some(y=>Math.hypot(x.cx-y.cx,x.cy-y.cy)<W*0.13));
+    if(g)g.push(x);else grupy.push([x]);
+  });
+  // scal grupy, które się zazębiły
+  for(let a=0;a<grupy.length;a++)for(let b=a+1;b<grupy.length;b++){
+    if(grupy[a].some(x=>grupy[b].some(y=>Math.hypot(x.cx-y.cx,x.cy-y.cy)<W*0.13))){grupy[a]=grupy[a].concat(grupy[b]);grupy.splice(b,1);b=a;}
+  }
+  const wybrane=grupy.filter(g=>g.length>=2||Math.max(g[0].w,g[0].h)<W*0.04).sort((a,b)=>b.length-a.length).slice(0,2);
+  const rogi=["pg","pd"];
+  wybrane.forEach((g,ix)=>{
+    let b=[1e9,1e9,-1e9,-1e9];g.forEach(x=>{b[0]=Math.min(b[0],x.b[0]);b[1]=Math.min(b[1],x.b[1]);b[2]=Math.max(b[2],x.b[2]);b[3]=Math.max(b[3],x.b[3]);});
+    const pad=Math.max(W*0.1,0.35*Math.max(b[2]-b[0],b[3]-b[1]));   // z sąsiadami dookoła, żeby było wiadomo, gdzie jesteśmy
+    let x0=b[0]-pad,y0=b[1]-pad,w=b[2]-b[0]+2*pad,h=b[3]-b[1]+2*pad;
+    if(w<h){x0-=(h-w)/2;w=h;}else{y0-=(w-h)/2;h=w;}
+    const skala=w/W;
+    const div=document.createElement("div");div.className="lupa "+rogi[ix];
+    div.innerHTML='<svg viewBox="'+[x0,y0,w,h].map(v=>v.toFixed(1)).join(" ")+'" preserveAspectRatio="xMidYMid meet" data-skala="'+skala.toFixed(3)+'">'
+      +set.map(u=>'<path data-k="'+u.k+'" data-typ="'+typ+'" d="'+P.path(u.f.geometry,0.2)+'"/>').join("")+'</svg><span>lupa</span>';
+    $("stage").appendChild(div);
+    div.querySelector("svg").addEventListener("click",e=>{e.stopPropagation();klik(e.target.closest("path"));});
+    $("map").insertAdjacentHTML("beforeend",'<rect class="ramka-lupy" x="'+x0.toFixed(1)+'" y="'+y0.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="4"/>');
+  });
+}
 function pokazNowa(){const svg=$("map");svg.classList.remove("pojaw");void svg.getBoundingClientRect();svg.classList.add("pojaw");}
 function rysujPolske(){
+  usunLupy();
   const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+PL.H.toFixed(0));
   svg.innerHTML=WOJ.map(w=>'<path data-k="'+w.k+'" data-typ="w" d="'+PL.path(w.f.geometry)+'"/>').join("");
 }
@@ -155,14 +209,14 @@ function rysujPowiat(kod){
   const P=ZP.projection(set.map(p=>p.f),500,14);game.P=P;
   const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
   svg.innerHTML=set.map(p=>'<path data-k="'+p.k+'" data-typ="g" d="'+P.path(p.f.geometry)+'"/>').join("");
-  game.zestaw=set;pokazNowa();
+  game.zestaw=set;pokazNowa();lupy(set,P,"g");
 }
 function rysujWoj(kod){
   const set=POW.filter(p=>p.k.startsWith(kod));
   const P=ZP.projection(set.map(p=>p.f),500,14);game.P=P;
   const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
   svg.innerHTML=set.map(p=>'<path data-k="'+p.k+'" data-typ="p" d="'+P.path(p.f.geometry)+'"/>').join("");
-  game.zestaw=set;pokazNowa();
+  game.zestaw=set;pokazNowa();lupy(set,P,"p");
 }
 function next(){
   game.i++;
@@ -176,23 +230,23 @@ function next(){
   $("feedback").classList.add("hidden");
   rysujPolske();
 }
-$("map").addEventListener("click",e=>{
-  const el=e.target.closest("path");
-  if(!game||!el||game.koniec)return;
+$("map").addEventListener("click",e=>klik(e.target.closest("path")));
+function klik(el){
+  if(!game||!el||game.koniec||!el.dataset.k)return;
   const p=game.qs[game.i];
   if(game.etap===1){
     game.etap=-1;
     const kod=p.k.slice(0,2),ok=el.dataset.k===kod;
-    el.classList.add(ok?"dobrze":"zle");
-    if(!ok){game.blad=1;const cel=$("map").querySelector('[data-k="'+kod+'"]');if(cel)cel.classList.add("cel");}
+    oznacz(el.dataset.k,ok?"dobrze":"zle");
+    if(!ok){game.blad=1;oznacz(kod,"cel");}
     podpisy(PL,WOJ,kod);
     const w=WOJ.find(x=>x.k===kod);
     setTimeout(()=>przybliz(ramka(PL,w.f),()=>etap2(p)),ok?900:1500);
   }else if(game.etap===2&&GMINA){
     game.etap=-1;
     const kod=p.k.slice(0,4),ok=el.dataset.k===kod;
-    el.classList.add(ok?"dobrze":"zle");
-    if(!ok){game.bladP=1;const cel=$("map").querySelector('[data-k="'+kod+'"]');if(cel)cel.classList.add("cel");}
+    oznacz(el.dataset.k,ok?"dobrze":"zle");
+    if(!ok){game.bladP=1;oznacz(kod,"cel");}
     podpisy(game.P,game.zestaw,kod);
     const pw=game.zestaw.find(x=>x.k===kod);
     setTimeout(()=>przybliz(ramka(game.P,pw.f),()=>{
@@ -205,9 +259,8 @@ $("map").addEventListener("click",e=>{
   }else if(game.etap===2||game.etap===3){
     game.etap=0;
     const ok=el.dataset.k===p.k;
-    el.classList.add(ok?"dobrze":"zle");
-    const cel=$("map").querySelector('[data-k="'+p.k+'"]');
-    if(cel)cel.classList.add(ok?"dobrze":"cel");
+    oznacz(el.dataset.k,ok?"dobrze":"zle");
+    oznacz(p.k,ok?"dobrze":"cel");
     podpisy(game.P,game.zestaw,p.k);
     const got=(game.blad?0:1)+(GMINA?(game.bladP?0:1):0)+(ok?2:0);
     game.pts+=got;if(ok&&!game.blad)game.hits++;
@@ -222,7 +275,7 @@ $("map").addEventListener("click",e=>{
     $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";$("nextBtn").onclick=next;
     fb.classList.remove("hidden");
   }
-});
+}
 function etap2(p){
   game.etap=2;
   $("target").classList.remove("zmiana");void $("target").offsetWidth;$("target").classList.add("zmiana");
@@ -255,7 +308,7 @@ function endGame(){
   $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
 }
 $("startBtn").onclick=startGame;
-ZP.kreatorGry({klucz:(new URLSearchParams(location.search).get("tryb")==="g"?"slepa-g":"slepa"),kroki:["obszar","rundy"]});
+ZP.kreatorGry({klucz:(new URLSearchParams(location.search).get("tryb")==="g"?"slepa-g":"slepa"),kroki:["pojedynek","obszar","rundy"]});
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>

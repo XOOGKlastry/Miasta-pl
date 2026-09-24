@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=12" />
+<link rel="stylesheet" href="wspolne.css?v=13" />
 <style>
 .target{flex:none;text-align:center}
 .target .kind{font-size:13px;color:var(--dim)}
@@ -80,7 +80,7 @@
 </main>
 </div>
 
-<script src="wspolne.js?v=12"></script>
+<script src="wspolne.js?v=13"></script>
 <script>
 const {$,shuffle,pick,fmt}=ZP;
 let DANE=[],P=null,base="",game=null,POLE=null;
@@ -209,11 +209,11 @@ function endGame(){
 }
 $("startBtn").onclick=startGame;
 document.addEventListener("keydown",e=>{
-  if(!game)return;
+  if(!game||e.target.tagName==="INPUT")return;
   if(/^[1-4]$/.test(e.key)&&!game.answered){const b=$("answers").children[+e.key-1];if(b)b.click();}
   if(e.key==="Enter"&&game.answered&&$("nextBtn"))$("nextBtn").click();
 });
-ZP.kreatorGry({klucz:"rzeki",kroki:["obszar","wielkosc","rundy"]});
+ZP.kreatorGry({klucz:"rzeki",kroki:["pojedynek","obszar","wielkosc","rundy"]});
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=12" />
+<link rel="stylesheet" href="wspolne.css?v=13" />
 <style>
 .duel{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px;position:relative}
 .card{flex:1;min-height:0;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);
@@ -27,6 +27,10 @@
 .card.bad{border-color:var(--red);background:#35161C}
 .vs{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;
   background:var(--ink);border:1px solid var(--line-2);display:grid;place-items:center;font-size:13px;color:var(--dim);font-weight:700;z-index:2}
+.wiecejBtn{margin-top:12px;min-width:60%;min-height:52px;border-radius:12px;border:none;font-weight:800;font-size:18px;
+  background:linear-gradient(180deg,var(--gold-2),var(--gold));color:var(--gold-ink);box-shadow:0 6px 18px rgba(242,193,78,.2);
+  transition:transform var(--szybko)}
+.wiecejBtn:active{transform:scale(.96)}
 .choice{display:flex;gap:8px;width:100%;margin-top:12px}
 .choice button{flex:1;min-height:56px;border-radius:12px;border:1px solid var(--line-2);background:var(--ink);font-weight:700;font-size:17px}
 .choice button:active{transform:scale(.98)}
@@ -70,7 +74,7 @@
 </main>
 </div>
 
-<script src="wspolne.js?v=12"></script>
+<script src="wspolne.js?v=13"></script>
 <script>
 const {$,shuffle,pick,fmt}=ZP;
 let CITIES=[],game=null;
@@ -99,15 +103,17 @@ function challenger(a){
   if(!cand.length)cand=game.pool.filter(ok);
   return cand.length?pick(cand):null;
 }
+// na obu kartach ten sam przycisk „Więcej”: stukasz w miasto, które ma więcej mieszkańców
 function cardHTML(c,known){
-  return '<div class="nm"></div><div class="woj"></div>'+(known?'<div class="pop"></div>':'<div class="q">ma więcej czy mniej mieszkańców?</div><div class="choice"><button class="more" data-v="1">Więcej</button><button data-v="-1">Mniej</button></div>');
+  return '<div class="nm"></div><div class="woj"></div>'+(known?'<div class="pop"></div>':'<div class="q">ile mieszkańców?</div>')
+    +'<button class="wiecejBtn">Więcej</button>';
 }
 function fill(el,c,known){
   el.className="card";el.innerHTML=cardHTML(c,known);
   el.querySelector(".nm").textContent=c.name;
   el.querySelector(".woj").textContent=c.woj?"woj. "+c.woj:"";
   if(known)el.querySelector(".pop").innerHTML=fmt(c.pop)+"<small>mieszkańców</small>";
-  else el.querySelectorAll(".choice button").forEach(b=>b.onclick=()=>answer(+b.dataset.v));
+  el.querySelector(".wiecejBtn").onclick=()=>answer(known?-1:1);
 }
 function startGame(){
   const pool=CITIES.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope")))&&ZP.wObszarze(c));
@@ -129,7 +135,8 @@ function answer(dir){
   if(game.busy)return;game.busy=true;
   const a=game.a,b=game.b,ok=(b.pop>a.pop?1:-1)===dir;
   const card=$("cardB");
-  card.querySelector(".q").remove();card.querySelector(".choice").remove();
+  card.querySelector(".q").remove();
+  document.querySelectorAll(".wiecejBtn").forEach(x=>x.remove());
   const pop=document.createElement("div");pop.className="pop";card.appendChild(pop);countUp(pop,b.pop);
   card.classList.add(ok?"good":"bad");
   game.log.push({a,b,ok});
@@ -175,7 +182,7 @@ document.addEventListener("keydown",e=>{
   if(!game||game.busy||$("duel").classList.contains("hidden"))return;
   if(e.key==="ArrowUp")answer(1);if(e.key==="ArrowDown")answer(-1);
 });
-ZP.kreatorGry({klucz:"wiecej",kroki:["obszar","wielkosc"]});
+ZP.kreatorGry({klucz:"wiecej",kroki:["pojedynek","obszar","wielkosc"]});
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>

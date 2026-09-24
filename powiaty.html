@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=12" />
+<link rel="stylesheet" href="wspolne.css?v=13" />
 <style>
 svg path{fill-rule:evenodd}
 .stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);overflow:hidden}
@@ -74,8 +74,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=12"></script>
-<script src="wspolne.js?v=12"></script>
+<script src="topojson-client.min.js?v=13"></script>
+<script src="wspolne.js?v=13"></script>
 <script>
 const {$,norm}=ZP;
 let POW=[],game=null,tick=null;
@@ -126,7 +126,7 @@ function startGame(){
   $("hits").textContent=0;$("round").textContent="0 / "+set.length;$("bar").style.width="0%";
   $("msg").textContent="Wpisz pierwszą nazwę.";$("msg").className="";
   refreshBest();draw();
-  $("guess").value="";$("guess").focus();
+  $("guess").value="";ZP.fokus($("guess"));
   clearInterval(tick);tick=setInterval(clock,250);clock();
 }
 let czekaj=null;
@@ -185,7 +185,7 @@ function finish(){
   $("setBtn").onclick=()=>{s.classList.add("hidden");["stats","barBox","stage"].forEach(id=>$(id).classList.add("hidden"));$("round").textContent="";$("setup").classList.remove("hidden");};
 }
 $("startBtn").onclick=startGame;
-ZP.kreatorGry({klucz:"powiaty",kroki:["obszar",{pole:"dur",tytul:"Ile czasu?",domyslny:"300",opcje:[{v:"180",t:"3 minuty",opis:"sprint",ilu:'<div class="kr-ikona">⚡</div>'},{v:"300",t:"5 minut",opis:"standard",ilu:'<div class="kr-ikona">⏱️</div>'},{v:"0",t:"Bez limitu",opis:"do końca",ilu:'<div class="kr-ikona">☕</div>'}]}]});
+ZP.kreatorGry({klucz:"powiaty",kroki:["pojedynek","obszar",{pole:"dur",tytul:"Ile czasu?",domyslny:"300",opcje:[{v:"180",t:"3 minuty",opis:"sprint",ilu:'<div class="kr-ikona">⚡</div>'},{v:"300",t:"5 minut",opis:"standard",ilu:'<div class="kr-ikona">⏱️</div>'},{v:"0",t:"Bez limitu",opis:"do końca",ilu:'<div class="kr-ikona">☕</div>'}]}]});
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>
