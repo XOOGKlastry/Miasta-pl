@@ -50,3 +50,11 @@ W **Miastach na czas** nie ma wyboru małe/średnie/duże — gra idzie przez ws
 - Wpisywanie odpowiedzi: po lewej pole, po prawej „Pokaż podpowiedzi”; poprawna nazwa przechodzi sama, bez zatwierdzania.
 - Po każdej odpowiedzi zielona albo czerwona poświata (`ZP.zapisz` wywołuje `ZP.poswiata`); po wyniku co najmniej 80% fanfary, wiwaty i konfetti (`ZP.fanfary`, dźwięk syntezowany w przeglądarce).
 - Kontury (kształt, turniej): odpowiedzi odblokowują się po wczytaniu zdjęcia Esri, najwyżej po 3 s (`ZP.ksztaltZPodkladem`).
+
+
+## Zdjęcia do „Co to za miasto?”: wybór przez człowieka
+
+- `narzedzia/zdjecia-wybor.json`: `wybrane` (miasto → pliki z Commons, tylko te trafiają do gry) i `odrzucone` (nigdy).
+- `kandydaci.json` (budowany przez automat): do 14 kandydatów na miasto od 5 tys. mieszkańców, z rozdzielczością, autorem, licencją i oznaczeniem zdjęć wyróżnionych w Commons.
+- `przeglad.html` (link w Statystykach): przegląd kandydatów, ✓ do gry, ✗ odrzuć, dodawanie własnych plików z Commons, zapis pliku `zdjecia-wybor.json`.
+- Po wgraniu nowego `zdjecia-wybor.json` automat sam pobiera zatwierdzone zdjęcia do katalogu `miejsca/`.

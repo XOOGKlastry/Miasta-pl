@@ -24,7 +24,7 @@ function inRing(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;
 function bboxOf(ring){let a=[1e9,1e9,-1e9,-1e9];ring.forEach(([x,y])=>{if(x<a[0])a[0]=x;if(y<a[1])a[1]=y;if(x>a[2])a[2]=x;if(y>a[3])a[3]=y;});return a;}
 async function loadWoj(){
   if(WOJ)return WOJ;
-  const gj=await (await fetch("woj.geojson?v=13")).json();
+  const gj=await (await fetch("woj.geojson?v=14")).json();
   WOJ=gj.features.map(f=>{const g=f.geometry,rings=g.type==="Polygon"?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);return {name:f.properties.nazwa,rings,bb:rings.map(bboxOf),f};});
   return WOJ;
 }
@@ -514,6 +514,84 @@ function kreatorGry(cfg){
 }
 function obszarNazwa(){return OBSZAR.length?(OBSZAR.length===1?"woj. "+OBSZAR[0]:OBSZAR.length+" województw"):"cała Polska";}
 
+/* ---- przybliżanie i przesuwanie map SVG (dwa palce, kółko myszki, przeciąganie, podwójne stuknięcie) ---- */
+function zoomSvg(svg,przyciski){
+  if(svg._zoom)return svg._zoom;
+  const vb=()=>svg.getAttribute("viewBox").split(/[ ,]+/).map(Number);
+  const ustaw=v=>svg.setAttribute("viewBox",v.map(x=>x.toFixed(2)).join(" "));
+  let baza=null;
+  const z={reset(){baza=vb();},domyslny(){if(baza)ustaw(baza);}};
+  svg._zoom=z;svg.style.touchAction="none";
+  const punkt=(cx,cy)=>{const p=svg.createSVGPoint();p.x=cx;p.y=cy;return p.matrixTransform(svg.getScreenCTM().inverse());};
+  function skaluj(s,px,py){
+    if(!baza)baza=vb();
+    const [x,y,w,h]=vb();
+    let nw=Math.min(baza[2],Math.max(baza[2]/10,w/s));const k=nw/w,nh=h*k;
+    let nx=px-(px-x)*k,ny=py-(py-y)*k;
+    ustaw(ogranicz([nx,ny,nw,nh]));
+  }
+  function ogranicz(v){
+    if(!baza)return v;
+    const [bx,by,bw,bh]=baza;
+    v[0]=Math.max(bx-bw*.1,Math.min(bx+bw*1.1-v[2],v[0]));
+    v[1]=Math.max(by-bh*.1,Math.min(by+bh*1.1-v[3],v[1]));
+    return v;
+  }
+  svg.addEventListener("wheel",e=>{e.preventDefault();const p=punkt(e.clientX,e.clientY);skaluj(e.deltaY<0?1.25:0.8,p.x,p.y);},{passive:false});
+  const pal=new Map();let start=null,ruch=false;
+  svg.addEventListener("pointerdown",e=>{
+    pal.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    start={vb:vb(),pal:new Map([...pal].map(([k,v])=>[k,{...v}]))};ruch=false;
+  });
+  svg.addEventListener("pointermove",e=>{
+    if(!pal.has(e.pointerId)||!start)return;
+    pal.set(e.pointerId,{x:e.clientX,y:e.clientY});
+    const pts=[...pal.values()],p0=[...start.pal.values()];
+    if(pts.length===1&&p0.length>=1){
+      const dx=pts[0].x-p0[0].x,dy=pts[0].y-p0[0].y;
+      if(!ruch&&Math.hypot(dx,dy)<8)return;
+      ruch=true;
+      const m=svg.getScreenCTM(),sx=m.a,sy=m.d;
+      const v=start.vb.slice();v[0]-=dx/sx;v[1]-=dy/sy;ustaw(ogranicz(v));
+    }else if(pts.length>=2&&p0.length>=2){
+      ruch=true;
+      const d0=Math.hypot(p0[0].x-p0[1].x,p0[0].y-p0[1].y),d1=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+      ustaw(start.vb);
+      const mx=(pts[0].x+pts[1].x)/2,my=(pts[0].y+pts[1].y)/2,p=punkt(mx,my);
+      skaluj(d1/Math.max(1,d0),p.x,p.y);
+    }
+  });
+  const koniec=e=>{
+    pal.delete(e.pointerId);
+    if(ruch){svg._przeciagnieto=Date.now();}
+    start=pal.size?{vb:vb(),pal:new Map([...pal].map(([k,v])=>[k,{...v}]))}:null;
+  };
+  svg.addEventListener("pointerup",koniec);svg.addEventListener("pointercancel",koniec);
+  // po przeciągnięciu nie traktujemy puszczenia palca jak wyboru
+  svg.addEventListener("click",e=>{if(svg._przeciagnieto&&Date.now()-svg._przeciagnieto<350){e.stopPropagation();e.preventDefault();}},true);
+  let ostatni=0;
+  svg.addEventListener("dblclick",e=>{const p=punkt(e.clientX,e.clientY);skaluj(2,p.x,p.y);});
+  if(przyciski){
+    const box=document.createElement("div");box.className="zoom-przyciski";
+    box.innerHTML='<button aria-label="Przybliż">+</button><button aria-label="Oddal">−</button><button aria-label="Cała mapa">⤢</button>';
+    const [plus,minus,cala]=box.querySelectorAll("button");
+    const srodek=()=>{const [x,y,w,h]=vb();return [x+w/2,y+h/2];};
+    plus.onclick=e=>{e.stopPropagation();const c=srodek();skaluj(1.6,c[0],c[1]);};
+    minus.onclick=e=>{e.stopPropagation();const c=srodek();skaluj(1/1.6,c[0],c[1]);};
+    cala.onclick=e=>{e.stopPropagation();z.domyslny();};
+    przyciski.appendChild(box);
+  }
+  return z;
+}
+
+/* ---- krótki komunikat na dole ekranu ---- */
+function komunikat(tekst,ms){
+  let el=document.getElementById("zp-komunikat");
+  if(!el){el=document.createElement("div");el.id="zp-komunikat";document.body.appendChild(el);}
+  el.textContent=tekst;el.className="widoczny";
+  clearTimeout(el._t);el._t=setTimeout(()=>{el.className="";},ms||3800);
+}
+
 /* ---- telefon: wysokość widocznego ekranu (klawiatura) ---- */
 function fitViewport(){
   const vv=window.visualViewport;
@@ -527,7 +605,7 @@ const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie",
 let POWC=null;
 async function loadPowiaty(){
   if(POWC)return POWC;
-  const t=await (await fetch("powiaty.topojson?v=13")).json();
+  const t=await (await fetch("powiaty.topojson?v=14")).json();
   const o=t.objects.powiaty,nbi=topojson.neighbors(o.geometries),fs=topojson.feature(t,o).features;
   POWC=fs.map((f,i)=>{
     const k=f.properties.k,n=f.properties.n,city=+k.slice(2)>=60;
@@ -633,7 +711,7 @@ let GMC=null;
 async function loadGminy(){
   if(GMC)return GMC;
   const pw=await loadPowiaty();
-  const t=await (await fetch("gminy.topojson?v=13")).json();
+  const t=await (await fetch("gminy.topojson?v=14")).json();
   const o=t.objects.gminy||Object.values(t.objects).sort((a,b)=>(b.geometries||[]).length-(a.geometries||[]).length)[0];
   const fs=topojson.feature(t,o).features;
   const powNazwa={};pw.forEach(p=>powNazwa[p.k]=p.full);
@@ -655,5 +733,5 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

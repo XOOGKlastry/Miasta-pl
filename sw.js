@@ -1,10 +1,10 @@
 // Działa offline, ale zawsze najpierw próbuje sieci, żeby poprawki docierały od razu.
-const CACHE = "polskoznawca-v17";
+const CACHE = "polskoznawca-v18";
 const ASSETS = [
   "./", "./index.html", "./miasta.html", "./zdjecie.html", "./herb.html", "./gdzie.html", "./ksztalt.html",
   "./wiecej.html", "./sasiedzi.html", "./dzis.html", "./powiaty.html", "./rzeki.html", "./statystyki.html", "./slepa.html", "./miasto.html", "./turniej.html", "./tablice.html",
   "./tablice-app.js", "./tablice-powiaty.js", "./tablice-poland.js",
-  "./wspolne.js?v=13", "./wspolne.css?v=13", "./topojson-client.min.js?v=13", "./powiaty.topojson?v=13", "./woj.geojson?v=13",
+  "./wspolne.js?v=14", "./wspolne.css?v=14", "./topojson-client.min.js?v=14", "./powiaty.topojson?v=14", "./woj.geojson?v=14",
   "./manifest.webmanifest", "./icon.svg"
 ];
 

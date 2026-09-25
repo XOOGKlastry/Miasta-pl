@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=13" />
+<link rel="stylesheet" href="wspolne.css?v=14" />
 <style>
 .foto{flex:1;min-height:150px;position:relative;border-radius:var(--r);overflow:hidden;background:#0d1a1d;box-shadow:var(--cien)}
 .foto img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity var(--wolno),transform 6s ease-out}
@@ -73,7 +73,7 @@
 </main>
 </div>
 
-<script src="wspolne.js?v=13"></script>
+<script src="wspolne.js?v=14"></script>
 <script>
 const {$,shuffle,fmt}=ZP;
 let DANE=[],game=null,POLE=null;
@@ -95,7 +95,13 @@ function makeQuestion(c,pool){
 }
 function startGame(){
   const pool=DANE.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope")))&&ZP.wObszarze(c));
-  const src=pool.length>=8?pool:DANE;
+  if(pool.length<3){
+    // nie podmieniamy po cichu wyboru na wszystkie miasta
+    const najm=Math.min(...DANE.map(c=>c.pop||1e9));
+    ZP.komunikat(pool.length?"W tym wyborze mamy zdjęcia tylko "+pool.length+" miast. Zaznacz więcej.":"Brak zdjęć dla tego wyboru. Zdjęcia mamy na razie dla miast od "+Math.round(najm/1000)+" tys. mieszkańców.",5200);
+    return;
+  }
+  const src=pool;
   const n=Math.min(+$("rounds").value,src.length);
   game={wpis:$("odp").value==="t",qs:ZP.losujNauka(src,"miejsce",c=>c.n,n,true).map(c=>makeQuestion(c,DANE)),i:-1,pts:0,hits:0,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");

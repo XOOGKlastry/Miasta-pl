@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Przegląd zdjęć · PolskoZnawca</title>
+<meta name="theme-color" content="#0C1A1D" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=14" />
+<style>
+.pasek{display:flex;gap:8px;align-items:center;flex:none;flex-wrap:wrap}
+.pasek input,.pasek select{flex:1;min-width:120px;min-height:44px}
+.postep{font-size:13px;color:var(--dim)}
+.postep b{color:var(--gold)}
+.miasto{flex:none;display:flex;align-items:baseline;gap:10px}
+.miasto h2{font-family:"Fraunces",serif;font-weight:900;font-size:28px;margin:0;flex:1;min-width:0}
+.miasto span{color:var(--dim);font-size:13px}
+.siatka{flex:1;min-height:0;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-content:start;padding-bottom:6px}
+.karta{position:relative;border-radius:14px;overflow:hidden;background:var(--ink-2);border:2px solid var(--line);display:flex;flex-direction:column;transition:border-color .2s,opacity .2s}
+.karta img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:#10292c;cursor:zoom-in}
+.karta .opis{font-size:11px;color:var(--dim);padding:5px 7px;line-height:1.3;overflow-wrap:anywhere}
+.karta .opis b{color:var(--paper);font-weight:600}
+.karta .przyc{display:flex;border-top:1px solid var(--line)}
+.karta .przyc button{flex:1;min-height:42px;border:none;background:none;font-size:18px;font-weight:700}
+.karta .przyc .tak{color:var(--ok)}.karta .przyc .nie{color:var(--red)}
+.karta .przyc a{flex:none;padding:0 10px;display:grid;place-items:center;color:var(--dim);text-decoration:none;font-size:13px}
+.karta.wybrane{border-color:var(--ok);box-shadow:0 0 0 2px rgba(93,202,165,.4)}
+.karta.odrzucone{opacity:.35}
+.karta .odznaka{position:absolute;left:6px;top:6px;background:rgba(10,24,27,.85);border-radius:999px;padding:2px 8px;font-size:11px;color:var(--gold)}
+.dol{flex:none;display:flex;gap:8px}
+.dol button{flex:1;min-height:50px}
+.poradnik{background:var(--ink-2);border:1px solid var(--line-2);border-radius:14px;padding:10px 14px;font-size:14px;color:var(--dim);line-height:1.5}
+.poradnik summary{color:var(--paper);font-weight:700;cursor:pointer}
+.poradnik li{margin:3px 0}
+.dodaj{display:flex;gap:6px}
+.dodaj input{flex:1;min-width:0;min-height:44px}
+.dodaj button{min-height:44px;padding:0 14px}
+#pelne{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.92);display:grid;place-items:center}
+#pelne img{max-width:100%;max-height:100%}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <a class="back" href="statystyki.html" aria-label="Wróć">‹</a>
+  <h1>Przegląd zdjęć</h1>
+  <span class="round" id="licz"></span>
+</header>
+
+<main>
+  <details class="poradnik">
+    <summary>Jak wybierać i szukać zdjęć</summary>
+    <ul>
+      <li><b>Dobre zdjęcie</b>: coś, po czym mieszkaniec poznałby miasto (rynek, ratusz, zamek, kościół farny, charakterystyczna panorama), w dzień, ostre, całe, bez tłumu na pierwszym planie.</li>
+      <li><b>Odrzucaj</b>: detale (tablice, rzeźby, drzwi), przypadkowe ulice i bloki, zdjęcia nocne i zamglone, stare pocztówki, zdjęcia wnętrz, kadry z samochodami na pierwszym planie.</li>
+      <li>✓ dodaje zdjęcie do gry, ✗ odrzuca je na zawsze. Najlepiej 1 do 3 zdjęć na miasto.</li>
+      <li><b>Własne znalezisko</b>: w Wikimedia Commons wejdź w kategorię miasta (np. „Category:Tychy”), potem w podkategorie „Rynek w…”, „Old Town in…”, „Quality images of…”. Otwórz zdjęcie, skopiuj adres strony (zaczyna się od File:) i wklej w pole „Dodaj z Commons”. Szukaj zdjęć co najmniej 1800 px szerokości.</li>
+      <li>Na koniec naciśnij <b>Zapisz wybór</b>. Plik wyślij mi albo wgraj do repozytorium jako <code>narzedzia/zdjecia-wybor.json</code>; automat sam pobierze zdjęcia do gry.</li>
+    </ul>
+  </details>
+  <div class="pasek">
+    <input id="szukaj" type="text" placeholder="Szukaj miasta…" />
+    <select id="filtr">
+      <option value="wszystkie">wszystkie miasta</option>
+      <option value="bez">bez zdjęć w grze</option>
+      <option value="z">ze zdjęciami w grze</option>
+    </select>
+  </div>
+  <div class="postep" id="postep">Wczytywanie kandydatów…</div>
+  <div class="miasto"><h2 id="nazwa"></h2><span id="info"></span></div>
+  <div class="siatka" id="siatka"></div>
+  <div class="dodaj"><input id="dodajPole" type="text" placeholder="Dodaj z Commons: nazwa pliku albo adres File:…" /><button class="ghost" id="dodajBtn">Dodaj</button></div>
+  <div class="dol">
+    <button class="ghost" id="wstecz">‹ Poprzednie</button>
+    <button class="big" id="zapisz">Zapisz wybór</button>
+    <button class="ghost" id="dalej">Następne ›</button>
+  </div>
+</main>
+</div>
+
+<script src="wspolne.js?v=14"></script>
+<script>
+const {$}=ZP;
+const KLUCZ="przeglad-zdjec-v1";
+let MIASTA=[],ST=null,lista=[],ix=0;
+
+async function wczytaj(){
+  const [k,w]=await Promise.all([
+    fetch("kandydaci.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null),
+    fetch("narzedzia/zdjecia-wybor.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({}))
+  ]);
+  try{ST=JSON.parse(localStorage.getItem(KLUCZ)||"null");}catch(e){ST=null;}
+  if(!ST)ST={wybrane:w.wybrane||{},odrzucone:w.odrzucone||[],dodane:{}};
+  const zGry=new Set(Object.keys(ST.wybrane));
+  MIASTA=(k&&k.miasta)||[];
+  // miasta z wyboru, których nie ma na liście kandydatów, też pokazujemy
+  Object.keys(ST.wybrane).forEach(n=>{if(!MIASTA.some(m=>m.n===n))MIASTA.push({n,pop:0,kandydaci:[]});});
+  if(!k)$("postep").textContent="Lista kandydatów jeszcze się buduje (automat w GitHub Actions). Na razie widać tylko zdjęcia, które już są w grze.";
+  filtruj();
+}
+function zapiszLokalnie(){try{localStorage.setItem(KLUCZ,JSON.stringify(ST));}catch(e){}}
+function filtruj(){
+  const q=ZP.norm($("szukaj").value),f=$("filtr").value;
+  lista=MIASTA.filter(m=>(!q||ZP.norm(m.n).includes(q))&&(f==="wszystkie"||(f==="bez"?!(ST.wybrane[m.n]||[]).length:(ST.wybrane[m.n]||[]).length)));
+  ix=Math.min(ix,Math.max(0,lista.length-1));
+  rysuj();
+}
+function mini(plik,szer){return "https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(plik)+"?width="+(szer||500);}
+function rysuj(){
+  const zGra=MIASTA.filter(m=>(ST.wybrane[m.n]||[]).length).length;
+  $("postep").innerHTML="W grze: <b>"+zGra+"</b> miast · wybranych zdjęć: <b>"+Object.values(ST.wybrane).reduce((a,l)=>a+l.length,0)+"</b> · odrzuconych: "+ST.odrzucone.length;
+  const m=lista[ix];
+  $("licz").textContent=lista.length?(ix+1)+" / "+lista.length:"";
+  if(!m){$("nazwa").textContent="Brak miast";$("siatka").innerHTML="";return;}
+  $("nazwa").textContent=m.n;
+  $("info").textContent=m.pop?m.pop.toLocaleString("pl-PL")+" mieszk.":"";
+  const wyb=ST.wybrane[m.n]||[],odr=new Set(ST.odrzucone);
+  // najpierw zdjęcia już wybrane, potem kandydaci
+  const pliki=[...wyb.map(p=>({plik:p,mini:mini(p)})),...(ST.dodane[m.n]||[]).filter(p=>wyb.indexOf(p)<0).map(p=>({plik:p,mini:mini(p)})),...m.kandydaci.filter(k=>wyb.indexOf(k.plik)<0)];
+  const s=$("siatka");s.innerHTML="";
+  pliki.forEach(k=>{
+    const d=document.createElement("div");
+    d.className="karta"+(wyb.indexOf(k.plik)>=0?" wybrane":"")+(odr.has(k.plik)?" odrzucone":"");
+    d.innerHTML='<img loading="lazy" alt=""><div class="opis"></div><div class="przyc"><button class="tak" title="Do gry">✓</button><button class="nie" title="Odrzuć">✗</button><a target="_blank" rel="noopener">Commons</a></div>';
+    const im=d.querySelector("img");im.src=k.mini;
+    im.onclick=()=>{const o=document.createElement("div");o.id="pelne";o.innerHTML='<img alt="">';o.querySelector("img").src=mini(k.plik,1600);o.onclick=()=>o.remove();document.body.appendChild(o);};
+    d.querySelector(".opis").innerHTML=(k.szer?'<b>'+k.szer+'×'+k.wys+'</b> · ':'')+(k.autor||"")+(k.licencja?" · "+k.licencja:"");
+    if(k.jakosc)d.insertAdjacentHTML("beforeend",'<span class="odznaka">★ wyróżnione w Commons</span>');
+    d.querySelector("a").href=k.strona||("https://commons.wikimedia.org/wiki/File:"+encodeURIComponent(k.plik));
+    d.querySelector(".tak").onclick=()=>{
+      const l=ST.wybrane[m.n]=ST.wybrane[m.n]||[];const i=l.indexOf(k.plik);
+      if(i>=0)l.splice(i,1);else{l.push(k.plik);ST.odrzucone=ST.odrzucone.filter(x=>x!==k.plik);}
+      if(!l.length)delete ST.wybrane[m.n];
+      zapiszLokalnie();rysuj();
+    };
+    d.querySelector(".nie").onclick=()=>{
+      const i=ST.odrzucone.indexOf(k.plik);
+      if(i>=0)ST.odrzucone.splice(i,1);else{ST.odrzucone.push(k.plik);const l=ST.wybrane[m.n];if(l){const j=l.indexOf(k.plik);if(j>=0)l.splice(j,1);if(!l.length)delete ST.wybrane[m.n];}}
+      zapiszLokalnie();rysuj();
+    };
+    s.appendChild(d);
+  });
+  if(!pliki.length)s.innerHTML='<div class="datastate">Brak kandydatów dla tego miasta. Dodaj zdjęcie z Commons poniżej.</div>';
+}
+$("dodajBtn").onclick=()=>{
+  const m=lista[ix];if(!m)return;
+  let v=$("dodajPole").value.trim();if(!v)return;
+  v=decodeURIComponent(v.replace(/^.*\/wiki\//,"").replace(/^(File|Plik):/i,"")).replace(/_/g," ");
+  (ST.dodane[m.n]=ST.dodane[m.n]||[]).push(v);
+  (ST.wybrane[m.n]=ST.wybrane[m.n]||[]).push(v);
+  $("dodajPole").value="";zapiszLokalnie();rysuj();
+};
+$("wstecz").onclick=()=>{ix=Math.max(0,ix-1);rysuj();$("siatka").scrollTop=0;};
+$("dalej").onclick=()=>{ix=Math.min(lista.length-1,ix+1);rysuj();$("siatka").scrollTop=0;};
+$("szukaj").oninput=filtruj;$("filtr").onchange=filtruj;
+$("zapisz").onclick=async()=>{
+  const dane={opis:"Wybór zdjęć do gry „Co to za miasto?”. Edytuj w przeglad.html albo ręcznie: wybrane = zdjęcia w grze, odrzucone = nigdy.",
+    wybrane:ST.wybrane,odrzucone:[...new Set(ST.odrzucone)].sort()};
+  const tekst=JSON.stringify(dane,null,1);
+  const blob=new Blob([tekst],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="zdjecia-wybor.json";document.body.appendChild(a);a.click();a.remove();
+  try{await navigator.clipboard.writeText(tekst);ZP.komunikat("Zapisano plik zdjecia-wybor.json i skopiowano do schowka.");}catch(e){ZP.komunikat("Zapisano plik zdjecia-wybor.json.");}
+};
+wczytaj();
+ZP.fitViewport();
+</script>
+</body>
+</html>

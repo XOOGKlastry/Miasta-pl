@@ -1,0 +1,594 @@
+{
+ "opis": "Wybór zdjęć do gry „Co to za miasto?”. Edytuj w przeglad.html albo ręcznie: wybrane = zdjęcia w grze, odrzucone = nigdy.",
+ "wybrane": {
+  "Warszawa": [
+   "Castle Square (22346p).jpg"
+  ],
+  "Wrocław": [
+   "2016 Wrocław, Rynek-Ratusz 7 01.jpg",
+   "Wrocław, Rynek-Ratusz 24.jpg"
+  ],
+  "Kraków": [
+   "Old Town, southern part near Wawel Castle, 2025, bird's eye view, Kraków, Poland.jpg"
+  ],
+  "Łódź": [
+   "Łódź, Ratusz Miejski - panoramio.jpg",
+   "Łódź - Ratusz Staromiejski - panoramio.jpg"
+  ],
+  "Poznań": [
+   "2022-07-07 Renovation of the Old Market Square in Poznań 04.jpg"
+  ],
+  "Gdańsk": [
+   "Gdańsk Stare Miasto - Old Town Hall.jpg"
+  ],
+  "Szczecin": [
+   "Szczecin 05-2017 img07 Rynek.jpg"
+  ],
+  "Lublin": [
+   "Lublin Old Town Panoramic from Lublin Castle 2018.jpg"
+  ],
+  "Bydgoszcz": [
+   "Rynek w Bydgoszczy, 20210907 1639 2466.jpg",
+   "Bydgoszcz - Stary Rynek - Polnocny fragment 2023.jpg"
+  ],
+  "Białystok": [
+   "Białystok 2023 001 Kościuszko Square.jpg",
+   "Białystok 2023 004 Kościuszko Square.jpg"
+  ],
+  "Katowice": [
+   "Katowice - Rynek 7.jpg"
+  ],
+  "Gdynia": [
+   "Gdynia Town Hall.jpg"
+  ],
+  "Częstochowa": [
+   "Częstochowa ratusz 28.04.2012 p.jpg"
+  ],
+  "Radom": [
+   "Market Square in Radom 01.jpg",
+   "8 Rynek Sq Radom Poland.jpg"
+  ],
+  "Toruń": [
+   "Staromiejski Square, western part, Toruń, Poland.jpg",
+   "Toruń, Rynek Nowomiejski.JPG"
+  ],
+  "Rzeszów": [
+   "PL-PK Rzeszów, Rynek 19 2016-08-30--10-40-06-001.jpg",
+   "2018 Rzeszów, Rynek 21-24, Kamienice.jpg"
+  ],
+  "Kielce": [
+   "Kielce rynek 2.jpg",
+   "Kielce Rynek 08.jpg"
+  ],
+  "Olsztyn": [
+   "Olsztyn 2023 035 Old Town Hall Tower.jpg"
+  ],
+  "Gliwice": [
+   "Gliwice, Rynek 6 02.JPG"
+  ],
+  "Zabrze": [
+   "Zabrze Mikulczyce, ul. Tarnopolska 80 - dawny ratusz -A 12 06 z 10.05.2006 KS.JPG",
+   "Zabrze Tarnopolska Ratusz 21 08 2010 P8212442.JPG"
+  ],
+  "Bytom": [
+   "Bytom Odrzanski, Market Square, 1980.jpg",
+   "Rynek i Ratusz w Bytomiu Odrzańskim - panoramio.jpg"
+  ],
+  "Zielona Góra": [
+   "Zielona Góra, the town square and the townhall tower.jpg",
+   "Ratusz i Stary Rynek w Zielonej Górze.jpg"
+  ],
+  "Rybnik": [
+   "Old Town Hall in Rybnik.jpg",
+   "Rynek w Rybniku 10.JPG"
+  ],
+  "Opole": [
+   "Market Square Opole Southside 2019.jpg",
+   "Opole Rynek 07.jpg"
+  ],
+  "Dąbrowa Górnicza": [
+   "Pałac Kultury Zagłębia 04.JPG"
+  ],
+  "Elbląg": [
+   "Plac Słowiański. Hotel Arbiter. Elbląg. - panoramio.jpg"
+  ],
+  "Płock": [
+   "Ratusz, XIX w. Płock, Stary Rynek.jpg",
+   "Płock Stary Rynek 14.JPG"
+  ],
+  "Gorzów Wielkopolski": [
+   "Ul Wełniany Rynek Gorzów.JPG"
+  ],
+  "Tarnów": [
+   "2018 Tarnów, Rynek 16 i 17, Kamienice 03.jpg"
+  ],
+  "Koszalin": [
+   "Koszalin Rynek Staromiejski panorama 2009-02 (cropped).jpg"
+  ],
+  "Włocławek": [
+   "Bazylika katedralna WNMP we Włocławku, widok z drona.jpg",
+   "Kamienica 1903-1910, pl. Zielony Rynek 17, Włocławek hw.jpg"
+  ],
+  "Wałbrzych": [
+   "2017 Wałbrzych, Rynek 2 5.jpg"
+  ],
+  "Legnica": [
+   "Legnica - Rynek - Dawny Ratusz 01.jpg",
+   "Legnica, Kramy Śledziowe, Rynek 23-31, widok od pn. (1).JPG"
+  ],
+  "Kalisz": [
+   "Dom 1925 - Kalisz - Główny Rynek 3.JPG",
+   "SM Kalisz RynekGłówny4 ID 651334.jpg"
+  ],
+  "Grudziądz": [
+   "Grudziądz 2023 38 Ratusz Tower.jpg",
+   "Grudziądz 2023 37 Town Hall Tower.jpg"
+  ],
+  "Jaworzno": [
+   "Jaworzno Rynek kolegiata.jpg",
+   "Rynek nocą Jaworzno 05.JPG"
+  ],
+  "Słupsk": [
+   "Słupsk, Stary Rynek (HB6).jpg"
+  ],
+  "Nowy Sącz": [
+   "2025 Nowy Sącz, Rynek 2.jpg",
+   "Nowy Sącz - Rynek 01.JPG"
+  ],
+  "Jelenia Góra": [
+   "Jelenia Góra Rynek z ratuszem 003.JPG"
+  ],
+  "Siedlce": [
+   "Siedlce, Plac Kościuszki (ratusz i pomnik).jpg",
+   "Siedlce Ratusz 03.JPG"
+  ],
+  "Piła": [
+   "Piła Ratusz.JPG"
+  ],
+  "Ostrów Wielkopolski": [
+   "Rynek - Ostrów Wielkopolski (cropped).jpg",
+   "Rynek - Ostrów Wielkopolski.jpg"
+  ],
+  "Mysłowice": [
+   "Mysłowice-Rynek.JPG",
+   "Ratusz w Mysłowicach 2.jpg"
+  ],
+  "Lubin": [
+   "Lubin Rynek Ratusz.jpg",
+   "Lubin - Rynek (zetem).jpg"
+  ],
+  "Konin": [
+   "Rynek w Koninie - panoramio.jpg",
+   "Konin rynek 1.jpg"
+  ],
+  "Inowrocław": [
+   "Inowrocław. Ratusz 3.jpg"
+  ],
+  "Suwałki": [
+   "Ratusz Miejski w Suwałkach 1.jpg",
+   "Suwałki, Zespół Ratuszowy.jpg"
+  ],
+  "Piotrków Trybunalski": [
+   "Trybunalski Market Square in Piotrków Trybunalski (3).jpg"
+  ],
+  "Stargard": [
+   "Stargard Rynek Staromiejski (dron).jpg"
+  ],
+  "Gniezno": [
+   "Rynek, Gniezno, Polonia, 2012-04-02, DD 01.JPG"
+  ],
+  "Pruszków": [
+   "Dawny budynek dyrekcji Warsztatów Naprawy Wagonów Towarowych, widok od frontu na cały budynek.jpg"
+  ],
+  "Głogów": [
+   "Radnice (Ratusz), Rynek, Głogów, okres Głogów, Dolnoslezské vojvodství.jpg",
+   "Głogów Małopolski (Rynek) - ratusz.jpg"
+  ],
+  "Siemianowice Śląskie": [
+   "Siemianowice Rynek Bytkowski aerial 2025.jpg"
+  ],
+  "Żory": [
+   "Żory Rynek aerial 2026.jpg"
+  ],
+  "Leszno": [
+   "Leszno, Rynek 29 (podcienie).jpg",
+   "Ratusz w Lesznie (2).jpg"
+  ],
+  "Tarnowskie Góry": [
+   "24 Tarnowskie Góry, Poland - Ratusz - Rathaus - Rynek Square.jpg",
+   "Tarnowskie Góry, Rynek 8-9.jpg"
+  ],
+  "Łomża": [
+   "Łomża rynek - panoramio.jpg",
+   "Łomża, Ratusz - panoramio.jpg"
+  ],
+  "Ełk": [
+   "Ełk rynek 24.09.2017-1s.jpg",
+   "Ełk - Ratusz.jpg"
+  ],
+  "Zamość": [
+   "Zamość, rynek - panoramio.jpg",
+   "Zamość rynek maj 2026.jpg"
+  ],
+  "Chełm": [
+   "Chełm, Plac Łuczkowskiego - panoramio.jpg",
+   "Chełm, odnowiony Rynek.JPG"
+  ],
+  "Przemyśl": [
+   "Church of the Assumption of the Blessed Virgin Mary and Saint. John the Baptist, Katedralny square, Old Town, Przemyśl, Poland.jpg",
+   "Przemyśl rynek - ratusz i fontanna.jpg"
+  ],
+  "Tczew": [
+   "Tczew - dawny rynek główny - obecnie Plac Hallera 05.jpg",
+   "Tczew - dawny rynek główny - obecnie Plac Hallera 01.jpg"
+  ],
+  "Stalowa Wola": [
+   "Stalowa Wola (Rozwadów) - rynek - studnia.jpg"
+  ],
+  "Będzin": [
+   "Będzin panorama.jpg"
+  ],
+  "Legionowo": [
+   "Legionowo - rynek, park.jpg",
+   "POL Legionowo main square.JPG"
+  ],
+  "Piekary Śląskie": [
+   "Piekary Slaskie Brzeziny Slaskie ratusz.jpg",
+   "Piekary 2.JPG"
+  ],
+  "Piaseczno": [
+   "Ratusz, Piaseczno.jpg",
+   "Piaseczno town hall 2004.jpg"
+  ],
+  "Ostrołęka": [
+   "Ratusz miejski ostroleka.jpg"
+  ],
+  "Zawiercie": [
+   "Zawiercie Stary Rynek aerial 2026.jpg"
+  ],
+  "Wejherowo": [
+   "Ratusz i rynek w Wejherowie.jpg",
+   "Wejherowo plac Wejhera.jpg"
+  ],
+  "Starogard Gdański": [
+   "Starogard Gdański - Rynek (Market Square).jpg",
+   "Starogard Gdański, Ratusz Miejski - panoramio - geo573 (3).jpg"
+  ],
+  "Wodzisław Śląski": [
+   "Wodzisław Śląski. Rynek. Kamienica nr 27.JPG"
+  ],
+  "Puławy": [
+   "Pałac, Puławy.jpg"
+  ],
+  "Tarnobrzeg": [
+   "2014 Tarnobrzeg, rynek 06.jpg",
+   "2014 Tarnobrzeg, rynek 04.JPG"
+  ],
+  "Otwock": [
+   "936-A Otwock - ratusz.jpg"
+  ],
+  "Dębica": [
+   "Dębica (rynek) - pomnik.jpg"
+  ],
+  "Kołobrzeg": [
+   "Kołobrzeg - Ratusz 3 2019 r.jpg",
+   "Kołobrzeg. Ratusz dzien.jpg"
+  ],
+  "Kutno": [
+   "Kutno, Ratusz, mur. 1 poł. XIX (bakel2006).jpg",
+   "Kutno Ratusz.jpg"
+  ],
+  "Nysa": [
+   "2014 Nysa, stare miasto 02.JPG",
+   "2014 Nysa, Rynek 24 01.jpg"
+  ],
+  "Mikołów": [
+   "Mikołów Rynek w Mikołowieratusz (cropped).jpg"
+  ],
+  "Skarżysko-Kamienna": [
+   "Skarżysko-Kamienna. Kościół Najświętszego Serca Pana Jezusa 8.jpg"
+  ],
+  "Mińsk Mazowiecki": [
+   "Plac Stary Rynek Minska Mazowiecki 2023 aerial.jpg"
+  ],
+  "Sieradz": [
+   "Stary Rynek in Sieradz (1).jpg"
+  ],
+  "Zduńska Wola": [
+   "Town hall in Zduńska Wola.jpg",
+   "Zduńska Wola, Bazylika WNMP-010.JPG"
+  ],
+  "Żyrardów": [
+   "Stara Przędzalnia.jpg"
+  ],
+  "Chojnice": [
+   "Chojnice, Rynek - panoramio,jpg.jpg",
+   "Rynek 6 (Chojnice).jpg"
+  ],
+  "Świnoujście": [
+   "Świnoujście, am Hafen, b (2011-08-03) by Klugschnacker in Wikipedia.jpg",
+   "Muzeum Rybołóstwa Świnoujście1.JPG"
+  ],
+  "Szczecinek": [
+   "Szczecinek - ratusz 2012.JPG",
+   "Szczecinecki ratusz nocą w świątecznej szacie.jpg"
+  ],
+  "Świdnik": [
+   "MOs810, WG 51 2024 ZachLub zegar Świdnik rynek.jpg"
+  ],
+  "Malbork": [
+   "Malbork, Młodzieżowy Dom Kultury ratusz - panoramio.jpg",
+   "Panorama of Malbork Castle, part 4.jpg"
+  ],
+  "Bolesławiec": [
+   "Market Square in Bolesławiec (2).jpg",
+   "Market Square in Bolesławiec (1).jpg"
+  ],
+  "Nowa Sól": [
+   "Nowa sól dawny ratusz.jpg"
+  ],
+  "Knurów": [
+   "Knurów - Ratusz 01.jpg"
+  ],
+  "Żary": [
+   "Żary, Rynek, budynek nr 19.jpg",
+   "Żary, Rynek, budynek nr 13.jpg"
+  ],
+  "Oleśnica": [
+   "Oleśnica Rynek z Ratuszem Miejskim.jpg",
+   "Oleśnica Rynek 47-48 2013 01.jpg"
+  ],
+  "Sanok": [
+   "Town hall in Sanok Rynek Grodka 2012.jpg",
+   "Sanok, Ratusz przy ul. Rynek 1 w Sanoku 000772.jpg"
+  ],
+  "Czechowice-Dziedzice": [
+   "Zamek i park 1.jpg"
+  ],
+  "Chrzanów": [
+   "Chrzanów rynek zima.jpg"
+  ],
+  "Sochaczew": [
+   "Sochaczew - ratusz-muzeum.JPG"
+  ],
+  "Cieszyn": [
+   "Kamienica - Cieszyn, Gorny Rynek 12.jpg"
+  ],
+  "Jasło": [
+   "MOs810 Wikigrant 10 2025 Resovia (Rynek, Jasło).jpg"
+  ],
+  "Grodzisk Mazowiecki": [
+   "Grodzisk Maz., zdj.110, plac Zygmunta Starego, po prawej plac Wolności i ul. H.Śienkiewicza.jpg"
+  ],
+  "Olkusz": [
+   "MOs810 WG 25 2024 (Kielce-Wisła) Olkusz, Market Square 07.jpg"
+  ],
+  "Oława": [
+   "SM Oława Rynek1 Ratusz (7) ID 596566.jpg",
+   "Ratusz Oława nocą rynek.jpg"
+  ],
+  "Luboń": [
+   "Lubon kosciol.JPG"
+  ],
+  "Iława": [
+   "645817 Iława Ratusz 02.JPG",
+   "Iława - kościół Przemienienia Pańskiego (widok od strony Małego Jezioraka).jpg"
+  ],
+  "Dzierżoniów": [
+   "Dzierżoniów, Ratusz w Dzierżoniowie ratusz i wieża ratuszowa, XV, 1873-1875.JPG"
+  ],
+  "Pruszcz Gdański": [
+   "Pruszcz Gdański, rohový dům.JPG",
+   "Pruszcz Kosciol sw Krzyza bok.jpg"
+  ],
+  "Mława": [
+   "Ratusz Mława StaryRynek.jpg",
+   "Kamienica secesyjna Mława ulStaryRynek.jpg"
+  ],
+  "Police": [
+   "0904 Rynek StrMiasta Police ZPL.JPG"
+  ],
+  "Żywiec": [
+   "Fontanna, Rynek, Żywiec, okres Żywiec, Slezské vojvodství.jpg",
+   "Rynek, Śródmieście, Żywiec.jpg"
+  ],
+  "Czeladź": [
+   "Czeladź, Rynek.jpg",
+   "Czeladź-Rynek.JPG"
+  ],
+  "Augustów": [
+   "Augustów rynek kamienica 18.07.2009 p.jpg",
+   "Augustów rynek kamienica2 18.07.2009 p cropped.jpg"
+  ],
+  "Zgorzelec": [
+   "Zgorzelec - widok z wieży ciśnień - mały rynek - 2010 - panoramio.jpg",
+   "Görlitz (Zgorzelec) Widok na Obermarkt (Górny Rynek) 02.JPG"
+  ],
+  "Swarzędz": [
+   "Swarzędz, ul. Rynek 23, pocz. XIX, nr rej. 1190A z 24.07.1970.JPG"
+  ],
+  "Bochnia": [
+   "Bochnia - Rynek 3 Lodziarnia AL01.jpg",
+   "Bochnia. Rynek 3. Dom A 241.jpg"
+  ],
+  "Bielawa": [
+   "Market Square in Bielawa (5).jpg",
+   "Market Square in Bielawa (2).jpg"
+  ],
+  "Brodnica": [
+   "Brodnica , Mały Rynek, Brama Chełmińska Po prawej widok budynku Z.U.S ,Inspektorat - panoramio.jpg",
+   "Brodnica. ... Duży Rynek z widokiem na ratusz .. - panoramio.jpg"
+  ],
+  "Śrem": [
+   "Śrem ratusz miejski.jpg"
+  ],
+  "Giżycko": [
+   "Port w Giżycku 4.jpg"
+  ],
+  "Kobyłka": [
+   "Holy Trinity church in Kobyłka.JPG"
+  ],
+  "Łowicz": [
+   "Łowicz Nowy Rynek 36.JPG"
+  ],
+  "Wieliczka": [
+   "Wieliczka widok na Zamek Żupny Sztygarówkę Rynek Górny w Wieliczce.jpg"
+  ],
+  "Jarocin": [
+   "Jarocin ratusz panorama.JPG"
+  ],
+  "Wyszków": [
+   "Pałac, 1780, XIX.jpg"
+  ],
+  "Kętrzyn": [
+   "Kętrzyn Stary Ratusz 008a.jpg",
+   "2005-09 Kętrzyn ratusz.jpg"
+  ],
+  "Wągrowiec": [
+   "Wągrowiec - rynek 1.jpg"
+  ],
+  "Zakopane": [
+   "2018-07-03 Zakopane from air 05.jpg"
+  ],
+  "Kłodzko": [
+   "2014 Kłodzko, rynek, pierzeja zachodnia.JPG",
+   "2014 Kłodzko, rynek 04.JPG"
+  ],
+  "Pszczyna": [
+   "20221110 Market Square in Pszczyna 01.jpg",
+   "Market Square in Pszczyna at dawn.jpg"
+  ],
+  "Turek": [
+   "Old town hall of Turek (1).jpg",
+   "Turek ratusz.jpg"
+  ]
+ },
+ "odrzucone": [
+  "2017 Wałbrzych, Rynek 2 3.jpg",
+  "2018 Tarnów, Rynek 16 i 17, Kamienice 02.jpg",
+  "2019 Dzierżoniów, Rynek 34 1.jpg",
+  "2020 Świdnica, Rynek 15 (1).jpg",
+  "2020 Świdnica, Rynek 15 (2).jpg",
+  "2022 Warszawa metro Ratusz Arsenał, wentylacja, 1.jpg",
+  "2022-07-07 Renovation of the Old Market Square in Poznań 05.jpg",
+  "6 Market Square in Katowice, 2025, Night, KsP.jpg",
+  "6615 Old town hall in Częstochowa November 2019.jpg",
+  "8. Urząd Miasta w Skierniewicach, Ratusz.jpg",
+  "Aqua panorama pagebanner.jpg",
+  "August Cieszkowski monument, Swarzędz, Rynek.jpg",
+  "Biała Podlaska ~20wwezfc.jpg",
+  "Biała Podlaska ~26b10sha.jpg",
+  "Bielsko-Biała, lata 70. XX wieku, plac ZWM (Rynek) 02.jpg",
+  "Bielsko-Biała, lata 70. XX wieku, plac ZWM (Rynek).jpg",
+  "Biłgoraj - Sąd Rejonowy (01) - DSC00423 v1.jpg",
+  "Biłgoraj, Ratusz.jpg",
+  "Brzeg, Rynek 2, kamienica.jpg",
+  "Budynek B magistratu otwockiego.jpg",
+  "Chorzow Rynek 7 8 2018.jpg",
+  "Chorzow Rynek estakada.jpg",
+  "Chrzanów rynek zimą.jpg",
+  "Ciechanow - ratusz (69693763) (cropped).jpg",
+  "Ciechanow - ratusz (69693763).jpg",
+  "Dolny Sopot, Sopot, Poland - panoramio (135).jpg",
+  "Dolny Sopot, Sopot, Poland - panoramio (145).jpg",
+  "Dom, Brzeg Rynek 7,acm.jpg",
+  "Dom, Rynek 12, Żory.JPG",
+  "Dębica - Rynek 46.jpg",
+  "Elbląg - Panoramiczny widok z wieży katedralnej na Stare Miasto w kierunku wschodnim - foto Łukasz Kotyński (cropped).jpg",
+  "Food at a folk art fair on Rynek Główny in Kraków 04.jpg",
+  "Gdańsk Old Town Hall (3).jpg",
+  "Gdynia - Rynek Kaszubski. 1918-1939 (68909913).jpg",
+  "Gniezno Rynek 19.jpg",
+  "Gorlice Rynek 2. Ratusz wnętrze.jpg",
+  "Gorlice Rynek 2. Ratusz Ławeczka łukasiewicza - autor Zdzisław Tohl.jpg",
+  "Gorzów Wielkopolski ul Wełniany Rynek (babajaga na miotle) - panoramio.jpg",
+  "Grodzisk Mazowiecki 2021 (Rynek).jpg",
+  "Hydrauliczne narzędzia ratownicze marki Lukas.jpg",
+  "Inscription on a house on Rynek square in Gliwice 01.jpg",
+  "Jarocin rynek 15.jpg",
+  "Kilińskiego Square in Zgierz 01.jpg",
+  "Knurów, Poland - panoramio.jpg",
+  "Koszalin Rynek Staromiejski panorama 2009-02.jpg",
+  "Krosno Rynek 16.JPG",
+  "Krosno, Market Square, Banner.jpg",
+  "Krotoszyn, Rynek (fontanna).jpg",
+  "Krotoszyn, Rynek (wylot ulic Kaliskiej i Koźmińskiej).jpg",
+  "Kwidzyn, targowisko miejskie - panoramio.jpg",
+  "Kędzierzyn-Koźle ul.Rynek 1.jpg",
+  "Li Palatinati di Posnania, Gniesno, Brzesc, Kalisz, e Inowroclaw - Tratta dall' Atlante Polacco del Sig.r Rizzi Zannoni. Venezia (IA dr li-palatinati-di-posnania-gniesno-brzesc-kalisz-e-inowroclaw-tratta-d-11598122).jpg",
+  "Lębork ratusz DSC 2614 (Nemo5576).jpg",
+  "Lębork ratusz DSC 2619 (Nemo5576).jpg",
+  "MOs810 WG 23 2016 (Zaglebiowskie Zakamarki) (Jozef Pilsudski plaque, Rynek in Radomsko).jpg",
+  "Market Square in Jarosław (011) (cropped).jpg",
+  "Market Square in Jarosław (011).jpg",
+  "Market Square in Koźle (Kędzierzyn-Koźle) (2).jpg",
+  "Market Square in Mrzygłód (Myszków) 02.jpg",
+  "Market Square in Mrzygłód (Myszków) 06.jpg",
+  "Market Square in Nowy Targ 01.jpg",
+  "Market square Ostrowiec Swietokrzyski (3).jpg",
+  "Market square Ostrowiec Swietokrzyski (4).jpg",
+  "Market square in Tomaszow Mazowiecki 2022 (1).jpg",
+  "Market square in Tomaszow Mazowiecki 2022 (5).jpg",
+  "Mielec (Rynek Rzochowski 22).jpg",
+  "Mielec (Rynek Rzochowski).jpg",
+  "Mikołów Rynek w Mikołowie Marketplace Panorama.jpg",
+  "Monument for Rajmund Rembieliński, Zgierz, Kilińskiego Square.jpg",
+  "Nowa sól ratusz.jpg",
+  "Nowo Radomsk - Rynek. post 1906 (70493270).jpg",
+  "Nowy Rynek (Jelenia Góra).jpg",
+  "Nowy Targ - rynek z ratuszem. 1918 (70369457).jpg",
+  "Okolice Tychy Rynek - panoramio.jpg",
+  "Olkusz. Rynek 25 dom A 946 M.jpg",
+  "Olsztyn 2023 037 Old Town Hall Tower.jpg",
+  "Ostroleka - Rynek. 1905-1939 (70576000).jpg",
+  "Oświęcim Rynek Główny 14 d. Ratusz (ob.Sąd Rejonowy) (A-964M) (6).jpg",
+  "Oświęcim Rynek Główny 2. Wyjście z piwnic dawnego ratusza.jpg",
+  "PL Piła RatuszNoc.JPG",
+  "POL Nowy Dwór main square.jpg",
+  "POL Słupsk plac Stary Rynek 002.jpg",
+  "Pabianice, Stary Rynek 1, Dwór Kapituły Krakowskiej-003.jpg",
+  "Pabianice, Stary Rynek 1, Dwór Kapituły Krakowskiej-004.jpg",
+  "Panorama from Castle Hill Cieszyn Wikivoyage pagebanner.jpg",
+  "Panorama Łowicza z wieży widokowej Bazyliki Katedralnej - 15.jpg",
+  "Pałac braci Briggsów w Markach.jpg",
+  "Plac Narutowicza w Bełchatowie.jpg",
+  "Plac Tysiąclecia 8, Ostróda (2).jpg",
+  "Plac Tysiąclecia 8, Ostróda.jpg",
+  "Poland, Lublin Plac Łokietka 1; Ratusz Miasta Lublin.jpg",
+  "Prague police Renault Master in Old Town Square.JPG",
+  "Przystanek Wieliczka Rynek Kopalnia 1 2019.jpg",
+  "Ratusz Reda.jpg",
+  "Ratusz Sochaczew.jpg",
+  "RatuszJastrzębie.jpg",
+  "RatuszJastrzębie2.jpg",
+  "Reda Town Hall after president's plane crash 2010.jpg",
+  "Rumia Town Hall after president's plane crash 2010.jpg",
+  "Rumia z powietrza.JPG",
+  "Rynek 14 Jasło - podwórze.JPG",
+  "Rynek Skierniewice balkon.jpg",
+  "Rynek w Czerwionce 03.jpg",
+  "Rynek w Czerwionce 05.jpg",
+  "Rynek-Racibórz 2.JPG",
+  "Rynek-Racibórz 3.JPG",
+  "Siemianowice Rynek Bytkowski aerial 2026.jpg",
+  "Sosnowiec-Modrzejów.Rynek..JPG",
+  "Sosnowiec-Modrzejów.Rynek.2.JPG",
+  "Stalowa Wola (Rozwadów) - rynek 01.jpg",
+  "Starachowice - rynek - pomnik.jpg",
+  "Starachowice - rynek 02.jpg",
+  "Stargard pocz. XX w. (rynek).jpg",
+  "Stary Rynek in Sieradz (2).jpg",
+  "Szczecin Old Town Hall gothic portal.jpg",
+  "Trybunalski Market Square in Piotrków Trybunalski, Poland 01.jpg",
+  "Tychy, Rynek zimą... (www.NOLTYCHY.pl) - panoramio.jpg",
+  "Wodzisław Śląski. Rynek. Kamienica nr 10.JPG",
+  "Września, Rynek, pierzeja wschodnia.JPG",
+  "Wągrowiec - rynek 2.JPG",
+  "Zakopane Wikivoyage banner.png",
+  "Zawiercie synagogue 01.JPG",
+  "Łuków, budynek magistratu, graf. edytowana.jpg",
+  "Łuków. Magistrat.jpg",
+  "Śrem rynek kapliczka.JPG",
+  "Świętochłowice Polaka 1 DSC 7513.jpg"
+ ]
+}

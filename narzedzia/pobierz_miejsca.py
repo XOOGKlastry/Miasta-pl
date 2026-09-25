@@ -1,4 +1,12 @@
-"""Buduje miejsca.json i zdjęcia w katalogu miejsca/ do gry „Co to za miasto?”.
+"""Zdjęcia do gry „Co to za miasto?”: kandydaci do przeglądu i wybrane zdjęcia do gry.
+
+Dwa pliki wynikowe:
+  kandydaci.json  wszystkie sensowne zdjęcia z Commons dla miast od 5 tys. mieszkańców,
+                  do przejrzenia w przeglad.html (nic nie jest pobierane, tylko miniatury z Commons)
+  miejsca.json    tylko zdjęcia zatwierdzone w narzedzia/zdjecia-wybor.json,
+                  pobrane lokalnie do katalogu miejsca/
+
+Pliki odrzucone w narzedzia/zdjecia-wybor.json nigdy nie trafiają ani do gry, ani do kandydatów.
 
 Dla miast z OpenStreetMap (z tagiem wikidata) bierze z Wikidata zdjęcie główne (P18)
 i baner Wikipodróży (P948), sprawdza je w Wikimedia Commons, pobiera autora i licencję
@@ -8,9 +16,12 @@ import html, io, json, os, re, sys, time, unicodedata, urllib.parse, urllib.requ
 
 UA = "ZnaszPolske/1.0 (https://github.com/XOOGKlastry/Miasta-pl; gra edukacyjna)"
 OUT = "miejsca"
-MIN_POP = 25000
-SZER = 1200          # szerokość zapisanego zdjęcia
-MIN_ORYG = 1600      # oryginał musi mieć co najmniej tyle pikseli szerokości
+MIN_POP = 5000
+MIN_KANDYDACI = 14   # najwyżej tylu kandydatów na miasto
+WYBOR = "narzedzia/zdjecia-wybor.json"   # {"wybrane": {miasto: [pliki]}, "odrzucone": [pliki]}
+SZER = 1600          # szerokość zapisanego zdjęcia
+MINI = 640           # szerokość miniatury w przeglądzie
+MIN_ORYG = 1800      # oryginał musi mieć co najmniej tyle pikseli szerokości
 # nazwy plików, które zwykle pokazują charakterystyczne miejsca miasta
 DOBRE = ["rynek", "ratusz", "stare miasto", "starego miasta", "old town", "market square", "market", "town hall",
          "zamek", "castle", "katedr", "cathedral", "bazylik", "basilica", "panoram", "plac ", "square", "brama",
@@ -82,9 +93,10 @@ def obrazy(qids):
 def szukaj_commons(miasto):
     """zdjęcia rynku, ratusza i starego miasta z Wikimedia Commons"""
     wyn = []
-    for fraza in ("rynek " + miasto, "ratusz " + miasto, miasto + " old town"):
+    for fraza in ("rynek " + miasto, "ratusz " + miasto, miasto + " old town", miasto + " panorama",
+                  miasto + " market square", "stare miasto " + miasto):
         url = ("https://commons.wikimedia.org/w/api.php?action=query&format=json&list=search&srnamespace=6"
-               "&srlimit=6&srsearch=" + urllib.parse.quote(fraza + " filetype:bitmap"))
+               "&srlimit=8&srsearch=" + urllib.parse.quote(fraza + " filetype:bitmap"))
         try:
             j = json.loads(http(url, tries=2, timeout=60))
         except Exception:
@@ -116,6 +128,7 @@ def info(pliki):
     for i in range(0, len(pliki), 40):
         chunk = pliki[i:i + 40]
         url = ("https://commons.wikimedia.org/w/api.php?action=query&format=json&prop=imageinfo"
+               "&prop=imageinfo|categories&clshow=!hidden&cllimit=max"
                "&iiprop=url|size|extmetadata&iiurlwidth=%d&redirects=1&titles=" % SZER) + urllib.parse.quote("|".join("File:" + f for f in chunk))
         j = json.loads(http(url))
         q = j.get("query", {})
@@ -129,7 +142,11 @@ def info(pliki):
             orig = back.get(orig, orig)[5:]
             ii = p["imageinfo"][0]
             m = ii.get("extmetadata", {})
-            out[orig] = {"url": ii.get("thumburl") or ii["url"], "szer": ii.get("width", 0),
+            kat = " ".join(c["title"] for c in p.get("categories", [])).lower()
+            jakosc = ("featured" in kat) * 3 + ("quality images" in kat) * 2 + ("valued images" in kat) * 2
+            mini = (ii.get("thumburl") or ii["url"]).replace("/%dpx-" % SZER, "/%dpx-" % MINI)
+            out[orig] = {"url": ii.get("thumburl") or ii["url"], "mini": mini, "szer": ii.get("width", 0), "wys": ii.get("height", 0),
+                         "jakosc": jakosc, "strona": ii.get("descriptionurl", ""),
                          "autor": czysc(m.get("Artist", {}).get("value")),
                          "licencja": czysc(m.get("LicenseShortName", {}).get("value"))}
         time.sleep(0.5)
@@ -137,58 +154,86 @@ def info(pliki):
 
 
 def main():
+    import hashlib
     from PIL import Image
     os.makedirs(OUT, exist_ok=True)
+    wybor = json.load(open(WYBOR, encoding="utf-8")) if os.path.exists(WYBOR) else {}
+    wybrane = wybor.get("wybrane", {})
+    odrzucone = set(wybor.get("odrzucone", []))
     cs = miasta()
     print("miast:", len(cs))
     im = obrazy([c["qid"] for c in cs])
     zrodla = {}
     for q, lst in im.items():
         for f in lst:
-            zrodla[(q, f)] = "img"
-    # dodatkowi kandydaci z wyszukiwania w Commons
+            zrodla[(q, f)] = "wikidata"
     for c in cs:
         for f in szukaj_commons(c["n"]):
             lst = im.setdefault(c["qid"], [])
             if f not in lst:
                 lst.append(f)
                 zrodla[(c["qid"], f)] = "szukaj"
-    wszystkie = sorted({f for l in im.values() for f in l})
+    wszystkie = sorted({f for l in im.values() for f in l} | {f for l in wybrane.values() for f in l})
     meta = info(wszystkie)
     print("zdjęć w Commons:", len(meta))
-    wynik, nazwy = [], set()
+
+    # 1) kandydaci do przeglądu
+    kand, nazwy = [], set()
     for c in sorted(cs, key=lambda c: -c["pop"]):
         if c["n"].lower() in nazwy:
             continue
+        nazwy.add(c["n"].lower())
+        lista = []
+        for f in im.get(c["qid"], []):
+            m = meta.get(f)
+            if not m or f in odrzucone:
+                continue
+            if ocena(f, zrodla.get((c["qid"], f), "wikidata"), m["szer"]) < 0 or m["wys"] > m["szer"] * 1.4 or m["szer"] > m["wys"] * 3.2:
+                continue   # za małe, pionowe paski albo bardzo wąskie panoramy
+            lista.append({"plik": f, "mini": m["mini"], "szer": m["szer"], "wys": m["wys"], "autor": m["autor"],
+                          "licencja": m["licencja"], "strona": m["strona"], "jakosc": m["jakosc"],
+                          "zrodlo": zrodla.get((c["qid"], f), "wikidata")})
+        lista.sort(key=lambda k: -(k["jakosc"] * 3 + ocena(k["plik"], k["zrodlo"], k["szer"])))
+        kand.append({"n": c["n"], "pop": c["pop"], "lat": c["lat"], "lon": c["lon"], "kandydaci": lista[:MIN_KANDYDACI]})
+    with open("kandydaci.json", "w", encoding="utf-8") as fh:
+        json.dump({"zbudowano": time.strftime("%Y-%m-%d"), "miasta": kand}, fh, ensure_ascii=False, separators=(",", ":"))
+    print("kandydaci: miast", len(kand), "zdjęć", sum(len(k["kandydaci"]) for k in kand))
+
+    # 2) gra: tylko zdjęcia zatwierdzone przez człowieka
+    po_nazwie = {c["n"]: c for c in cs}
+    wynik = []
+    for nazwa, pliki in wybrane.items():
+        c = po_nazwie.get(nazwa)
+        if not c:
+            print("nie znam miasta", nazwa, file=sys.stderr)
+            continue
         zdj = []
-        kandydaci = [f for f in im.get(c["qid"], []) if f in meta]
-        kandydaci = [f for f in kandydaci if ocena(f, zrodla.get((c["qid"], f), "img"), meta[f]["szer"]) >= 0]
-        kandydaci.sort(key=lambda f: -ocena(f, zrodla.get((c["qid"], f), "img"), meta[f]["szer"]))
-        for n, f in enumerate(kandydaci[:2]):
-            import hashlib
-            path = "%s/%s-%s.webp" % (OUT, slug(c["n"]), hashlib.md5(f.encode()).hexdigest()[:6])
+        for f in pliki:
+            m = meta.get(f)
+            if not m or f in odrzucone:
+                print("brak pliku w Commons", nazwa, f, file=sys.stderr)
+                continue
+            path = "%s/%s-%s.webp" % (OUT, slug(nazwa), hashlib.md5(f.encode()).hexdigest()[:6])
             if not os.path.exists(path):
                 try:
-                    obraz = Image.open(io.BytesIO(http(meta[f]["url"], timeout=90))).convert("RGB")
+                    obraz = Image.open(io.BytesIO(http(m["url"], timeout=90))).convert("RGB")
                     obraz.thumbnail((SZER, SZER))
-                    obraz.save(path, "WEBP", quality=78, method=6)
+                    obraz.save(path, "WEBP", quality=80, method=6)
                     time.sleep(0.2)
                 except Exception as e:
-                    print("pomijam", c["n"], f, e, file=sys.stderr)
+                    print("pomijam", nazwa, f, e, file=sys.stderr)
                     continue
-            zdj.append({"img": path, "plik": f, "autor": meta[f]["autor"], "licencja": meta[f]["licencja"]})
+            zdj.append({"img": path, "plik": f, "autor": m["autor"], "licencja": m["licencja"]})
         if zdj:
-            nazwy.add(c["n"].lower())
-            wynik.append({"n": c["n"], "lat": c["lat"], "lon": c["lon"], "pop": c["pop"], "zdjecia": zdj})
+            wynik.append({"n": nazwa, "lat": c["lat"], "lon": c["lon"], "pop": c["pop"], "zdjecia": zdj})
+    wynik.sort(key=lambda w: -w["pop"])
     uzyte = {z["img"] for w in wynik for z in w["zdjecia"]}
     for f in os.listdir(OUT):
         if OUT + "/" + f not in uzyte:
             os.remove(os.path.join(OUT, f))
     with open("miejsca.json", "w", encoding="utf-8") as fh:
         json.dump({"zbudowano": time.strftime("%Y-%m-%d"), "miasta": wynik}, fh, ensure_ascii=False, separators=(",", ":"))
-    print("zapisano miast ze zdjęciami:", len(wynik), "zdjęć:", len(uzyte))
-    if len(wynik) < 30:
-        raise SystemExit("za mało zdjęć")
+    print("gra: miast ze zdjęciami", len(wynik), "zdjęć", len(uzyte))
 
 
 if __name__ == "__main__":

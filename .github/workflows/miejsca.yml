@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - "narzedzia/pobierz_miejsca.py"
+      - "narzedzia/zdjecia-wybor.json"
       - ".github/workflows/miejsca.yml"
   schedule:
     - cron: "0 4 2 * *"   # raz w miesiącu
@@ -19,7 +20,7 @@ concurrency:
 jobs:
   miejsca:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -34,5 +35,6 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git add narzedzia/miejsca.log
-          [ -f miejsca.json ] && git add miejsca.json miejsca || true
+          [ -f miejsca.json ] && git add -A miejsca.json miejsca || true
+          [ -f kandydaci.json ] && git add kandydaci.json || true
           git diff --cached --quiet || (git commit -m "Zdjęcia miast: aktualizacja" && git pull --rebase && git push)

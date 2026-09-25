@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=13" />
+<link rel="stylesheet" href="wspolne.css?v=14" />
 <style>
 svg path{fill-rule:evenodd}
 .target{flex:none;text-align:center}
@@ -89,8 +89,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=13"></script>
-<script src="wspolne.js?v=13"></script>
+<script src="topojson-client.min.js?v=14"></script>
+<script src="wspolne.js?v=14"></script>
 <script>
 const {$,shuffle}=ZP;
 let POW=[],WOJ=[],PL=null,game=null,GM=null;
@@ -168,38 +168,10 @@ function przybliz(b,gotowe){
 }
 function oznacz(k,cls){document.querySelectorAll('#stage [data-k="'+k+'"]').forEach(x=>x.classList.add(cls));}
 function usunLupy(){document.querySelectorAll("#stage .lupa").forEach(x=>x.remove());document.querySelectorAll("#map .ramka-lupy").forEach(x=>x.remove());}
-function lupy(set,P,typ){
-  usunLupy();
-  const W=500,it=set.map(u=>{const b=ramka(P,u.f);return {u,b,w:b[2]-b[0],h:b[3]-b[1],cx:(b[0]+b[2])/2,cy:(b[1]+b[3])/2};});
-  const male=it.filter(x=>Math.max(x.w,x.h)<W*0.075);
-  // grupowanie małych jednostek leżących blisko siebie
-  const grupy=[];
-  male.forEach(x=>{
-    const g=grupy.find(g=>g.some(y=>Math.hypot(x.cx-y.cx,x.cy-y.cy)<W*0.13));
-    if(g)g.push(x);else grupy.push([x]);
-  });
-  // scal grupy, które się zazębiły
-  for(let a=0;a<grupy.length;a++)for(let b=a+1;b<grupy.length;b++){
-    if(grupy[a].some(x=>grupy[b].some(y=>Math.hypot(x.cx-y.cx,x.cy-y.cy)<W*0.13))){grupy[a]=grupy[a].concat(grupy[b]);grupy.splice(b,1);b=a;}
-  }
-  const wybrane=grupy.filter(g=>g.length>=2||Math.max(g[0].w,g[0].h)<W*0.04).sort((a,b)=>b.length-a.length).slice(0,2);
-  const rogi=["pg","pd"];
-  wybrane.forEach((g,ix)=>{
-    let b=[1e9,1e9,-1e9,-1e9];g.forEach(x=>{b[0]=Math.min(b[0],x.b[0]);b[1]=Math.min(b[1],x.b[1]);b[2]=Math.max(b[2],x.b[2]);b[3]=Math.max(b[3],x.b[3]);});
-    const pad=Math.max(W*0.1,0.35*Math.max(b[2]-b[0],b[3]-b[1]));   // z sąsiadami dookoła, żeby było wiadomo, gdzie jesteśmy
-    let x0=b[0]-pad,y0=b[1]-pad,w=b[2]-b[0]+2*pad,h=b[3]-b[1]+2*pad;
-    if(w<h){x0-=(h-w)/2;w=h;}else{y0-=(w-h)/2;h=w;}
-    const skala=w/W;
-    const div=document.createElement("div");div.className="lupa "+rogi[ix];
-    div.innerHTML='<svg viewBox="'+[x0,y0,w,h].map(v=>v.toFixed(1)).join(" ")+'" preserveAspectRatio="xMidYMid meet" data-skala="'+skala.toFixed(3)+'">'
-      +set.map(u=>'<path data-k="'+u.k+'" data-typ="'+typ+'" d="'+P.path(u.f.geometry,0.2)+'"/>').join("")+'</svg><span>lupa</span>';
-    $("stage").appendChild(div);
-    div.querySelector("svg").addEventListener("click",e=>{e.stopPropagation();klik(e.target.closest("path"));});
-    $("map").insertAdjacentHTML("beforeend",'<rect class="ramka-lupy" x="'+x0.toFixed(1)+'" y="'+y0.toFixed(1)+'" width="'+w.toFixed(1)+'" height="'+h.toFixed(1)+'" rx="4"/>');
-  });
-}
+function lupy(){usunLupy();}
 function pokazNowa(){const svg=$("map");svg.classList.remove("pojaw");void svg.getBoundingClientRect();svg.classList.add("pojaw");}
 function rysujPolske(){
+  setTimeout(()=>ZP.zoomSvg($("map"),$("stage")).reset(),0);
   usunLupy();
   const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+PL.H.toFixed(0));
   svg.innerHTML=WOJ.map(w=>'<path data-k="'+w.k+'" data-typ="w" d="'+PL.path(w.f.geometry)+'"/>').join("");
@@ -209,14 +181,14 @@ function rysujPowiat(kod){
   const P=ZP.projection(set.map(p=>p.f),500,14);game.P=P;
   const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
   svg.innerHTML=set.map(p=>'<path data-k="'+p.k+'" data-typ="g" d="'+P.path(p.f.geometry)+'"/>').join("");
-  game.zestaw=set;pokazNowa();lupy(set,P,"g");
+  game.zestaw=set;pokazNowa();ZP.zoomSvg($("map"),$("stage")).reset();
 }
 function rysujWoj(kod){
   const set=POW.filter(p=>p.k.startsWith(kod));
   const P=ZP.projection(set.map(p=>p.f),500,14);game.P=P;
   const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
   svg.innerHTML=set.map(p=>'<path data-k="'+p.k+'" data-typ="p" d="'+P.path(p.f.geometry)+'"/>').join("");
-  game.zestaw=set;pokazNowa();lupy(set,P,"p");
+  game.zestaw=set;pokazNowa();ZP.zoomSvg($("map"),$("stage")).reset();
 }
 function next(){
   game.i++;
@@ -253,7 +225,7 @@ function klik(el){
       game.etap=3;
       $("tKind").textContent="Gmina, "+(p.powiat||"powiat");
       $("tName").textContent=p.full;
-      $("tip").textContent="Stuknij gminę";
+      $("tip").textContent="Stuknij gminę, dwoma palcami przybliżysz";
       rysujPowiat(kod);
     }),ok?900:1500);
   }else if(game.etap===2||game.etap===3){
@@ -281,7 +253,7 @@ function etap2(p){
   $("target").classList.remove("zmiana");void $("target").offsetWidth;$("target").classList.add("zmiana");
   $("tKind").textContent="Powiat w woj. "+p.woj;
   $("tName").textContent=GMINA?(p.powiat||"powiat"):p.full;
-  $("tip").textContent="Stuknij powiat";
+  $("tip").textContent="Stuknij powiat, dwoma palcami przybliżysz";
   rysujWoj(p.k.slice(0,2));
 }
 function endGame(){
