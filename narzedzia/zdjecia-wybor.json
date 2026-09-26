@@ -1,9 +1,6 @@
 {
- "opis": "Wybór zdjęć do gry „Co to za miasto?”. Edytuj w przeglad.html albo ręcznie: wybrane = zdjęcia w grze, odrzucone = nigdy.",
+ "opis": "Wybór zdjęć do gry „Co to za miasto?”. Edytowany w panelu admina.",
  "wybrane": {
-  "Warszawa": [
-   "Castle Square (22346p).jpg"
-  ],
   "Wrocław": [
    "2016 Wrocław, Rynek-Ratusz 7 01.jpg",
    "Wrocław, Rynek-Ratusz 24.jpg"
@@ -469,8 +466,15 @@
   "2019 Dzierżoniów, Rynek 34 1.jpg",
   "2020 Świdnica, Rynek 15 (1).jpg",
   "2020 Świdnica, Rynek 15 (2).jpg",
+  "2022 Warszawa hotel Ibis Stare Miasto, napis, 1.jpg",
   "2022 Warszawa metro Ratusz Arsenał, wentylacja, 1.jpg",
   "2022-07-07 Renovation of the Old Market Square in Poznań 05.jpg",
+  "2025 Warszawa metro Ratusz Arsenał, 1.jpg",
+  "2025 Warszawa metro Ratusz Arsenał, 2.jpg",
+  "2025 Warszawa metro Ratusz Arsenał, 3.jpg",
+  "2025 Warszawa widok z Varso na Stare Miasto, 1.jpg",
+  "2025 Warszawa widok z Varso na Stare Miasto, 3.jpg",
+  "2025 Warszawa widok z Varso na Stare Miasto, 5.jpg",
   "6 Market Square in Katowice, 2025, Night, KsP.jpg",
   "6615 Old town hall in Częstochowa November 2019.jpg",
   "8. Urząd Miasta w Skierniewicach, Ratusz.jpg",
@@ -562,6 +566,7 @@
   "RatuszJastrzębie.jpg",
   "RatuszJastrzębie2.jpg",
   "Reda Town Hall after president's plane crash 2010.jpg",
+  "Ruiny rotundy przy ul. Dynasy w Warszawie 2020.jpg",
   "Rumia Town Hall after president's plane crash 2010.jpg",
   "Rumia z powietrza.JPG",
   "Rynek 14 Jasło - podwórze.JPG",
@@ -576,11 +581,14 @@
   "Stalowa Wola (Rozwadów) - rynek 01.jpg",
   "Starachowice - rynek - pomnik.jpg",
   "Starachowice - rynek 02.jpg",
+  "Stare Miasto, Warszawa 3.jpg",
+  "Stare Miasto, Warszawa 4.jpg",
   "Stargard pocz. XX w. (rynek).jpg",
   "Stary Rynek in Sieradz (2).jpg",
   "Szczecin Old Town Hall gothic portal.jpg",
   "Trybunalski Market Square in Piotrków Trybunalski, Poland 01.jpg",
   "Tychy, Rynek zimą... (www.NOLTYCHY.pl) - panoramio.jpg",
+  "Warszawa - 52770586564.jpg",
   "Wodzisław Śląski. Rynek. Kamienica nr 10.JPG",
   "Września, Rynek, pierzeja wschodnia.JPG",
   "Wągrowiec - rynek 2.JPG",
