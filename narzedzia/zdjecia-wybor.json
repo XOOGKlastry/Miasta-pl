@@ -1,10 +1,6 @@
 {
  "opis": "Wybór zdjęć do gry „Co to za miasto?”. Edytowany w panelu admina.",
  "wybrane": {
-  "Łódź": [
-   "Łódź, Ratusz Miejski - panoramio.jpg",
-   "Łódź - Ratusz Staromiejski - panoramio.jpg"
-  ],
   "Poznań": [
    "2022-07-07 Renovation of the Old Market Square in Poznań 04.jpg"
   ],
@@ -469,9 +465,14 @@
   "Warszawa": [
    "Hotel Ibis Stare Miasto w Warszawie 2021.jpg",
    "Castle Square (22346p).jpg"
+  ],
+  "Łódź": [
+   "Stare Miasto, Łódź, Poland - panoramio (5).jpg",
+   "Łódź, Ratusz, Pl. Wolności - Light Move Festival 2013. - panoramio.jpg"
   ]
  },
  "odrzucone": [
+  "12.07.2023 Old Market Square in Łódź, Poland.jpg",
   "2016 Wrocław, Rynek 40.jpg",
   "2016 Wrocław, Rynek 44 04.jpg",
   "2016 Wrocław, Rynek 49.jpg",
@@ -612,8 +613,13 @@
   "Stare Miasto, Warszawa 4.jpg",
   "Stare Miasto, Wrocław, Poland - panoramio (18).jpg",
   "Stare Miasto, Wrocław, Poland - panoramio (25).jpg",
+  "Stare Miasto, Łódź, Poland - panoramio (10).jpg",
+  "Stare Miasto, Łódź, Poland - panoramio (11).jpg",
+  "Stare Miasto, Łódź, Poland - panoramio (2).jpg",
+  "Stare Miasto, Łódź, Poland - panoramio (9).jpg",
   "Stargard pocz. XX w. (rynek).jpg",
   "Stary Rynek in Sieradz (2).jpg",
+  "Stary Rynek Łódź.jpg",
   "Szczecin Old Town Hall gothic portal.jpg",
   "Trybunalski Market Square in Piotrków Trybunalski, Poland 01.jpg",
   "Tychy, Rynek zimą... (www.NOLTYCHY.pl) - panoramio.jpg",
@@ -626,6 +632,13 @@
   "Zawiercie synagogue 01.JPG",
   "Łuków, budynek magistratu, graf. edytowana.jpg",
   "Łuków. Magistrat.jpg",
+  "Łódź - Panorama at night.jpg",
+  "Łódź - Ratusz Staromiejski - panoramio.jpg",
+  "Łódź - Stare Miasto - panoramio (1).jpg",
+  "Łódź - Stare Miasto - panoramio.jpg",
+  "Łódź, Ratusz Miejski - panoramio.jpg",
+  "Łódź, ul.Piotrkowska, Ratusz - panoramio.jpg",
+  "Łódź- Ratusz Staromiejski - panoramio (1).jpg",
   "Śrem rynek kapliczka.JPG",
   "Świętochłowice Polaka 1 DSC 7513.jpg"
  ]
