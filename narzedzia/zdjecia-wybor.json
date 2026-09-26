@@ -1,10 +1,6 @@
 {
  "opis": "Wybór zdjęć do gry „Co to za miasto?”. Edytowany w panelu admina.",
  "wybrane": {
-  "Wrocław": [
-   "2016 Wrocław, Rynek-Ratusz 7 01.jpg",
-   "Wrocław, Rynek-Ratusz 24.jpg"
-  ],
   "Kraków": [
    "Old Town, southern part near Wawel Castle, 2025, bird's eye view, Kraków, Poland.jpg"
   ],
@@ -458,9 +454,22 @@
   "Turek": [
    "Old town hall of Turek (1).jpg",
    "Turek ratusz.jpg"
+  ],
+  "Wrocław": [
+   "2019-07-02 Market Square in Wrocław.jpg",
+   "Old Town Hall in Wrocław, September 2022 14.jpg",
+   "Wrocław Rynek-Ratusz 20-22-24 sm.jpg",
+   "Szlak Odry, Promenada Staromiejska, Stare Miasto, Wrocław.jpg",
+   "Old and New Town Halls in Wrocław, September 2022.jpg",
+   "2017 Ratusz Staromiejski we Wrocławiu 01.jpg",
+   "24-7 Rynek in Wrocław, 2023.jpg"
   ]
  },
  "odrzucone": [
+  "2016 Wrocław, Rynek 40.jpg",
+  "2016 Wrocław, Rynek 44 04.jpg",
+  "2016 Wrocław, Rynek 49.jpg",
+  "2016 Wrocław, Rynek-Ratusz 7 01.jpg",
   "2017 Wałbrzych, Rynek 2 3.jpg",
   "2018 Tarnów, Rynek 16 i 17, Kamienice 02.jpg",
   "2019 Dzierżoniów, Rynek 34 1.jpg",
@@ -493,6 +502,7 @@
   "Chrzanów rynek zimą.jpg",
   "Ciechanow - ratusz (69693763) (cropped).jpg",
   "Ciechanow - ratusz (69693763).jpg",
+  "Colours of Rynek - Wrocław PL.jpg",
   "Dolny Sopot, Sopot, Poland - panoramio (135).jpg",
   "Dolny Sopot, Sopot, Poland - panoramio (145).jpg",
   "Dom, Brzeg Rynek 7,acm.jpg",
@@ -583,6 +593,8 @@
   "Starachowice - rynek 02.jpg",
   "Stare Miasto, Warszawa 3.jpg",
   "Stare Miasto, Warszawa 4.jpg",
+  "Stare Miasto, Wrocław, Poland - panoramio (18).jpg",
+  "Stare Miasto, Wrocław, Poland - panoramio (25).jpg",
   "Stargard pocz. XX w. (rynek).jpg",
   "Stary Rynek in Sieradz (2).jpg",
   "Szczecin Old Town Hall gothic portal.jpg",
@@ -590,6 +602,7 @@
   "Tychy, Rynek zimą... (www.NOLTYCHY.pl) - panoramio.jpg",
   "Warszawa - 52770586564.jpg",
   "Wodzisław Śląski. Rynek. Kamienica nr 10.JPG",
+  "Wrocław, Rynek-Ratusz 24.jpg",
   "Września, Rynek, pierzeja wschodnia.JPG",
   "Wągrowiec - rynek 2.JPG",
   "Zakopane Wikivoyage banner.png",
