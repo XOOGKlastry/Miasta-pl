@@ -1,9 +1,6 @@
 {
  "opis": "Wybór zdjęć do gry „Co to za miasto?”. Edytowany w panelu admina.",
  "wybrane": {
-  "Kraków": [
-   "Old Town, southern part near Wawel Castle, 2025, bird's eye view, Kraków, Poland.jpg"
-  ],
   "Łódź": [
    "Łódź, Ratusz Miejski - panoramio.jpg",
    "Łódź - Ratusz Staromiejski - panoramio.jpg"
@@ -463,6 +460,15 @@
    "Old and New Town Halls in Wrocław, September 2022.jpg",
    "2017 Ratusz Staromiejski we Wrocławiu 01.jpg",
    "24-7 Rynek in Wrocław, 2023.jpg"
+  ],
+  "Kraków": [
+   "2018-10-31 PL Kraków I Stare Miasto & Kraków XIII Podgórze (51164857959).jpg",
+   "2019-07-06 Old Town Market Square in Kraków.jpg",
+   "2018-10-30 PL Kraków I Stare Miasto, Rynek Główny (51107237284).jpg"
+  ],
+  "Warszawa": [
+   "Hotel Ibis Stare Miasto w Warszawie 2021.jpg",
+   "Castle Square (22346p).jpg"
   ]
  },
  "odrzucone": [
@@ -472,6 +478,10 @@
   "2016 Wrocław, Rynek-Ratusz 7 01.jpg",
   "2017 Wałbrzych, Rynek 2 3.jpg",
   "2018 Tarnów, Rynek 16 i 17, Kamienice 02.jpg",
+  "2018-10-31 PL Kraków I Stare Miasto & Kraków XIII Podgórze (51164073586).jpg",
+  "2018-10-31 PL Kraków I Stare Miasto, Kraków Główny (51235288400).jpg",
+  "2018-11-03 PL Kraków I Stare Miasto, Kraków Główny (51353330669).jpg",
+  "2018-11-03 PL Kraków I Stare Miasto, Kraków Główny (51356894986).jpg",
   "2019 Dzierżoniów, Rynek 34 1.jpg",
   "2020 Świdnica, Rynek 15 (1).jpg",
   "2020 Świdnica, Rynek 15 (2).jpg",
@@ -484,6 +494,8 @@
   "2025 Warszawa widok z Varso na Stare Miasto, 1.jpg",
   "2025 Warszawa widok z Varso na Stare Miasto, 3.jpg",
   "2025 Warszawa widok z Varso na Stare Miasto, 5.jpg",
+  "22. Cracovia Marathon, Main Market Square, Advertising masts, Old Town, Kraków, Poland.jpg",
+  "22. Cracovia Marathon, Main Market Square, Sponsor board, Old Town, Kraków, Poland.jpg",
   "6 Market Square in Katowice, 2025, Night, KsP.jpg",
   "6615 Old town hall in Częstochowa November 2019.jpg",
   "8. Urząd Miasta w Skierniewicach, Ratusz.jpg",
@@ -509,7 +521,10 @@
   "Dom, Rynek 12, Żory.JPG",
   "Dębica - Rynek 46.jpg",
   "Elbląg - Panoramiczny widok z wieży katedralnej na Stare Miasto w kierunku wschodnim - foto Łukasz Kotyński (cropped).jpg",
+  "Empty Old Town Market Square in Kraków during the COVID-19 pandemic in Poland, April 2020.jpg",
+  "Food at a folk art fair on Rynek Główny in Kraków 02.jpg",
   "Food at a folk art fair on Rynek Główny in Kraków 04.jpg",
+  "Food at a folk art fair on Rynek Główny in Kraków 05.jpg",
   "Gdańsk Old Town Hall (3).jpg",
   "Gdynia - Rynek Kaszubski. 1918-1939 (68909913).jpg",
   "Gniezno Rynek 19.jpg",
@@ -552,6 +567,7 @@
   "Nowy Rynek (Jelenia Góra).jpg",
   "Nowy Targ - rynek z ratuszem. 1918 (70369457).jpg",
   "Okolice Tychy Rynek - panoramio.jpg",
+  "Old Town, southern part near Wawel Castle, 2025, bird's eye view, Kraków, Poland.jpg",
   "Olkusz. Rynek 25 dom A 946 M.jpg",
   "Olsztyn 2023 037 Old Town Hall Tower.jpg",
   "Ostroleka - Rynek. 1905-1939 (70576000).jpg",
@@ -562,6 +578,7 @@
   "POL Słupsk plac Stary Rynek 002.jpg",
   "Pabianice, Stary Rynek 1, Dwór Kapituły Krakowskiej-003.jpg",
   "Pabianice, Stary Rynek 1, Dwór Kapituły Krakowskiej-004.jpg",
+  "Panorama Prądnika Białego wzdłuż ulicy Batalionu „Skała” AK, Kraków, Poland.jpg",
   "Panorama from Castle Hill Cieszyn Wikivoyage pagebanner.jpg",
   "Panorama Łowicza z wieży widokowej Bazyliki Katedralnej - 15.jpg",
   "Pałac braci Briggsów w Markach.jpg",
