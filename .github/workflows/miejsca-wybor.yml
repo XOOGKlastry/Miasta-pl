@@ -1,13 +1,10 @@
-name: Zdjęcia miast (Co to za miasto?)
+name: Zdjęcia miast: wybór z panelu
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - "narzedzia/pobierz_miejsca.py"
-      - ".github/workflows/miejsca.yml"
-  schedule:
-    - cron: "0 4 2 * *"   # raz w miesiącu
+      - "narzedzia/zdjecia-wybor.json"
 
 permissions:
   contents: write
@@ -19,7 +16,7 @@ concurrency:
 jobs:
   miejsca:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,7 +24,7 @@ jobs:
           python-version: "3.12"
       - run: pip install pillow
       - name: Zdjęcia
-        run: python narzedzia/pobierz_miejsca.py 2>&1 | tee narzedzia/miejsca.log
+        run: python narzedzia/pobierz_miejsca.py --tylko-gra 2>&1 | tee narzedzia/miejsca.log
       - name: Zapisz zmiany
         if: always()
         run: |
@@ -35,5 +32,4 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           git add narzedzia/miejsca.log
           [ -f miejsca.json ] && git add -A miejsca.json miejsca || true
-          [ -f kandydaci.json ] && git add kandydaci.json || true
           git diff --cached --quiet || (git commit -m "Zdjęcia miast: aktualizacja" && git pull --rebase && git push)

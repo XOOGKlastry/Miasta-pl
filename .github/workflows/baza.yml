@@ -1,0 +1,37 @@
+name: Baza encyklopedii
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "narzedzia/pobierz_baze.py"
+      - ".github/workflows/baza.yml"
+  schedule:
+    - cron: "0 5 3 * *"   # raz w miesiącu
+
+permissions:
+  contents: write
+
+concurrency:
+  group: zapis-danych
+  cancel-in-progress: false
+
+jobs:
+  baza:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Baza
+        run: python narzedzia/pobierz_baze.py 2>&1 | tee narzedzia/baza.log
+      - name: Zapisz zmiany
+        if: always()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add narzedzia/baza.log
+          [ -f baza.json ] && git add baza.json || true
+          git diff --cached --quiet || (git commit -m "Baza encyklopedii: aktualizacja" && git pull --rebase && git push)

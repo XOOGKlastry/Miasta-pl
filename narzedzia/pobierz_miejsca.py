@@ -160,6 +160,13 @@ def main():
     wybor = json.load(open(WYBOR, encoding="utf-8")) if os.path.exists(WYBOR) else {}
     wybrane = wybor.get("wybrane", {})
     odrzucone = set(wybor.get("odrzucone", []))
+    if "--tylko-gra" in sys.argv:
+        # szybki tryb po zmianie wyboru w panelu admina: miasta z kandydaci.json, metadane tylko wybranych plików
+        k = json.load(open("kandydaci.json", encoding="utf-8"))["miasta"]
+        cs = [{"n": c["n"], "lat": c["lat"], "lon": c["lon"], "pop": c["pop"], "qid": None} for c in k]
+        meta = info(sorted({f for l in wybrane.values() for f in l}))
+        gra(cs, wybrane, odrzucone, meta)
+        return
     cs = miasta()
     print("miast:", len(cs))
     im = obrazy([c["qid"] for c in cs])
@@ -199,7 +206,13 @@ def main():
         json.dump({"zbudowano": time.strftime("%Y-%m-%d"), "miasta": kand}, fh, ensure_ascii=False, separators=(",", ":"))
     print("kandydaci: miast", len(kand), "zdjęć", sum(len(k["kandydaci"]) for k in kand))
 
-    # 2) gra: tylko zdjęcia zatwierdzone przez człowieka
+    gra(cs, wybrane, odrzucone, meta)
+
+
+def gra(cs, wybrane, odrzucone, meta):
+    """gra: tylko zdjęcia zatwierdzone przez człowieka"""
+    import hashlib
+    from PIL import Image
     po_nazwie = {c["n"]: c for c in cs}
     wynik = []
     for nazwa, pliki in wybrane.items():
