@@ -65,3 +65,11 @@ W **Miastach na czas** nie ma wyboru małe/średnie/duże — gra idzie przez ws
 - `admin.html`: zdjęcia do „Co to za miasto?” (kandydaci z `kandydaci.json`), poprawki rzek i herbów. Zapis prosto do repo kluczem GitHub podanym w zakładce „Połączenie” (klucz zostaje tylko w przeglądarce). Pliki: `narzedzia/zdjecia-wybor.json` (uruchamia szybki automat pobierający zdjęcia) i `poprawki.json` (gry czytają go od razu).
 - `encyklopedia.html`: 16 województw, 380 powiatów i ~2477 gmin alfabetycznie, z ludnością, powierzchnią, gęstością, herbem, mapką, jednostkami podrzędnymi i odnośnikiem do Wikipedii. Dane: `baza.json` budowany przez `narzedzia/pobierz_baze.py` (Wikidata, kody TERYT z PRG).
 - `wyzwanie.html`: wyzwanie dnia (6 pytań, ten sam zestaw dla wszystkich, jedna próba) i `wyzwanie.html?tryb=turniej` (12 pytań, sześć konkurencji, kreator obszaru i wielkości miast). Wynik do udostępnienia jako obrazek 1080×1350 i tekst z kratkami. Stare `dzis.html` i `turniej.html` przekierowują tutaj.
+
+
+## Poprawki: tablice, encyklopedia, kluby
+
+- `tablice-powiaty.js`: przebudowane ze wzorcowej listy kodów (394 jednostki, jeden wpis na powiat albo miasto, dzielnice Warszawy osobno), nazwy powiatów według PRG, pole `siedziba` (miasto starostwa, też przyjmowane jako odpowiedź) i `alt` (dodatkowe kody, np. KK dla Krakowa).
+- `baza.json`: ludność i powierzchnia z GUS (Bank Danych Lokalnych), herby i linki z Wikidata, hasła województw poprawione.
+- Po każdej odpowiedzi w grach jest odnośnik do encyklopedii (`ZP.dopiszEncykl`), otwierany w okienku nad grą (`ZP.encyklopedia`).
+- `kluby.json` i `kluby.html` („Jaki to klub?”): Ekstraklasa, 1. i 2. liga sezonu 2026/27 oraz znane kluby niższych lig; edycja w panelu admina (zakładka „Kluby”).

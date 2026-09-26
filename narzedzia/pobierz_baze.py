@@ -77,6 +77,61 @@ def dane(b):
             "lon": round(float(m.group(1)), 4) if m else None, "lat": round(float(m.group(2)), 4) if m else None}
 
 
+BDL = "https://bdl.stat.gov.pl/api/v1"
+
+
+def bdl(sciezka):
+    for i in range(5):
+        try:
+            req = urllib.request.Request(BDL + sciezka, headers={"User-Agent": UA, "Accept": "application/json"})
+            with urllib.request.urlopen(req, timeout=120) as r:
+                time.sleep(0.4)   # limit anonimowy: 5 zapytań na sekundę, 100 na 15 minut
+                return json.loads(r.read())
+        except Exception as e:
+            print("  BDL ponawiam", sciezka[:70], e, file=sys.stderr)
+            time.sleep(20 * (i + 1))
+    raise RuntimeError("BDL nie odpowiada")
+
+
+def teryt_z_bdl(uid, poziom):
+    """identyfikator jednostki BDL (12 znaków) -> kod TERYT"""
+    if poziom == 2:
+        return uid[2:4]
+    if poziom == 5:
+        return uid[2:4] + uid[7:9]
+    return uid[2:4] + uid[7:9] + uid[9:11] + uid[11]
+
+
+def zmienna(szukaj, jednostka_zawiera):
+    """znajdź zmienną BDL po nazwie (np. powierzchnia w km2)"""
+    j = bdl("/variables/search?name=" + urllib.parse.quote(szukaj) + "&page-size=100&format=json")
+    for v in j.get("results", []):
+        opis = " ".join(str(v.get(k, "")) for k in ("n1", "n2", "n3", "n4", "n5", "measureUnitName")).lower()
+        if all(x in opis for x in jednostka_zawiera):
+            print("  zmienna BDL:", v["id"], opis[:120])
+            return v["id"]
+    return None
+
+
+def dane_bdl(zm, poziom):
+    """wartości zmiennej dla wszystkich jednostek poziomu, najnowszy dostępny rok"""
+    for rok in (time.localtime().tm_year - 1, time.localtime().tm_year - 2, time.localtime().tm_year - 3):
+        out, strona = {}, 0
+        while True:
+            j = bdl("/data/by-variable/%s?unit-level=%d&year=%d&page-size=100&page=%d&format=json" % (zm, poziom, rok, strona))
+            for u in j.get("results", []):
+                vals = [x for x in u.get("values", []) if x.get("val") is not None]
+                if vals:
+                    out[teryt_z_bdl(u["id"], poziom)] = (vals[-1]["val"], u.get("name"))
+            if not j.get("links", {}).get("next"):
+                break
+            strona += 1
+        if out:
+            print("  BDL zmienna", zm, "poziom", poziom, "rok", rok, "jednostek", len(out))
+            return out, rok
+    return {}, None
+
+
 def main():
     pw = jednostki("powiaty.topojson", "powiaty")
     gm = [g for g in jednostki("gminy.topojson") if str(g.get("k", ""))[-1:] in "123"]
@@ -117,7 +172,31 @@ def main():
         k, n = str(g["k"]), g["n"]
         d = wd_gm.get(k, {})
         gm_.append({"k": k, "n": n, "typ": TYP.get(k[-1], "gmina"), **d})
-    baza = {"zbudowano": time.strftime("%Y-%m-%d"), "wojewodztwa": woj, "powiaty": pow_, "gminy": gm_}
+    # oficjalne liczby z GUS (Bank Danych Lokalnych): ludność i powierzchnia
+    zrodla = {}
+    try:
+        zm_lud = 72305   # ludność ogółem, stan 31 XII (P2137)
+        zm_pow = zmienna("powierzchnia", ["km"]) or None
+        for poziom, lista in ((2, woj), (5, pow_), (6, gm_)):
+            lud, rok_l = dane_bdl(zm_lud, poziom)
+            po = dane_bdl(zm_pow, poziom)[0] if zm_pow else {}
+            trafione = 0
+            for x in lista:
+                kod = x["k"] if poziom != 6 else x["k"][:7]
+                if kod in lud:
+                    x["ludnosc"] = int(round(float(lud[kod][0])))
+                    x["ludnosc_rok"] = rok_l
+                    trafione += 1
+                if kod in po:
+                    x["powierzchnia"] = round(float(po[kod][0]), 2)
+            print("  poziom", poziom, "dopasowano z GUS:", trafione, "z", len(lista))
+            zrodla[poziom] = rok_l
+    except Exception as e:
+        print("GUS niedostępny, zostają dane z Wikidata:", e, file=sys.stderr)
+    for x in woj:   # zawsze aktualne hasła województw (Wikidata myli je czasem z historycznymi)
+        x["wiki"] = "https://pl.wikipedia.org/wiki/Wojew%C3%B3dztwo_" + urllib.parse.quote(x["n"])
+    baza = {"zbudowano": time.strftime("%Y-%m-%d"), "zrodla": "GUS BDL (ludność, powierzchnia), Wikidata (herby, Wikipedia), PRG (granice)",
+            "wojewodztwa": woj, "powiaty": pow_, "gminy": gm_}
     with open("baza.json", "w", encoding="utf-8") as fh:
         json.dump(baza, fh, ensure_ascii=False, separators=(",", ":"))
     ok = lambda l: sum(1 for x in l if x.get("wiki"))

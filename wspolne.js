@@ -24,7 +24,7 @@ function inRing(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;
 function bboxOf(ring){let a=[1e9,1e9,-1e9,-1e9];ring.forEach(([x,y])=>{if(x<a[0])a[0]=x;if(y<a[1])a[1]=y;if(x>a[2])a[2]=x;if(y>a[3])a[3]=y;});return a;}
 async function loadWoj(){
   if(WOJ)return WOJ;
-  const gj=await (await fetch("woj.geojson?v=15")).json();
+  const gj=await (await fetch("woj.geojson?v=16")).json();
   WOJ=gj.features.map(f=>{const g=f.geometry,rings=g.type==="Polygon"?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);return {name:f.properties.nazwa,rings,bb:rings.map(bboxOf),f};});
   return WOJ;
 }
@@ -595,6 +595,35 @@ function popRzeki(lista,p){
 }
 function popHerby(lista,p,nazwa){nazwa=nazwa||(c=>c.name||c.n);return lista.filter(c=>p.herby[nazwa(c)]!==false);}
 
+/* ---- encyklopedia w okienku nad grą (gra zostaje w tle) ---- */
+function celEncykl(c){
+  if(!c)return null;
+  if(c.p)return "p"+c.p;if(c.g)return "g"+c.g;if(c.w)return "w"+c.w;
+  if(c.miasto)return "m="+encodeURIComponent(c.miasto)+(c.lat!=null?"&lat="+c.lat+"&lon="+c.lon:"");
+  return null;
+}
+function encyklopedia(c){
+  const h=celEncykl(c);if(!h)return;
+  let o=document.getElementById("zp-ency");
+  if(!o){
+    o=document.createElement("div");o.id="zp-ency";
+    o.innerHTML='<div class="ency-pasek"><b>Encyklopedia</b><button aria-label="Zamknij">✕</button></div><iframe title="Encyklopedia"></iframe>';
+    o.querySelector("button").onclick=()=>{o.classList.remove("otwarte");setTimeout(()=>{o.querySelector("iframe").src="about:blank";},300);};
+    document.body.appendChild(o);
+  }
+  o.querySelector("iframe").src="encyklopedia.html?osadzona=1#"+h;
+  requestAnimationFrame(()=>o.classList.add("otwarte"));
+}
+// przycisk „Więcej w encyklopedii” w pasku po odpowiedzi
+function dopiszEncykl(fb,c){
+  if(!fb||!celEncykl(c))return;
+  const txt=fb.querySelector(".txt");if(!txt)return;
+  const a=document.createElement("button");a.className="ency-link";a.type="button";
+  a.textContent="ⓘ więcej o "+(c.nazwa||c.miasto||"tym miejscu");
+  a.onclick=e=>{e.stopPropagation();encyklopedia(c);};
+  txt.appendChild(a);
+}
+
 /* ---- krótki komunikat na dole ekranu ---- */
 function komunikat(tekst,ms){
   let el=document.getElementById("zp-komunikat");
@@ -616,7 +645,7 @@ const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie",
 let POWC=null;
 async function loadPowiaty(){
   if(POWC)return POWC;
-  const t=await (await fetch("powiaty.topojson?v=15")).json();
+  const t=await (await fetch("powiaty.topojson?v=16")).json();
   const o=t.objects.powiaty,nbi=topojson.neighbors(o.geometries),fs=topojson.feature(t,o).features;
   POWC=fs.map((f,i)=>{
     const k=f.properties.k,n=f.properties.n,city=+k.slice(2)>=60;
@@ -722,7 +751,7 @@ let GMC=null;
 async function loadGminy(){
   if(GMC)return GMC;
   const pw=await loadPowiaty();
-  const t=await (await fetch("gminy.topojson?v=15")).json();
+  const t=await (await fetch("gminy.topojson?v=16")).json();
   const o=t.objects.gminy||Object.values(t.objects).sort((a,b)=>(b.geometries||[]).length-(a.geometries||[]).length)[0];
   const fs=topojson.feature(t,o).features;
   const powNazwa={};pw.forEach(p=>powNazwa[p.k]=p.full);
@@ -744,5 +773,5 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

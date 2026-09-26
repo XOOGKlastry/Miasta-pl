@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=15" />
+<link rel="stylesheet" href="wspolne.css?v=16" />
 <style>
 svg path{fill-rule:evenodd}
 .duel{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}
@@ -97,8 +97,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=15"></script>
-<script src="wspolne.js?v=15"></script>
+<script src="topojson-client.min.js?v=16"></script>
+<script src="wspolne.js?v=16"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 let POW=[],BY={},WOJ=[],BYW={},SET=[],BYK={},game=null;
@@ -185,6 +185,8 @@ function answer(tak){
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=(ok?"Dobrze. ":"Niestety. ")+(q.ok?"Mają wspólną granicę":"Nie graniczą ze sobą");
   fb.querySelector("span").textContent=($("tryb").value==="w"?"":(q.a.woj===q.b.woj?"oba w woj. "+q.a.woj+", ":q.a.woj+" i "+q.b.woj+", "))+"środki oddalone o "+d+" km";
+  ZP.dopiszEncykl(fb,$("tryb").value==="w"?{w:q.a.k,nazwa:q.a.full}:{p:q.a.k,nazwa:q.a.full});
+  ZP.dopiszEncykl(fb,$("tryb").value==="w"?{w:q.b.k,nazwa:q.b.full}:{p:q.b.k,nazwa:q.b.full});
   $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";$("nextBtn").onclick=next;
   $("choice").classList.add("hidden");fb.classList.remove("hidden");
 }

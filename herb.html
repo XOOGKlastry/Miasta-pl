@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=15" />
+<link rel="stylesheet" href="wspolne.css?v=16" />
 <style>
 /* karta z herbem */
 .shield{flex:1;min-height:140px;position:relative;border-radius:var(--r);background:#E9EEEC;display:grid;place-items:center;overflow:hidden;
@@ -77,7 +77,7 @@
 
 </div>
 
-<script src="wspolne.js?v=15"></script>
+<script src="wspolne.js?v=16"></script>
 <script>
 const $=id=>document.getElementById(id);
 const norm=s=>s.toLowerCase()
@@ -282,6 +282,7 @@ function answer(o,btn){
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=head;
   fb.querySelector("span").textContent=info;
+  ZP.dopiszEncykl(fb,{miasto:q.c.name,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.name});
   $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";
   $("nextBtn").onclick=next;
   fb.classList.remove("hidden");

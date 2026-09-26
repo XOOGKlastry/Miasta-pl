@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=15" />
+<link rel="stylesheet" href="wspolne.css?v=16" />
 <style>
 svg path{fill-rule:evenodd}
 .stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden}
@@ -103,8 +103,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=15"></script>
-<script src="wspolne.js?v=15"></script>
+<script src="topojson-client.min.js?v=16"></script>
+<script src="wspolne.js?v=16"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -243,6 +243,7 @@ function answer(o,btn){
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=ok?"Dobrze, "+q.p.full+" (+"+got+")":"To "+q.p.full;
   fb.querySelector("span").textContent=(q.p.typ?q.p.typ+", "+q.p.powiat+", ":"")+"woj. "+q.p.woj;
+  ZP.dopiszEncykl(fb,game.rodzaj==="gmina"?{g:q.p.k,nazwa:q.p.full}:{p:q.p.k,nazwa:q.p.full});
   $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";
   $("nextBtn").onclick=next;
   fb.classList.remove("hidden");

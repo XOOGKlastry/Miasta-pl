@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=15" />
+<link rel="stylesheet" href="wspolne.css?v=16" />
 <style>
 svg path{fill-rule:evenodd}
 .target{flex:none;text-align:center}
@@ -89,8 +89,8 @@ svg path{fill-rule:evenodd}
 </main>
 </div>
 
-<script src="topojson-client.min.js?v=15"></script>
-<script src="wspolne.js?v=15"></script>
+<script src="topojson-client.min.js?v=16"></script>
+<script src="wspolne.js?v=16"></script>
 <script>
 const {$,shuffle}=ZP;
 let POW=[],WOJ=[],PL=null,game=null,GM=null;
@@ -244,6 +244,7 @@ function klik(el){
     fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
     fb.querySelector("strong").textContent=(ok?"Dobrze, "+p.full:"To był "+p.full)+" (+"+got+")";
     fb.querySelector("span").textContent=game.blad?"województwo wskazane błędnie":"województwo trafione";
+    ZP.dopiszEncykl(fb,GMINA?{g:p.k,nazwa:p.full}:{p:p.k,nazwa:p.full});
     $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";$("nextBtn").onclick=next;
     fb.classList.remove("hidden");
   }

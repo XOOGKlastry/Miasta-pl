@@ -107,6 +107,8 @@ function loadState(){
   try{
     const s = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     state.perPowiat = s.perPowiat || {};
+    // 2026-09: poprawione kody (część zmieniła znaczenie), więc statystyki nauki liczymy od nowa
+    if (localStorage.getItem('tabliceDane') !== '2'){ state.perPowiat = {}; localStorage.setItem('tabliceDane','2'); }
     if (s.modeStats){
       // Merge new keys directly
       for (const m of GAME_MODES){
@@ -166,12 +168,15 @@ function levenshtein(a,b){
   }
   return m[a.length][b.length];
 }
+const MIASTA_NAPR = new Set(POWIATY.filter(p => p.typ === 'miasto').map(p => normalize(p.nazwa)));
 function matches(input, powiat){
-  const ni = normalize(input);
-  const nn = normalize(powiat.nazwa);
+  const ni = normalize(input.replace(/^\s*powiat\s+/i,''));
+  const nn = normalize(powiat.nazwa.replace(/^powiat\s+/i,''));
   if (ni === nn) return 'exact';
-  const nnBase = normalize(powiat.nazwa.replace(/\s*\([^)]*\)/g,''));
+  const nnBase = normalize(powiat.nazwa.replace(/^powiat\s+/i,'').replace(/\s*\([^)]*\)/g,''));
   if (ni === nnBase) return 'exact';
+  // siedziba starostwa też się liczy, o ile nie jest osobnym miastem na prawach powiatu
+  if (powiat.siedziba && !MIASTA_NAPR.has(normalize(powiat.siedziba)) && ni === normalize(powiat.siedziba)) return 'exact';
   if (powiat.nazwa.startsWith('Warszawa') && ni === 'warszawa') return 'exact';
   const dist = levenshtein(ni, nnBase);
   if (dist <= 1) return 'fuzzy';
@@ -590,7 +595,7 @@ function submitAnswer(){
   let correct = false, kind = null;
   if (isReverseLike()){
     const valU = val.toUpperCase().replace(/\s+/g,'');
-    if (valU === state.current.kod){ correct = true; kind = 'exact'; }
+    if (valU === state.current.kod || (state.current.alt || []).includes(valU)){ correct = true; kind = 'exact'; }
   } else {
     kind = matches(val, state.current);
     correct = !!kind;

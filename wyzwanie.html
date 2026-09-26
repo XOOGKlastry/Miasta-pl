@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-<link rel="stylesheet" href="wspolne.css?v=15" />
+<link rel="stylesheet" href="wspolne.css?v=16" />
 <style>
 svg path{fill-rule:evenodd}
 /* segmenty postępu */
@@ -133,8 +133,8 @@ svg path{fill-rule:evenodd}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script src="topojson-client.min.js?v=15"></script>
-<script src="wspolne.js?v=15"></script>
+<script src="topojson-client.min.js?v=16"></script>
+<script src="wspolne.js?v=16"></script>
 <script>
 const {$,fmt}=ZP;
 const TRYB=new URLSearchParams(location.search).get("tryb")==="turniej"?"turniej":"dzien";
@@ -352,6 +352,8 @@ function wynikRundy(pts,ok,naglowek){
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=naglowek+" · +"+pts;
   fb.querySelector("span").textContent=odp;
+  const cel=q.t==="k"?{p:q.p.k,nazwa:q.p.full}:q.t==="w"?{miasto:(q.a.pop>q.b.pop?q.a:q.b).n,lat:(q.a.pop>q.b.pop?q.a:q.b).lat,lon:(q.a.pop>q.b.pop?q.a:q.b).lon,nazwa:(q.a.pop>q.b.pop?q.a:q.b).n}:{miasto:q.c.n,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.n};
+  ZP.dopiszEncykl(fb,cel);
   $("nextBtn").textContent=st.i+1>=Q.length?"Wynik":"Dalej";$("nextBtn").onclick=nastepne;
   fb.classList.remove("hidden");
 }

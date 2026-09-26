@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Jaki to klub? · PolskoZnawca</title>
+<meta name="theme-color" content="#0A181B" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=16" />
+<style>
+.target{flex:none;text-align:center}
+.target .kind{font-size:13px;color:var(--dim)}
+.target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(30px,9.5vw,44px);line-height:1.05;overflow-wrap:anywhere}
+.target .liga{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(242,193,78,.4);border-radius:999px;padding:3px 10px}
+.stage{flex:1;min-height:140px;position:relative;display:grid;place-items:center}
+#map{position:absolute;inset:0;width:100%;height:100%}
+#map .w{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke}
+#map .dot{fill:var(--gold);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
+#map .dot.inny{fill:#7FD8C6}
+#map text{font-family:"Fraunces",serif;font-weight:700;font-size:17px;text-anchor:middle;fill:var(--paper);paint-order:stroke;stroke:var(--ink);stroke-width:4px;stroke-linejoin:round}
+.boisko{position:absolute;inset:12% 10%;border:2px solid rgba(143,170,168,.25);border-radius:10px;pointer-events:none}
+.boisko::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:2px solid rgba(143,170,168,.25)}
+.boisko::after{content:"";position:absolute;left:50%;top:50%;width:26%;aspect-ratio:1;border:2px solid rgba(143,170,168,.25);border-radius:50%;transform:translate(-50%,-50%)}
+.pilka{font-size:64px;animation:pilka 2.4s ease-in-out infinite;position:relative;z-index:1}
+@keyframes pilka{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-14px) rotate(180deg)}}
+.lista-klubow{position:relative;z-index:2;display:flex;flex-direction:column;gap:6px;width:88%;max-width:360px}
+.lista-klubow div{background:rgba(10,24,27,.88);border:1px solid var(--line-2);border-radius:12px;padding:8px 12px;display:flex;justify-content:space-between;gap:8px;animation:wejscie .3s both}
+.lista-klubow b{font-family:"Fraunces",serif}
+.lista-klubow small{color:var(--dim);white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Jaki to klub?</h1>
+  <span class="round" id="round"></span>
+</header>
+<div class="stats hidden" id="stats">
+  <span class="gold">Punkty <b id="pts">0</b></span>
+  <span>Trafione <b id="hits">0</b></span>
+  <span>Rekord <b id="best">0</b></span>
+</div>
+<main>
+  <section class="setup" id="setup">
+    <select id="tryb"><option value="m">miasto</option><option value="k">klub</option></select>
+    <select id="ligi"><option value="E">E</option><option value="EI">EI</option><option value="EIIIN" selected>wszystkie</option></select>
+    <select id="rounds"><option>5</option><option>10</option><option>15</option><option>20</option><option>25</option></select>
+    <button class="big" id="startBtn" disabled>Zagraj</button>
+    <div class="datastate" id="datastate">Wczytywanie klubów…</div>
+  </section>
+
+  <div class="target hidden" id="target"><div class="kind" id="tKind"></div><div class="nm" id="tName"></div><span class="liga hidden" id="tLiga"></span></div>
+  <section class="stage hidden" id="stage">
+    <div class="boisko"></div>
+    <div class="pilka" id="pilka">⚽</div>
+    <svg id="map" preserveAspectRatio="xMidYMid meet" class="hidden"></svg>
+    <div class="lista-klubow hidden" id="listaKl"></div>
+  </section>
+  <div class="answers hidden" id="answers"></div>
+  <div class="wpis hidden" id="wpis"></div>
+  <div class="feedback hidden" id="feedback"></div>
+  <section class="summary hidden" id="summary"></section>
+</main>
+</div>
+
+<script src="wspolne.js?v=16"></script>
+<script>
+const {$,shuffle,pick}=ZP;
+const LIGI={E:"Ekstraklasa",I:"1. liga",II:"2. liga",N:"niższe ligi"};
+const KOD_LIGI={"Ekstraklasa":"E","1. liga":"I","2. liga":"II","niższe ligi":"N"};
+let KL=[],P=null,base="",game=null,POLE=null;
+
+Promise.all([fetch("kluby.json",{cache:"no-cache"}).then(r=>r.json()),ZP.loadWoj()]).then(([j,woj])=>{
+  KL=j.kluby.filter(k=>k.lat!=null);
+  P=ZP.projection(woj.map(w=>w.f),500,8);
+  base=woj.map(w=>'<path class="w" d="'+P.path(w.f.geometry)+'"/>').join("");
+  $("datastate").textContent=KL.length+" klubów, sezon "+(j.sezon||"");
+  $("startBtn").disabled=false;refreshBest();
+}).catch(()=>{$("datastate").textContent="Nie udało się wczytać listy klubów.";});
+
+const bestKey=()=>"kluby-best-"+$("tryb").value+"-"+$("ligi").value+"-"+$("rounds").value;
+function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
+const wLigach=k=>{const w=$("ligi").value;return w==="EIIIN"||(w==="E"&&k.liga==="Ekstraklasa")||(w==="EI"&&(k.liga==="Ekstraklasa"||k.liga==="1. liga"));};
+const nazwyKlubu=k=>[k.klub,k.pelna,...(k.aliasy||[])];
+const kluby=m=>KL.filter(k=>k.miasto===m);
+
+function makeQuestion(k){
+  if($("tryb").value==="m"){
+    // miasto → klub: każdy klub z tego miasta się liczy
+    const wMiescie=kluby(k.miasto);
+    const inne=shuffle(KL.filter(x=>x.miasto!==k.miasto)).sort((a,b)=>ZP.km(k,a)-ZP.km(k,b)).slice(0,8);
+    const opcje=[],s=new Set();
+    shuffle(inne).forEach(x=>{if(opcje.length<3&&!s.has(x.pelna)&&!wMiescie.some(w=>ZP.norm(w.klub)===ZP.norm(x.klub))){s.add(x.pelna);opcje.push(x.pelna);}});
+    return {k,poprawne:wMiescie.flatMap(nazwyKlubu),opcje:shuffle(opcje.concat([k.pelna]))};
+  }
+  // klub → miasto: każde miasto, w którym gra klub o tej nazwie
+  const tacySami=KL.filter(x=>ZP.norm(x.klub)===ZP.norm(k.klub));
+  const miasta=[...new Set(tacySami.map(x=>x.miasto))];
+  const inne=[...new Set(shuffle(KL.filter(x=>miasta.indexOf(x.miasto)<0)).map(x=>x.miasto))].slice(0,3);
+  return {k,poprawne:miasta,miasta,opcje:shuffle(inne.concat([k.miasto]))};
+}
+function startGame(){
+  const pool=KL.filter(wLigach);
+  // w trybie „miasto” jedno pytanie na miasto
+  const src=$("tryb").value==="m"?[...new Map(pool.map(k=>[k.miasto,k])).values()]:pool;
+  const n=Math.min(+$("rounds").value,src.length);
+  const qs=ZP.losujNauka(src,"klub",k=>$("tryb").value==="m"?k.miasto:k.pelna,n,true);
+  game={qs:ZP.pytania?ZP.pytania(()=>qs.map(makeQuestion)):qs.map(makeQuestion),i:-1,pts:0,hits:0,res:[]};
+  $("setup").classList.add("hidden");$("summary").classList.add("hidden");
+  ["stats","target","stage","wpis"].forEach(id=>$(id).classList.remove("hidden"));
+  if(!POLE)POLE=ZP.poleWpisu($("wpis"),()=>$("tryb").value==="m"?KL.flatMap(nazwyKlubu):[...new Set(KL.map(k=>k.miasto))],v=>odp(v),
+    {placeholder:"Wpisz…",poprawne:()=>game.qs[game.i].poprawne,pokazEtykieta:"Pokaż podpowiedzi<br><small>−1 pkt</small>",pokaz:()=>{game.pokaz=true;opcje();}});
+  $("pts").textContent=0;$("hits").textContent=0;refreshBest();
+  next();
+}
+function next(){
+  game.i++;
+  if(game.i>=game.qs.length)return endGame();
+  const q=game.qs[game.i];game.answered=false;game.pokaz=false;
+  $("round").textContent=(game.i+1)+" / "+game.qs.length;
+  const m=$("tryb").value==="m";
+  $("tKind").textContent=m?"Jaki klub gra w mieście":"Z jakiego miasta jest klub";
+  $("tName").textContent=m?q.k.miasto:q.k.klub;
+  $("tLiga").textContent=q.k.liga;$("tLiga").classList.toggle("hidden",m);
+  $("map").classList.add("hidden");$("listaKl").classList.add("hidden");$("pilka").classList.remove("hidden");
+  $("answers").classList.add("hidden");$("answers").innerHTML="";$("feedback").classList.add("hidden");
+  POLE.wyczysc();POLE.wylacz(false);POLE.focus();
+  POLE.input.placeholder=m?"Nazwa klubu…":"Nazwa miasta…";
+}
+function opcje(){
+  const q=game.qs[game.i],box=$("answers");box.innerHTML="";box.classList.remove("hidden");
+  q.opcje.forEach(o=>{const b=document.createElement("button");b.textContent=o;b.onclick=()=>odp(o,b);box.appendChild(b);});
+}
+function odp(v,btn){
+  if(game.answered)return;game.answered=true;
+  const q=game.qs[game.i],ok=ZP.pasuje(v,q.poprawne),got=ok?(game.pokaz?1:2):0;
+  POLE.wylacz(true);
+  [...$("answers").children].forEach(x=>{x.disabled=true;if(ZP.pasuje(x.textContent,q.poprawne))x.classList.add("right");else if(x===btn)x.classList.add("wrong");else x.classList.add("fade");});
+  game.pts+=got;if(ok)game.hits++;
+  ZP.zapisz("klub",$("tryb").value==="m"?q.k.miasto:q.k.pelna,ok);
+  $("pts").textContent=game.pts;$("hits").textContent=game.hits;
+  // mapa z miastem (albo miastami) i lista wszystkich klubów
+  const miasta=$("tryb").value==="m"?[q.k.miasto]:q.miasta;
+  const svg=$("map");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
+  let s=base;
+  miasta.forEach((mm,i)=>{const k=KL.find(x=>x.miasto===mm);s+='<circle class="dot'+(i?" inny":"")+'" cx="'+P.x(k.lon).toFixed(1)+'" cy="'+P.y(k.lat).toFixed(1)+'" r="8"/><text x="'+P.x(k.lon).toFixed(1)+'" y="'+(P.y(k.lat)-14).toFixed(1)+'">'+mm+'</text>';});
+  svg.innerHTML=s;svg.classList.remove("hidden");$("pilka").classList.add("hidden");
+  const lista=miasta.flatMap(kluby);
+  $("listaKl").innerHTML=lista.map(k=>'<div><b>'+k.pelna+'</b><small>'+k.liga+'</small></div>').join("");
+  $("listaKl").classList.remove("hidden");
+  game.res.push({q,ok,got,v});
+  const fb=$("feedback");
+  fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
+  fb.querySelector("strong").textContent=(ok?"Dobrze":"Niestety")+" · +"+got;
+  fb.querySelector("span").textContent=$("tryb").value==="m"?(lista.length>1?"W "+q.k.miasto+" grają: "+lista.map(k=>k.klub).join(", "):q.k.pelna):(miasta.length>1?q.k.klub+" jest w miastach: "+miasta.join(", "):q.k.pelna);
+  ZP.dopiszEncykl(fb,{miasto:q.k.miasto,lat:q.k.lat,lon:q.k.lon,nazwa:q.k.miasto});
+  $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";$("nextBtn").onclick=next;
+  fb.classList.remove("hidden");
+}
+function endGame(){
+  ["target","stage","answers","wpis","feedback"].forEach(id=>$(id).classList.add("hidden"));
+  $("round").textContent="";
+  const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
+  if(rec)localStorage.setItem(k,game.pts);
+  refreshBest();
+  const s=$("summary");
+  s.innerHTML='<div class="score">'+game.pts+' <span>z '+game.qs.length*2+' pkt</span></div><p class="sub"></p>'
+    +'<div class="btnrow"><button class="ghost" id="setBtn">Ustawienia</button><button class="big" id="againBtn">Jeszcze raz</button></div><div class="rows"></div>';
+  s.querySelector(".sub").textContent="Trafione "+game.hits+" z "+game.qs.length+". "+(rec?"Nowy rekord.":"Rekord: "+Math.max(best,game.pts)+" pkt.");
+  const rows=s.querySelector(".rows");
+  game.res.forEach(r=>{const d=document.createElement("div");d.className="r";
+    d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
+    d.querySelector("b").textContent=r.q.k.pelna;
+    d.querySelector("small").textContent=r.ok?"trafione":(r.v?"wpisano: "+r.v:"bez odpowiedzi");
+    const pt=d.querySelector(".pt");pt.textContent=r.ok?"+"+r.got:"✗";pt.className="pt "+(r.ok?"ok":"no");rows.appendChild(d);});
+  s.classList.remove("hidden");
+  $("againBtn").onclick=startGame;
+  $("setBtn").onclick=()=>{s.classList.add("hidden");$("stats").classList.add("hidden");$("setup").classList.remove("hidden");};
+}
+$("startBtn").onclick=startGame;
+ZP.kreatorGry({klucz:"kluby",kroki:[
+  {pole:"tryb",tytul:"Co zgadujesz?",domyslny:"m",opcje:[{v:"m",t:"Klub z miasta",opis:"widzisz miasto, podajesz klub",ilu:'<div class="kr-ikona">🏟️</div>'},{v:"k",t:"Miasto klubu",opis:"widzisz klub, podajesz miasto",ilu:'<div class="kr-ikona">⚽</div>'}]},
+  {pole:"ligi",tytul:"Które ligi?",domyslny:"EIIIN",opcje:[{v:"E",t:"Ekstraklasa",opis:"18 klubów",ilu:'<div class="kr-ikona">🏆</div>'},{v:"EI",t:"Ekstraklasa i 1. liga",opis:"36 klubów",ilu:'<div class="kr-ikona">🥈</div>'},{v:"EIIIN",t:"Wszystkie",opis:"także 2. liga i znane kluby niższych lig",ilu:'<div class="kr-ikona">📋</div>'}]},
+  "rundy"]});
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

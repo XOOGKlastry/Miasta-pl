@@ -1,0 +1,596 @@
+{
+ "opis": "Kluby piłkarskie do gry „Jaki to klub?”. Sezon 2026/27: Ekstraklasa, 1. i 2. liga według 90minut.pl i 1liga.org; „niższe ligi” to znane kluby, których poziom warto sprawdzić. Edytuj w panelu admina.",
+ "sezon": "2026/27",
+ "kluby": [
+  {
+   "miasto": "Warszawa",
+   "klub": "Legia",
+   "pelna": "Legia Warszawa",
+   "liga": "Ekstraklasa",
+   "aliasy": [],
+   "lat": 52.23,
+   "lon": 21.01
+  },
+  {
+   "miasto": "Poznań",
+   "klub": "Lech",
+   "pelna": "Lech Poznań",
+   "liga": "Ekstraklasa",
+   "aliasy": [
+    "Kolejorz"
+   ],
+   "lat": 52.41,
+   "lon": 16.93
+  },
+  {
+   "miasto": "Kraków",
+   "klub": "Cracovia",
+   "pelna": "KS Cracovia",
+   "liga": "Ekstraklasa",
+   "aliasy": [
+    "Pasy"
+   ],
+   "lat": 50.06,
+   "lon": 19.94
+  },
+  {
+   "miasto": "Kraków",
+   "klub": "Wisła",
+   "pelna": "Wisła Kraków",
+   "liga": "Ekstraklasa",
+   "aliasy": [
+    "Biała Gwiazda"
+   ],
+   "lat": 50.06,
+   "lon": 19.94
+  },
+  {
+   "miasto": "Kraków",
+   "klub": "Wieczysta",
+   "pelna": "Wieczysta Kraków",
+   "liga": "Ekstraklasa",
+   "aliasy": [],
+   "lat": 50.06,
+   "lon": 19.94
+  },
+  {
+   "miasto": "Łódź",
+   "klub": "Widzew",
+   "pelna": "Widzew Łódź",
+   "liga": "Ekstraklasa",
+   "aliasy": [],
+   "lat": 51.77,
+   "lon": 19.46
+  },
+  {
+   "miasto": "Katowice",
+   "klub": "GKS Katowice",
+   "pelna": "GKS Katowice",
+   "liga": "Ekstraklasa",
+   "aliasy": [
+    "GieKSa"
+   ],
+   "lat": 50.26,
+   "lon": 19.02
+  },
+  {
+   "miasto": "Zabrze",
+   "klub": "Górnik",
+   "pelna": "Górnik Zabrze",
+   "liga": "Ekstraklasa",
+   "aliasy": [],
+   "lat": 50.32,
+   "lon": 18.79
+  },
+  {
+   "miasto": "Białystok",
+   "klub": "Jagiellonia",
+   "pelna": "Jagiellonia Białystok",
+   "liga": "Ekstraklasa",
+   "aliasy": [
+    "Jaga"
+   ],
+   "lat": 53.13,
+   "lon": 23.16
+  },
+  {
+   "miasto": "Kielce",
+   "klub": "Korona",
+   "pelna": "Korona Kielce",
+   "liga": "Ekstraklasa",
+   "aliasy": [],
+   "lat": 50.87,
+   "lon": 20.63
+  },
+  {
+   "miasto": "Lublin",
+   "klub": "Motor",
+   "pelna": "Motor Lublin",
+   "liga": "Ekstraklasa",
+   "aliasy": [],
+   "lat": 51.25,
+   "lon": 22.57
+  },
+  {
+   "miasto": "Gliwice",
+   "klub": "Piast",
+   "pelna": "Piast Gliwice",
+   "liga": "Ekstraklasa",
+   "aliasy": [],
+   "lat": 50.29,
+   "lon": 18.67
+  },
+  {
+   "miasto": "Szczecin",
+   "klub": "Pogoń",
+   "pelna": "Pogoń Szczecin",
+   "liga": "Ekstraklasa",
+   "aliasy": [
+    "Portowcy"
+   ],
+   "lat": 53.43,
+   "lon": 14.55
+  },
+  {
+   "miasto": "Radom",
+   "klub": "Radomiak",
+   "pelna": "Radomiak Radom",
+   "liga": "Ekstraklasa",
+   "aliasy": [],
+   "lat": 51.4,
+   "lon": 21.15
+  },
+  {
+   "miasto": "Częstochowa",
+   "klub": "Raków",
+   "pelna": "Raków Częstochowa",
+   "liga": "Ekstraklasa",
+   "aliasy": [],
+   "lat": 50.81,
+   "lon": 19.12
+  },
+  {
+   "miasto": "Płock",
+   "klub": "Wisła",
+   "pelna": "Wisła Płock",
+   "liga": "Ekstraklasa",
+   "aliasy": [
+    "Nafciarze"
+   ],
+   "lat": 52.55,
+   "lon": 19.71
+  },
+  {
+   "miasto": "Lubin",
+   "klub": "Zagłębie",
+   "pelna": "Zagłębie Lubin",
+   "liga": "Ekstraklasa",
+   "aliasy": [
+    "Miedziowi"
+   ],
+   "lat": 51.4,
+   "lon": 16.2
+  },
+  {
+   "miasto": "Wrocław",
+   "klub": "Śląsk",
+   "pelna": "Śląsk Wrocław",
+   "liga": "Ekstraklasa",
+   "aliasy": [],
+   "lat": 51.11,
+   "lon": 17.03
+  },
+  {
+   "miasto": "Nieciecza",
+   "klub": "Bruk-Bet Termalica",
+   "pelna": "Bruk-Bet Termalica Nieciecza",
+   "liga": "1. liga",
+   "aliasy": [
+    "Termalica"
+   ],
+   "lat": 50.035,
+   "lon": 20.93
+  },
+  {
+   "miasto": "Chorzów",
+   "klub": "Ruch",
+   "pelna": "Ruch Chorzów",
+   "liga": "1. liga",
+   "aliasy": [
+    "Niebiescy"
+   ],
+   "lat": 50.3,
+   "lon": 18.95
+  },
+  {
+   "miasto": "Gdańsk",
+   "klub": "Lechia",
+   "pelna": "Lechia Gdańsk",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 54.35,
+   "lon": 18.65
+  },
+  {
+   "miasto": "Grodzisk Mazowiecki",
+   "klub": "Pogoń",
+   "pelna": "Pogoń Grodzisk Mazowiecki",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 52.11,
+   "lon": 20.62
+  },
+  {
+   "miasto": "Legnica",
+   "klub": "Miedź",
+   "pelna": "Miedź Legnica",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 51.21,
+   "lon": 16.16
+  },
+  {
+   "miasto": "Bielsko-Biała",
+   "klub": "Podbeskidzie",
+   "pelna": "Podbeskidzie Bielsko-Biała",
+   "liga": "1. liga",
+   "aliasy": [
+    "Górale"
+   ],
+   "lat": 49.82,
+   "lon": 19.05
+  },
+  {
+   "miasto": "Opole",
+   "klub": "Odra",
+   "pelna": "Odra Opole",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 50.67,
+   "lon": 17.93
+  },
+  {
+   "miasto": "Gdynia",
+   "klub": "Arka",
+   "pelna": "Arka Gdynia",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 54.52,
+   "lon": 18.53
+  },
+  {
+   "miasto": "Siedlce",
+   "klub": "Pogoń",
+   "pelna": "Pogoń Siedlce",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 52.17,
+   "lon": 22.29
+  },
+  {
+   "miasto": "Łódź",
+   "klub": "ŁKS",
+   "pelna": "ŁKS Łódź",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 51.77,
+   "lon": 19.46
+  },
+  {
+   "miasto": "Bytom",
+   "klub": "Polonia",
+   "pelna": "Polonia Bytom",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 50.35,
+   "lon": 18.92
+  },
+  {
+   "miasto": "Poznań",
+   "klub": "Warta",
+   "pelna": "Warta Poznań",
+   "liga": "1. liga",
+   "aliasy": [
+    "Zieloni"
+   ],
+   "lat": 52.41,
+   "lon": 16.93
+  },
+  {
+   "miasto": "Niepołomice",
+   "klub": "Puszcza",
+   "pelna": "Puszcza Niepołomice",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 50.035,
+   "lon": 20.22
+  },
+  {
+   "miasto": "Warszawa",
+   "klub": "Polonia",
+   "pelna": "Polonia Warszawa",
+   "liga": "1. liga",
+   "aliasy": [
+    "Czarne Koszule"
+   ],
+   "lat": 52.23,
+   "lon": 21.01
+  },
+  {
+   "miasto": "Rzeszów",
+   "klub": "Stal",
+   "pelna": "Stal Rzeszów",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 50.04,
+   "lon": 22.0
+  },
+  {
+   "miasto": "Głogów",
+   "klub": "Chrobry",
+   "pelna": "Chrobry Głogów",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 51.66,
+   "lon": 16.08
+  },
+  {
+   "miasto": "Skierniewice",
+   "klub": "Unia",
+   "pelna": "Unia Skierniewice",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 51.96,
+   "lon": 20.15
+  },
+  {
+   "miasto": "Mielec",
+   "klub": "Stal",
+   "pelna": "Stal Mielec",
+   "liga": "1. liga",
+   "aliasy": [],
+   "lat": 50.29,
+   "lon": 21.42
+  },
+  {
+   "miasto": "Pruszków",
+   "klub": "Znicz",
+   "pelna": "Znicz Pruszków",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 52.17,
+   "lon": 20.81
+  },
+  {
+   "miasto": "Łęczna",
+   "klub": "Górnik",
+   "pelna": "Górnik Łęczna",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 51.3,
+   "lon": 22.88
+  },
+  {
+   "miasto": "Tychy",
+   "klub": "GKS Tychy",
+   "pelna": "GKS Tychy",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 50.13,
+   "lon": 18.99
+  },
+  {
+   "miasto": "Bydgoszcz",
+   "klub": "Zawisza",
+   "pelna": "Zawisza Bydgoszcz",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 53.12,
+   "lon": 18.0
+  },
+  {
+   "miasto": "Bielsko-Biała",
+   "klub": "Rekord",
+   "pelna": "Rekord Bielsko-Biała",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 49.82,
+   "lon": 19.05
+  },
+  {
+   "miasto": "Kraków",
+   "klub": "Hutnik",
+   "pelna": "Hutnik Kraków",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 50.06,
+   "lon": 19.94
+  },
+  {
+   "miasto": "Nowy Sącz",
+   "klub": "Sandecja",
+   "pelna": "Sandecja Nowy Sącz",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 49.62,
+   "lon": 20.7
+  },
+  {
+   "miasto": "Chojnice",
+   "klub": "Chojniczanka",
+   "pelna": "Chojniczanka Chojnice",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 53.7,
+   "lon": 17.56
+  },
+  {
+   "miasto": "Nowy Targ",
+   "klub": "Podhale",
+   "pelna": "Podhale Nowy Targ",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 49.48,
+   "lon": 20.03
+  },
+  {
+   "miasto": "Zielona Góra",
+   "klub": "Lechia",
+   "pelna": "Lechia Zielona Góra",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 51.94,
+   "lon": 15.51
+  },
+  {
+   "miasto": "Grudziądz",
+   "klub": "Olimpia",
+   "pelna": "Olimpia Grudziądz",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 53.48,
+   "lon": 18.75
+  },
+  {
+   "miasto": "Stalowa Wola",
+   "klub": "Stal",
+   "pelna": "Stal Stalowa Wola",
+   "liga": "2. liga",
+   "aliasy": [
+    "Stalówka"
+   ],
+   "lat": 50.58,
+   "lon": 22.05
+  },
+  {
+   "miasto": "Świdnik",
+   "klub": "Avia",
+   "pelna": "Avia Świdnik",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 51.22,
+   "lon": 22.7
+  },
+  {
+   "miasto": "Kleczew",
+   "klub": "Sokół",
+   "pelna": "Sokół Kleczew",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 52.37,
+   "lon": 18.18
+  },
+  {
+   "miasto": "Szczecin",
+   "klub": "Świt",
+   "pelna": "Świt Szczecin",
+   "liga": "2. liga",
+   "aliasy": [],
+   "lat": 53.43,
+   "lon": 14.55
+  },
+  {
+   "miasto": "Rzeszów",
+   "klub": "Resovia",
+   "pelna": "Resovia Rzeszów",
+   "liga": "2. liga",
+   "aliasy": [
+    "Resovia"
+   ],
+   "lat": 50.04,
+   "lon": 22.0
+  },
+  {
+   "miasto": "Kraków",
+   "klub": "Garbarnia",
+   "pelna": "Garbarnia Kraków",
+   "liga": "niższe ligi",
+   "aliasy": [],
+   "lat": 50.06,
+   "lon": 19.94
+  },
+  {
+   "miasto": "Olsztyn",
+   "klub": "Stomil",
+   "pelna": "Stomil Olsztyn",
+   "liga": "niższe ligi",
+   "aliasy": [],
+   "lat": 53.78,
+   "lon": 20.49
+  },
+  {
+   "miasto": "Toruń",
+   "klub": "Elana",
+   "pelna": "Elana Toruń",
+   "liga": "niższe ligi",
+   "aliasy": [],
+   "lat": 53.01,
+   "lon": 18.6
+  },
+  {
+   "miasto": "Sosnowiec",
+   "klub": "Zagłębie",
+   "pelna": "Zagłębie Sosnowiec",
+   "liga": "niższe ligi",
+   "aliasy": [],
+   "lat": 50.28,
+   "lon": 19.13
+  },
+  {
+   "miasto": "Bełchatów",
+   "klub": "GKS Bełchatów",
+   "pelna": "GKS Bełchatów",
+   "liga": "niższe ligi",
+   "aliasy": [],
+   "lat": 51.37,
+   "lon": 19.37
+  },
+  {
+   "miasto": "Ostrowiec Świętokrzyski",
+   "klub": "KSZO",
+   "pelna": "KSZO 1929 Ostrowiec Świętokrzyski",
+   "liga": "niższe ligi",
+   "aliasy": [
+    "KSZO"
+   ],
+   "lat": 50.93,
+   "lon": 21.39
+  },
+  {
+   "miasto": "Elbląg",
+   "klub": "Olimpia",
+   "pelna": "Olimpia Elbląg",
+   "liga": "niższe ligi",
+   "aliasy": [],
+   "lat": 54.16,
+   "lon": 19.4
+  },
+  {
+   "miasto": "Tarnów",
+   "klub": "Unia",
+   "pelna": "Unia Tarnów",
+   "liga": "niższe ligi",
+   "aliasy": [],
+   "lat": 50.01,
+   "lon": 20.99
+  },
+  {
+   "miasto": "Stargard",
+   "klub": "Błękitni",
+   "pelna": "Błękitni Stargard",
+   "liga": "niższe ligi",
+   "aliasy": [],
+   "lat": 53.34,
+   "lon": 15.05
+  },
+  {
+   "miasto": "Jastrzębie-Zdrój",
+   "klub": "GKS Jastrzębie",
+   "pelna": "GKS Jastrzębie",
+   "liga": "niższe ligi",
+   "aliasy": [],
+   "lat": 49.95,
+   "lon": 18.6
+  }
+ ]
+}

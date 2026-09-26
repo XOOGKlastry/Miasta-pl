@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-<link rel="stylesheet" href="wspolne.css?v=15" />
+<link rel="stylesheet" href="wspolne.css?v=16" />
 <style>
 .target{flex:none;text-align:center}
 .target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(28px,8.5vw,38px);line-height:1.05;overflow-wrap:anywhere}
@@ -96,7 +96,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
-<script src="wspolne.js?v=15"></script>
+<script src="wspolne.js?v=16"></script>
 <script>
 const {$,shuffle,fmt}=ZP;
 let CITIES=[],P=null,game=null,base="";
@@ -221,6 +221,7 @@ $("okBtn").onclick=()=>{
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=(d<5?"W punkt! ":"")+"Błąd "+(d<10?d.toFixed(1):Math.round(d))+" km, +"+got+" pkt";
   fb.querySelector("span").textContent=c.name+", woj. "+c.woj+(c.pop?", "+fmt(c.pop)+" mieszk.":"");
+  ZP.dopiszEncykl(fb,{miasto:c.name,lat:c.lat,lon:c.lon,nazwa:c.name});
   $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";
   $("nextBtn").onclick=next;
   fb.classList.remove("hidden");
