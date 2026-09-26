@@ -173,7 +173,7 @@ async function otworz(id,bezHistorii){
   W.innerHTML='<div class="zamknij"><button class="back" id="zamknij" aria-label="Zamknij">‹</button><span class="round">TERYT '+kod+'</span></div>'
     +'<div class="okruchy"></div>'
     +'<div class="tytul">'+(herb?'<img alt="" src="'+herb+'">':'')+'<div><h2></h2><small>'+(x.typ||(x.rodzaj==="w"?"województwo":""))+'</small></div></div>'
-    +'<div class="kafle"><div>Ludność'+(x.ludnosc_rok?" (GUS "+x.ludnosc_rok+")":"")+'<b>'+(x.ludnosc?fmt(x.ludnosc):"–")+'</b></div><div>Powierzchnia<b id="kPow">'+(pow?fmt(pow)+" km²":"…")+'</b></div>'
+    +'<div class="kafle"><div>Ludność'+(x.ludnosc_rok?" (GUS "+x.ludnosc_rok+")":"")+'<b>'+(x.ludnosc?fmt(x.ludnosc):"–")+'</b></div><div>Powierzchnia (PRG)<b id="kPow">'+(pow?fmt(pow)+" km²":"…")+'</b></div>'
     +'<div>Gęstość<b id="kGest">'+(pow&&x.ludnosc?fmt(x.ludnosc/pow)+" os./km²":"–")+'</b></div><div>Kod TERYT<b>'+kod+'</b></div></div>'
     +'<div class="mapki"><svg class="ks" id="mKs" preserveAspectRatio="xMidYMid meet"></svg><svg class="pl" id="mPl" preserveAspectRatio="xMidYMid meet"></svg></div>'
     +'<div id="wGrach"></div><div class="sekcja" id="dzieci"></div>'
