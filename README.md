@@ -58,3 +58,10 @@ W **Miastach na czas** nie ma wyboru małe/średnie/duże — gra idzie przez ws
 - `kandydaci.json` (budowany przez automat): do 14 kandydatów na miasto od 5 tys. mieszkańców, z rozdzielczością, autorem, licencją i oznaczeniem zdjęć wyróżnionych w Commons.
 - `przeglad.html` (link w Statystykach): przegląd kandydatów, ✓ do gry, ✗ odrzuć, dodawanie własnych plików z Commons, zapis pliku `zdjecia-wybor.json`.
 - Po wgraniu nowego `zdjecia-wybor.json` automat sam pobiera zatwierdzone zdjęcia do katalogu `miejsca/`.
+
+
+## Panel admina, encyklopedia, nowe wyzwanie dnia i turniej
+
+- `admin.html`: zdjęcia do „Co to za miasto?” (kandydaci z `kandydaci.json`), poprawki rzek i herbów. Zapis prosto do repo kluczem GitHub podanym w zakładce „Połączenie” (klucz zostaje tylko w przeglądarce). Pliki: `narzedzia/zdjecia-wybor.json` (uruchamia szybki automat pobierający zdjęcia) i `poprawki.json` (gry czytają go od razu).
+- `encyklopedia.html`: 16 województw, 380 powiatów i ~2477 gmin alfabetycznie, z ludnością, powierzchnią, gęstością, herbem, mapką, jednostkami podrzędnymi i odnośnikiem do Wikipedii. Dane: `baza.json` budowany przez `narzedzia/pobierz_baze.py` (Wikidata, kody TERYT z PRG).
+- `wyzwanie.html`: wyzwanie dnia (6 pytań, ten sam zestaw dla wszystkich, jedna próba) i `wyzwanie.html?tryb=turniej` (12 pytań, sześć konkurencji, kreator obszaru i wielkości miast). Wynik do udostępnienia jako obrazek 1080×1350 i tekst z kratkami. Stare `dzis.html` i `turniej.html` przekierowują tutaj.

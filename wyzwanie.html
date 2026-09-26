@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Wyzwanie · PolskoZnawca</title>
+<meta name="theme-color" content="#0A181B" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<link rel="stylesheet" href="wspolne.css?v=15" />
+<style>
+svg path{fill-rule:evenodd}
+/* segmenty postępu */
+.segmenty{display:flex;gap:4px;flex:none}
+.segmenty i{flex:1;height:6px;border-radius:3px;background:var(--line);transition:background .4s,transform .4s}
+.segmenty i.teraz{background:var(--paper);transform:scaleY(1.4)}
+.segmenty i.g{background:var(--ok)}.segmenty i.y{background:var(--warn)}.segmenty i.r{background:var(--red)}
+.gora{display:flex;align-items:center;gap:10px;flex:none}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);
+  background:rgba(242,193,78,.1);border:1px solid rgba(242,193,78,.35);border-radius:999px;padding:4px 10px}
+.pkt{margin-left:auto;font-family:"Fraunces",serif;font-weight:900;font-size:22px;color:var(--gold);font-variant-numeric:tabular-nums}
+.pytanie{flex:none;font-family:"Fraunces",serif;font-weight:900;font-size:clamp(24px,7.5vw,34px);line-height:1.08;letter-spacing:-.01em;overflow-wrap:anywhere}
+.stage{flex:1;min-height:150px;position:relative;display:grid;place-items:center;animation:wejscie .35s both}
+.stage>*{grid-area:1/1}
+#mapa{position:absolute;inset:0}
+#ksztalt,#rzekaMapa{position:absolute;inset:0;width:100%;height:100%}
+#rzekaMapa .w{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke}
+#rzekaMapa .rz{fill:none;stroke:#5AA9E6;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;stroke-dasharray:2000;stroke-dashoffset:2000;animation:rysuj 1.4s ease-out forwards}
+#rzekaMapa .dot{fill:var(--gold);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
+@keyframes rysuj{to{stroke-dashoffset:0}}
+#foto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#herbImg{max-width:72%;max-height:86%;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
+.stage.jasna{background:#E9EEEC}
+.podpis{position:absolute;left:0;right:0;bottom:0;padding:22px 10px 6px;font-size:10.5px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65));pointer-events:none}
+.miasto-duze{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(30px,10vw,46px);text-align:center;padding:0 16px}
+.karty2{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;padding:10px;align-self:stretch}
+.karty2 .k{background:var(--ink-3);border:1px solid var(--line-2);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 8px;text-align:center}
+.karty2 .k b{font-family:"Fraunces",serif;font-size:22px;line-height:1.1}
+.karty2 .k small{color:var(--dim);font-size:12px}
+.karty2 .k .lud{font-family:"Fraunces",serif;font-size:22px;color:var(--gold);min-height:28px}
+.karty2 .k button{min-height:50px;width:100%;margin-top:4px}
+.karty2 .k.dobrze{border-color:var(--ok);background:#153A33}.karty2 .k.zle{border-color:var(--red);background:#3A1A22}
+#okBtn{width:100%}
+.leaflet-container{background:#1b1b1b;font-family:inherit}
+.leaflet-bar a{background:var(--ink-2);color:var(--paper);border-color:var(--line-2)}
+.cel-lbl{background:var(--gold);color:var(--gold-ink);border:none;font-family:"Fraunces",serif;font-weight:700;font-size:14px;padding:2px 8px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.cel-lbl::before{display:none}
+
+/* ekran startowy */
+.start{flex:1;min-height:0;display:flex;flex-direction:column;gap:14px;justify-content:center;animation:wejscie .4s both}
+.odznaka-d{align-self:flex-start;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:6px 12px;border-radius:999px;
+  background:linear-gradient(90deg,var(--gold),#FF9E6B,var(--teal),var(--gold));background-size:300% 100%;color:var(--gold-ink);animation:tecza 6s linear infinite}
+@keyframes tecza{to{background-position:300% 0}}
+.start h2{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(38px,12vw,58px);line-height:.98;margin:0;letter-spacing:-.02em}
+.start p{margin:0;color:var(--dim);font-size:15.5px}
+.typy{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.typy div{background:var(--ink-2);border:1px solid var(--line-2);border-radius:14px;padding:10px 6px;text-align:center;font-size:12px;color:var(--dim)}
+.typy div span{display:block;font-size:26px;margin-bottom:2px}
+.start .big{min-height:60px;font-size:19px}
+
+/* wynik */
+.wynik{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;animation:wejscie .4s both}
+.wynik .ranga{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.wynik .suma{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(56px,18vw,86px);line-height:.95;letter-spacing:-.03em}
+.wynik .suma span{font-size:22px;color:var(--dim);font-weight:600}
+.kafle{display:flex;gap:6px;flex-wrap:wrap}
+.kafle i{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-style:normal;font-size:16px;animation:wejscie .3s both}
+.kafle i.g{background:var(--ok)}.kafle i.y{background:var(--warn)}.kafle i.r{background:var(--red)}
+.meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.meta div{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px;font-size:12px;color:var(--dim)}
+.meta b{display:block;font-family:"Fraunces",serif;font-size:22px;color:var(--paper)}
+.wynik .rows{flex:1}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1 id="tytul">Wyzwanie dnia</h1>
+  <span class="round" id="runda"></span>
+</header>
+
+<main>
+  <section class="setup hidden" id="setup">
+    <div id="stareUst" class="hidden">
+      <div id="scope"></div>
+      <select id="rounds"><option value="12" selected>12</option></select>
+      <button id="startBtn" disabled></button>
+      <span id="datastate"></span>
+    </div>
+  </section>
+
+  <section class="start hidden" id="start">
+    <span class="odznaka-d" id="odznaka">Wyzwanie dnia</span>
+    <h2 id="startTytul">Sześć pytań,<br>jedna próba</h2>
+    <p id="startOpis">Każdego dnia ten sam zestaw dla wszystkich. Porównaj wynik ze znajomymi.</p>
+    <div class="typy">
+      <div><span>📍</span>Gdzie to jest?</div><div><span>🗺️</span>Kształt powiatu</div><div><span>🛡️</span>Herb</div>
+      <div><span>📷</span>Co to za miasto?</div><div><span>🌊</span>Rzeka</div><div><span>⚖️</span>Więcej czy mniej</div>
+    </div>
+    <button class="big" id="zaczynam" disabled>Wczytywanie…</button>
+    <div class="datastate" id="stanDanych"></div>
+  </section>
+
+  <div class="segmenty hidden" id="segmenty"></div>
+  <div class="gora hidden" id="gora"><span class="chip" id="chip"></span><span class="pkt" id="suma">0</span></div>
+  <div class="pytanie hidden" id="pytanie"></div>
+  <section class="stage hidden" id="stage">
+    <div id="mapa" class="hidden"></div>
+    <svg id="ksztalt" class="hidden" preserveAspectRatio="xMidYMid meet"></svg>
+    <svg id="rzekaMapa" class="hidden" preserveAspectRatio="xMidYMid meet"></svg>
+    <img id="foto" class="hidden" alt="Zdjęcie miasta" />
+    <img id="herbImg" class="hidden" alt="Herb" />
+    <div class="miasto-duze hidden" id="miastoDuze"></div>
+    <div class="karty2 hidden" id="karty2"></div>
+    <div class="podpis hidden" id="podpis"></div>
+  </section>
+  <div class="answers hidden" id="answers"></div>
+  <div class="wpis hidden" id="wpis"></div>
+  <button class="big hidden" id="okBtn" disabled>Zatwierdź</button>
+  <div class="feedback hidden" id="feedback"></div>
+
+  <section class="wynik hidden" id="wynik"></section>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="topojson-client.min.js?v=15"></script>
+<script src="wspolne.js?v=15"></script>
+<script>
+const {$,fmt}=ZP;
+const TRYB=new URLSearchParams(location.search).get("tryb")==="turniej"?"turniej":"dzien";
+const DZIEN=ZP.dayKey(),START=new Date(2026,8,20);
+const NR=Math.floor((new Date(DZIEN+"T12:00:00")-START)/864e5)+1;
+const KLUCZ="dzis-"+DZIEN;
+const TYPY={g:["📍","Gdzie to jest?"],k:["🗺️","Kształt powiatu"],h:["🛡️","Jaki to herb?"],m:["📷","Co to za miasto?"],r:["🌊","Nad jaką rzeką?"],w:["⚖️","Więcej czy mniej?"]};
+const SCORE=km=>Math.round(1000*Math.exp(-km/150));
+const kolor=p=>p>=700?"g":p>=300?"y":"r";
+const RANGI=[[85,"Geograf roku"],[70,"Kartograf"],[50,"Przewodnik"],[30,"Krajoznawca"],[0,"Turysta"]];
+let D={},Q=[],st=null,map=null,warstwy=null,POLE=null,PL=null,baseSvg="";
+
+/* ---------- dane ---------- */
+async function laduj(){
+  const pob=(u,d)=>fetch(u,{cache:"no-cache"}).then(r=>r.ok?r.json():d).catch(()=>d);
+  const [woj,pw,hj,mj,rj,popr]=await Promise.all([ZP.loadWoj(),ZP.loadPowiaty(),pob("herby.json",{miasta:[]}),pob("miejsca.json",{miasta:[]}),pob("rzeki.json",{miasta:[]}),ZP.poprawki()]);
+  D.woj=woj;D.pow=pw.filter(p=>!p.city);
+  D.herby=ZP.popHerby((hj.miasta||[]).map(c=>({n:c.n,lat:c.lat,lon:c.lon,pop:c.pop,img:c.img})),popr,c=>c.n);
+  D.miejsca=(mj.miasta||[]).filter(c=>c.zdjecia&&c.zdjecia.length);
+  D.rzeki=ZP.popRzeki(rj.miasta||[],popr);
+  D.miasta=ZP.FALLBACK.map(([n,lat,lon,pop])=>({n,lat,lon,pop}));
+  PL=ZP.projection(woj.map(w=>w.f),500,8);
+  baseSvg=woj.map(w=>'<path class="w" d="'+PL.path(w.f.geometry)+'"/>').join("");
+}
+function losuj(rnd,a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function czteryNaj(rnd,c,pool,klucz){
+  const near=pool.filter(o=>klucz(o)!==klucz(c)).sort((x,y)=>ZP.km(c,x)-ZP.km(c,y));
+  const o=[],s=new Set([klucz(c)]);
+  for(const x of near){if(s.has(klucz(x)))continue;s.add(klucz(x));o.push(klucz(x));if(o.length===7)break;}
+  return losuj(rnd,losuj(rnd,o).slice(0,3).concat([klucz(c)]));
+}
+function budujPytania(rnd,ile,filtr){
+  filtr=filtr||(()=>true);
+  const miasta=D.miasta.filter(filtr),herby=D.herby.filter(filtr),miejsca=D.miejsca.filter(filtr),rzeki=D.rzeki.filter(filtr),pow=D.pow.filter(p=>!ZP.OBSZAR.length||ZP.wObszarze(p));
+  const lista={g:losuj(rnd,miasta),k:losuj(rnd,pow),h:losuj(rnd,herby),m:losuj(rnd,miejsca),r:losuj(rnd,rzeki),w:losuj(rnd,miasta.filter(c=>c.pop>0))};
+  const kolej=["g","k","h","m","r","w"],qs=[];
+  for(let i=0;qs.length<ile&&i<ile*3;i++){
+    const t=kolej[i%6],src=lista[t];if(!src||!src.length)continue;
+    const c=src.shift();
+    if(t==="g")qs.push({t,c});
+    if(t==="k")qs.push({t,p:c,opcje:czteryNaj(rnd,c,D.pow,x=>x.label)});
+    if(t==="h")qs.push({t,c,opcje:czteryNaj(rnd,c,D.herby,x=>x.n)});
+    if(t==="m")qs.push({t,c,foto:c.zdjecia[Math.floor(rnd()*c.zdjecia.length)],opcje:czteryNaj(rnd,c,D.miejsca,x=>x.n)});
+    if(t==="r")qs.push({t,c,opcje:czteryNaj(rnd,c,D.rzeki,x=>x.rzeka)});
+    if(t==="w"){const b=src.find(x=>Math.abs(x.pop-c.pop)/Math.min(x.pop,c.pop)>0.08);if(b){src.splice(src.indexOf(b),1);qs.push({t,a:c,b});}}
+  }
+  return qs;
+}
+
+/* ---------- start ---------- */
+function zapisane(){try{return JSON.parse(localStorage.getItem(KLUCZ)||"null");}catch(e){return null;}}
+async function init(){
+  if(TRYB==="turniej"){
+    $("tytul").textContent="Turniej";
+    document.title="Turniej · PolskoZnawca";
+    $("odznaka").textContent="Turniej";
+    $("startTytul").innerHTML="Dwanaście pytań,<br>sześć konkurencji";
+    $("startOpis").textContent="Po dwa pytania z każdej gry. Grasz, ile chcesz; liczy się najlepszy wynik.";
+    $("setup").classList.remove("hidden");
+    ZP.zakresy($("scope"));
+    ZP.kreatorGry({klucz:"turniej2",kroki:["obszar","wielkosc"]});
+  }else{
+    const s=zapisane();
+    $("start").classList.remove("hidden");
+    $("odznaka").textContent="Wyzwanie dnia #"+NR;
+    if(s&&s.done){await laduj();Q=budujPytania(ZP.seeded("pz-dzien-"+DZIEN),6);return pokazWynik(s.res);}
+  }
+  $("stanDanych").textContent="Wczytywanie map, herbów i zdjęć…";
+  await laduj();
+  $("stanDanych").textContent="";
+  $("zaczynam").disabled=false;$("zaczynam").textContent="Zaczynam";
+  $("startBtn").disabled=false;
+}
+$("startBtn").onclick=()=>{ // kreator turnieju
+  $("setup").classList.add("hidden");$("start").classList.remove("hidden");
+};
+$("zaczynam").onclick=()=>{
+  if(TRYB==="dzien"){
+    Q=budujPytania(ZP.seeded("pz-dzien-"+DZIEN),6);
+    const s=zapisane();st={i:(s&&s.res?s.res.length:0)-1,res:(s&&s.res)||[]};
+  }else{
+    const stan=ZP.zakresStan($("scope"));
+    Q=budujPytania(Math.random,12,c=>ZP.wZakresie(c,stan)&&ZP.wObszarze(c));
+    if(Q.length<6){ZP.komunikat("Za mało danych dla tego wyboru. Zaznacz większy obszar albo więcej wielkości miast.");return;}
+    st={i:-1,res:[]};
+  }
+  $("start").classList.add("hidden");
+  $("segmenty").innerHTML=Q.map(()=>"<i></i>").join("");
+  ["segmenty","gora","pytanie","stage"].forEach(id=>$(id).classList.remove("hidden"));
+  nastepne();
+};
+
+/* ---------- rundy ---------- */
+function schowaj(){["mapa","ksztalt","rzekaMapa","foto","herbImg","miastoDuze","karty2","podpis","answers","wpis","okBtn","feedback"].forEach(id=>$(id).classList.add("hidden"));$("stage").classList.remove("jasna");}
+function segmenty(){[...$("segmenty").children].forEach((d,i)=>{const r=st.res[i];d.className=r?kolor(r.pts):(i===st.i?"teraz":"");});}
+function nastepne(){
+  st.i++;schowaj();
+  if(st.i>=Q.length)return koniec();
+  const q=Q[st.i];st.odp=false;st.podp=false;st.guess=null;
+  $("runda").textContent=(st.i+1)+" / "+Q.length;
+  $("chip").textContent=TYPY[q.t][0]+" "+TYPY[q.t][1];
+  $("suma").textContent=fmt(st.res.reduce((a,r)=>a+r.pts,0));
+  segmenty();
+  const st2=$("stage");st2.style.animation="none";void st2.offsetWidth;st2.style.animation="";
+  ({g:rundaG,k:rundaK,h:rundaH,m:rundaM,r:rundaR,w:rundaW})[q.t](q);
+}
+function wpisz(nazwy,poprawne,opcje){
+  if(!POLE)POLE=ZP.poleWpisu($("wpis"),()=>st.nazwy,v=>odpWpis(v),{poprawne:()=>st.poprawne,pokazEtykieta:"Pokaż podpowiedzi<br><small>połowa punktów</small>",pokaz:()=>{st.podp=true;pokazOpcje();}});
+  st.nazwy=nazwy;st.poprawne=poprawne;st.opcje=opcje;
+  $("wpis").classList.remove("hidden");POLE.wyczysc();POLE.wylacz(false);POLE.focus();
+}
+function pokazOpcje(){
+  const box=$("answers");box.innerHTML="";box.classList.remove("hidden");
+  st.opcje.forEach(o=>{const b=document.createElement("button");b.textContent=o;b.onclick=()=>odpWpis(o,b);box.appendChild(b);});
+}
+function odpWpis(v,btn){
+  if(st.odp)return;
+  const ok=ZP.pasuje(v,st.poprawne);
+  if(POLE)POLE.wylacz(true);
+  [...$("answers").children].forEach(x=>{x.disabled=true;if(ZP.pasuje(x.textContent,st.poprawne))x.classList.add("right");else if(x===btn)x.classList.add("wrong");else x.classList.add("fade");});
+  wynikRundy(ok?(st.podp?500:1000):0,ok,ok?"Dobrze":(v?"Niestety":"Pas"));
+}
+function rundaG(q){
+  $("pytanie").textContent=q.c.n;
+  $("mapa").classList.remove("hidden");
+  if(!map){
+    const PLB=L.latLngBounds([48.9,14.0],[55.0,24.3]);
+    map=L.map("mapa",{zoomControl:true,attributionControl:true,minZoom:5,maxZoom:12,maxBounds:PLB.pad(0.4),zoomSnap:0.25});
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",{maxZoom:16,attribution:"Esri"}).addTo(map);
+    L.geoJSON({type:"FeatureCollection",features:D.woj.map(w=>w.f)},{style:{color:"#4F7F86",weight:1,fill:false},interactive:false}).addTo(map);
+    warstwy=L.layerGroup().addTo(map);
+    map.on("click",e=>{if(st.odp||Q[st.i].t!=="g")return;st.guess=e.latlng;warstwy.clearLayers();L.circleMarker(e.latlng,{radius:8,color:"#0A181B",weight:2,fillColor:"#E8F1EE",fillOpacity:1}).addTo(warstwy);$("okBtn").disabled=false;});
+  }
+  warstwy.clearLayers();
+  setTimeout(()=>{map.invalidateSize();map.fitBounds([[49,14.1],[54.9,24.2]]);},30);
+  $("okBtn").classList.remove("hidden");$("okBtn").disabled=true;
+}
+$("okBtn").onclick=()=>{
+  if(st.odp||!st.guess)return;
+  const q=Q[st.i],g={lat:st.guess.lat,lon:st.guess.lng},d=ZP.km(q.c,g);
+  L.polyline([[g.lat,g.lon],[q.c.lat,q.c.lon]],{color:"#F2C14E",weight:2,dashArray:"6 5"}).addTo(warstwy);
+  L.circleMarker([q.c.lat,q.c.lon],{radius:9,color:"#0A181B",weight:2,fillColor:"#F2C14E",fillOpacity:1}).addTo(warstwy).bindTooltip(q.c.n,{permanent:true,direction:"top",className:"cel-lbl"});
+  map.flyToBounds(L.latLngBounds([[g.lat,g.lon],[q.c.lat,q.c.lon]]).pad(0.5),{duration:.8,maxZoom:9});
+  $("okBtn").classList.add("hidden");
+  wynikRundy(SCORE(d),d<=30,"Błąd "+(d<10?d.toFixed(1):Math.round(d))+" km");
+};
+function rundaK(q){
+  $("pytanie").textContent="Który to powiat?";
+  $("ksztalt").classList.remove("hidden");
+  const nr=st.i;
+  ZP.ksztaltZPodkladem($("ksztalt"),q.p.f,q.p.bb,400).then(()=>{
+    if(st.i!==nr||st.odp)return;
+    wpisz(D.pow.map(p=>p.short),[q.p.short,q.p.full,q.p.label],q.opcje);
+  });
+}
+function rundaH(q){
+  $("pytanie").textContent="Czyj to herb?";
+  $("stage").classList.add("jasna");
+  $("herbImg").src=q.c.img;$("herbImg").classList.remove("hidden");
+  wpisz(D.herby.map(c=>c.n),[q.c.n],q.opcje);
+}
+function rundaM(q){
+  $("pytanie").textContent="Co to za miasto?";
+  $("foto").src=q.foto.img;$("foto").classList.remove("hidden");
+  $("podpis").textContent="Fot. "+(q.foto.autor||"")+(q.foto.licencja?", "+q.foto.licencja:"")+", Wikimedia Commons";$("podpis").classList.remove("hidden");
+  wpisz(D.miejsca.map(c=>c.n),[q.c.n],q.opcje);
+}
+function rundaR(q){
+  $("pytanie").textContent="Nad jaką rzeką leży";
+  $("miastoDuze").textContent=q.c.n;$("miastoDuze").classList.remove("hidden");
+  wpisz([...new Set(D.rzeki.map(c=>c.rzeka))],[q.c.rzeka],q.opcje);
+}
+function rundaW(q){
+  $("pytanie").textContent="Które miasto jest większe?";
+  const box=$("karty2");box.innerHTML="";box.classList.remove("hidden");
+  [q.a,q.b].forEach((c,i)=>{
+    const d=document.createElement("div");d.className="k";
+    d.innerHTML='<b></b><small></small><div class="lud"></div><button class="big">Więcej</button>';
+    d.querySelector("b").textContent=c.n;d.querySelector("small").textContent=ZP.wojOf(c.lon,c.lat)||"";
+    d.querySelector("button").onclick=()=>{
+      if(st.odp)return;
+      const inny=i?q.a:q.b,ok=c.pop>inny.pop;
+      box.querySelectorAll(".k").forEach((k,j)=>{
+        const cc=j?q.b:q.a;k.querySelector("button").disabled=true;
+        const el=k.querySelector(".lud"),t0=performance.now();
+        (function f(t){const p=Math.min(1,(t-t0)/700);el.textContent=fmt(cc.pop*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f);})(t0);
+        k.classList.add(cc.pop>=(j?q.a:q.b).pop?"dobrze":"zle");
+      });
+      wynikRundy(ok?1000:0,ok,ok?"Dobrze":"Niestety");
+    };
+    box.appendChild(d);
+  });
+}
+function wynikRundy(pts,ok,naglowek){
+  st.odp=true;
+  const q=Q[st.i];
+  // pokaż odpowiedź tam, gdzie trzeba
+  if(q.t==="r"){
+    $("miastoDuze").classList.add("hidden");
+    const svg=$("rzekaMapa");svg.setAttribute("viewBox","0 0 500 "+PL.H.toFixed(0));
+    svg.innerHTML=baseSvg+'<circle class="dot" cx="'+PL.x(q.c.lon).toFixed(1)+'" cy="'+PL.y(q.c.lat).toFixed(1)+'" r="7"/>';
+    svg.classList.remove("hidden");
+    fetch("rzeki-geo.json").then(r=>r.json()).then(g=>{const l=g[q.c.rid];if(!l)return;
+      svg.insertAdjacentHTML("afterbegin","");svg.querySelector(".dot").insertAdjacentHTML("beforebegin",'<path class="rz" d="'+l.map(x=>"M"+x.map(([a,b])=>PL.x(a).toFixed(1)+" "+PL.y(b).toFixed(1)).join("L")).join("")+'"/>');}).catch(()=>{});
+  }
+  ZP.zapisz({g:"miasto",k:"powiat",h:"herb",m:"miejsce",r:"rzeka",w:"ludnosc"}[q.t],q.t==="k"?q.p.k:(q.c?q.c.n:q.a.n),ok);
+  st.res.push({t:q.t,pts});
+  if(TRYB==="dzien")localStorage.setItem(KLUCZ,JSON.stringify({res:st.res,done:false}));
+  segmenty();
+  // licznik punktów
+  const s0=st.res.slice(0,-1).reduce((a,r)=>a+r.pts,0),t0=performance.now();
+  (function f(t){const p=Math.min(1,(t-t0)/600);$("suma").textContent=fmt(s0+pts*p);if(p<1)requestAnimationFrame(f);})(t0);
+  const odp=q.t==="g"?q.c.n:q.t==="k"?q.p.full:q.t==="r"?q.c.n+", rzeka "+q.c.rzeka:q.t==="w"?(q.a.pop>q.b.pop?q.a.n:q.b.n)+" jest większe":q.c.n;
+  const fb=$("feedback");
+  fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
+  fb.querySelector("strong").textContent=naglowek+" · +"+pts;
+  fb.querySelector("span").textContent=odp;
+  $("nextBtn").textContent=st.i+1>=Q.length?"Wynik":"Dalej";$("nextBtn").onclick=nastepne;
+  fb.classList.remove("hidden");
+}
+
+/* ---------- wynik ---------- */
+function koniec(){
+  const suma=st.res.reduce((a,r)=>a+r.pts,0);
+  if(TRYB==="dzien"){
+    localStorage.setItem(KLUCZ,JSON.stringify({res:st.res,done:true}));
+    let ser={last:"",n:0};try{ser=JSON.parse(localStorage.getItem("dzis-seria")||'{"last":"","n":0}');}catch(e){}
+    const w=new Date();w.setDate(w.getDate()-1);
+    if(ser.last!==DZIEN){ser.n=ser.last===ZP.dayKey(w)?ser.n+1:1;ser.last=DZIEN;localStorage.setItem("dzis-seria",JSON.stringify(ser));}
+    if(suma>+(localStorage.getItem("dzis-best")||0))localStorage.setItem("dzis-best",suma);
+  }else{
+    const k="turniej-best-"+ZP.zakresStan($("scope"))+"-"+(ZP.OBSZAR.length?ZP.OBSZAR.slice().sort().join(","):"pl");
+    st.rekord=suma>+(localStorage.getItem(k)||0);if(st.rekord)localStorage.setItem(k,suma);
+  }
+  pokazWynik(st.res);
+}
+function pokazWynik(res){
+  schowaj();["segmenty","gora","pytanie","stage","start"].forEach(id=>$(id).classList.add("hidden"));
+  $("runda").textContent="";
+  const suma=res.reduce((a,r)=>a+r.pts,0),max=res.length*1000,proc=max?Math.round(100*suma/max):0;
+  const ranga=RANGI.find(([p])=>proc>=p)[1];
+  let ser={n:0};try{ser=JSON.parse(localStorage.getItem("dzis-seria")||'{"n":0}');}catch(e){}
+  const w=$("wynik");
+  w.innerHTML='<div class="ranga"></div><div class="suma"><b id="sumaAnim">0</b> <span>/ '+fmt(max)+'</span></div>'
+    +'<div class="kafle">'+res.map((r,i)=>'<i class="'+kolor(r.pts)+'" style="animation-delay:'+(i*.08)+'s">'+TYPY[r.t][0]+'</i>').join("")+'</div>'
+    +'<div class="meta"></div>'
+    +'<div class="btnrow"><button class="big" id="udostepnij">Udostępnij wynik</button></div>'
+    +'<div class="btnrow"><a class="ghost" href="./" style="display:grid;place-items:center;text-decoration:none;color:inherit">Inne gry</a>'
+    +(TRYB==="turniej"?'<button class="ghost" id="jeszcze">Jeszcze raz</button>':'')+'</div>'
+    +'<div class="rows"></div>';
+  w.querySelector(".ranga").textContent=ranga+" · "+(TRYB==="dzien"?"Wyzwanie dnia #"+NR:"Turniej");
+  const meta=w.querySelector(".meta");
+  const nast=()=>{const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);const s=Math.max(0,Math.floor((m-n)/1000));return Math.floor(s/3600)+":"+String(Math.floor(s%3600/60)).padStart(2,"0");};
+  meta.innerHTML=TRYB==="dzien"
+    ?'<div>Seria dni<b>'+ser.n+'</b></div><div>Najlepszy<b>'+fmt(+(localStorage.getItem("dzis-best")||suma))+'</b></div><div>Następne za<b id="odl">'+nast()+'</b></div>'
+    :'<div>Trafność<b>'+proc+'%</b></div><div>Rekord<b>'+(st&&st.rekord?"nowy!":"–")+'</b></div><div>Pytań<b>'+res.length+'</b></div>';
+  const rows=w.querySelector(".rows");
+  res.forEach((r,i)=>{const q=Q[i];if(!q)return;const d=document.createElement("div");d.className="r";
+    d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
+    d.querySelector("b").textContent=q.t==="g"?q.c.n:q.t==="k"?q.p.full:q.t==="r"?q.c.n+": "+q.c.rzeka:q.t==="w"?q.a.n+" i "+q.b.n:q.c.n;
+    d.querySelector("small").textContent=TYPY[r.t][1];
+    const pt=d.querySelector(".pt");pt.textContent=r.pts;pt.className="pt "+(r.pts>=700?"ok":r.pts<300?"no":"");rows.appendChild(d);});
+  w.classList.remove("hidden");
+  const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/1200);$("sumaAnim").textContent=fmt(suma*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f);})(t0);
+  if(proc>=75)setTimeout(ZP.fanfary,500);
+  $("udostepnij").onclick=()=>udostepnij(res,suma,max,ranga);
+  if($("jeszcze"))$("jeszcze").onclick=()=>{w.classList.add("hidden");$("setup").classList.remove("hidden");};
+  if(TRYB==="dzien")setInterval(()=>{const e=$("odl");if(e)e.textContent=nast();},30000);
+}
+
+/* ---------- udostępnianie: obrazek z wynikiem ---------- */
+async function karta(res,suma,max,ranga){
+  await document.fonts.ready;
+  const c=document.createElement("canvas");c.width=1080;c.height=1350;const g=c.getContext("2d");
+  const gr=g.createLinearGradient(0,0,1080,1350);gr.addColorStop(0,"#0A181B");gr.addColorStop(1,"#153A38");g.fillStyle=gr;g.fillRect(0,0,1080,1350);
+  g.fillStyle="rgba(242,193,78,.08)";g.beginPath();g.arc(930,160,320,0,7);g.fill();
+  // PolandBall
+  g.save();g.translate(140,150);g.beginPath();g.arc(0,0,60,0,7);g.clip();g.fillStyle="#F4F4F2";g.fillRect(-70,-70,140,70);g.fillStyle="#DC1E35";g.fillRect(-70,0,140,70);g.restore();
+  g.lineWidth=6;g.strokeStyle="#111";g.beginPath();g.arc(140,150,60,0,7);g.stroke();
+  [[122,138],[156,134]].forEach(([x,y])=>{g.fillStyle="#fff";g.beginPath();g.ellipse(x,y,10,14,0,0,7);g.fill();g.lineWidth=4;g.stroke();});
+  g.fillStyle="#E8F1EE";g.font="900 58px Fraunces, Georgia, serif";g.fillText("PolskoZnawca",230,140);
+  g.fillStyle="#8FAAA8";g.font="500 34px 'Space Grotesk', sans-serif";g.fillText(TRYB==="dzien"?"Wyzwanie dnia #"+NR+" · "+new Date(DZIEN+"T12:00").toLocaleDateString("pl-PL"):"Turniej",232,190);
+  g.fillStyle="#7FD8C6";g.font="800 40px 'Space Grotesk', sans-serif";g.fillText(ranga.toUpperCase(),90,400);
+  g.fillStyle="#F2C14E";g.font="900 230px Fraunces, Georgia, serif";g.fillText(fmt(suma),80,620);
+  g.fillStyle="#8FAAA8";g.font="600 54px Fraunces, Georgia, serif";g.fillText("z "+fmt(max)+" punktów",90,700);
+  const kol={g:"#5DCAA5",y:"#E8A33A",r:"#E0465A"},n=res.length,sz=Math.min(140,(900-(n-1)*18)/n);
+  res.forEach((r,i)=>{const x=90+i*(sz+18),y=790;g.fillStyle=kol[kolor(r.pts)];g.beginPath();g.roundRect(x,y,sz,sz,26);g.fill();
+    g.font=Math.round(sz*.5)+"px sans-serif";g.textAlign="center";g.fillText(TYPY[r.t][0],x+sz/2,y+sz*.66);g.textAlign="left";});
+  g.fillStyle="#E8F1EE";g.font="500 36px 'Space Grotesk', sans-serif";
+  g.fillText("Zagraj i sprawdź, czy znasz Polskę lepiej:",90,1120);
+  g.fillStyle="#F2C14E";g.font="700 40px 'Space Grotesk', sans-serif";g.fillText(location.host+location.pathname.replace(/[^/]*$/,""),90,1180);
+  return new Promise(ok=>c.toBlob(ok,"image/png"));
+}
+async function udostepnij(res,suma,max,ranga){
+  const tekst="PolskoZnawca "+(TRYB==="dzien"?"#"+NR:"Turniej")+"\n"+res.map(r=>({g:"🟩",y:"🟨",r:"🟥"})[kolor(r.pts)]).join("")+" "+fmt(suma)+"/"+fmt(max)+" · "+ranga+"\n"+location.href.split("?")[0]+(TRYB==="turniej"?"?tryb=turniej":"");
+  try{
+    const blob=await karta(res,suma,max,ranga);
+    const plik=new File([blob],"polskoznawca-wynik.png",{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[plik]})){await navigator.share({files:[plik],text:tekst});return;}
+    if(navigator.share){await navigator.share({text:tekst});return;}
+    const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="polskoznawca-wynik.png";document.body.appendChild(a);a.click();a.remove();
+    try{await navigator.clipboard.writeText(tekst);}catch(e){}
+    ZP.komunikat("Zapisano obrazek z wynikiem i skopiowano tekst.");
+  }catch(e){if(e&&e.name!=="AbortError"){try{await navigator.clipboard.writeText(tekst);ZP.komunikat("Skopiowano wynik do schowka.");}catch(x){}}}
+}
+init();ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

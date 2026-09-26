@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Encyklopedia · PolskoZnawca</title>
+<meta name="theme-color" content="#0A181B" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=15" />
+<style>
+.zakladki{display:flex;gap:6px;flex:none}
+.zakladki button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--line-2);background:var(--ink-2);font-weight:700;font-size:14px}
+.zakladki button small{display:block;font-size:11px;color:var(--dim);font-weight:500}
+.zakladki button.akt{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.zakladki button.akt small{color:#6B5317}
+#szukaj{flex:none;min-height:48px;font-size:17px}
+.lista{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
+.litera{position:sticky;top:0;z-index:2;background:var(--ink);font-family:"Fraunces",serif;font-weight:900;font-size:20px;color:var(--gold);padding:8px 2px 4px;border-bottom:1px solid var(--line)}
+.poz{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer;content-visibility:auto;contain-intrinsic-size:52px}
+.poz:active{background:var(--ink-2)}
+.poz .nm{flex:1;min-width:0}
+.poz .nm b{display:block;font-size:16px}
+.poz .nm small{color:var(--dim);font-size:12.5px}
+.poz .lud{color:var(--dim);font-size:12.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* karta jednostki */
+.karta{position:fixed;inset:0;z-index:2000;background:var(--ink);overflow:auto;transform:translateX(100%);transition:transform .32s cubic-bezier(.2,.7,.3,1)}
+.karta.otwarta{transform:none}
+.karta .wnetrze{max-width:560px;margin:0 auto;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px calc(env(safe-area-inset-bottom,0px) + 24px);display:flex;flex-direction:column;gap:14px}
+.okruchy{display:flex;flex-wrap:wrap;gap:4px;font-size:13px;color:var(--dim)}
+.okruchy a{color:var(--teal);text-decoration:none;cursor:pointer}
+.tytul{display:flex;align-items:center;gap:14px}
+.tytul img{width:74px;height:86px;object-fit:contain;background:#E9EEEC;border-radius:12px;padding:6px;flex:none}
+.tytul h2{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(30px,9vw,42px);line-height:1.02;margin:0;letter-spacing:-.01em}
+.tytul small{display:block;color:var(--teal);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
+.kafle{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kafle div{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:12px;color:var(--dim)}
+.kafle b{display:block;font-family:"Fraunces",serif;font-size:22px;color:var(--paper);font-variant-numeric:tabular-nums}
+.mapki{display:grid;grid-template-columns:1.4fr 1fr;gap:8px}
+.mapki svg{width:100%;height:170px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px}
+.mapki .ks path{fill:rgba(242,193,78,.2);stroke:var(--gold);stroke-width:1.8;vector-effect:non-scaling-stroke;stroke-linejoin:round;fill-rule:evenodd}
+.mapki .pl path{fill:#1D3D43;stroke:#4F7F86;stroke-width:.8;vector-effect:non-scaling-stroke}
+.mapki .pl path.ja{fill:var(--gold);stroke:var(--gold)}
+.mapki .pl circle{fill:var(--gold);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
+.sekcja h3{font-size:12px;font-weight:700;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin:0 0 6px}
+.chipy{display:flex;flex-wrap:wrap;gap:6px}
+.chipy a{background:var(--ink-2);border:1px solid var(--line-2);border-radius:999px;padding:6px 12px;font-size:14px;color:var(--paper);text-decoration:none;cursor:pointer}
+.chipy a:active{border-color:var(--gold)}
+.foto{width:100%;border-radius:14px;display:block}
+.foto-podpis{font-size:11px;color:var(--dim);margin-top:4px}
+.akcje{display:flex;gap:8px}
+.akcje a,.akcje button{flex:1;display:grid;place-items:center;text-decoration:none;min-height:50px;color:inherit}
+.akcje a.big{color:var(--gold-ink)}
+.zamknij{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;background:var(--ink);padding:4px 0}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <a class="back" href="./" aria-label="Wróć">‹</a>
+  <h1>Encyklopedia</h1>
+  <span class="round" id="stan">…</span>
+</header>
+<main>
+  <div class="zakladki" id="zakladki">
+    <button data-t="g" class="akt">Gminy<small id="nG"></small></button>
+    <button data-t="p">Powiaty<small id="nP"></small></button>
+    <button data-t="w">Województwa<small id="nW"></small></button>
+  </div>
+  <input id="szukaj" type="text" placeholder="Szukaj: nazwa, powiat, województwo…" autocomplete="off" />
+  <div class="lista" id="lista"></div>
+</main>
+</div>
+
+<section class="karta" id="karta"><div class="wnetrze" id="kartaW"></div></section>
+
+<script src="topojson-client.min.js?v=15"></script>
+<script src="wspolne.js?v=15"></script>
+<script>
+const {$,fmt}=ZP;
+let B={w:[],p:[],g:[]},IDX={},RZEKI={},MIEJSCA={},HERBY={},zakladka="g";
+const kol=new Intl.Collator("pl");
+
+async function laduj(){
+  const pob=(u,d)=>fetch(u,{cache:"no-cache"}).then(r=>r.ok?r.json():d).catch(()=>d);
+  let [baza,rz,mj,he]=await Promise.all([pob("baza.json",null),pob("rzeki.json",{miasta:[]}),pob("miejsca.json",{miasta:[]}),pob("herby.json",{miasta:[]})]);
+  if(!baza){
+    // baza jeszcze się buduje: same nazwy i kody z granic PRG
+    const [pw,gm]=await Promise.all([ZP.loadPowiaty(),ZP.loadGminy().catch(()=>[])]);
+    baza={wojewodztwa:Object.entries(ZP.WOJ_KOD).map(([k,n])=>({k,n})),powiaty:pw.map(p=>({k:p.k,n:p.n,typ:p.city?"miasto na prawach powiatu":"powiat"})),
+      gminy:gm.map(g=>({k:g.k,n:g.n,typ:g.typ}))};
+    $("stan").textContent="bez danych z Wikidata";
+  }else $("stan").textContent="dane z "+new Date(baza.zbudowano).toLocaleDateString("pl-PL");
+  B.w=baza.wojewodztwa.map(x=>Object.assign(x,{rodzaj:"w",pelna:"województwo "+x.n}));
+  B.p=baza.powiaty.map(x=>Object.assign(x,{rodzaj:"p",pelna:(x.typ==="miasto na prawach powiatu"?"miasto ":"powiat ")+x.n}));
+  B.g=baza.gminy.map(x=>Object.assign(x,{rodzaj:"g",pelna:"gmina "+x.n}));
+  [...B.w,...B.p,...B.g].forEach(x=>IDX[x.rodzaj+x.k]=x);
+  (rz.miasta||[]).forEach(c=>RZEKI[c.n]=c.rzeka);
+  (mj.miasta||[]).forEach(c=>MIEJSCA[c.n]=c.zdjecia&&c.zdjecia[0]);
+  (he.miasta||[]).forEach(c=>HERBY[c.n]=c.img);
+  $("nG").textContent=B.g.length;$("nP").textContent=B.p.length;$("nW").textContent=B.w.length;
+  rysujListe();
+  if(location.hash.length>2)otworz(location.hash.slice(1),true);
+}
+const woj=x=>ZP.WOJ_KOD[x.k.slice(0,2)];
+const powiat=x=>IDX["p"+x.k.slice(0,4)];
+function opis(x){
+  if(x.rodzaj==="w")return (x.ludnosc?fmt(x.ludnosc)+" mieszk.":"");
+  if(x.rodzaj==="p")return (x.typ||"powiat")+", woj. "+woj(x);
+  const p=powiat(x);return (x.typ||"gmina")+(p?", "+p.pelna:"")+", woj. "+woj(x);
+}
+function rysujListe(){
+  const q=ZP.norm($("szukaj").value);
+  // najpierw trafienia w nazwie, potem w opisie (powiat, województwo)
+  const wNazwie=x=>ZP.norm(x.n).includes(q);
+  const zrodlo=B[zakladka].filter(x=>!q||wNazwie(x)||ZP.norm(opis(x)).includes(q))
+    .sort((a,b)=>(q?(wNazwie(b)-wNazwie(a)):0)||kol.compare(a.n,b.n)||a.k.localeCompare(b.k));
+  const box=$("lista");box.innerHTML="";
+  let lit="",frag=document.createDocumentFragment();
+  zrodlo.forEach(x=>{
+    const l=q&&!wNazwie(x)?"W opisie":x.n[0].toUpperCase();
+    if(l!==lit){lit=l;const h=document.createElement("div");h.className="litera";h.textContent=l;frag.appendChild(h);}
+    const d=document.createElement("div");d.className="poz";
+    d.innerHTML='<span class="nm"><b></b><small></small></span><span class="lud"></span>';
+    d.querySelector("b").textContent=x.n;d.querySelector("small").textContent=opis(x);
+    d.querySelector(".lud").textContent=x.ludnosc&&x.rodzaj!=="w"?fmt(x.ludnosc):"";
+    d.onclick=()=>otworz(x.rodzaj+x.k);
+    frag.appendChild(d);
+  });
+  if(!zrodlo.length){const d=document.createElement("div");d.className="datastate";d.textContent="Nic nie znaleziono.";frag.appendChild(d);}
+  box.appendChild(frag);
+}
+$("szukaj").oninput=rysujListe;
+$("zakladki").onclick=e=>{const b=e.target.closest("button");if(!b)return;zakladka=b.dataset.t;document.querySelectorAll("#zakladki button").forEach(x=>x.classList.toggle("akt",x===b));rysujListe();$("lista").scrollTop=0;};
+
+/* ---------- karta jednostki ---------- */
+function pole(f){ // powierzchnia z geometrii, km²
+  const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;let a=0;
+  polys.forEach(pl=>pl.forEach((r,ri)=>{let s=0;for(let i=0,j=r.length-1;i<r.length;j=i++){const [x0,y0]=r[j],[x1,y1]=r[i];s+=(x0*y1-x1*y0)*Math.cos((y0+y1)/2*Math.PI/180);}a+=(ri?-1:1)*Math.abs(s)/2;}));
+  return a*111.32*110.57;
+}
+async function geometria(x){
+  if(x.rodzaj==="w"){const w=(await ZP.loadWoj()).find(v=>v.name===x.n);return w&&w.f;}
+  if(x.rodzaj==="p"){const p=(await ZP.loadPowiaty()).find(v=>v.k===x.k);return p&&p.f;}
+  const g=(await ZP.loadGminy()).find(v=>v.k===x.k);return g&&g.f;
+}
+async function otworz(id,bezHistorii){
+  const x=IDX[id];if(!x)return;
+  if(!bezHistorii)history.pushState(null,"","#"+id);
+  const W=$("kartaW"),kod=x.rodzaj==="g"?x.k.slice(0,6):x.k;
+  const p=x.rodzaj==="g"?powiat(x):null;
+  const herb=x.herb?"https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(x.herb)+"?width=120":(HERBY[x.n]||"");
+  const pow=x.powierzchnia;
+  W.innerHTML='<div class="zamknij"><button class="back" id="zamknij" aria-label="Zamknij">‹</button><span class="round">TERYT '+kod+'</span></div>'
+    +'<div class="okruchy"></div>'
+    +'<div class="tytul">'+(herb?'<img alt="" src="'+herb+'">':'')+'<div><h2></h2><small>'+(x.typ||(x.rodzaj==="w"?"województwo":""))+'</small></div></div>'
+    +'<div class="kafle"><div>Ludność<b>'+(x.ludnosc?fmt(x.ludnosc):"–")+'</b></div><div>Powierzchnia<b id="kPow">'+(pow?fmt(pow)+" km²":"…")+'</b></div>'
+    +'<div>Gęstość<b id="kGest">'+(pow&&x.ludnosc?fmt(x.ludnosc/pow)+" os./km²":"–")+'</b></div><div>Kod TERYT<b>'+kod+'</b></div></div>'
+    +'<div class="mapki"><svg class="ks" id="mKs" preserveAspectRatio="xMidYMid meet"></svg><svg class="pl" id="mPl" preserveAspectRatio="xMidYMid meet"></svg></div>'
+    +'<div id="wGrach"></div><div class="sekcja" id="dzieci"></div>'
+    +'<div class="akcje">'+(x.wiki?'<a class="big" target="_blank" rel="noopener" href="'+x.wiki+'">Wikipedia</a>':'<a class="ghost" target="_blank" rel="noopener" href="https://pl.wikipedia.org/w/index.php?search='+encodeURIComponent(x.pelna)+'">Szukaj w Wikipedii</a>')+'</div>';
+  W.querySelector("h2").textContent=x.n;
+  // okruchy: województwo › powiat
+  const ok=W.querySelector(".okruchy"),dodajO=(t,idd)=>{const a=document.createElement("a");a.textContent=t;a.onclick=()=>otworz(idd);ok.appendChild(a);ok.insertAdjacentText("beforeend"," › ");};
+  if(x.rodzaj!=="w"){const wj=B.w.find(v=>v.k===x.k.slice(0,2));if(wj)dodajO("woj. "+wj.n,"w"+wj.k);}
+  if(p)dodajO(p.pelna,"p"+p.k);
+  ok.insertAdjacentText("beforeend",x.pelna);
+  // w grach
+  const gry=[];
+  if(RZEKI[x.n])gry.push('<div class="kafle" style="grid-template-columns:1fr"><div>Rzeka (Nad jaką rzeką?)<b>'+RZEKI[x.n]+'</b></div></div>');
+  if(MIEJSCA[x.n])gry.push('<div><img class="foto" alt="" src="'+MIEJSCA[x.n].img+'"><div class="foto-podpis">Fot. '+(MIEJSCA[x.n].autor||"")+', '+(MIEJSCA[x.n].licencja||"")+', Wikimedia Commons</div></div>');
+  $("wGrach").innerHTML=gry.join("");
+  // jednostki podrzędne
+  const dz=x.rodzaj==="w"?B.p.filter(v=>v.k.slice(0,2)===x.k):x.rodzaj==="p"?B.g.filter(v=>v.k.slice(0,4)===x.k):[];
+  if(dz.length){
+    $("dzieci").innerHTML='<h3>'+(x.rodzaj==="w"?"Powiaty":"Gminy")+' ('+dz.length+')</h3><div class="chipy"></div>';
+    const ch=$("dzieci").querySelector(".chipy");
+    dz.sort((a,b)=>kol.compare(a.n,b.n)).forEach(v=>{const a=document.createElement("a");a.textContent=v.n;a.onclick=()=>otworz(v.rodzaj+v.k);ch.appendChild(a);});
+  }
+  $("zamknij").onclick=()=>history.back();
+  $("karta").classList.add("otwarta");$("karta").scrollTop=0;
+  // mapki
+  const [f,woje]=await Promise.all([geometria(x),ZP.loadWoj()]);
+  if(!f)return;
+  const P=ZP.projection([f],300,10);$("mKs").setAttribute("viewBox","0 0 300 "+P.H.toFixed(0));$("mKs").innerHTML='<path d="'+P.path(f.geometry)+'"/>';
+  const PL=ZP.projection(woje.map(w=>w.f),300,6);
+  let s=woje.map(w=>'<path class="'+(x.rodzaj==="w"&&w.name===x.n?"ja":"")+'" d="'+PL.path(w.f.geometry)+'"/>').join("");
+  if(x.rodzaj!=="w"){
+    let b=[1e9,1e9,-1e9,-1e9];const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
+    polys.forEach(pl=>pl[0].forEach(([a,c])=>{b[0]=Math.min(b[0],a);b[1]=Math.min(b[1],c);b[2]=Math.max(b[2],a);b[3]=Math.max(b[3],c);}));
+    s+='<path class="ja" d="'+PL.path(f.geometry)+'"/><circle cx="'+PL.x((b[0]+b[2])/2).toFixed(1)+'" cy="'+PL.y((b[1]+b[3])/2).toFixed(1)+'" r="5"/>';
+  }
+  $("mPl").setAttribute("viewBox","0 0 300 "+PL.H.toFixed(0));$("mPl").innerHTML=s;
+  if(!pow){const a=pole(f);$("kPow").textContent=fmt(a)+" km²";if(x.ludnosc)$("kGest").textContent=fmt(x.ludnosc/a)+" os./km²";}
+}
+window.addEventListener("popstate",()=>{if(location.hash.length>2)otworz(location.hash.slice(1),true);else $("karta").classList.remove("otwarta");});
+laduj();ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

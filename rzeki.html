@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=14" />
+<link rel="stylesheet" href="wspolne.css?v=15" />
 <style>
 .target{flex:none;text-align:center}
 .target .kind{font-size:13px;color:var(--dim)}
@@ -80,19 +80,20 @@
 </main>
 </div>
 
-<script src="wspolne.js?v=14"></script>
+<script src="wspolne.js?v=15"></script>
 <script>
 const {$,shuffle,pick,fmt}=ZP;
 let DANE=[],P=null,base="",game=null,POLE=null;
 
 Promise.all([
   fetch("rzeki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).catch(()=>null),
-  ZP.loadWoj()
-]).then(([j,woj])=>{
+  ZP.loadWoj(),
+  ZP.poprawki()
+]).then(([j,woj,popr])=>{
   P=ZP.projection(woj.map(w=>w.f),500,8);
   base=woj.map(w=>'<path class="w" d="'+P.path(w.f.geometry)+'"/>').join("");
   if(!j||!j.miasta||j.miasta.length<50){$("datastate").textContent="Lista rzek jeszcze się nie zbudowała. Spróbuj później.";return;}
-  DANE=j.miasta;
+  DANE=ZP.popRzeki(j.miasta,popr);
   $("datastate").textContent=DANE.length+" miast z rzeką (lista z "+new Date(j.zbudowano).toLocaleDateString("pl-PL")+")";
   $("startBtn").disabled=false;refreshBest();
 });

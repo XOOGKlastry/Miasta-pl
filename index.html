@@ -47,6 +47,7 @@ h1{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:clamp(18px,5.2
 .plate span{flex:1;display:grid;place-items:center;color:#111;font:700 8px/1 "Space Grotesk",sans-serif}
 footer{font-size:10px;color:var(--dim);flex:none;text-align:center}
 @media (max-width:360px){.txt{font-size:11px}.ico{width:24px;height:24px}}
+.linki{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
 </style>
 </head>
 <body>
@@ -57,14 +58,14 @@ footer{font-size:10px;color:var(--dim);flex:none;text-align:center}
       <img src="icon.svg?v=14" width="36" height="36" alt="">
       <div><h1>PolskoZnawca</h1><span class="tag">Cudze chwalicie, a Polskę znacie?</span></div>
     </div>
-    <a href="statystyki.html">statystyki ›</a>
+    <span class="linki"><a href="encyklopedia.html">encyklopedia</a><a href="statystyki.html">statystyki</a></span>
   </header>
-  <a class="daily" href="dzis.html" id="daily">
-    <span><b id="dailyH">Wyzwanie dnia</b><small id="dailyS">Pięć pytań, ten sam zestaw dla wszystkich</small></span>
+  <a class="daily" href="wyzwanie.html" id="daily">
+    <span><b id="dailyH">Wyzwanie dnia</b><small id="dailyS">Sześć pytań, ten sam zestaw dla wszystkich</small></span>
     <span class="st" id="dailyR">›</span>
   </a>
-  <a class="daily turniej" href="turniej.html">
-    <span><b>Turniej</b><small>Pięć konkurencji po kolei, jeden wynik</small></span>
+  <a class="daily turniej" href="wyzwanie.html?tryb=turniej">
+    <span><b>Turniej</b><small>Sześć konkurencji, dwanaście pytań, wynik do udostępnienia</small></span>
     <span class="st">🏆</span>
   </a>
   <nav class="games">
@@ -96,7 +97,7 @@ try{
     document.getElementById("dailyR").style.fontSize="14px";
   }else if(ser.n>0){document.getElementById("dailyS").textContent="Seria "+ser.n+", nie przerwij jej dzisiaj";}
 }catch(e){}
-fetch("woj.geojson?v=14").then(r=>r.json()).then(gj=>{
+fetch("woj.geojson?v=15").then(r=>r.json()).then(gj=>{
   const k=Math.cos(52*Math.PI/180),W=13.9,E=24.3,N=55.0,S=48.9;
   const s=Math.min(100/((E-W)*k),100/(N-S));
   const ox=(100-(E-W)*k*s)/2, oy=(100-(N-S)*s)/2;

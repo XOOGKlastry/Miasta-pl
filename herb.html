@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=14" />
+<link rel="stylesheet" href="wspolne.css?v=15" />
 <style>
 /* karta z herbem */
 .shield{flex:1;min-height:140px;position:relative;border-radius:var(--r);background:#E9EEEC;display:grid;place-items:center;overflow:hidden;
@@ -77,7 +77,7 @@
 
 </div>
 
-<script src="wspolne.js?v=14"></script>
+<script src="wspolne.js?v=15"></script>
 <script>
 const $=id=>document.getElementById(id);
 const norm=s=>s.toLowerCase()
@@ -183,7 +183,8 @@ async function loadData(){
   try{localStorage.setItem(CK,JSON.stringify({ts:Date.now(),wd:wdOk,list:HERBY}));}catch(e){}
   ready("pobrane dziś");
 }
-function ready(src){
+async function ready(src){
+  HERBY=ZP.popHerby(HERBY,await ZP.poprawki());
   $("datastate").textContent=HERBY.length+" miast z herbem ("+src+")";
   $("startBtn").disabled=false;
   refreshBest();

@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="robots" content="noindex" />
+<title>Panel admina · PolskoZnawca</title>
+<meta name="theme-color" content="#0C1A1D" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=15" />
+<style>
+.app{max-width:900px}
+.zakladki{display:flex;gap:6px;flex:none;overflow-x:auto}
+.zakladki button{flex:1;min-width:84px;min-height:44px;border-radius:12px;border:1px solid var(--line-2);background:var(--ink-2);font-weight:700;font-size:14px;white-space:nowrap}
+.zakladki button.akt{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.zakladki button .n{font-size:11px;background:var(--red);color:#fff;border-radius:999px;padding:1px 6px;margin-left:4px}
+.panel-z{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px}
+.pasek{display:flex;gap:8px;flex:none;flex-wrap:wrap}
+.pasek input,.pasek select{flex:1;min-width:130px;min-height:44px}
+.przewin{flex:1;min-height:0;overflow:auto}
+.status{flex:none;font-size:13px;color:var(--dim);min-height:18px}
+.status b{color:var(--gold)}
+.zapis{flex:none;display:flex;gap:8px}
+.zapis button{flex:1;min-height:52px}
+/* zdjęcia */
+.miasto-nag{display:flex;align-items:center;gap:8px;flex:none}
+.miasto-nag h2{font-family:"Fraunces",serif;font-size:24px;margin:0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.miasto-nag button{min-height:42px;padding:0 12px}
+.siatka{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-content:start}
+.karta{position:relative;border-radius:14px;overflow:hidden;background:var(--ink-2);border:2px solid var(--line);display:flex;flex-direction:column;transition:border-color .2s,opacity .2s}
+.karta img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;background:#10292c;cursor:zoom-in}
+.karta .opis{font-size:11px;color:var(--dim);padding:5px 7px;line-height:1.3;overflow-wrap:anywhere;flex:1}
+.karta .opis b{color:var(--paper)}
+.karta .przyc{display:flex;border-top:1px solid var(--line)}
+.karta .przyc button{flex:1;min-height:44px;border:none;background:none;font-size:19px;font-weight:800}
+.karta .przyc .tak{color:var(--ok)}.karta .przyc .nie{color:var(--red)}
+.karta.wybrane{border-color:var(--ok);box-shadow:0 0 0 2px rgba(93,202,165,.35)}
+.karta.odrzucone{opacity:.3}
+.karta .odznaka{position:absolute;left:6px;top:6px;background:rgba(10,24,27,.85);border-radius:999px;padding:2px 8px;font-size:11px;color:var(--gold)}
+.dodaj{display:flex;gap:6px;flex:none}
+.dodaj input{flex:1;min-width:0;min-height:44px}
+/* listy */
+.wiersz{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}
+.wiersz img{width:38px;height:44px;object-fit:contain;flex:none;background:#E9EEEC;border-radius:6px}
+.wiersz .nm{flex:1;min-width:0}
+.wiersz .nm b{display:block;font-size:15px}
+.wiersz .nm small{color:var(--dim);font-size:12px}
+.wiersz input{width:44%;min-height:40px;font-size:15px}
+.wiersz.zmienione{background:rgba(242,193,78,.07)}
+.wiersz.usuniete{opacity:.45;text-decoration:line-through}
+.wiersz button{min-height:40px;padding:0 10px;border-radius:10px;border:1px solid var(--line-2);background:var(--ink-2);font-size:13px}
+.mini-lista{display:flex;flex-direction:column}
+#pelne{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.92);display:grid;place-items:center}
+#pelne img{max-width:100%;max-height:100%}
+.info{background:var(--ink-2);border:1px solid var(--line-2);border-radius:14px;padding:12px 14px;font-size:14px;color:var(--dim);line-height:1.55}
+.info b{color:var(--paper)}
+.info ol{margin:6px 0 0;padding-left:20px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <a class="back" href="./" aria-label="Wróć">‹</a>
+  <h1>Panel admina</h1>
+  <span class="round" id="polaczenie">…</span>
+</header>
+
+<div class="zakladki" id="zakladki">
+  <button data-z="zdjecia" class="akt">Zdjęcia</button>
+  <button data-z="rzeki">Rzeki</button>
+  <button data-z="herby">Herby</button>
+  <button data-z="ustawienia">Połączenie</button>
+</div>
+
+<main>
+  <!-- ZDJĘCIA -->
+  <section class="panel-z" id="z-zdjecia">
+    <div class="pasek">
+      <input id="zSzukaj" type="text" placeholder="Szukaj miasta…" />
+      <select id="zFiltr">
+        <option value="wszystkie">wszystkie miasta</option>
+        <option value="bez">bez zdjęć w grze</option>
+        <option value="z">ze zdjęciami w grze</option>
+      </select>
+    </div>
+    <div class="miasto-nag">
+      <button class="ghost" id="zPoprz">‹</button>
+      <h2 id="zNazwa">…</h2>
+      <button class="ghost" id="zNast">›</button>
+    </div>
+    <div class="status" id="zInfo"></div>
+    <div class="przewin"><div class="siatka" id="zSiatka"></div></div>
+    <div class="dodaj"><input id="zDodaj" type="text" placeholder="Dodaj z Commons: adres File:… albo nazwa pliku" /><button class="ghost" id="zDodajBtn">Dodaj</button></div>
+  </section>
+
+  <!-- RZEKI -->
+  <section class="panel-z hidden" id="z-rzeki">
+    <div class="pasek"><input id="rSzukaj" type="text" placeholder="Szukaj miasta albo rzeki…" />
+      <select id="rFiltr"><option value="wszystkie">wszystkie</option><option value="zmienione">tylko poprawione</option></select></div>
+    <div class="status">Popraw nazwę rzeki albo usuń miasto z gry. Zmiany działają w grze od razu po zapisie.</div>
+    <div class="przewin"><div class="mini-lista" id="rLista"></div></div>
+  </section>
+
+  <!-- HERBY -->
+  <section class="panel-z hidden" id="z-herby">
+    <div class="pasek"><input id="hSzukaj" type="text" placeholder="Szukaj miasta…" />
+      <select id="hFiltr"><option value="wszystkie">wszystkie</option><option value="usuniete">tylko usunięte</option></select></div>
+    <div class="status">Usuń herb, który jest błędny albo nieczytelny. Zmiany działają w grze od razu po zapisie.</div>
+    <div class="przewin"><div class="mini-lista" id="hLista"></div></div>
+  </section>
+
+  <!-- POŁĄCZENIE -->
+  <section class="panel-z hidden" id="z-ustawienia">
+    <div class="info">
+      <b>Zapis prosto do repozytorium.</b> Panel zapisuje zmiany w GitHubie Twoim kluczem; klucz zostaje tylko w tej przeglądarce.
+      <ol>
+        <li>Wejdź na <b>github.com/settings/personal-access-tokens/new</b>.</li>
+        <li>Repository access: <b>Only select repositories</b>, wybierz <b>Miasta-pl</b>.</li>
+        <li>Repository permissions: <b>Contents: Read and write</b>. Wygaśnięcie np. 90 dni.</li>
+        <li>Wklej klucz poniżej i naciśnij „Sprawdź”.</li>
+      </ol>
+    </div>
+    <label class="field"><span>Repozytorium</span><input id="uRepo" type="text" value="XOOGKlastry/Miasta-pl" /></label>
+    <label class="field"><span>Klucz dostępu (github_pat_…)</span><input id="uToken" type="text" autocomplete="off" placeholder="github_pat_…" /></label>
+    <div class="zapis"><button class="ghost" id="uUsun">Usuń klucz z tej przeglądarki</button><button class="big" id="uSprawdz">Sprawdź i zapamiętaj</button></div>
+    <div class="status" id="uStan"></div>
+  </section>
+
+  <div class="status" id="zmiany"></div>
+  <div class="zapis">
+    <button class="ghost" id="pobierzBtn">Pobierz pliki</button>
+    <button class="big" id="zapiszBtn">Zapisz w grze</button>
+  </div>
+</main>
+</div>
+
+<script src="wspolne.js?v=15"></script>
+<script>
+const {$}=ZP;
+const L={token:"admin-token",repo:"admin-repo",szkic:"admin-szkic-v1"};
+let KAND=[],WYBOR={wybrane:{},odrzucone:[]},POPR={rzeki:{},herby:{}},RZEKI=[],HERBY=[],zmian=0;
+const mini=(p,w)=>"https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(p)+"?width="+(w||330);
+
+/* ---------- GitHub ---------- */
+const repo=()=>($("uRepo").value||"XOOGKlastry/Miasta-pl").trim();
+const token=()=>localStorage.getItem(L.token)||"";
+async function gh(sciezka,opts){
+  const r=await fetch("https://api.github.com/repos/"+repo()+"/contents/"+sciezka,Object.assign({headers:{Authorization:"Bearer "+token(),Accept:"application/vnd.github+json"}},opts||{}));
+  return r;
+}
+function b64(tekst){const b=new TextEncoder().encode(tekst);let s="";b.forEach(x=>s+=String.fromCharCode(x));return btoa(s);}
+async function zapiszPlik(sciezka,tekst,opis){
+  const g=await gh(sciezka);let sha=null;
+  if(g.ok)sha=(await g.json()).sha;else if(g.status!==404)throw new Error("GitHub "+g.status);
+  const r=await gh(sciezka,{method:"PUT",body:JSON.stringify({message:opis,content:b64(tekst),sha:sha||undefined})});
+  if(!r.ok)throw new Error("GitHub "+r.status+" "+(await r.text()).slice(0,120));
+}
+async function sprawdz(){
+  if(!token()){$("polaczenie").textContent="bez zapisu";return false;}
+  try{
+    const r=await fetch("https://api.github.com/repos/"+repo(),{headers:{Authorization:"Bearer "+token()}});
+    const j=await r.json();
+    const ok=r.ok&&j.permissions&&j.permissions.push;
+    $("polaczenie").textContent=ok?"połączono ✓":"brak uprawnień";
+    return ok;
+  }catch(e){$("polaczenie").textContent="błąd sieci";return false;}
+}
+
+/* ---------- wczytanie ---------- */
+async function wczytaj(){
+  const pob=(u,d)=>fetch(u,{cache:"no-cache"}).then(r=>r.ok?r.json():d).catch(()=>d);
+  const [k,w,p,rz,he]=await Promise.all([pob("kandydaci.json",{miasta:[]}),pob("narzedzia/zdjecia-wybor.json",{}),pob("poprawki.json",{}),pob("rzeki.json",{miasta:[]}),pob("herby.json",{miasta:[]})]);
+  KAND=k.miasta||[];
+  WYBOR={wybrane:w.wybrane||{},odrzucone:w.odrzucone||[]};
+  POPR={rzeki:(p&&p.rzeki)||{},herby:(p&&p.herby)||{}};
+  // niezapisany szkic z tej przeglądarki ma pierwszeństwo
+  try{const s=JSON.parse(localStorage.getItem(L.szkic)||"null");if(s){WYBOR=s.wybor;POPR=s.popr;zmian=s.zmian||0;}}catch(e){}
+  RZEKI=rz.miasta||[];HERBY=he.miasta||[];
+  Object.keys(WYBOR.wybrane).forEach(n=>{if(!KAND.some(m=>m.n===n))KAND.push({n,pop:0,kandydaci:[]});});
+  zFiltruj();rRysuj();hRysuj();pokazZmiany();
+}
+function szkic(){zmian++;try{localStorage.setItem(L.szkic,JSON.stringify({wybor:WYBOR,popr:POPR,zmian}));}catch(e){}pokazZmiany();}
+function pokazZmiany(){
+  $("zmiany").innerHTML=zmian?"Niezapisane zmiany: <b>"+zmian+"</b>":"Wszystko zapisane.";
+  document.querySelector('[data-z="zdjecia"]').innerHTML="Zdjęcia";
+}
+
+/* ---------- zakładki ---------- */
+$("zakladki").onclick=e=>{
+  const b=e.target.closest("button");if(!b)return;
+  document.querySelectorAll("#zakladki button").forEach(x=>x.classList.toggle("akt",x===b));
+  ["zdjecia","rzeki","herby","ustawienia"].forEach(z=>$("z-"+z).classList.toggle("hidden",z!==b.dataset.z));
+};
+
+/* ---------- ZDJĘCIA ---------- */
+let zLista=[],zIx=0;
+function zFiltruj(){
+  const q=ZP.norm($("zSzukaj").value),f=$("zFiltr").value;
+  zLista=KAND.filter(m=>(!q||ZP.norm(m.n).includes(q))&&(f==="wszystkie"||(f==="bez"?!(WYBOR.wybrane[m.n]||[]).length:(WYBOR.wybrane[m.n]||[]).length)));
+  zIx=Math.min(zIx,Math.max(0,zLista.length-1));zRysuj();
+}
+function zRysuj(){
+  const m=zLista[zIx];
+  const wGrze=Object.keys(WYBOR.wybrane).length;
+  if(!m){$("zNazwa").textContent="Brak miast";$("zSiatka").innerHTML="";$("zInfo").textContent="";return;}
+  $("zNazwa").textContent=m.n;
+  const wyb=WYBOR.wybrane[m.n]||[],odr=new Set(WYBOR.odrzucone);
+  $("zInfo").innerHTML=(zIx+1)+" z "+zLista.length+(m.pop?" · "+m.pop.toLocaleString("pl-PL")+" mieszk.":"")+" · w grze: <b>"+wyb.length+"</b> zdj. · miast ze zdjęciami: "+wGrze;
+  const znane=new Set(m.kandydaci.map(k=>k.plik));
+  const pliki=[...wyb.filter(p=>!znane.has(p)).map(p=>({plik:p})),...m.kandydaci];
+  pliki.sort((a,b)=>(wyb.indexOf(b.plik)>=0)-(wyb.indexOf(a.plik)>=0));
+  const s=$("zSiatka");s.innerHTML="";
+  pliki.forEach(k=>{
+    const d=document.createElement("div");
+    d.className="karta"+(wyb.indexOf(k.plik)>=0?" wybrane":"")+(odr.has(k.plik)?" odrzucone":"");
+    d.innerHTML='<img loading="lazy" alt=""><div class="opis"></div><div class="przyc"><button class="tak" title="Do gry">✓</button><button class="nie" title="Odrzuć na zawsze">✗</button></div>';
+    const im=d.querySelector("img");im.src=mini(k.plik);
+    im.onerror=()=>{im.style.opacity=.2;};
+    im.onclick=()=>{const o=document.createElement("div");o.id="pelne";o.innerHTML='<img alt="">';o.querySelector("img").src=mini(k.plik,1280);o.onclick=()=>o.remove();document.body.appendChild(o);};
+    d.querySelector(".opis").innerHTML=(k.szer?'<b>'+k.szer+'×'+k.wys+'</b> · ':'')+(k.autor||k.plik).slice(0,60)+(k.licencja?" · "+k.licencja:"");
+    if(k.jakosc)d.insertAdjacentHTML("beforeend",'<span class="odznaka">★ wyróżnione</span>');
+    d.querySelector(".tak").onclick=()=>{
+      const l=WYBOR.wybrane[m.n]=WYBOR.wybrane[m.n]||[];const i=l.indexOf(k.plik);
+      if(i>=0)l.splice(i,1);else{l.push(k.plik);WYBOR.odrzucone=WYBOR.odrzucone.filter(x=>x!==k.plik);}
+      if(!l.length)delete WYBOR.wybrane[m.n];
+      szkic();zRysuj();
+    };
+    d.querySelector(".nie").onclick=()=>{
+      const i=WYBOR.odrzucone.indexOf(k.plik);
+      if(i>=0)WYBOR.odrzucone.splice(i,1);
+      else{WYBOR.odrzucone.push(k.plik);const l=WYBOR.wybrane[m.n];if(l){const j=l.indexOf(k.plik);if(j>=0)l.splice(j,1);if(!l.length)delete WYBOR.wybrane[m.n];}}
+      szkic();zRysuj();
+    };
+    s.appendChild(d);
+  });
+  if(!pliki.length)s.innerHTML='<div class="datastate">Brak kandydatów. Dodaj zdjęcie z Commons poniżej.</div>';
+}
+$("zSzukaj").oninput=zFiltruj;$("zFiltr").onchange=zFiltruj;
+$("zPoprz").onclick=()=>{zIx=Math.max(0,zIx-1);zRysuj();};
+$("zNast").onclick=()=>{zIx=Math.min(zLista.length-1,zIx+1);zRysuj();};
+$("zDodajBtn").onclick=()=>{
+  const m=zLista[zIx];let v=$("zDodaj").value.trim();if(!m||!v)return;
+  v=decodeURIComponent(v.replace(/^.*\/wiki\//,"").replace(/^(File|Plik):/i,"").split("#")[0]).replace(/_/g," ");
+  const l=WYBOR.wybrane[m.n]=WYBOR.wybrane[m.n]||[];if(l.indexOf(v)<0)l.push(v);
+  $("zDodaj").value="";szkic();zRysuj();
+};
+
+/* ---------- RZEKI ---------- */
+function rRysuj(){
+  const q=ZP.norm($("rSzukaj").value),f=$("rFiltr").value,box=$("rLista");
+  const lista=RZEKI.filter(c=>(!q||ZP.norm(c.n).includes(q)||ZP.norm(c.rzeka).includes(q))&&(f==="wszystkie"||POPR.rzeki[c.n]!==undefined)).slice(0,300);
+  box.innerHTML="";
+  lista.forEach(c=>{
+    const p=POPR.rzeki[c.n],d=document.createElement("div");
+    d.className="wiersz"+(p!==undefined?(p===""?" usuniete zmienione":" zmienione"):"");
+    d.innerHTML='<span class="nm"><b></b><small></small></span><input type="text"><button>'+(p===""?"Przywróć":"Usuń")+'</button>';
+    d.querySelector("b").textContent=c.n;
+    d.querySelector("small").textContent=(c.pop?c.pop.toLocaleString("pl-PL")+" mieszk. · ":"")+"było: "+c.rzeka;
+    const inp=d.querySelector("input");inp.value=p!==undefined&&p!==""?p:c.rzeka;
+    inp.onchange=()=>{const v=inp.value.trim();if(v===c.rzeka||!v)delete POPR.rzeki[c.n];else POPR.rzeki[c.n]=v;szkic();rRysuj();};
+    d.querySelector("button").onclick=()=>{if(p==="")delete POPR.rzeki[c.n];else POPR.rzeki[c.n]="";szkic();rRysuj();};
+    box.appendChild(d);
+  });
+  if(!lista.length)box.innerHTML='<div class="datastate">Nic nie pasuje.</div>';
+}
+$("rSzukaj").oninput=rRysuj;$("rFiltr").onchange=rRysuj;
+
+/* ---------- HERBY ---------- */
+function hRysuj(){
+  const q=ZP.norm($("hSzukaj").value),f=$("hFiltr").value,box=$("hLista");
+  const lista=HERBY.filter(c=>(!q||ZP.norm(c.n).includes(q))&&(f==="wszystkie"||POPR.herby[c.n]===false)).slice(0,300);
+  box.innerHTML="";
+  lista.forEach(c=>{
+    const usun=POPR.herby[c.n]===false,d=document.createElement("div");
+    d.className="wiersz"+(usun?" usuniete zmienione":"");
+    d.innerHTML='<img loading="lazy" alt=""><span class="nm"><b></b><small></small></span><button>'+(usun?"Przywróć":"Usuń z gry")+'</button>';
+    d.querySelector("img").src=c.img;
+    d.querySelector("b").textContent=c.n;
+    d.querySelector("small").textContent=(c.pop?c.pop.toLocaleString("pl-PL")+" mieszk. · ":"")+(c.plik||"");
+    d.querySelector("button").onclick=()=>{if(usun)delete POPR.herby[c.n];else POPR.herby[c.n]=false;szkic();hRysuj();};
+    box.appendChild(d);
+  });
+  if(!lista.length)box.innerHTML='<div class="datastate">Nic nie pasuje.</div>';
+}
+$("hSzukaj").oninput=hRysuj;$("hFiltr").onchange=hRysuj;
+
+/* ---------- zapis ---------- */
+const plikWybor=()=>JSON.stringify({opis:"Wybór zdjęć do gry „Co to za miasto?”. Edytowany w panelu admina.",wybrane:WYBOR.wybrane,odrzucone:[...new Set(WYBOR.odrzucone)].sort()},null,1);
+const plikPopr=()=>JSON.stringify({opis:"Poprawki odpowiedzi z panelu admina. rzeki: miasto → poprawna rzeka (pusty tekst = usuń miasto z gry); herby: miasto → false (usuń herb z gry).",rzeki:POPR.rzeki,herby:POPR.herby},null,1);
+$("zapiszBtn").onclick=async()=>{
+  if(!(await sprawdz())){ZP.komunikat("Najpierw połącz panel z GitHubem w zakładce „Połączenie”.");document.querySelector('[data-z="ustawienia"]').click();return;}
+  $("zapiszBtn").disabled=true;$("zmiany").textContent="Zapisuję…";
+  try{
+    await zapiszPlik("poprawki.json",plikPopr(),"Panel admina: poprawki odpowiedzi");
+    await zapiszPlik("narzedzia/zdjecia-wybor.json",plikWybor(),"Panel admina: wybór zdjęć");
+    zmian=0;localStorage.removeItem(L.szkic);pokazZmiany();
+    ZP.komunikat("Zapisano. Rzeki i herby działają od razu, nowe zdjęcia pojawią się w grze za kilka minut.",6000);
+  }catch(e){$("zmiany").textContent="Nie udało się zapisać: "+e.message;}
+  $("zapiszBtn").disabled=false;
+};
+$("pobierzBtn").onclick=()=>{
+  [["zdjecia-wybor.json",plikWybor()],["poprawki.json",plikPopr()]].forEach(([n,t])=>{
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"application/json"}));a.download=n;document.body.appendChild(a);a.click();a.remove();
+  });
+};
+$("uSprawdz").onclick=async()=>{
+  const t=$("uToken").value.trim();if(t)localStorage.setItem(L.token,t);
+  localStorage.setItem(L.repo,repo());
+  const ok=await sprawdz();
+  $("uStan").textContent=ok?"Połączono. Możesz zapisywać zmiany.":"Klucz nie ma prawa zapisu do tego repozytorium.";
+  $("uToken").value="";
+};
+$("uUsun").onclick=()=>{localStorage.removeItem(L.token);sprawdz();$("uStan").textContent="Klucz usunięty z tej przeglądarki.";};
+$("uRepo").value=localStorage.getItem(L.repo)||"XOOGKlastry/Miasta-pl";
+sprawdz();wczytaj();ZP.fitViewport();
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-name: Zdjęcia miast: wybór z panelu
+name: "Zdjęcia miast: wybór z panelu"
 
 on:
   workflow_dispatch:
