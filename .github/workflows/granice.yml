@@ -12,7 +12,7 @@ permissions:
 
 # jeden zapis do repo naraz, żeby automaty sobie nie przeszkadzały
 concurrency:
-  group: zapis-danych
+  group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:
@@ -34,4 +34,4 @@ jobs:
           git config user.email "github-actions@users.noreply.github.com"
           git add narzedzia/gminy.log
           [ -f gminy.topojson ] && git add gminy.topojson || true
-          git diff --cached --quiet || (git commit -m "Granice gmin: PRG" && git pull --rebase && git push)
+          if ! git diff --cached --quiet; then git commit -m "Granice gmin: PRG"; for i in 1 2 3 4 5; do git pull --rebase -X theirs && git push && break; sleep $((i*7)); done; fi

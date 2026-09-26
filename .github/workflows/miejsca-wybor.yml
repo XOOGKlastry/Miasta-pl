@@ -5,12 +5,13 @@ on:
   push:
     paths:
       - "narzedzia/zdjecia-wybor.json"
+      - ".github/workflows/miejsca-wybor.yml"
 
 permissions:
   contents: write
 
 concurrency:
-  group: zapis-danych
+  group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:
@@ -24,12 +25,12 @@ jobs:
           python-version: "3.12"
       - run: pip install pillow
       - name: Zdjęcia
-        run: python narzedzia/pobierz_miejsca.py --tylko-gra 2>&1 | tee narzedzia/miejsca.log
+        run: python narzedzia/pobierz_miejsca.py --tylko-gra 2>&1 | tee narzedzia/miejsca-wybor.log
       - name: Zapisz zmiany
         if: always()
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add narzedzia/miejsca.log
+          git add narzedzia/miejsca-wybor.log
           [ -f miejsca.json ] && git add -A miejsca.json miejsca || true
-          git diff --cached --quiet || (git commit -m "Zdjęcia miast: aktualizacja" && git pull --rebase && git push)
+          if ! git diff --cached --quiet; then git commit -m "Zdjęcia miast: aktualizacja"; for i in 1 2 3 4 5; do git pull --rebase -X theirs && git push && break; sleep $((i*7)); done; fi

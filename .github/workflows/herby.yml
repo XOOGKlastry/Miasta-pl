@@ -15,7 +15,7 @@ permissions:
 
 # jeden zapis do repo naraz, żeby automaty sobie nie przeszkadzały
 concurrency:
-  group: zapis-danych
+  group: ${{ github.workflow }}
   cancel-in-progress: false
 
 jobs:
@@ -38,4 +38,4 @@ jobs:
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git add herby.json herby rzeki.json rzeki-geo.json narzedzia/rzeki.log
-          git diff --cached --quiet || (git commit -m "Dane gier: aktualizacja" && git pull --rebase && git push)
+          if ! git diff --cached --quiet; then git commit -m "Dane gier: aktualizacja"; for i in 1 2 3 4 5; do git pull --rebase -X theirs && git push && break; sleep $((i*7)); done; fi
