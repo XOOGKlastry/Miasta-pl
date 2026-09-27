@@ -3,6 +3,15 @@
  "sezon": "2026/27",
  "kluby": [
   {
+   "miasto": "Tychy",
+   "klub": "Znicz",
+   "pelna": "Znicz Wartogłowiec",
+   "liga": "niższe ligi",
+   "aliasy": [],
+   "lat": 50.114397,
+   "lon": 18.9965933
+  },
+  {
    "miasto": "Warszawa",
    "klub": "Legia",
    "pelna": "Legia Warszawa",
@@ -323,7 +332,7 @@
    "liga": "1. liga",
    "aliasy": [],
    "lat": 50.04,
-   "lon": 22.0
+   "lon": 22
   },
   {
    "miasto": "Głogów",
@@ -386,7 +395,7 @@
    "liga": "2. liga",
    "aliasy": [],
    "lat": 53.12,
-   "lon": 18.0
+   "lon": 18
   },
   {
    "miasto": "Bielsko-Biała",
@@ -498,7 +507,7 @@
     "Resovia"
    ],
    "lat": 50.04,
-   "lon": 22.0
+   "lon": 22
   },
   {
    "miasto": "Kraków",
