@@ -1,5 +1,5 @@
 // Działa offline, ale zawsze najpierw próbuje sieci, żeby poprawki docierały od razu.
-const CACHE = "polskoznawca-v20";
+const CACHE = "polskoznawca-v21";
 const ASSETS = [
   "./", "./index.html", "./miasta.html", "./zdjecie.html", "./herb.html", "./gdzie.html", "./ksztalt.html",
   "./wiecej.html", "./sasiedzi.html", "./dzis.html", "./wyzwanie.html", "./kluby.html", "./encyklopedia.html", "./powiaty.html", "./rzeki.html", "./statystyki.html", "./slepa.html", "./miasto.html", "./turniej.html", "./tablice.html",
