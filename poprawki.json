@@ -1,5 +1,7 @@
 {
  "opis": "Poprawki odpowiedzi z panelu admina. rzeki: miasto → poprawna rzeka (pusty tekst = usuń miasto z gry); herby: miasto → false (usuń herb z gry).",
- "rzeki": {},
+ "rzeki": {
+  "Sosnowiec": "Czarna, Brynica"
+ },
  "herby": {}
 }
