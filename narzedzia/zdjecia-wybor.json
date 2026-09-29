@@ -1,5 +1,5 @@
 {
- "opis": "Wybór zdjęć do gry „Co to za miasto?”. Edytowany w panelu admina.",
+ "opis": "Wybór zdjęć do gry „Co to za miasto?”. Edytowany w panelu admina. wybrane: pliki z Commons; wlasne: zdjęcia wgrane w panelu; z_adresow: obrazki z innych stron (pobiera je automat).",
  "wybrane": {
   "Poznań": [
    "2022-07-07 Renovation of the Old Market Square in Poznań 04.jpg",
@@ -200,10 +200,6 @@
   "Ełk": [
    "Ełk rynek 24.09.2017-1s.jpg",
    "Ełk - Ratusz.jpg"
-  ],
-  "Zamość": [
-   "Zamość, rynek - panoramio.jpg",
-   "Zamość rynek maj 2026.jpg"
   ],
   "Chełm": [
    "Chełm, Plac Łuczkowskiego - panoramio.jpg",
@@ -540,6 +536,19 @@
    "Ratibor-rynek.jpg"
   ]
  },
+ "wlasne": {
+  "Zamość": [
+   {
+    "img": "miejsca/wlasne/zamosc-mumxblvh.webp",
+    "autor": "zdjęcie własne",
+    "zrodlo": "zdjęcie przesłane do gry",
+    "lat": 50.7171,
+    "lon": 23.2526,
+    "pop": 60148
+   }
+  ]
+ },
+ "z_adresow": {},
  "odrzucone": [
   "12.07.2023 Old Market Square in Łódź, Poland.jpg",
   "150913 Town hall in Białystok - 01.jpg",
