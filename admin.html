@@ -40,6 +40,11 @@
 .karta.odrzucone{opacity:.3}
 .karta .odznaka{position:absolute;left:6px;top:6px;background:rgba(10,24,27,.85);border-radius:999px;padding:2px 8px;font-size:11px;color:var(--gold)}
 .dodaj{display:flex;gap:6px;flex:none}
+.dodaj3{display:flex;gap:8px;flex:none}
+.dodaj3>*{flex:1;min-height:50px;display:grid;place-items:center;cursor:pointer}
+.dodaj-plik{font-size:15px}
+.przewin.upusc{outline:2px dashed var(--gold);outline-offset:-4px;border-radius:14px}
+.karta .zrodlo{position:absolute;right:6px;top:6px;background:rgba(10,24,27,.85);border-radius:999px;padding:2px 8px;font-size:11px;color:var(--teal)}
 .dodaj input{flex:1;min-width:0;min-height:44px}
 /* listy */
 .wiersz{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px solid var(--line)}
@@ -93,7 +98,15 @@
     </div>
     <div class="status" id="zInfo"></div>
     <div class="przewin"><div class="siatka" id="zSiatka"></div></div>
-    <div class="dodaj"><input id="zDodaj" type="text" placeholder="Dodaj z Commons: adres File:… albo nazwa pliku" /><button class="ghost" id="zDodajBtn">Dodaj</button></div>
+    <div class="dodaj3">
+      <label class="big dodaj-plik">📷 Wgraj zdjęcie<input id="zPlik" type="file" accept="image/*" multiple hidden></label>
+      <button class="ghost" id="zPokazLink">🔗 Z linku</button>
+    </div>
+    <div class="dodaj hidden" id="zLinkBox">
+      <input id="zDodaj" type="text" placeholder="Wklej link: strona z Commons, adres obrazka z dowolnej strony…" />
+      <button class="ghost" id="zDodajBtn">Dodaj</button>
+    </div>
+    <div class="status" id="zWgr"></div>
   </section>
 
   <!-- RZEKI -->
@@ -183,10 +196,10 @@ async function wczytaj(){
   const [k,w,p,rz,he,kl]=await Promise.all([pob("kandydaci.json",{miasta:[]}),pob("narzedzia/zdjecia-wybor.json",{}),pob("poprawki.json",{}),pob("rzeki.json",{miasta:[]}),pob("herby.json",{miasta:[]}),pob("kluby.json",{kluby:[]})]);
   KLUBY=kl;
   KAND=k.miasta||[];
-  WYBOR={wybrane:w.wybrane||{},odrzucone:w.odrzucone||[]};
+  WYBOR={wybrane:w.wybrane||{},odrzucone:w.odrzucone||[],wlasne:w.wlasne||{},z_adresow:w.z_adresow||{}};
   POPR={rzeki:(p&&p.rzeki)||{},herby:(p&&p.herby)||{}};
   // niezapisany szkic z tej przeglądarki ma pierwszeństwo
-  try{const s=JSON.parse(localStorage.getItem(L.szkic)||"null");if(s){WYBOR=s.wybor;POPR=s.popr;zmian=s.zmian||0;if(s.kluby){KLUBY=s.kluby;KLUBY_ZM=true;}}}catch(e){}
+  try{const s=JSON.parse(localStorage.getItem(L.szkic)||"null");if(s){WYBOR=Object.assign({wlasne:{},z_adresow:{}},s.wybor);POPR=s.popr;zmian=s.zmian||0;if(s.kluby){KLUBY=s.kluby;KLUBY_ZM=true;}}}catch(e){}
   RZEKI=rz.miasta||[];HERBY=he.miasta||[];
   Object.keys(WYBOR.wybrane).forEach(n=>{if(!KAND.some(m=>m.n===n))KAND.push({n,pop:0,kandydaci:[]});});
   zFiltruj();rRysuj();hRysuj();kRysuj();pokazZmiany();
@@ -208,7 +221,8 @@ $("zakladki").onclick=e=>{
 let zLista=[],zIx=0;
 function zFiltruj(){
   const q=ZP.norm($("zSzukaj").value),f=$("zFiltr").value;
-  zLista=KAND.filter(m=>(!q||ZP.norm(m.n).includes(q))&&(f==="wszystkie"||(f==="bez"?!(WYBOR.wybrane[m.n]||[]).length:(WYBOR.wybrane[m.n]||[]).length)));
+  const ile=n=>(WYBOR.wybrane[n]||[]).length+(WYBOR.wlasne[n]||[]).length+(WYBOR.z_adresow[n]||[]).length;
+  zLista=KAND.filter(m=>(!q||ZP.norm(m.n).includes(q))&&(f==="wszystkie"||(f==="bez"?!ile(m.n):ile(m.n))));
   zIx=Math.min(zIx,Math.max(0,zLista.length-1));zRysuj();
 }
 function zRysuj(){
@@ -217,7 +231,7 @@ function zRysuj(){
   if(!m){$("zNazwa").textContent="Brak miast";$("zSiatka").innerHTML="";$("zInfo").textContent="";return;}
   $("zNazwa").textContent=m.n;
   const wyb=WYBOR.wybrane[m.n]||[],odr=new Set(WYBOR.odrzucone);
-  $("zInfo").innerHTML=(zIx+1)+" z "+zLista.length+(m.pop?" · "+m.pop.toLocaleString("pl-PL")+" mieszk.":"")+" · w grze: <b>"+wyb.length+"</b> zdj. · miast ze zdjęciami: "+wGrze;
+  $("zInfo").innerHTML=(zIx+1)+" z "+zLista.length+(m.pop?" · "+m.pop.toLocaleString("pl-PL")+" mieszk.":"")+" · w grze: <b>"+(wyb.length+(WYBOR.wlasne[m.n]||[]).length+(WYBOR.z_adresow[m.n]||[]).length)+"</b> zdj. · miast ze zdjęciami: "+wGrze;
   const znane=new Set(m.kandydaci.map(k=>k.plik));
   const pliki=[...wyb.filter(p=>!znane.has(p)).map(p=>({plik:p})),...m.kandydaci];
   pliki.sort((a,b)=>(wyb.indexOf(b.plik)>=0)-(wyb.indexOf(a.plik)>=0));
@@ -245,17 +259,78 @@ function zRysuj(){
     };
     s.appendChild(d);
   });
-  if(!pliki.length)s.innerHTML='<div class="datastate">Brak kandydatów. Dodaj zdjęcie z Commons poniżej.</div>';
+  // zdjęcia wgrane w panelu i z innych stron: na początku siatki
+  const dodatkowe=[...(WYBOR.wlasne[m.n]||[]).map(z=>({...z,rodzaj:"wlasne",src:PODGLAD[z.img]||z.img})),...(WYBOR.z_adresow[m.n]||[]).map(z=>({...z,rodzaj:"z_adresow",src:z.url}))];
+  dodatkowe.reverse().forEach(z=>{
+    const d=document.createElement("div");d.className="karta wybrane";
+    d.innerHTML='<img alt=""><span class="zrodlo">'+(z.rodzaj==="wlasne"?"wgrane":"z linku")+'</span><div class="opis"></div><div class="przyc"><button class="nie" title="Usuń z gry">✗ usuń</button></div>';
+    d.querySelector("img").src=z.src;
+    d.querySelector(".opis").textContent=(z.autor||"")+(z.zrodlo?" · "+z.zrodlo:"");
+    d.querySelector(".nie").onclick=()=>{const l=WYBOR[z.rodzaj][m.n];l.splice(l.findIndex(x=>(x.img||x.url)===(z.img||z.url)),1);if(!l.length)delete WYBOR[z.rodzaj][m.n];szkic();zRysuj();};
+    s.prepend(d);
+  });
+  if(!pliki.length&&!dodatkowe.length)s.innerHTML='<div class="datastate">Brak zdjęć. Wgraj własne albo wklej link.</div>';
 }
 $("zSzukaj").oninput=zFiltruj;$("zFiltr").onchange=zFiltruj;
 $("zPoprz").onclick=()=>{zIx=Math.max(0,zIx-1);zRysuj();};
 $("zNast").onclick=()=>{zIx=Math.min(zLista.length-1,zIx+1);zRysuj();};
+$("zPokazLink").onclick=()=>{$("zLinkBox").classList.toggle("hidden");$("zDodaj").focus();};
 $("zDodajBtn").onclick=()=>{
   const m=zLista[zIx];let v=$("zDodaj").value.trim();if(!m||!v)return;
+  if(/^https?:\/\//i.test(v)&&!/commons\.wikimedia\.org|wikipedia\.org\/wiki\/(Plik|File):/i.test(v)){
+    // dowolna strona: automat pobierze obrazek sam, bo przeglądarka często nie może
+    const autor=prompt("Autor albo źródło zdjęcia (pokaże się pod zdjęciem):",new URL(v).hostname.replace("www.",""))||"";
+    (WYBOR.z_adresow[m.n]=WYBOR.z_adresow[m.n]||[]).push({url:v,autor,zrodlo:new URL(v).hostname.replace("www.",""),lat:m.lat,lon:m.lon,pop:m.pop});
+    $("zDodaj").value="";szkic();zRysuj();
+    ZP.komunikat("Dodano. Obrazek pobierze automat po zapisie.");return;
+  }
   v=decodeURIComponent(v.replace(/^.*\/wiki\//,"").replace(/^(File|Plik):/i,"").split("#")[0]).replace(/_/g," ");
   const l=WYBOR.wybrane[m.n]=WYBOR.wybrane[m.n]||[];if(l.indexOf(v)<0)l.push(v);
   $("zDodaj").value="";szkic();zRysuj();
 };
+
+/* ---------- wgrywanie własnych zdjęć ---------- */
+const PODGLAD={};
+async function zmniejsz(plik){
+  const bmp=await createImageBitmap(plik);
+  const s=Math.min(1,1600/Math.max(bmp.width,bmp.height));
+  const c=document.createElement("canvas");c.width=Math.round(bmp.width*s);c.height=Math.round(bmp.height*s);
+  c.getContext("2d").drawImage(bmp,0,0,c.width,c.height);
+  let blob=await new Promise(ok=>c.toBlob(ok,"image/webp",0.82));
+  if(!blob||blob.type!=="image/webp")blob=await new Promise(ok=>c.toBlob(ok,"image/jpeg",0.85));
+  return blob;
+}
+async function wgraj(pliki){
+  const m=zLista[zIx];if(!m||!pliki.length)return;
+  if(!(await sprawdz())){ZP.komunikat("Najpierw połącz panel z GitHubem w zakładce „Połączenie”.");document.querySelector('[data-z="ustawienia"]').click();return;}
+  const autor=prompt("Autor zdjęcia (pokaże się pod zdjęciem w grze):","zdjęcie własne");if(autor===null)return;
+  let i=0;
+  for(const f of pliki){
+    i++;$("zWgr").textContent="Wgrywam "+i+" z "+pliki.length+"…";
+    try{
+      const blob=await zmniejsz(f),ext=blob.type==="image/webp"?"webp":"jpg";
+      const sciezka="miejsca/wlasne/"+ZP.norm(m.n).replace(/[^a-z0-9]+/g,"-")+"-"+Date.now().toString(36)+"."+ext;
+      const b=new Uint8Array(await blob.arrayBuffer());let bin="";for(let k=0;k<b.length;k+=8192)bin+=String.fromCharCode.apply(null,b.subarray(k,k+8192));
+      const r=await gh(sciezka,{method:"PUT",body:JSON.stringify({message:"Panel admina: zdjęcie "+m.n,content:btoa(bin)})});
+      if(!r.ok)throw new Error("GitHub "+r.status);
+      PODGLAD[sciezka]=URL.createObjectURL(blob);
+      (WYBOR.wlasne[m.n]=WYBOR.wlasne[m.n]||[]).push({img:sciezka,autor,zrodlo:"zdjęcie przesłane do gry",lat:m.lat,lon:m.lon,pop:m.pop});
+      szkic();zRysuj();
+    }catch(e){$("zWgr").textContent="Nie udało się wgrać "+f.name+": "+e.message;return;}
+  }
+  $("zWgr").textContent="Wgrano "+pliki.length+". Naciśnij „Zapisz w grze”, żeby zdjęcia trafiły do gry.";
+}
+$("zPlik").onchange=e=>{wgraj([...e.target.files]);e.target.value="";};
+// wklejanie ze schowka i przeciąganie na komputerze
+document.addEventListener("paste",e=>{
+  if($("z-zdjecia").classList.contains("hidden"))return;
+  const pl=[...(e.clipboardData||{}).items||[]].filter(x=>x.type.startsWith("image/")).map(x=>x.getAsFile());
+  if(pl.length){e.preventDefault();wgraj(pl);}
+});
+const strefa=document.querySelector("#z-zdjecia .przewin");
+strefa.addEventListener("dragover",e=>{e.preventDefault();strefa.classList.add("upusc");});
+strefa.addEventListener("dragleave",()=>strefa.classList.remove("upusc"));
+strefa.addEventListener("drop",e=>{e.preventDefault();strefa.classList.remove("upusc");wgraj([...e.dataTransfer.files].filter(f=>f.type.startsWith("image/")));});
 
 /* ---------- RZEKI ---------- */
 function rRysuj(){
@@ -320,7 +395,8 @@ async function wspolrzedne(){
 }
 
 /* ---------- zapis ---------- */
-const plikWybor=()=>JSON.stringify({opis:"Wybór zdjęć do gry „Co to za miasto?”. Edytowany w panelu admina.",wybrane:WYBOR.wybrane,odrzucone:[...new Set(WYBOR.odrzucone)].sort()},null,1);
+const plikWybor=()=>JSON.stringify({opis:"Wybór zdjęć do gry „Co to za miasto?”. Edytowany w panelu admina. wybrane: pliki z Commons; wlasne: zdjęcia wgrane w panelu; z_adresow: obrazki z innych stron (pobiera je automat).",
+  wybrane:WYBOR.wybrane,wlasne:WYBOR.wlasne,z_adresow:WYBOR.z_adresow,odrzucone:[...new Set(WYBOR.odrzucone)].sort()},null,1);
 const plikPopr=()=>JSON.stringify({opis:"Poprawki odpowiedzi z panelu admina. rzeki: miasto → poprawna rzeka (pusty tekst = usuń miasto z gry); herby: miasto → false (usuń herb z gry).",rzeki:POPR.rzeki,herby:POPR.herby},null,1);
 $("zapiszBtn").onclick=async()=>{
   if(!(await sprawdz())){ZP.komunikat("Najpierw połącz panel z GitHubem w zakładce „Połączenie”.");document.querySelector('[data-z="ustawienia"]').click();return;}

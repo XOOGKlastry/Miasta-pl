@@ -165,7 +165,7 @@ def main():
         k = json.load(open("kandydaci.json", encoding="utf-8"))["miasta"]
         cs = [{"n": c["n"], "lat": c["lat"], "lon": c["lon"], "pop": c["pop"], "qid": None} for c in k]
         meta = info(sorted({f for l in wybrane.values() for f in l}))
-        gra(cs, wybrane, odrzucone, meta)
+        gra(cs, wybrane, odrzucone, meta, wybor)
         return
     cs = miasta()
     print("miast:", len(cs))
@@ -206,22 +206,31 @@ def main():
         json.dump({"zbudowano": time.strftime("%Y-%m-%d"), "miasta": kand}, fh, ensure_ascii=False, separators=(",", ":"))
     print("kandydaci: miast", len(kand), "zdjęć", sum(len(k["kandydaci"]) for k in kand))
 
-    gra(cs, wybrane, odrzucone, meta)
+    gra(cs, wybrane, odrzucone, meta, wybor)
 
 
-def gra(cs, wybrane, odrzucone, meta):
-    """gra: tylko zdjęcia zatwierdzone przez człowieka"""
+def gra(cs, wybrane, odrzucone, meta, wybor=None):
+    """gra: tylko zdjęcia zatwierdzone przez człowieka.
+    Trzy źródła: pliki z Commons (wybrane), zdjęcia wgrane w panelu (wlasne, już leżą w miejsca/wlasne/)
+    i zdjęcia z dowolnych stron (z_adresow: automat pobiera je sam)."""
     import hashlib
     from PIL import Image
+    wybor = wybor or {}
+    wlasne = wybor.get("wlasne", {})
+    z_adresow = wybor.get("z_adresow", {})
     po_nazwie = {c["n"]: c for c in cs}
     wynik = []
-    for nazwa, pliki in wybrane.items():
+    for nazwa in sorted(set(wybrane) | set(wlasne) | set(z_adresow)):
         c = po_nazwie.get(nazwa)
         if not c:
-            print("nie znam miasta", nazwa, file=sys.stderr)
-            continue
+            # miasto spoza listy kandydatów: bierzemy współrzędne i ludność z wpisów panelu, jeśli są
+            z = (wlasne.get(nazwa) or z_adresow.get(nazwa) or [{}])[0]
+            if z.get("lat") is None:
+                print("nie znam miasta", nazwa, file=sys.stderr)
+                continue
+            c = {"n": nazwa, "lat": z["lat"], "lon": z["lon"], "pop": z.get("pop", 0)}
         zdj = []
-        for f in pliki:
+        for f in wybrane.get(nazwa, []):
             m = meta.get(f)
             if not m or f in odrzucone:
                 print("brak pliku w Commons", nazwa, f, file=sys.stderr)
@@ -237,13 +246,32 @@ def gra(cs, wybrane, odrzucone, meta):
                     print("pomijam", nazwa, f, e, file=sys.stderr)
                     continue
             zdj.append({"img": path, "plik": f, "autor": m["autor"], "licencja": m["licencja"]})
+        for z in wlasne.get(nazwa, []):
+            if os.path.exists(z.get("img", "")):
+                zdj.append({"img": z["img"], "plik": z["img"], "autor": z.get("autor") or "zdjęcie własne", "licencja": z.get("zrodlo") or ""})
+            else:
+                print("brak wgranego pliku", z.get("img"), file=sys.stderr)
+        for z in z_adresow.get(nazwa, []):
+            url = z.get("url", "")
+            path = "%s/%s-%s.webp" % (OUT, slug(nazwa), hashlib.md5(url.encode()).hexdigest()[:6])
+            if not os.path.exists(path):
+                try:
+                    obraz = Image.open(io.BytesIO(http(url, timeout=90))).convert("RGB")
+                    obraz.thumbnail((SZER, SZER))
+                    obraz.save(path, "WEBP", quality=80, method=6)
+                except Exception as e:
+                    print("nie udało się pobrać", nazwa, url, e, file=sys.stderr)
+                    continue
+            host = urllib.parse.urlparse(url).netloc.replace("www.", "")
+            zdj.append({"img": path, "plik": url, "autor": z.get("autor") or host, "licencja": z.get("zrodlo") or host})
         if zdj:
             wynik.append({"n": nazwa, "lat": c["lat"], "lon": c["lon"], "pop": c["pop"], "zdjecia": zdj})
     wynik.sort(key=lambda w: -w["pop"])
     uzyte = {z["img"] for w in wynik for z in w["zdjecia"]}
     for f in os.listdir(OUT):
-        if OUT + "/" + f not in uzyte:
-            os.remove(os.path.join(OUT, f))
+        sciezka = os.path.join(OUT, f)
+        if os.path.isfile(sciezka) and OUT + "/" + f not in uzyte:
+            os.remove(sciezka)
     with open("miejsca.json", "w", encoding="utf-8") as fh:
         json.dump({"zbudowano": time.strftime("%Y-%m-%d"), "miasta": wynik}, fh, ensure_ascii=False, separators=(",", ":"))
     print("gra: miast ze zdjęciami", len(wynik), "zdjęć", len(uzyte))

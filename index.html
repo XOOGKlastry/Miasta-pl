@@ -37,8 +37,8 @@ header>div:nth-child(2){min-width:0}
 .srodek::-webkit-scrollbar{display:none}
 
 /* wyzwanie dnia: jedyny głośny element */
-.dzien{position:relative;display:block;margin:4px 14px 10px;padding:14px 16px 12px;border-radius:22px;overflow:hidden;
-  background:linear-gradient(135deg,#F2C14E 0%,#F6A94A 55%,#E4485A 130%);color:#2A1804;min-height:118px}
+.dzien{position:relative;display:block;margin:4px 14px 10px;padding:13px 16px 12px;border-radius:22px;overflow:hidden;
+  background:linear-gradient(135deg,#F2C14E 0%,#F6A94A 55%,#E4485A 130%);color:#2A1804;min-height:108px}
 .dzien svg.kontur{position:absolute;right:-18px;top:-10px;width:170px;height:170px;opacity:.28}
 .dzien svg.kontur path{fill:#2A1804;stroke:none}
 .dzien .nr{font-size:13px;font-weight:700;opacity:.8}
@@ -47,35 +47,30 @@ header>div:nth-child(2){min-width:0}
 .dzien .akcja{position:absolute;right:14px;bottom:14px;background:#2A1804;color:#FFE7A3;border-radius:999px;padding:9px 16px;font-weight:700;font-size:14px}
 .dzien .kratki{position:absolute;right:14px;bottom:16px;font-size:17px;letter-spacing:2px}
 .dzien:active{transform:scale(.99)}
-.skroty{display:flex;gap:8px;margin:0 14px 12px}
-.skroty a{flex:1;display:flex;align-items:center;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
+.skroty{display:flex;gap:8px;margin:0 14px 10px}
+.skroty a{flex:1;display:flex;align-items:center;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:8px 12px;min-width:0}
 .skroty a b{display:block;font-size:14px}
 .skroty a small{display:block;font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .skroty .em{font-size:22px;flex:none}
 .skroty a:active{background:var(--ink-3)}
 
-/* sekcje z przewijanym rzędem gier */
-.sekcja{margin-bottom:11px}
-.sek-nag{display:flex;align-items:baseline;gap:8px;padding:0 14px 6px;white-space:nowrap}
-.sek-nag span{overflow:hidden;text-overflow:ellipsis}
-.sek-nag h2{font-family:"Fraunces",Georgia,serif;font-weight:700;font-size:19px;margin:0}
-.sek-nag span{font-size:12px;color:var(--dim)}
-.rzad{display:flex;gap:9px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 14px 4px;scroll-padding:14px;scrollbar-width:none}
-.rzad::-webkit-scrollbar{display:none}
-.gra{flex:none;width:clamp(126px,36vw,156px);scroll-snap-align:start;display:flex;flex-direction:column;gap:2px;padding:10px 11px;border-radius:var(--r);
-  background:var(--ink-2);border:1px solid var(--line);position:relative;transition:transform .15s,border-color .15s}
-.gra:active{transform:scale(.97)}
-.gra .ico{width:32px;height:32px;display:grid;place-items:center;margin-bottom:4px}
+/* kategorie: zwarte karty w dwóch kolumnach, wszystkie gry widać od razu */
+.sekcja{margin:0 14px 9px}
+.sekcja h2{font-family:"Fraunces",Georgia,serif;font-weight:700;font-size:16px;margin:0 0 5px;display:flex;align-items:center;gap:8px}
+.sekcja h2::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--kol)}
+.siatka{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.gra{display:grid;grid-template-columns:30px 1fr;column-gap:9px;align-items:center;padding:7px 10px 8px;min-height:48px;
+  border-radius:14px;background:var(--ink-2);border:1px solid var(--line);border-left:3px solid var(--kol);position:relative;overflow:hidden;transition:transform .15s}
+.gra:active{transform:scale(.97);background:var(--ink-3)}
+.gra .ico{width:30px;height:30px;display:grid;place-items:center}
 .gra .ico svg,.gra .ico img{width:100%;height:100%;object-fit:contain}
-.gra b{font-size:14px;line-height:1.2;min-height:34px;display:flex;align-items:flex-end}
-.gra small{font-size:11px;color:var(--dim);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gra .postep{display:block;height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:6px}
-.gra .postep i{display:block;height:100%;width:0;border-radius:2px}
-.gra .nowa{position:absolute;top:10px;right:10px;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--ink-3);color:var(--dim)}
-.s-mapa .gra{border-top:3px solid var(--teal)}.s-mapa .postep i{background:var(--teal)}
-.s-adm .gra{border-top:3px solid var(--gold)}.s-adm .postep i{background:var(--gold)}
-.s-sym .gra{border-top:3px solid var(--red)}.s-sym .postep i{background:var(--red)}
-.plate{width:36px;height:15px;border-radius:3px;background:#F4F4F2;border:1px solid #111;display:flex;overflow:hidden}
+.gra b{font-size:13.5px;line-height:1.15}
+
+.gra .postep{position:absolute;left:0;right:0;bottom:0;height:3px;background:transparent}
+.gra .postep i{display:block;height:100%;width:0;background:var(--kol)}
+.gra .nowa{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--kol);font-size:0}
+.s-mapa{--kol:var(--teal)}.s-adm{--kol:var(--gold)}.s-sym{--kol:var(--red)}
+.plate{width:32px;height:14px;border-radius:3px;background:#F4F4F2;border:1px solid #111;display:flex;overflow:hidden}
 .plate i{width:7px;background:#1546B8}
 .plate span{flex:1;display:grid;place-items:center;color:#111;font:700 10px/1 "Space Grotesk",sans-serif}
 
@@ -86,7 +81,7 @@ nav.dol a span{font-size:20px;line-height:1}
 nav.dol a.akt{color:var(--gold)}
 nav.dol a:active{background:var(--ink-2)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
-@media (min-width:700px){.gra{width:170px}}
+@media (max-height:700px){.dzien{min-height:104px}.dzien p{display:none}}
 </style>
 </head>
 <body>
@@ -110,25 +105,25 @@ nav.dol a:active{background:var(--ink-2)}
     <a href="#" id="ostatnia" hidden><span class="em">↺</span><span><b id="oNazwa">Graj dalej</b><small>ostatnio grane</small></span></a>
   </div>
 
-  <section class="sekcja s-mapa"><div class="sek-nag"><h2>Miasta i mapa</h2><span>Rozpoznaj miejsce, wskaż je, nazwij</span></div><div class="rzad">
-    <a class="gra" href="gdzie.html" data-k="miasto"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 12 L20 6 L34 9 L40 20 L36 36 L22 40 L9 34 L5 22 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M23 12c-5 0-8 3.6-8 8 0 6 8 13 8 13s8-7 8-13c0-4.4-3-8-8-8z" fill="#F2C14E"/></svg></span><b>Gdzie to jest?</b><small>Wskaż miasto na mapie</small><i class="postep"><i></i></i></a>
-    <a class="gra" href="zdjecie.html" data-k="miasto"><span class="ico"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="5" fill="#3F5A33"/><path d="M3 30 L20 22 L43 34 V43 H3Z" fill="#6E8B45"/><path d="M3 12 L43 20" stroke="#B9B2A0" stroke-width="3"/><path d="M24 3 L18 43" stroke="#B9B2A0" stroke-width="2.5"/><rect x="27" y="7" width="8" height="6" fill="#B24A3E"/><rect x="8" y="16" width="6" height="7" fill="#C9C2B0"/><rect x="29" y="24" width="7" height="5" fill="#B24A3E"/><path d="M3 40 C14 36 26 44 43 38" stroke="#5AA9E6" stroke-width="3" fill="none"/></svg></span><b>Z lotu ptaka</b><small>Miasto z lotu ptaka</small><i class="postep"><i></i></i></a>
-    <a class="gra" href="miasto.html" data-k="miejsce"><span class="ico"><svg viewBox="0 0 46 46"><rect x="3" y="8" width="40" height="30" rx="4" fill="#1D3D43" stroke="#F2C14E" stroke-width="2"/><path d="M9 34 V22 L14 17 L19 22 V34 M22 34 V14 L26 9 L30 14 V34 M33 34 V24 H38 V34" fill="#E8F1EE"/><circle cx="36" cy="14" r="3" fill="#F2C14E"/></svg></span><b>Co to za miasto?</b><small>Zdjęcie rynku albo zabytku</small><i class="postep"><i></i></i></a>
-    <a class="gra" href="miasta.html" data-k=""><span class="ico"><svg viewBox="0 0 46 46"><g fill="#F2C14E"><circle cx="12" cy="14" r="5"/><circle cx="30" cy="10" r="3.5"/><circle cx="24" cy="26" r="6.5"/><circle cx="36" cy="30" r="3.5"/><circle cx="12" cy="34" r="3.5"/></g></svg></span><b>Miasta na czas</b><small>Ile miast wymienisz?</small><i class="postep"><i></i></i></a>
+  <section class="sekcja s-mapa"><h2>Mapa i miasta</h2><div class="siatka">
+    <a class="gra" href="gdzie.html" data-k="miasto" title="Wskaż miasto na mapie"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 12 L20 6 L34 9 L40 20 L36 36 L22 40 L9 34 L5 22 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M23 12c-5 0-8 3.6-8 8 0 6 8 13 8 13s8-7 8-13c0-4.4-3-8-8-8z" fill="#F2C14E"/></svg></span><b>Gdzie to jest?</b><i class="postep"><i></i></i></a>
+    <a class="gra" href="zdjecie.html" data-k="miasto" title="Miasto z lotu ptaka"><span class="ico"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="5" fill="#3F5A33"/><path d="M3 30 L20 22 L43 34 V43 H3Z" fill="#6E8B45"/><path d="M3 12 L43 20" stroke="#B9B2A0" stroke-width="3"/><path d="M24 3 L18 43" stroke="#B9B2A0" stroke-width="2.5"/><rect x="27" y="7" width="8" height="6" fill="#B24A3E"/><rect x="8" y="16" width="6" height="7" fill="#C9C2B0"/><rect x="29" y="24" width="7" height="5" fill="#B24A3E"/><path d="M3 40 C14 36 26 44 43 38" stroke="#5AA9E6" stroke-width="3" fill="none"/></svg></span><b>Z lotu ptaka</b><i class="postep"><i></i></i></a>
+    <a class="gra" href="miasto.html" data-k="miejsce" title="Zdjęcie rynku albo zabytku"><span class="ico"><svg viewBox="0 0 46 46"><rect x="3" y="8" width="40" height="30" rx="4" fill="#1D3D43" stroke="#F2C14E" stroke-width="2"/><path d="M9 34 V22 L14 17 L19 22 V34 M22 34 V14 L26 9 L30 14 V34 M33 34 V24 H38 V34" fill="#E8F1EE"/><circle cx="36" cy="14" r="3" fill="#F2C14E"/></svg></span><b>Co to za miasto?</b><i class="postep"><i></i></i></a>
+    <a class="gra" href="miasta.html" data-k="" title="Ile miast wymienisz?"><span class="ico"><svg viewBox="0 0 46 46"><g fill="#F2C14E"><circle cx="12" cy="14" r="5"/><circle cx="30" cy="10" r="3.5"/><circle cx="24" cy="26" r="6.5"/><circle cx="36" cy="30" r="3.5"/><circle cx="12" cy="34" r="3.5"/></g></svg></span><b>Miasta na czas</b><i class="postep"><i></i></i></a>
   </div></section>
-  <section class="sekcja s-adm"><div class="sek-nag"><h2>Powiaty i gminy</h2><span>Granice, kształty, kody</span></div><div class="rzad">
-    <a class="gra" href="ksztalt.html" data-k="powiat"><span class="ico"><svg viewBox="0 0 46 46"><path d="M10 14 L17 7 L26 10 L33 6 L39 14 L36 22 L40 30 L31 39 L22 35 L13 38 L7 29 L11 22 Z" fill="#3F5A33" stroke="#F2C14E" stroke-width="2"/></svg></span><b>Kształt powiatu i gminy</b><small>Sam kontur na zdjęciu</small><i class="postep"><i></i></i></a>
-    <a class="gra" href="slepa.html" data-k="powiat"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 8 H38 V38 H8 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M8 8 H23 V23 H8 Z" fill="#5DCAA5" opacity=".7"/><circle cx="30" cy="30" r="5" fill="#F2C14E"/></svg></span><b>Gdzie ten powiat?</b><small>Znajdź na pustej mapie</small><i class="postep"><i></i></i></a>
-    <a class="gra" href="slepa.html?tryb=g" data-k="gmina"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 8 H38 V38 H8 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M8 23 H23 M23 8 V38 M23 30 H38" stroke="#4F7F86"/><path d="M23 23 H38 V30 H23 Z" fill="#5DCAA5" opacity=".8"/><circle cx="30" cy="26" r="3.5" fill="#F2C14E"/></svg></span><b>Gdzie ta gmina?</b><small>Znajdź na pustej mapie</small><i class="postep"><i></i></i></a>
-    <a class="gra" href="sasiedzi.html" data-k="powiat"><span class="ico"><svg viewBox="0 0 46 46"><path d="M4 8 H22 V38 H4 Z" fill="#F2C14E"/><path d="M24 8 H42 V38 H24 Z" fill="#5DCAA5"/></svg></span><b>Graniczą czy nie?</b><small>Czy mają wspólną granicę?</small><i class="postep"><i></i></i></a>
-    <a class="gra" href="powiaty.html" data-k="powiat"><span class="ico"><svg viewBox="0 0 46 46"><path d="M6 8 H40 V38 H6 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M6 8 H22 V22 H6 Z" fill="#F2C14E"/></svg></span><b>Wymień powiaty</b><small>Wszystkie w województwie</small><i class="postep"><i></i></i></a>
-    <a class="gra" href="tablice.html" data-k=""><span class="ico"><span class="plate"><i></i><span>WA</span></span></span><b>Tablice</b><small>Kody tablic rejestracyjnych</small><i class="postep"><i></i></i></a>
+  <section class="sekcja s-sym"><h2>Polska na co dzień</h2><div class="siatka">
+    <a class="gra" href="tablice.html" data-k="" title="Kody tablic rejestracyjnych"><span class="ico"><span class="plate"><i></i><span>WA</span></span></span><b>Tablice</b><i class="postep"><i></i></i></a>
+    <a class="gra" href="kluby.html" data-k="klub" title="Kluby piłkarskie z miast"><span class="ico"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="18" fill="#E8F1EE" stroke="#0A181B" stroke-width="1.5"/><path d="M23 13 l7 5 -3 8 h-8 l-3 -8z" fill="#0A181B"/><path d="M23 13 V6 M30 18 l7 -3 M27 26 l4 7 M19 26 l-4 7 M16 18 l-7 -3" stroke="#0A181B" stroke-width="1.5"/></svg></span><b>Jaki to klub?</b><i class="postep"><i></i></i></a>
+    <a class="gra" href="herb.html" data-k="herb" title="Herb i cztery miasta"><span class="ico"><img src="herby/tychy.webp" alt=""></span><b>Jaki to herb?</b><i class="postep"><i></i></i></a>
+    <a class="gra" href="rzeki.html" data-k="rzeka" title="Miasto i jego rzeka"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 6 C18 14, 4 22, 14 30 C22 36, 18 40, 22 44" stroke="#5AA9E6" stroke-width="5" fill="none"/><circle cx="30" cy="18" r="5" fill="#F2C14E"/></svg></span><b>Nad jaką rzeką?</b><i class="postep"><i></i></i></a>
+    <a class="gra" href="wiecej.html" data-k="ludnosc" title="Które miasto jest większe?"><span class="ico"><svg viewBox="0 0 46 46"><path d="M23 6 V38 M14 40 H32" stroke="#E8F1EE" stroke-width="2.5" stroke-linecap="round"/><path d="M8 13 H38" stroke="#E8F1EE" stroke-width="2.5" stroke-linecap="round" transform="rotate(-8 23 13)"/><circle cx="23" cy="6" r="2.5" fill="#E8F1EE"/><path d="M8 12 L3 25 H14 Z M38 8 L33 21 H44 Z" fill="none" stroke="#E8F1EE" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 25 A5.5 3.5 0 0 0 14 25 Z" fill="#F2C14E"/><path d="M33 21 A5.5 3.5 0 0 0 44 21 Z" fill="#4F7F86"/></svg></span><b>Więcej czy mniej?</b><i class="postep"><i></i></i></a>
   </div></section>
-  <section class="sekcja s-sym"><div class="sek-nag"><h2>Symbole i ciekawostki</h2><span>Herby, rzeki, kluby, liczby</span></div><div class="rzad">
-    <a class="gra" href="herb.html" data-k="herb"><span class="ico"><img src="herby/tychy.webp" alt=""></span><b>Jaki to herb?</b><small>Herb i cztery miasta</small><i class="postep"><i></i></i></a>
-    <a class="gra" href="rzeki.html" data-k="rzeka"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 6 C18 14, 4 22, 14 30 C22 36, 18 40, 22 44" stroke="#5AA9E6" stroke-width="5" fill="none"/><circle cx="30" cy="18" r="5" fill="#F2C14E"/></svg></span><b>Nad jaką rzeką?</b><small>Miasto i jego rzeka</small><i class="postep"><i></i></i></a>
-    <a class="gra" href="kluby.html" data-k="klub"><span class="ico"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="18" fill="#E8F1EE" stroke="#0A181B" stroke-width="1.5"/><path d="M23 13 l7 5 -3 8 h-8 l-3 -8z" fill="#0A181B"/><path d="M23 13 V6 M30 18 l7 -3 M27 26 l4 7 M19 26 l-4 7 M16 18 l-7 -3" stroke="#0A181B" stroke-width="1.5"/></svg></span><b>Jaki to klub?</b><small>Kluby piłkarskie z miast</small><i class="postep"><i></i></i></a>
-    <a class="gra" href="wiecej.html" data-k="ludnosc"><span class="ico"><svg viewBox="0 0 46 46"><path d="M23 6 V38 M14 40 H32" stroke="#E8F1EE" stroke-width="2.5" stroke-linecap="round"/><path d="M8 13 H38" stroke="#E8F1EE" stroke-width="2.5" stroke-linecap="round" transform="rotate(-8 23 13)"/><circle cx="23" cy="6" r="2.5" fill="#E8F1EE"/><path d="M8 12 L3 25 H14 Z M38 8 L33 21 H44 Z" fill="none" stroke="#E8F1EE" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 25 A5.5 3.5 0 0 0 14 25 Z" fill="#F2C14E"/><path d="M33 21 A5.5 3.5 0 0 0 44 21 Z" fill="#4F7F86"/></svg></span><b>Więcej czy mniej?</b><small>Które miasto jest większe?</small><i class="postep"><i></i></i></a>
+  <section class="sekcja s-adm"><h2>Granice</h2><div class="siatka">
+    <a class="gra" href="ksztalt.html" data-k="powiat" title="Sam kontur na zdjęciu"><span class="ico"><svg viewBox="0 0 46 46"><path d="M10 14 L17 7 L26 10 L33 6 L39 14 L36 22 L40 30 L31 39 L22 35 L13 38 L7 29 L11 22 Z" fill="#3F5A33" stroke="#F2C14E" stroke-width="2"/></svg></span><b>Kształt powiatu</b><i class="postep"><i></i></i></a>
+    <a class="gra" href="slepa.html" data-k="powiat" title="Znajdź na pustej mapie"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 8 H38 V38 H8 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M8 8 H23 V23 H8 Z" fill="#5DCAA5" opacity=".7"/><circle cx="30" cy="30" r="5" fill="#F2C14E"/></svg></span><b>Gdzie ten powiat?</b><i class="postep"><i></i></i></a>
+    <a class="gra" href="slepa.html?tryb=g" data-k="gmina" title="Znajdź na pustej mapie"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 8 H38 V38 H8 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M8 23 H23 M23 8 V38 M23 30 H38" stroke="#4F7F86"/><path d="M23 23 H38 V30 H23 Z" fill="#5DCAA5" opacity=".8"/><circle cx="30" cy="26" r="3.5" fill="#F2C14E"/></svg></span><b>Gdzie ta gmina?</b><i class="postep"><i></i></i></a>
+    <a class="gra" href="sasiedzi.html" data-k="powiat" title="Czy mają wspólną granicę?"><span class="ico"><svg viewBox="0 0 46 46"><path d="M4 8 H22 V38 H4 Z" fill="#F2C14E"/><path d="M24 8 H42 V38 H24 Z" fill="#5DCAA5"/></svg></span><b>Graniczą czy nie?</b><i class="postep"><i></i></i></a>
+    <a class="gra" href="powiaty.html" data-k="powiat" title="Wszystkie w województwie"><span class="ico"><svg viewBox="0 0 46 46"><path d="M6 8 H40 V38 H6 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M6 8 H22 V22 H6 Z" fill="#F2C14E"/></svg></span><b>Wymień powiaty</b><i class="postep"><i></i></i></a>
   </div></section>
   </div>
 
