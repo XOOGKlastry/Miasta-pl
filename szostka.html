@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Do sześciu razy sztuka · PolskoZnawca</title>
+<meta name="theme-color" content="#0A181B" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=16" />
+<style>
+.tryby{display:flex;gap:6px;flex:none}
+.tryby button{flex:1;min-height:38px;border-radius:12px;border:1px solid var(--line-2);background:var(--ink-2);font-size:13.5px;font-weight:700}
+.tryby button.akt{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.stage{flex:1;min-height:120px;position:relative;display:grid;place-items:center}
+#ksztalt{position:absolute;inset:8px;width:calc(100% - 16px);height:calc(100% - 16px)}
+#ksztalt .obrys{stroke:var(--gold);stroke-width:2.2;vector-effect:non-scaling-stroke;fill:none;stroke-linejoin:round}
+#ksztalt .cien{fill:rgba(242,193,78,.14)}
+#ksztalt.bez-foto image{display:none}
+.podp{position:absolute;left:10px;top:10px;font-size:12px;color:var(--dim);background:rgba(10,24,27,.85);border:1px solid var(--line-2);border-radius:999px;padding:4px 10px}
+.podp b{color:var(--gold)}
+/* sześć wierszy prób */
+.proby{flex:none;display:flex;flex-direction:column;gap:5px}
+.proba{display:grid;grid-template-columns:1fr 62px 40px 52px 40px;gap:5px;height:36px}
+.proba>*{border-radius:9px;background:var(--ink-2);border:1px solid var(--line);display:grid;place-items:center;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums;overflow:hidden}
+.proba .nm{justify-content:start;padding:0 10px;font-family:"Fraunces",serif;font-size:15px;white-space:nowrap;text-overflow:ellipsis}
+.proba.pusta>*{background:transparent;border-style:dashed}
+.proba.nowa>*{animation:odkryj .45s both}
+.proba.nowa>*:nth-child(2){animation-delay:.08s}.proba.nowa>*:nth-child(3){animation-delay:.16s}.proba.nowa>*:nth-child(4){animation-delay:.24s}.proba.nowa>*:nth-child(5){animation-delay:.32s}
+@keyframes odkryj{0%{transform:rotateX(90deg);opacity:.2}100%{transform:none;opacity:1}}
+.proba .strz{font-size:19px}
+.proba .blisko{color:#06231A}
+.proba .tak{background:var(--ok);border-color:var(--ok);color:#06231A}
+.proba .nie{color:var(--dim)}
+.naglowki{display:grid;grid-template-columns:1fr 62px 40px 52px 40px;gap:5px;font-size:10.5px;color:var(--dim);text-align:center;flex:none}
+.naglowki span:first-child{text-align:left;padding-left:10px}
+/* wynik */
+.koniec{flex:none;display:flex;flex-direction:column;gap:10px;animation:wejscie .35s both}
+.koniec h2{font-family:"Fraunces",serif;font-weight:900;font-size:28px;margin:0;line-height:1.05}
+.koniec p{margin:0;color:var(--dim);font-size:14px}
+.staty{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.staty div{background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center;font-size:11px;color:var(--dim)}
+.staty b{display:block;font-family:"Fraunces",serif;font-size:22px;color:var(--paper)}
+.rozklad{display:flex;flex-direction:column;gap:3px}
+.rozklad div{display:grid;grid-template-columns:14px 1fr;gap:6px;align-items:center;font-size:12px;color:var(--dim)}
+.rozklad i{display:block;height:16px;border-radius:4px;background:var(--line-2);color:var(--paper);font-style:normal;font-size:11px;text-align:right;padding-right:6px;min-width:22px;line-height:16px}
+.rozklad i.dzis{background:var(--ok);color:#06231A}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Do sześciu razy sztuka</h1>
+  <span class="round" id="nr"></span>
+</header>
+<div class="tryby"><button class="akt" data-t="dzien">Miasto dnia</button><button data-t="trening">Trening</button></div>
+<main>
+  <section class="stage" id="stage">
+    <svg id="ksztalt" class="bez-foto" preserveAspectRatio="xMidYMid meet"></svg>
+    <span class="podp" id="podp">Jakie to miasto?</span>
+  </section>
+  <div class="naglowki"><span>miasto</span><span>odległość</span><span>kier.</span><span>blisko</span><span>woj.</span></div>
+  <div class="proby" id="proby"></div>
+  <div class="wpis" id="wpis"></div>
+  <section class="koniec hidden" id="koniec"></section>
+</main>
+</div>
+
+<script src="topojson-client.min.js?v=16"></script>
+<script src="wspolne.js?v=16"></script>
+<script>
+const {$,fmt}=ZP;
+const START=new Date(2026,9,1),DZIEN=ZP.dayKey();
+const NR=Math.max(1,Math.floor((new Date(DZIEN+"T12:00:00")-START)/864e5)+1);
+const MIASTA=ZP.FALLBACK.map(([n,lat,lon,pop])=>({n,lat,lon,pop}));
+const MAXKM=900;
+let tryb="dzien",cel=null,proby=[],koniec=false,POLE=null,GEO=null;
+
+/* ---------- obliczenia ---------- */
+function kierunek(a,b){
+  if(ZP.km(a,b)<1)return "🎯";
+  const y=Math.sin((b.lon-a.lon)*Math.PI/180)*Math.cos(b.lat*Math.PI/180);
+  const x=Math.cos(a.lat*Math.PI/180)*Math.sin(b.lat*Math.PI/180)-Math.sin(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.cos((b.lon-a.lon)*Math.PI/180);
+  const st=(Math.atan2(y,x)*180/Math.PI+360)%360;
+  return ["⬆️","↗️","➡️","↘️","⬇️","↙️","⬅️","↖️"][Math.round(st/45)%8];
+}
+const blisko=d=>Math.max(0,Math.round(100*(1-d/MAXKM)));
+const woj=c=>c.woj||(c.woj=ZP.wojOf(c.lon,c.lat));
+function kratki(p){const z=Math.floor(p/20),pol=p%20>=10?1:0;return "🟩".repeat(z)+"🟨".repeat(pol)+"⬜".repeat(5-z-pol);}
+
+/* ---------- stan ---------- */
+const klucz=()=>"szostka-"+DZIEN;
+function statystyki(){try{return JSON.parse(localStorage.getItem("szostka-stat")||"null")||{gry:0,wygrane:0,seria:0,najdl:0,rozklad:[0,0,0,0,0,0],ost:""};}catch(e){return {gry:0,wygrane:0,seria:0,najdl:0,rozklad:[0,0,0,0,0,0],ost:""};}}
+function losujCel(){
+  if(tryb==="dzien"){const r=ZP.seeded("szostka-"+DZIEN);return MIASTA[Math.floor(r()*MIASTA.length)];}
+  return MIASTA[Math.floor(Math.random()*MIASTA.length)];
+}
+async function ksztalt(c){
+  // granica miasta: miasto na prawach powiatu albo gmina miejska (miejsko-wiejska, gdy innej nie ma)
+  const svg=$("ksztalt");svg.innerHTML="";svg.classList.add("bez-foto");
+  const pw=(await ZP.loadPowiaty()).find(p=>p.city&&ZP.norm(p.short||p.n)===ZP.norm(c.n));
+  let f=pw&&{f:pw.f,bb:pw.bb};
+  if(!f){
+    if(!GEO)GEO=await ZP.loadGminy().catch(()=>[]);
+    const g=GEO.filter(x=>ZP.norm(x.n)===ZP.norm(c.n)).sort((a,b)=>(a.typ==="gmina miejska"?0:1)-(b.typ==="gmina miejska"?0:1)||ZP.km(c,a)-ZP.km(c,b))[0];
+    if(g)f={f:g.f,bb:g.bb};
+  }
+  if(f)ZP.ksztaltZPodkladem(svg,f.f,f.bb,400);
+}
+async function start(){
+  koniec=false;proby=[];$("stage").style.flex="";
+  cel=losujCel();
+  if(tryb==="dzien"){
+    try{const s=JSON.parse(localStorage.getItem(klucz())||"null");if(s&&s.proby)proby=s.proby.map(n=>MIASTA.find(m=>m.n===n)).filter(Boolean);}catch(e){}
+  }
+  $("nr").textContent=tryb==="dzien"?"#"+NR:"trening";
+  $("koniec").classList.add("hidden");$("wpis").classList.remove("hidden");
+  rysuj();
+  await ksztalt(cel);
+  podpowiedzi();
+  if(proby.some(p=>p===cel)||proby.length>=6)zakoncz(true);
+  else if(POLE){POLE.wyczysc();POLE.wylacz(false);POLE.focus();}
+}
+function rysuj(nowa){
+  const box=$("proby");box.innerHTML="";
+  for(let i=0;i<6;i++){
+    const p=proby[i],d=document.createElement("div");
+    if(!p){d.className="proba pusta";d.innerHTML="<span></span><span></span><span></span><span></span><span></span>";box.appendChild(d);continue;}
+    const km=ZP.km(p,cel),tr=p===cel,bl=blisko(km),ten=woj(p)===woj(cel);
+    d.className="proba"+(nowa&&i===proby.length-1?" nowa":"");
+    const kol=tr?"var(--ok)":bl>=85?"#7FD8A5":bl>=65?"#E8C35A":bl>=40?"#E8A33A":"var(--ink-2)";
+    d.innerHTML='<span class="nm'+(tr?" tak":"")+'"></span><span>'+(tr?"0 km":fmt(Math.round(km))+" km")+'</span><span class="strz">'+kierunek(p,cel)+'</span>'
+      +'<span style="background:'+kol+';color:'+(bl>=40||tr?"#06231A":"var(--paper)")+'">'+(tr?100:bl)+'%</span><span class="'+(ten?"tak":"nie")+'">'+(ten?"✓":"✗")+'</span>';
+    d.querySelector(".nm").textContent=p.n;
+    box.appendChild(d);
+  }
+}
+function podpowiedzi(){
+  // po trzech nietrafionych próbach odsłania się zdjęcie satelitarne, po pięciu województwo
+  const n=proby.length,svg=$("ksztalt");
+  svg.classList.toggle("bez-foto",n<3&&!koniec);
+  $("podp").innerHTML=koniec?"<b>"+cel.n+"</b>":n>=5?"Województwo: <b>"+woj(cel)+"</b>":n>=3?"Podpowiedź: widok z góry":"Jakie to miasto?";
+}
+function zgadnij(v){
+  if(koniec)return;
+  POLE.wylacz(true);
+  const m=MIASTA.find(x=>ZP.pasuje(v,x.n));
+  if(!m){ZP.komunikat("Nie znam miasta „"+v+"”. Wybierz z podpowiedzi.");POLE.wyczysc();POLE.wylacz(false);return;}
+  if(proby.indexOf(m)>=0){ZP.komunikat(m.n+" już było.");POLE.wyczysc();POLE.wylacz(false);return;}
+  proby.push(m);
+  if(tryb==="dzien")localStorage.setItem(klucz(),JSON.stringify({proby:proby.map(p=>p.n)}));
+  const traf=m===cel;
+  ZP.poswiata(traf||blisko(ZP.km(m,cel))>=85);
+  rysuj(true);podpowiedzi();
+  if(traf||proby.length>=6){koniec=true;setTimeout(()=>zakoncz(false),700);return;}
+  POLE.wyczysc();POLE.wylacz(false);
+}
+function zakoncz(zPamieci){
+  koniec=true;podpowiedzi();$("stage").style.flex="0 0 130px";
+  $("ksztalt").classList.remove("bez-foto");
+  $("wpis").classList.add("hidden");
+  const wygrana=proby[proby.length-1]===cel,st=statystyki();
+  if(tryb==="dzien"&&!zPamieci&&st.ost!==DZIEN){
+    const w=new Date();w.setDate(w.getDate()-1);
+    st.gry++;if(wygrana){st.wygrane++;st.rozklad[proby.length-1]++;st.seria=st.ost===ZP.dayKey(w)&&st.seria>0?st.seria+1:1;}else st.seria=0;
+    st.najdl=Math.max(st.najdl,st.seria);st.ost=DZIEN;
+    localStorage.setItem("szostka-stat",JSON.stringify(st));
+    ZP.zapisz("miasto",cel.n,wygrana,true);
+  }
+  if(wygrana&&!zPamieci&&proby.length<=3)setTimeout(ZP.fanfary,300);
+  const k=$("koniec"),max=Math.max(1,...st.rozklad);
+  k.innerHTML='<h2></h2><p></p>'
+    +(tryb==="dzien"?'<div class="staty"><div>Gry<b>'+st.gry+'</b></div><div>Wygrane<b>'+(st.gry?Math.round(100*st.wygrane/st.gry):0)+'%</b></div><div>Seria<b>'+st.seria+'</b></div><div>Najdłuższa<b>'+st.najdl+'</b></div></div>'
+      +'<div class="rozklad">'+st.rozklad.map((v,i)=>'<div><span>'+(i+1)+'</span><i class="'+(wygrana&&proby.length===i+1?"dzis":"")+'" style="width:'+Math.max(8,100*v/max)+'%">'+v+'</i></div>').join("")+'</div>':"")
+    +'<div class="btnrow"><button class="ghost" id="ency">O mieście</button><button class="big" id="dzielBtn">'+(tryb==="dzien"?"Udostępnij":"Następne miasto")+'</button></div>';
+  k.querySelector("h2").textContent=wygrana?(proby.length===1?"Za pierwszym razem!":"Brawo, "+proby.length+" z 6"):"Tym razem nie wyszło";
+  k.querySelector("p").textContent=cel.n+", woj. "+woj(cel)+", "+fmt(cel.pop)+" mieszkańców."+(tryb==="dzien"?" Nowe miasto o północy.":"");
+  k.classList.remove("hidden");
+  $("ency").onclick=()=>ZP.encyklopedia({miasto:cel.n,lat:cel.lat,lon:cel.lon});
+  $("dzielBtn").onclick=tryb==="dzien"?()=>udostepnij(wygrana):()=>start();
+}
+async function udostepnij(wygrana){
+  const tekst="Do sześciu razy sztuka #"+NR+" "+(wygrana?proby.length:"X")+"/6\n"
+    +proby.map(p=>p===cel?"🟩🟩🟩🟩🟩🎯":kratki(blisko(ZP.km(p,cel)))+kierunek(p,cel)).join("\n")+"\n"+location.href.split("?")[0].split("#")[0];
+  try{if(navigator.share){await navigator.share({text:tekst});return;}}catch(e){if(e&&e.name==="AbortError")return;}
+  try{await navigator.clipboard.writeText(tekst);ZP.komunikat("Skopiowano wynik. Wklej go znajomym.");}catch(e){ZP.komunikat(tekst,8000);}
+}
+document.querySelector(".tryby").onclick=e=>{
+  const b=e.target.closest("button");if(!b||b.dataset.t===tryb)return;
+  tryb=b.dataset.t;document.querySelectorAll(".tryby button").forEach(x=>x.classList.toggle("akt",x===b));start();
+};
+POLE=ZP.poleWpisu($("wpis"),()=>MIASTA.map(m=>m.n),v=>zgadnij(v),{placeholder:"Wpisz miasto…",poprawne:()=>cel&&!koniec?[cel.n]:[]});
+ZP.loadWoj().then(start);
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

@@ -48,8 +48,8 @@ header>div:nth-child(2){min-width:0}
 .dzien .kratki{position:absolute;right:14px;bottom:16px;font-size:17px;letter-spacing:2px}
 .dzien:active{transform:scale(.99)}
 .skroty{display:flex;gap:8px;margin:0 14px 10px}
-.skroty a{flex:1;display:flex;align-items:center;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:8px 12px;min-width:0}
-.skroty a b{display:block;font-size:14px}
+.skroty a{flex:1 1 0;display:flex;align-items:center;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:8px 12px;min-width:0}
+.skroty a b{display:block;font-size:13.5px;line-height:1.15}
 .skroty a small{display:block;font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .skroty .em{font-size:22px;flex:none}
 .skroty a:active{background:var(--ink-3)}
@@ -101,8 +101,8 @@ nav.dol a:active{background:var(--ink-2)}
     <span class="akcja" id="dAkcja">Zagraj</span>
   </a>
   <div class="skroty">
+    <a href="szostka.html"><span class="em">🎯</span><span><b>Do sześciu razy sztuka</b><small id="szStan">miasto dnia w 6 próbach</small></span></a>
     <a href="wyzwanie.html?tryb=turniej"><span class="em">🏆</span><span><b>Turniej</b><small>12 pytań z sześciu gier</small></span></a>
-    <a href="#" id="ostatnia" hidden><span class="em">↺</span><span><b id="oNazwa">Graj dalej</b><small>ostatnio grane</small></span></a>
   </div>
 
   <section class="sekcja s-mapa"><h2>Mapa i miasta</h2><div class="siatka">
@@ -168,13 +168,14 @@ const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}
     a.title=(opan[k]||0)+" opanowanych";
   });
 })();
-// ostatnio grana gra
+// stan „Do sześciu razy sztuka”
 (function(){
-  const o=czytaj("menu-ostatnia",null);
-  if(o&&o.href){const a=$("ostatnia");a.href=o.href;$("oNazwa").textContent=o.nazwa;a.hidden=false;}
-  document.querySelectorAll(".gra").forEach(a=>a.addEventListener("click",()=>{
-    try{localStorage.setItem("menu-ostatnia",JSON.stringify({href:a.getAttribute("href"),nazwa:a.querySelector("b").textContent}));}catch(e){}
-  }));
+  const d=new Date(),k="szostka-"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const s=czytaj(k,null),st=czytaj("szostka-stat",{});
+  if(s&&s.proby&&s.proby.length){
+    const done=st.ost===k.slice(8);
+    $("szStan").textContent=done?"dzisiejsze rozwiązane":"próba "+s.proby.length+" z 6, dokończ";
+  }
 })();
 // kontur Polski w karcie wyzwania
 fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
