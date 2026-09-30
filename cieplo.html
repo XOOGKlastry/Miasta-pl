@@ -23,12 +23,32 @@
 #mapa .woj{fill:#132C31;stroke:#2E6068;stroke-width:1;vector-effect:non-scaling-stroke}
 #mapa .g{stroke:#0A181B;stroke-width:.6;vector-effect:non-scaling-stroke;animation:zapal .5s both;cursor:pointer}
 #mapa .g.ost{stroke:#fff;stroke-width:2}
+#mapa .otoczka{stroke:none;opacity:.5;animation:zapal .6s both}
+#mapa .znak{fill:none;stroke-width:2.5;vector-effect:non-scaling-stroke;animation:puls-znak 1.6s ease-out 2}
+#mapa .kropka{stroke:#0A181B;stroke-width:1.5;vector-effect:non-scaling-stroke}
+@keyframes puls-znak{0%{opacity:1;stroke-width:4}100%{opacity:0;stroke-width:1}}
 #mapa .cel{fill:#5DCAA5;stroke:#fff;stroke-width:2;vector-effect:non-scaling-stroke}
 @keyframes zapal{from{opacity:0}to{opacity:1}}
 .licznik{position:absolute;left:10px;top:10px;z-index:3;background:rgba(10,24,27,.88);border:1px solid var(--line-2);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--dim)}
 .licznik b{color:var(--gold);font-size:15px}
 .skala{position:absolute;left:10px;bottom:10px;z-index:3;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);background:rgba(10,24,27,.85);border-radius:999px;padding:4px 10px}
 .skala i{width:90px;height:8px;border-radius:4px;background:linear-gradient(90deg,#8E1328,#E4485A,#F29B4E,#F2E6A0,#9DC4DA)}
+/* komunikat cieplej / zimniej */
+.efekt{position:absolute;inset:0;z-index:5;pointer-events:none;display:grid;place-items:center;overflow:hidden}
+.efekt .napis{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(44px,15vw,72px);letter-spacing:-.02em;animation:napis 1.6s cubic-bezier(.2,.7,.3,1) both;text-shadow:0 4px 24px rgba(0,0,0,.5)}
+.efekt.cieplo .napis{color:#FFB25B}.efekt.goraco .napis{color:#FF5A4F}.efekt.zimno .napis{color:#9DD6FF}.efekt.lod .napis{color:#E8F6FF}.efekt.bez .napis{color:var(--paper)}
+@keyframes napis{0%{transform:scale(.4);opacity:0}18%{transform:scale(1.12);opacity:1}30%{transform:scale(1)}78%{opacity:1}100%{transform:scale(1.05) translateY(-10px);opacity:0}}
+.efekt.cieplo::before,.efekt.goraco::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%,rgba(255,120,40,.55),transparent 65%);animation:zar 1.6s ease-out both}
+.efekt.zimno::before,.efekt.lod::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% -10%,rgba(140,200,255,.5),transparent 65%);animation:zar 1.6s ease-out both}
+@keyframes zar{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+.efekt .cz{position:absolute;font-size:26px;will-change:transform}
+.efekt.cieplo .cz,.efekt.goraco .cz{bottom:-30px;animation:w-gore 1.5s ease-out both}
+.efekt.zimno .cz,.efekt.lod .cz{top:-30px;animation:w-dol 1.6s ease-in both}
+@keyframes w-gore{0%{transform:translateY(0) scale(.6);opacity:0}15%{opacity:1}100%{transform:translateY(-120%) scale(1.2);opacity:0}}
+@keyframes w-dol{0%{transform:translateY(0) rotate(0);opacity:0}15%{opacity:1}100%{transform:translateY(125%) rotate(200deg);opacity:0}}
+.stage.drzy{animation:drzy .4s}
+@keyframes drzy{0%,100%{transform:none}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.ostatnia .temp{display:inline-block;margin-top:2px;font-size:11.5px;font-weight:800;padding:2px 9px;border-radius:999px;white-space:nowrap;animation:wejscie .3s both}
 .ostatnia{flex:none;display:flex;align-items:center;gap:10px;min-height:46px;padding:0 12px;border-radius:14px;background:var(--ink-2);border:1px solid var(--line);animation:wejscie .3s both}
 .ostatnia .kolko{width:22px;height:22px;border-radius:50%;flex:none;border:2px solid rgba(255,255,255,.25)}
 .ostatnia .nm{flex:1;min-width:0}
@@ -78,7 +98,7 @@ const {$,fmt}=ZP;
 const START=new Date(2026,9,1),DZIEN=ZP.dayKey();
 const NR=Math.max(1,Math.floor((new Date(DZIEN+"T12:00:00")-START)/864e5)+1);
 const TYP={"1":"gmina miejska","2":"gmina wiejska","3":"gmina miejsko-wiejska"};
-let G=[],PO_ETYK=new Map(),P=null,tryb="dzien",cel=null,proby=[],koniec=false,POLE=null;
+let st_temp=null,G=[],PO_ETYK=new Map(),P=null,tryb="dzien",cel=null,proby=[],koniec=false,POLE=null;
 
 /* ---------- dane: wszystkie gminy z sąsiedztwem ---------- */
 async function laduj(){
@@ -103,7 +123,7 @@ async function laduj(){
   });
   P=ZP.projection(woj.map(w=>w.f),500,6);
   const svg=$("mapa");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
-  svg.innerHTML='<g id="tlo">'+woj.map(w=>'<path class="woj" d="'+P.path(w.f.geometry)+'"/>').join("")+'</g><g id="warstwa"></g>';
+  svg.innerHTML='<g id="tlo">'+woj.map(w=>'<path class="woj" d="'+P.path(w.f.geometry)+'"/>').join("")+'</g><g id="otoczki"></g><g id="warstwa"></g><g id="kropki"></g>';
   ZP.zoomSvg(svg,$("stage")).reset();
 }
 
@@ -120,7 +140,7 @@ function kolor(d){
   return "rgb(157,196,218)";
 }
 const emoji=d=>d===0?"✅":d<=1?"🔥":d<=40?"🟥":d<=100?"🟧":d<=220?"🟨":"🟦";
-const opisD=d=>d===0?"to ta gmina!":d<=1?"graniczy z szukaną!":fmt(Math.round(d))+" km";
+const opisD=d=>d===0?"trafiona!":d<=1?"graniczy":fmt(Math.round(d))+" km";
 
 /* ---------- rozgrywka ---------- */
 const klucz=()=>"cieplo-"+DZIEN;
@@ -134,16 +154,21 @@ function start(){
   koniec=false;proby=[];cel=losuj();
   if(tryb==="dzien"){try{const s=JSON.parse(localStorage.getItem(klucz())||"null");if(s&&s.proby)proby=s.proby.map(k=>G.find(g=>g.k===k)).filter(Boolean);}catch(e){}}
   $("nr").textContent=tryb==="dzien"?"#"+NR:"trening";
-  $("warstwa").innerHTML="";$("koniec").classList.add("hidden");$("pasekDol").classList.remove("hidden");$("ostatnia").classList.add("hidden");
+  $("warstwa").innerHTML="";$("otoczki").innerHTML="";$("kropki").innerHTML="";$("koniec").classList.add("hidden");$("pasekDol").classList.remove("hidden");$("ostatnia").classList.add("hidden");
   proby.forEach(g=>rysujGmine(g,false));
   odswiez();
   if(proby.indexOf(cel)>=0)zakoncz(true,true);
   else{POLE.wyczysc();POLE.wylacz(false);POLE.focus();}
 }
 function rysujGmine(g,ostatnia){
-  const d=odleglosc(g,cel);
+  const d=odleglosc(g,cel),kol=kolor(d);
   document.querySelectorAll("#warstwa .ost").forEach(x=>x.classList.remove("ost"));
-  $("warstwa").insertAdjacentHTML("beforeend",'<path class="g'+(ostatnia?" ost":"")+'" data-k="'+g.k+'" fill="'+kolor(d)+'" d="'+P.path(g.f.geometry,0.4)+'"><title>'+g.etyk+'</title></path>');
+  // gminy są drobne, więc zapalamy też całe otoczenie w tym samym kolorze i stawiamy kropkę
+  const otoczka=g.sas.filter(s=>proby.indexOf(s)<0).map(s=>P.path(s.f.geometry,0.6)).join("");
+  const x=P.x(g.lon).toFixed(1),y=P.y(g.lat).toFixed(1);
+  $("otoczki").insertAdjacentHTML("beforeend",'<path class="otoczka" fill="'+kol+'" d="'+otoczka+'"/>');
+  $("warstwa").insertAdjacentHTML("beforeend",'<path class="g'+(ostatnia?" ost":"")+'" data-k="'+g.k+'" fill="'+kol+'" d="'+P.path(g.f.geometry,0.4)+'"><title>'+g.etyk+'</title></path>');
+  $("kropki").insertAdjacentHTML("beforeend",'<circle class="kropka" cx="'+x+'" cy="'+y+'" r="4.5" fill="'+kol+'"/>'+(ostatnia?'<circle class="znak" cx="'+x+'" cy="'+y+'" r="14" stroke="'+kol+'"/>':''));
 }
 function odswiez(){
   const n=proby.length;
@@ -151,14 +176,36 @@ function odswiez(){
   const ost=proby[n-1],box=$("ostatnia");
   if(ost){
     const d=odleglosc(ost,cel);
-    box.innerHTML='<span class="kolko" style="background:'+kolor(d)+'"></span><span class="nm"><b></b><small></small></span><span class="km"></span>';
+    box.innerHTML='<span class="kolko" style="background:'+kolor(d)+'"></span><span class="nm"><b></b><small></small></span>'
+      +(st_temp&&!koniec&&false?'<span class="temp" style="background:'+({goraco:"#8E1328",cieplo:"#B5552A",zimno:"#2F5F80",lod:"#1E4666",bez:"#2E6068"})[st_temp[0]]+'">'+st_temp[2]+" "+st_temp[1]+'</span>':'')
+      +'<span class="km"></span>';
     box.querySelector("b").textContent=ost.etyk;box.querySelector("small").textContent=ost.typ+", woj. "+ost.woj;box.querySelector(".km").textContent=opisD(d);
+    if(st_temp&&!koniec){const t=document.createElement("span");t.className="temp";t.style.background=({goraco:"#8E1328",cieplo:"#B5552A",zimno:"#2F5F80",lod:"#1E4666",bez:"#2E6068"})[st_temp[0]];t.textContent=st_temp[2]+" "+st_temp[1];box.querySelector("small").replaceWith(t);}
     box.classList.remove("hidden");box.style.animation="none";void box.offsetWidth;box.style.animation="";
   }
   // najbliższe dotychczasowe próby, żeby było widać, gdzie jest ciepło
   const top=proby.slice().sort((a,b)=>odleglosc(a,cel)-odleglosc(b,cel)).slice(0,6);
   $("najblizsze").innerHTML=top.map(g=>'<span><i style="background:'+kolor(odleglosc(g,cel))+'"></i></span>').join("");
   [...$("najblizsze").children].forEach((s,i)=>s.append(top[i].n+" · "+(odleglosc(top[i],cel)<=1?"graniczy":fmt(Math.round(odleglosc(top[i],cel)))+" km")));
+}
+function temperatura(d,poprz){
+  if(d<=1)return ["goraco","Gorąco!","🔥"];
+  if(poprz==null)return d<60?["cieplo","Ciepło","🔥"]:d<180?["cieplo","Letnio","☀️"]:d<350?["zimno","Chłodno","❄️"]:["lod","Lodowato","🧊"];
+  if(Math.abs(d-poprz)<3)return ["bez","Bez zmian","🌡️"];
+  return d<poprz?(poprz-d>120||d<40?["goraco","Dużo cieplej!","🔥"]:["cieplo","Cieplej","🔥"]):(d-poprz>120?["lod","Dużo zimniej!","🧊"]:["zimno","Zimniej","❄️"]);
+}
+function efekt([klasa,tekst,ikona]){
+  document.querySelectorAll(".efekt").forEach(e=>e.remove());
+  const e=document.createElement("div");e.className="efekt "+klasa;
+  let cz="";
+  if(klasa!=="bez")for(let i=0;i<14;i++){
+    const ik=klasa==="cieplo"||klasa==="goraco"?(i%3?"🔥":"✨"):(i%3?"❄️":"✨");
+    cz+='<span class="cz" style="left:'+(4+Math.random()*90).toFixed(0)+'%;animation-delay:'+(Math.random()*.5).toFixed(2)+'s;font-size:'+(18+Math.random()*18).toFixed(0)+'px">'+ik+'</span>';
+  }
+  e.innerHTML=cz+'<div class="napis">'+tekst+'</div>';
+  $("stage").appendChild(e);setTimeout(()=>e.remove(),1800);
+  if(klasa==="zimno"||klasa==="lod"){$("stage").classList.remove("drzy");void $("stage").offsetWidth;$("stage").classList.add("drzy");}
+  if(navigator.vibrate)try{navigator.vibrate(klasa==="goraco"?[40,40,40]:klasa==="lod"?80:20);}catch(x){}
 }
 function zgadnij(v){
   if(koniec)return;
@@ -171,8 +218,9 @@ function zgadnij(v){
   proby.push(g);
   if(tryb==="dzien")localStorage.setItem(klucz(),JSON.stringify({proby:proby.map(x=>x.k)}));
   rysujGmine(g,true);
-  const d=odleglosc(g,cel);
-  if(d<=1)ZP.poswiata(true);
+  const d=odleglosc(g,cel),poprz=proby.length>1?odleglosc(proby[proby.length-2],cel):null;
+  st_temp=g===cel?null:temperatura(d,poprz);
+  if(st_temp)efekt(st_temp);
   odswiez();
   if(g===cel){koniec=true;setTimeout(()=>zakoncz(true,false),500);return;}
   POLE.wyczysc();POLE.wylacz(false);POLE.focus();
