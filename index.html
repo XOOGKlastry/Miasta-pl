@@ -95,14 +95,14 @@ nav.dol a:active{background:var(--ink-2)}
   <a class="dzien" href="wyzwanie.html" id="dzien">
     <svg class="kontur" viewBox="0 0 100 100" id="pl" aria-hidden="true"></svg>
     <span class="nr" id="dNr">Wyzwanie dnia</span>
-    <h2 id="dTyt">Sześć pytań na dziś</h2>
+    <h2 id="dTyt">Osiem pytań na dziś</h2>
     <p id="dOpis">Ten sam zestaw dla wszystkich. Porównaj wynik ze znajomymi.</p>
     <span class="akcja" id="dAkcja">Zagraj</span>
   </a>
   <div class="skroty">
     <a href="szostka.html"><span class="em">🎯</span><b>Do sześciu razy sztuka</b><small id="szStan">miasto dnia</small></a>
     <a href="cieplo.html"><span class="em">🌡️</span><b>Ciepło-zimno</b><small id="cStan">gmina dnia</small></a>
-    <a href="wyzwanie.html?tryb=turniej"><span class="em">🏆</span><b>Turniej</b><small>12 pytań</small></a>
+    <a href="wyzwanie.html?tryb=turniej"><span class="em">🏆</span><b>Turniej</b><small>wszystkie gry</small></a>
   </div>
 
   <section class="sekcja s-mapa"><h2>Mapa i miasta</h2><div class="siatka">
@@ -153,7 +153,7 @@ const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}
     const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);const s=Math.floor((m-n)/1000);
     $("dOpis").textContent="Dzisiejsze za Tobą. Kolejne za "+Math.floor(s/3600)+" h "+Math.floor(s%3600/60)+" min.";
     const a=$("dAkcja");a.className="kratki";a.textContent=ds.res.map(r=>r.pts>=700?"🟩":r.pts>=300?"🟨":"🟥").join("");
-  }else if(ds&&ds.res&&ds.res.length){$("dTyt").textContent="Dokończ wyzwanie";$("dOpis").textContent="Zostało "+(6-ds.res.length)+" z 6 pytań.";$("dAkcja").textContent="Wróć";}
+  }else if(ds&&ds.res&&ds.res.length){$("dTyt").textContent="Dokończ wyzwanie";$("dOpis").textContent="Zostało "+(8-ds.res.length)+" z 8 pytań.";$("dAkcja").textContent="Wróć";}
   else if(seria>0){$("dOpis").textContent="Seria "+seria+" "+(seria===1?"dzień":"dni")+". Zagraj, żeby jej nie przerwać.";}
 })();
 // poziom i opanowanie z trybu nauki

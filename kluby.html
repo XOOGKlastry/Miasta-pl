@@ -96,10 +96,10 @@ function makeQuestion(k){
   if($("tryb").value==="m"){
     // miasto → klub: każdy klub z tego miasta się liczy
     const wMiescie=kluby(k.miasto);
-    const inne=shuffle(KL.filter(x=>x.miasto!==k.miasto)).sort((a,b)=>ZP.km(k,a)-ZP.km(k,b)).slice(0,8);
-    const opcje=[],s=new Set();
-    shuffle(inne).forEach(x=>{if(opcje.length<3&&!s.has(x.pelna)&&!wMiescie.some(w=>ZP.norm(w.klub)===ZP.norm(x.klub))){s.add(x.pelna);opcje.push(x.pelna);}});
-    return {k,poprawne:wMiescie.flatMap(nazwyKlubu),opcje:shuffle(opcje.concat([k.pelna]))};
+    // podpowiedzi: same krótkie nazwy (bez miasta), inaczej odpowiedź byłaby widoczna od razu
+    const krotkie=new Set(wMiescie.map(w=>ZP.norm(w.klub)));
+    const opcje=[...new Set(shuffle(KL.filter(x=>!krotkie.has(ZP.norm(x.klub)))).map(x=>x.klub))].slice(0,3);
+    return {k,poprawne:wMiescie.flatMap(nazwyKlubu),opcje:shuffle(opcje.concat([k.klub]))};
   }
   // klub → miasto: każde miasto, w którym gra klub o tej nazwie
   const tacySami=KL.filter(x=>ZP.norm(x.klub)===ZP.norm(k.klub));

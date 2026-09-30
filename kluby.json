@@ -73,10 +73,11 @@
   },
   {
    "miasto": "Katowice",
-   "klub": "GKS Katowice",
+   "klub": "GKS",
    "pelna": "GKS Katowice",
    "liga": "Ekstraklasa",
    "aliasy": [
+    "GKS Katowice",
     "GieKSa"
    ],
    "lat": 50.26,
@@ -381,10 +382,12 @@
   },
   {
    "miasto": "Tychy",
-   "klub": "GKS Tychy",
+   "klub": "GKS",
    "pelna": "GKS Tychy",
    "liga": "2. liga",
-   "aliasy": [],
+   "aliasy": [
+    "GKS Tychy"
+   ],
    "lat": 50.13,
    "lon": 18.99
   },
@@ -547,10 +550,12 @@
   },
   {
    "miasto": "Bełchatów",
-   "klub": "GKS Bełchatów",
+   "klub": "GKS",
    "pelna": "GKS Bełchatów",
    "liga": "niższe ligi",
-   "aliasy": [],
+   "aliasy": [
+    "GKS Bełchatów"
+   ],
    "lat": 51.37,
    "lon": 19.37
   },
@@ -594,10 +599,12 @@
   },
   {
    "miasto": "Jastrzębie-Zdrój",
-   "klub": "GKS Jastrzębie",
+   "klub": "GKS",
    "pelna": "GKS Jastrzębie",
    "liga": "niższe ligi",
-   "aliasy": [],
+   "aliasy": [
+    "GKS Jastrzębie"
+   ],
    "lat": 49.95,
    "lon": 18.6
   }

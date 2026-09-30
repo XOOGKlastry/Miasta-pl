@@ -35,6 +35,19 @@ svg path{fill-rule:evenodd}
 #rzekaMapa .rz{fill:none;stroke:#5AA9E6;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;stroke-dasharray:2000;stroke-dashoffset:2000;animation:rysuj 1.4s ease-out forwards}
 #rzekaMapa .dot{fill:var(--gold);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
 @keyframes rysuj{to{stroke-dashoffset:0}}
+#lot{position:absolute;inset:0}
+.tablica{display:flex;height:84px;border:3px solid #111;border-radius:9px;background:#F4F4F2;overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.4)}
+.tablica i{width:38px;background:#1546B8;display:grid;place-items:end center;color:#fff;font:700 14px/1 "Space Grotesk";padding-bottom:7px;font-style:normal}
+.tablica span{padding:0 26px;display:grid;place-items:center;color:#111;font:700 54px/1 "Space Grotesk",sans-serif;letter-spacing:.06em}
+.para{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;text-align:center}
+.para b{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(24px,8vw,34px);line-height:1.05}
+.para span{color:var(--dim);font-size:13px}
+.para em{font-style:normal;color:var(--gold);font-weight:700;font-size:14px;letter-spacing:.1em}
+#paraMapa{position:absolute;inset:6px;width:calc(100% - 12px);height:calc(100% - 12px)}
+#paraMapa path{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke}
+#paraMapa path.a{fill:rgba(242,193,78,.55);stroke:var(--gold)}#paraMapa path.b{fill:rgba(127,216,198,.55);stroke:var(--teal)}
+#paraMapa text{font-family:"Fraunces",serif;font-weight:700;font-size:14px;text-anchor:middle;fill:#fff;paint-order:stroke;stroke:#0A181B;stroke-width:4px}
+.answers.dwa{grid-template-columns:1fr 1fr}
 #foto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #herbImg{max-width:72%;max-height:86%;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
 .stage.jasna{background:#E9EEEC}
@@ -77,6 +90,23 @@ svg path{fill-rule:evenodd}
 .meta div{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px;font-size:12px;color:var(--dim)}
 .meta b{display:block;font-family:"Fraunces",serif;font-size:22px;color:var(--paper)}
 .wynik .rows{flex:1}
+.mp-kod{font-family:"Fraunces",serif;font-weight:900;font-size:64px;letter-spacing:.14em;text-align:center;color:var(--gold);line-height:1}
+.mp-gracze{display:flex;flex-direction:column;gap:6px}
+.mp-gracz{display:flex;align-items:center;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:9px 12px;animation:wejscie .3s both}
+.mp-gracz .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:19px;flex:none}
+.mp-gracz b{flex:1;font-size:16px}.mp-gracz.ja{border-color:var(--gold)}
+.mp-gracz .pkt{font-family:"Fraunces",serif;font-weight:900;font-size:20px;color:var(--gold)}
+.mp-stan{font-size:12.5px;color:var(--dim);margin-top:4px}.mp-stan b{color:var(--gold)}
+.mp-tabela{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.mp-tabela span{background:var(--ink-3);border-radius:999px;padding:2px 8px;font-size:11.5px;color:var(--paper)}.mp-tabela span.ja{background:var(--gold);color:var(--gold-ink)}
+.mp-podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;height:180px}
+.mp-podium div{flex:1;max-width:120px;border-radius:14px 14px 0 0;display:flex;flex-direction:column;align-items:center;padding-top:10px;gap:4px;animation:rosnij .7s cubic-bezier(.2,.7,.3,1) both}
+.mp-podium .m1{height:100%;background:linear-gradient(180deg,var(--gold),#B88A1F);color:var(--gold-ink)}
+.mp-podium .m2{height:74%;background:#9FB3B1;color:#10292c;animation-delay:.15s}
+.mp-podium .m3{height:56%;background:#B7784A;color:#2A1804;animation-delay:.3s}
+.mp-podium b{font-size:15px;text-align:center}.mp-podium span{font-size:26px}
+@keyframes rosnij{from{transform:scaleY(0);transform-origin:bottom}to{transform:none}}
+#lobby{justify-content:flex-start;gap:12px;overflow:auto}
 .pojedynek-wynik{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:16px;padding:10px 14px;animation:wejscie .4s .3s both}
 .pojedynek-wynik div{text-align:center}.pojedynek-wynik small{display:block;color:var(--dim);font-size:12px}
 .pojedynek-wynik b{font-family:"Fraunces",serif;font-size:26px}
@@ -98,7 +128,7 @@ svg path{fill-rule:evenodd}
   <section class="setup hidden" id="setup">
     <div id="stareUst" class="hidden">
       <div id="scope"></div>
-      <select id="rounds"><option value="12" selected>12</option></select>
+      <select id="rounds"><option value="11">11</option><option value="22" selected>22</option><option value="33">33</option></select>
       <button id="startBtn" disabled></button>
       <span id="datastate"></span>
     </div>
@@ -106,11 +136,12 @@ svg path{fill-rule:evenodd}
 
   <section class="start hidden" id="start">
     <span class="odznaka-d" id="odznaka">Wyzwanie dnia</span>
-    <h2 id="startTytul">Sześć pytań,<br>jedna próba</h2>
+    <h2 id="startTytul">Osiem pytań,<br>jedna próba</h2>
     <p id="startOpis">Każdego dnia ten sam zestaw dla wszystkich. Porównaj wynik ze znajomymi.</p>
     <div class="typy">
-      <div><span>📍</span>Gdzie to jest?</div><div><span>🗺️</span>Kształt powiatu</div><div><span>🛡️</span>Herb</div>
-      <div><span>📷</span>Co to za miasto?</div><div><span>🌊</span>Rzeka</div><div><span>⚖️</span>Więcej czy mniej</div>
+      <div><span>🛰️</span>Z lotu ptaka</div><div><span>📍</span>Gdzie to jest?</div><div><span>📷</span>Co to za miasto?</div>
+      <div><span>🗺️</span>Kształt powiatu</div><div><span>🛡️</span>Herb</div><div><span>🚗</span>Tablice</div>
+      <div><span>⚖️</span>Więcej czy mniej</div><div><span>🌊</span>Rzeka</div><div id="typyWiecej" class="hidden"><span>⚽🤝🧭</span>Kluby, granice, województwa</div>
     </div>
     <button class="big" id="zaczynam" disabled>Wczytywanie…</button>
     <div class="datastate" id="stanDanych"></div>
@@ -119,8 +150,12 @@ svg path{fill-rule:evenodd}
   <div class="segmenty hidden" id="segmenty"></div>
   <div class="gora hidden" id="gora"><span class="chip" id="chip"></span><span class="pkt" id="suma">0</span></div>
   <div class="pytanie hidden" id="pytanie"></div>
+  <div class="tbar hidden" id="tbar"><i id="tfill"></i></div>
   <section class="stage hidden" id="stage">
     <div id="mapa" class="hidden"></div>
+    <div id="lot" class="hidden"></div>
+    <div class="tablica hidden" id="tablica"><i>PL</i><span id="tablicaKod"></span></div>
+    <div class="para hidden" id="para"></div>
     <svg id="ksztalt" class="hidden" preserveAspectRatio="xMidYMid meet"></svg>
     <svg id="rzekaMapa" class="hidden" preserveAspectRatio="xMidYMid meet"></svg>
     <img id="foto" class="hidden" alt="Zdjęcie miasta" />
@@ -135,33 +170,42 @@ svg path{fill-rule:evenodd}
   <div class="feedback hidden" id="feedback"></div>
 
   <section class="wynik hidden" id="wynik"></section>
+  <section class="start hidden" id="lobby"></section>
 </main>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="tablice-powiaty.js"></script>
+<script src="peerjs.min.js"></script>
 <script src="topojson-client.min.js?v=16"></script>
 <script src="wspolne.js?v=16"></script>
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
-const TRYB=URLP.get("tryb")==="turniej"?"turniej":"dzien";
+const TRYB=URLP.get("tryb")==="turniej"?"turniej":URLP.get("tryb")==="pojedynek"?"pojedynek":"dzien";
+const MULTI=TRYB==="pojedynek"?{host:false,conns:{},gracze:[],ja:{id:"",nick:localStorage.getItem("nick")||""},peer:null,kod:"",gra:null}:null;
 // wyzwanie od znajomego: te same pytania (ziarno i ustawienia w linku) i jego wynik do pobicia
 let RYWAL=URLP.get("od")?{nick:URLP.get("od").slice(0,20),wynik:+URLP.get("wynik")||0,nr:+URLP.get("nr")||0}:null;
 let ZIARNO=URLP.get("seed")||"";
 const DZIEN=ZP.dayKey(),START=new Date(2026,8,20);
 const NR=Math.floor((new Date(DZIEN+"T12:00:00")-START)/864e5)+1;
 const KLUCZ="dzis-"+DZIEN;
-const TYPY={g:["📍","Gdzie to jest?"],k:["🗺️","Kształt powiatu"],h:["🛡️","Jaki to herb?"],m:["📷","Co to za miasto?"],r:["🌊","Nad jaką rzeką?"],w:["⚖️","Więcej czy mniej?"]};
+const TYPY={z:["🛰️","Z lotu ptaka"],g:["📍","Gdzie to jest?"],k:["🗺️","Kształt powiatu"],h:["🛡️","Jaki to herb?"],m:["📷","Co to za miasto?"],r:["🌊","Nad jaką rzeką?"],w:["⚖️","Więcej czy mniej?"],
+  t:["🚗","Tablice"],c:["⚽","Jaki to klub?"],s:["🤝","Graniczą czy nie?"],v:["🧭","Województwo"]};
+// kolejność konkurencji: wyzwanie dnia (8 pytań) i turniej (wszystkie gry po kolei)
+const KOLEJ_DZIEN=["z","g","m","k","h","t","w","r"],KOLEJ_TURNIEJ=["z","g","m","k","h","t","r","c","w","s","v"];
 const SCORE=km=>Math.round(1000*Math.exp(-km/150));
 const kolor=p=>p>=700?"g":p>=300?"y":"r";
 const RANGI=[[85,"Geograf roku"],[70,"Kartograf"],[50,"Przewodnik"],[30,"Krajoznawca"],[0,"Turysta"]];
-let D={},Q=[],st=null,map=null,warstwy=null,POLE=null,PL=null,baseSvg="";
+let D={},Q=[],st=null,map=null,warstwy=null,POLE=null,PL=null,baseSvg="",lotMap=null,lotZnacznik=null;
 
 /* ---------- dane ---------- */
 async function laduj(){
   const pob=(u,d)=>fetch(u,{cache:"no-cache"}).then(r=>r.ok?r.json():d).catch(()=>d);
-  const [woj,pw,hj,mj,rj,popr]=await Promise.all([ZP.loadWoj(),ZP.loadPowiaty(),pob("herby.json",{miasta:[]}),pob("miejsca.json",{miasta:[]}),pob("rzeki.json",{miasta:[]}),ZP.poprawki()]);
-  D.woj=woj;D.pow=pw.filter(p=>!p.city);
+  const [woj,pw,hj,mj,rj,popr,kj]=await Promise.all([ZP.loadWoj(),ZP.loadPowiaty(),pob("herby.json",{miasta:[]}),pob("miejsca.json",{miasta:[]}),pob("rzeki.json",{miasta:[]}),ZP.poprawki(),pob("kluby.json",{kluby:[]})]);
+  D.woj=woj;D.pow=pw.filter(p=>!p.city);D.powAll=pw;
+  D.kluby=(kj.kluby||[]).filter(k=>k.lat!=null);
+  D.tab=(window.POWIATY||[]).map(p=>Object.assign({},p,{wojN:p.woj}));
   D.herby=ZP.popHerby((hj.miasta||[]).map(c=>({n:c.n,lat:c.lat,lon:c.lon,pop:c.pop,img:c.img})),popr,c=>c.n);
   D.miejsca=(mj.miasta||[]).filter(c=>c.zdjecia&&c.zdjecia.length);
   D.rzeki=ZP.popRzeki(rj.miasta||[],popr);
@@ -176,20 +220,36 @@ function czteryNaj(rnd,c,pool,klucz){
   for(const x of near){if(s.has(klucz(x)))continue;s.add(klucz(x));o.push(klucz(x));if(o.length===7)break;}
   return losuj(rnd,losuj(rnd,o).slice(0,3).concat([klucz(c)]));
 }
-function budujPytania(rnd,ile,filtr){
-  filtr=filtr||(()=>true);
-  const miasta=D.miasta.filter(filtr),herby=D.herby.filter(filtr),miejsca=D.miejsca.filter(filtr),rzeki=D.rzeki.filter(filtr),pow=D.pow.filter(p=>!ZP.OBSZAR.length||ZP.wObszarze(p));
-  const lista={g:losuj(rnd,miasta),k:losuj(rnd,pow),h:losuj(rnd,herby),m:losuj(rnd,miejsca),r:losuj(rnd,rzeki),w:losuj(rnd,miasta.filter(c=>c.pop>0))};
-  const kolej=["g","k","h","m","r","w"],qs=[];
-  for(let i=0;qs.length<ile&&i<ile*3;i++){
-    const t=kolej[i%6],src=lista[t];if(!src||!src.length)continue;
+function budujPytania(rnd,ile,filtr,kolej){
+  filtr=filtr||(()=>true);kolej=kolej||KOLEJ_TURNIEJ;
+  const wObsz=x=>!ZP.OBSZAR.length||ZP.wObszarze(x);
+  const miasta=D.miasta.filter(filtr),herby=D.herby.filter(filtr),miejsca=D.miejsca.filter(filtr),rzeki=D.rzeki.filter(filtr),pow=D.pow.filter(wObsz);
+  const kluby=D.kluby.filter(k=>wObsz(k)),tab=D.tab.filter(p=>!ZP.OBSZAR.length||ZP.OBSZAR.indexOf(p.woj)>=0),powAll=D.powAll.filter(wObsz);
+  const lista={z:losuj(rnd,miasta),g:losuj(rnd,miasta),k:losuj(rnd,pow),h:losuj(rnd,herby),m:losuj(rnd,miejsca),r:losuj(rnd,rzeki),w:losuj(rnd,miasta.filter(c=>c.pop>0)),
+    t:losuj(rnd,tab),c:losuj(rnd,[...new Map(kluby.map(k=>[k.miasto,k])).values()]),s:losuj(rnd,powAll.filter(p=>p.nb&&p.nb.length)),v:losuj(rnd,miasta)};
+  const qs=[],skrot=k=>k.klub;
+  for(let i=0;qs.length<ile&&i<ile*4;i++){
+    const t=kolej[i%kolej.length],src=lista[t];if(!src||!src.length)continue;
     const c=src.shift();
+    if(t==="z")qs.push({t,c,opcje:czteryNaj(rnd,c,D.miasta,x=>x.n),dx:(rnd()-.5)*0.01,dy:(rnd()-.5)*0.008});
     if(t==="g")qs.push({t,c});
     if(t==="k")qs.push({t,p:c,opcje:czteryNaj(rnd,c,D.pow,x=>x.label)});
     if(t==="h")qs.push({t,c,opcje:czteryNaj(rnd,c,D.herby,x=>x.n)});
     if(t==="m")qs.push({t,c,foto:c.zdjecia[Math.floor(rnd()*c.zdjecia.length)],opcje:czteryNaj(rnd,c,D.miejsca,x=>x.n)});
     if(t==="r")qs.push({t,c,opcje:czteryNaj(rnd,c,D.rzeki,x=>x.rzeka)});
     if(t==="w"){const b=src.find(x=>Math.abs(x.pop-c.pop)/Math.min(x.pop,c.pop)>0.08);if(b){src.splice(src.indexOf(b),1);qs.push({t,a:c,b});}}
+    if(t==="t"){const inne=losuj(rnd,D.tab.filter(x=>x.woj===c.woj&&x.kod!==c.kod)).slice(0,3).map(x=>x.nazwa);qs.push({t,p:c,opcje:losuj(rnd,inne.concat([c.nazwa]))});}
+    if(t==="c"){
+      // pytamy o miasto, odpowiedzią jest krótka nazwa klubu (bez nazwy miasta, żeby nie zdradzać)
+      const wMiescie=D.kluby.filter(k=>k.miasto===c.miasto),krotkie=new Set(wMiescie.map(k=>ZP.norm(skrot(k))));
+      const inne=[...new Set(losuj(rnd,D.kluby.filter(k=>!krotkie.has(ZP.norm(skrot(k))))).map(skrot))].slice(0,3);
+      qs.push({t,c:{n:c.miasto,lat:c.lat,lon:c.lon},kluby:wMiescie,opcje:losuj(rnd,inne.concat([skrot(c)]))});
+    }
+    if(t==="s"){
+      const sas=rnd()<0.5,kand=sas?D.powAll.filter(x=>c.nb.indexOf(x.k)>=0):D.powAll.filter(x=>x!==c&&c.nb.indexOf(x.k)<0&&ZP.km(c,x)<90);
+      if(kand.length)qs.push({t,a:c,b:kand[Math.floor(rnd()*kand.length)],sas});
+    }
+    if(t==="v"){const w=ZP.wojOf(c.lon,c.lat);if(w)qs.push({t,c,woj:w,opcje:losuj(rnd,losuj(rnd,Object.values(ZP.WOJ_KOD).filter(x=>x!==w)).slice(0,3).concat([w]))});}
   }
   return qs;
 }
@@ -197,12 +257,13 @@ function budujPytania(rnd,ile,filtr){
 /* ---------- start ---------- */
 function zapisane(){try{return JSON.parse(localStorage.getItem(KLUCZ)||"null");}catch(e){return null;}}
 async function init(){
+  if(MULTI){$("tytul").textContent="Kto pierwszy, ten lepszy";document.title="Kto pierwszy, ten lepszy · PolskoZnawca";lobbyStart();laduj();return;}
   if(TRYB==="turniej"){
     $("tytul").textContent="Turniej";
     document.title="Turniej · PolskoZnawca";
     $("odznaka").textContent="Turniej";
-    $("startTytul").innerHTML="Dwanaście pytań,<br>sześć konkurencji";
-    $("startOpis").textContent="Po dwa pytania z każdej gry. Grasz, ile chcesz; liczy się najlepszy wynik.";
+    $("startTytul").innerHTML="Wszystkie gry<br>w jednym turnieju";
+    $("startOpis").textContent="Z lotu ptaka, mapa, zdjęcia, kształty, herby, tablice, rzeki, kluby, granice i więcej. Liczy się najlepszy wynik.";
     ZP.zakresy($("scope"));
     if(ZIARNO){
       // link z wyzwaniem: bez kreatora, ustawienia z linku
@@ -211,13 +272,14 @@ async function init(){
       $("start").classList.remove("hidden");
     }else{
       $("setup").classList.remove("hidden");
-      ZP.kreatorGry({klucz:"turniej2",kroki:["obszar","wielkosc"]});
+      ZP.kreatorGry({klucz:"turniej3",kroki:["obszar","wielkosc",{pole:"rounds",tytul:"Jak długi turniej?",domyslny:"22",opcje:[
+      {v:"11",t:"Szybki",opis:"11 pytań, każda gra raz",ilu:'<div class="kr-ikona">⚡</div>'},{v:"22",t:"Pełny",opis:"22 pytania, każda gra dwa razy",ilu:'<div class="kr-ikona">🏆</div>'},{v:"33",t:"Maraton",opis:"33 pytania",ilu:'<div class="kr-ikona">🏃</div>'}]}]});
     }
   }else{
     const s=zapisane();
     $("start").classList.remove("hidden");
     $("odznaka").textContent="Wyzwanie dnia #"+NR;
-    if(s&&s.done){await laduj();Q=budujPytania(ZP.seeded("pz-dzien-"+DZIEN),6);return pokazWynik(s.res);}
+    if(s&&s.done){await laduj();Q=budujPytania(ZP.seeded("pz-dzien-"+DZIEN),s.res.length,null,s.res.length===6?["g","k","h","m","r","w"]:KOLEJ_DZIEN);return pokazWynik(s.res);}
   }
   if(RYWAL&&(TRYB==="turniej"||RYWAL.nr===NR)){
     $("odznaka").textContent="⚔️ Wyzwanie od: "+RYWAL.nick;
@@ -235,12 +297,12 @@ $("startBtn").onclick=()=>{ // kreator turnieju
 };
 $("zaczynam").onclick=()=>{
   if(TRYB==="dzien"){
-    Q=budujPytania(ZP.seeded("pz-dzien-"+DZIEN),6);
+    Q=budujPytania(ZP.seeded("pz-dzien-"+DZIEN),8,null,KOLEJ_DZIEN);
     const s=zapisane();st={i:(s&&s.res?s.res.length:0)-1,res:(s&&s.res)||[]};
   }else{
     const stan=ZP.zakresStan($("scope"));
     if(!ZIARNO||st){ZIARNO=Math.random().toString(36).slice(2,8);RYWAL=null;}
-    Q=budujPytania(ZP.seeded("turniej-"+ZIARNO),12,c=>ZP.wZakresie(c,stan)&&ZP.wObszarze(c));
+    Q=budujPytania(ZP.seeded("turniej-"+ZIARNO),+(URLP.get("n")||$("rounds").value||22),c=>ZP.wZakresie(c,stan)&&ZP.wObszarze(c),KOLEJ_TURNIEJ);
     if(Q.length<6){ZP.komunikat("Za mało danych dla tego wyboru. Zaznacz większy obszar albo więcej wielkości miast.");return;}
     st={i:-1,res:[]};
   }
@@ -251,7 +313,7 @@ $("zaczynam").onclick=()=>{
 };
 
 /* ---------- rundy ---------- */
-function schowaj(){["mapa","ksztalt","rzekaMapa","foto","herbImg","miastoDuze","karty2","podpis","answers","wpis","okBtn","feedback"].forEach(id=>$(id).classList.add("hidden"));$("stage").classList.remove("jasna");}
+function schowaj(){const pm=$("paraMapa");if(pm)pm.remove();["mapa","lot","tablica","para","ksztalt","rzekaMapa","foto","herbImg","miastoDuze","karty2","podpis","answers","wpis","okBtn","feedback","tbar"].forEach(id=>$(id).classList.add("hidden"));$("stage").classList.remove("jasna");$("answers").classList.remove("dwa");}
 function segmenty(){[...$("segmenty").children].forEach((d,i)=>{const r=st.res[i];d.className=r?kolor(r.pts):(i===st.i?"teraz":"");});}
 function nastepne(){
   st.i++;schowaj();
@@ -262,7 +324,8 @@ function nastepne(){
   $("suma").textContent=fmt(st.res.reduce((a,r)=>a+r.pts,0));
   segmenty();
   const st2=$("stage");st2.style.animation="none";void st2.offsetWidth;st2.style.animation="";
-  ({g:rundaG,k:rundaK,h:rundaH,m:rundaM,r:rundaR,w:rundaW})[q.t](q);
+  ({z:rundaZ,g:rundaG,k:rundaK,h:rundaH,m:rundaM,r:rundaR,w:rundaW,t:rundaT,c:rundaC,s:rundaS,v:rundaV})[q.t](q);
+  if(MULTI)zegar();
 }
 function wpisz(nazwy,poprawne,opcje){
   if(!POLE)POLE=ZP.poleWpisu($("wpis"),()=>st.nazwy,v=>odpWpis(v),{poprawne:()=>st.poprawne,pokazEtykieta:"Pokaż podpowiedzi<br><small>połowa punktów</small>",pokaz:()=>{st.podp=true;pokazOpcje();}});
@@ -304,6 +367,54 @@ $("okBtn").onclick=()=>{
   $("okBtn").classList.add("hidden");
   wynikRundy(SCORE(d),d<=30,"Błąd "+(d<10?d.toFixed(1):Math.round(d))+" km");
 };
+function rundaZ(q){
+  // Z lotu ptaka: zdjęcie satelitarne bez podpisów, można je przesuwać i przybliżać
+  $("pytanie").textContent="Jakie to miasto?";
+  $("lot").classList.remove("hidden");
+  const z=q.c.pop>300000?13:q.c.pop>80000?14:15,sr=[q.c.lat+q.dy,q.c.lon+q.dx];
+  if(!lotMap){
+    lotMap=L.map("lot",{zoomControl:true,attributionControl:true,zoomSnap:0.5});
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,attribution:"Esri"}).addTo(lotMap);
+  }
+  if(lotZnacznik){lotMap.removeLayer(lotZnacznik);lotZnacznik=null;}
+  lotMap.setMinZoom(z-2);lotMap.setMaxBounds(L.latLngBounds([sr[0]-.2,sr[1]-.3],[sr[0]+.2,sr[1]+.3]));
+  setTimeout(()=>{lotMap.invalidateSize();lotMap.setView(sr,z,{animate:false});},30);
+  wpisz(D.miasta.map(c=>c.n),[q.c.n],q.opcje);
+}
+function rundaT(q){
+  $("pytanie").textContent="Skąd jest to auto?";
+  $("tablicaKod").textContent=q.p.kod;
+  $("tablica").classList.remove("hidden");
+  const miasta=new Set(D.tab.filter(x=>x.typ==="miasto").map(x=>ZP.norm(x.nazwa)));
+  const pop=[q.p.nazwa,q.p.nazwa.replace(/^powiat\s+/,"")];
+  if(q.p.siedziba&&!miasta.has(ZP.norm(q.p.siedziba)))pop.push(q.p.siedziba);
+  wpisz(D.tab.map(x=>x.nazwa),pop,q.opcje);
+}
+function rundaC(q){
+  $("pytanie").textContent="Jaki klub gra w mieście";
+  $("miastoDuze").textContent=q.c.n;$("miastoDuze").classList.remove("hidden");
+  wpisz([...new Set(D.kluby.map(k=>k.klub))],q.kluby.flatMap(k=>[k.klub,k.pelna].concat(k.aliasy||[])),q.opcje);
+}
+function rundaS(q){
+  $("pytanie").textContent="Czy te powiaty graniczą?";
+  const box=$("para");box.innerHTML='<b></b><em>i</em><b></b><span></span>';
+  const b=box.querySelectorAll("b");b[0].textContent=q.a.label||q.a.n;b[1].textContent=q.b.label||q.b.n;box.querySelector("span").textContent="woj. "+q.a.woj+(q.b.woj!==q.a.woj?" i "+q.b.woj:"");
+  box.classList.remove("hidden");
+  const a=$("answers");a.innerHTML="";a.classList.add("dwa");a.classList.remove("hidden");
+  [["Graniczą",true],["Nie graniczą",false]].forEach(([t,v])=>{const x=document.createElement("button");x.textContent=t;x.onclick=()=>{
+    if(st.odp)return;const ok=v===q.sas;
+    [...a.children].forEach(y=>{y.disabled=true;y.classList.add(y===x?(ok?"right":"wrong"):(ok?"fade":"right"));});
+    wynikRundy(ok?1000:0,ok,ok?"Dobrze":"Niestety");};a.appendChild(x);});
+}
+function rundaV(q){
+  $("pytanie").textContent="W którym województwie leży";
+  $("miastoDuze").textContent=q.c.n;$("miastoDuze").classList.remove("hidden");
+  const a=$("answers");a.innerHTML="";a.classList.remove("hidden");
+  q.opcje.forEach(o=>{const x=document.createElement("button");x.textContent=o;x.onclick=()=>{
+    if(st.odp)return;const ok=o===q.woj;
+    [...a.children].forEach(y=>{y.disabled=true;y.classList.add(y.textContent===q.woj?"right":y===x?"wrong":"fade");});
+    wynikRundy(ok?1000:0,ok,ok?"Dobrze":"Niestety");};a.appendChild(x);});
+}
 function rundaK(q){
   $("pytanie").textContent="Który to powiat?";
   $("ksztalt").classList.remove("hidden");
@@ -363,23 +474,199 @@ function wynikRundy(pts,ok,naglowek){
     fetch("rzeki-geo.json").then(r=>r.json()).then(g=>{const l=g[q.c.rid];if(!l)return;
       svg.insertAdjacentHTML("afterbegin","");svg.querySelector(".dot").insertAdjacentHTML("beforebegin",'<path class="rz" d="'+l.map(x=>"M"+x.map(([a,b])=>PL.x(a).toFixed(1)+" "+PL.y(b).toFixed(1)).join("L")).join("")+'"/>');}).catch(()=>{});
   }
-  ZP.zapisz({g:"miasto",k:"powiat",h:"herb",m:"miejsce",r:"rzeka",w:"ludnosc"}[q.t],q.t==="k"?q.p.k:(q.c?q.c.n:q.a.n),ok);
+  if(q.t==="z"&&lotMap){
+    lotZnacznik=L.circleMarker([q.c.lat,q.c.lon],{radius:9,color:"#0A181B",weight:2,fillColor:"#F2C14E",fillOpacity:1}).addTo(lotMap).bindTooltip(q.c.n,{permanent:true,direction:"top",className:"cel-lbl"});
+    lotMap.setMaxBounds(null);lotMap.setMinZoom(5);lotMap.flyTo([q.c.lat,q.c.lon],10,{duration:1.2});
+  }
+  if(q.t==="s"){
+    const P=ZP.projection([q.a.f,q.b.f],400,20),svg='<svg id="paraMapa" viewBox="0 0 400 '+P.H.toFixed(0)+'">'
+      +D.powAll.filter(x=>x.bb[2]>Math.min(q.a.bb[0],q.b.bb[0])-.3&&x.bb[0]<Math.max(q.a.bb[2],q.b.bb[2])+.3&&x.bb[3]>Math.min(q.a.bb[1],q.b.bb[1])-.2&&x.bb[1]<Math.max(q.a.bb[3],q.b.bb[3])+.2).map(x=>'<path class="'+(x===q.a?"a":x===q.b?"b":"")+'" d="'+P.path(x.f.geometry,0.5)+'"/>').join("")
+      +'<text x="'+P.x(q.a.lon).toFixed(0)+'" y="'+P.y(q.a.lat).toFixed(0)+'">'+q.a.n+'</text><text x="'+P.x(q.b.lon).toFixed(0)+'" y="'+P.y(q.b.lat).toFixed(0)+'">'+q.b.n+'</text></svg>';
+    $("para").classList.add("hidden");$("stage").insertAdjacentHTML("beforeend",svg);
+  }
+  ZP.zapisz({z:"miasto",g:"miasto",k:"powiat",h:"herb",m:"miejsce",r:"rzeka",w:"ludnosc",t:"tablica",c:"klub",s:"powiat",v:"miasto"}[q.t],q.t==="k"?q.p.k:q.t==="t"?q.p.kod:q.t==="s"?q.a.k:(q.c?q.c.n:q.a.n),ok);
   st.res.push({t:q.t,pts});
   if(TRYB==="dzien")localStorage.setItem(KLUCZ,JSON.stringify({res:st.res,done:false}));
   segmenty();
   // licznik punktów
   const s0=st.res.slice(0,-1).reduce((a,r)=>a+r.pts,0),t0=performance.now();
   (function f(t){const p=Math.min(1,(t-t0)/600);$("suma").textContent=fmt(s0+pts*p);if(p<1)requestAnimationFrame(f);})(t0);
-  const odp=q.t==="g"?q.c.n:q.t==="k"?q.p.full:q.t==="r"?q.c.n+", rzeka "+q.c.rzeka:q.t==="w"?(q.a.pop>q.b.pop?q.a.n:q.b.n)+" jest większe":q.c.n;
+  const odp=q.t==="g"||q.t==="z"?q.c.n+(q.c.pop?", "+fmt(q.c.pop)+" mieszk.":""):q.t==="k"?q.p.full:q.t==="r"?q.c.n+", rzeka "+q.c.rzeka
+    :q.t==="w"?q.a.n+" "+fmt(q.a.pop)+" · "+q.b.n+" "+fmt(q.b.pop):q.t==="t"?q.p.kod+" to "+q.p.nazwa+(q.p.siedziba?" ("+q.p.siedziba+")":"")
+    :q.t==="c"?"W "+q.c.n+": "+q.kluby.map(k=>k.pelna).join(", "):q.t==="s"?(q.sas?"Graniczą":"Nie graniczą"):q.t==="v"?q.c.n+" leży w woj. "+q.woj:q.c.n;
   const fb=$("feedback");
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=naglowek+" · +"+pts;
   fb.querySelector("span").textContent=odp;
-  const cel=q.t==="k"?{p:q.p.k,nazwa:q.p.full}:q.t==="w"?{miasto:(q.a.pop>q.b.pop?q.a:q.b).n,lat:(q.a.pop>q.b.pop?q.a:q.b).lat,lon:(q.a.pop>q.b.pop?q.a:q.b).lon,nazwa:(q.a.pop>q.b.pop?q.a:q.b).n}:{miasto:q.c.n,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.n};
+  const cel=q.t==="k"?{p:q.p.k,nazwa:q.p.full}:q.t==="s"?{p:q.a.k,nazwa:q.a.label||q.a.n}:q.t==="t"?null:q.t==="w"?{miasto:(q.a.pop>q.b.pop?q.a:q.b).n,lat:(q.a.pop>q.b.pop?q.a:q.b).lat,lon:(q.a.pop>q.b.pop?q.a:q.b).lon,nazwa:(q.a.pop>q.b.pop?q.a:q.b).n}:{miasto:q.c.n,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.n};
   ZP.dopiszEncykl(fb,cel);
   $("nextBtn").textContent=st.i+1>=Q.length?"Wynik":"Dalej";$("nextBtn").onclick=nastepne;
   fb.classList.remove("hidden");
+  if(MULTI){
+    $("nextBtn").remove();
+    fb.querySelector(".txt").insertAdjacentHTML("beforeend",'<div class="mp-stan" id="mpStan">Czekamy na innych…</div>');
+    wyslijOdp({t:"odp",i:st.i,pts,ms:Math.round(performance.now()-st.t0)});
+  }
 }
+
+/* ---------- gra na kilku telefonach: te same gry i pytania, punkty za szybkość ---------- */
+const PREFIKS="polskoznawca-kpt-",CZAS_RUNDY=30;
+const AV=["🦊","🐻","🦉","🐺","🦌","🐗","🦅","🐿️"],KOL=["#F2C14E","#7FD8C6","#E4485A","#5AA9E6","#B08AE8","#F29B4E","#5DCAA5","#E8F1EE"];
+function lobby(html){["start","wynik","segmenty","gora","pytanie","stage"].forEach(id=>$(id).classList.add("hidden"));schowaj();const l=$("lobby");l.innerHTML=html;l.classList.remove("hidden");}
+function lobbyStart(blad){
+  $("runda").textContent="";
+  const z=(URLP.get("pokoj")||"").toUpperCase();
+  lobby('<span class="odznaka-d">Na żywo, kilka telefonów</span><h2>Kto pierwszy,<br>ten lepszy</h2><p>Wszystkie gry, te same pytania w tej samej chwili. Dobra odpowiedź daje punkty jak w grze, a najszybszy dostaje premię.</p>'
+    +'<label class="field"><span>Twoje imię</span><input type="text" id="mpNick" maxlength="14" placeholder="np. Dawid"></label>'
+    +'<button class="big" id="mpUtworz">Utwórz pokój</button>'
+    +'<div class="field"><span>albo dołącz kodem</span><div style="display:flex;gap:8px"><input type="text" id="mpKod" maxlength="4" placeholder="KOD" style="flex:1;min-width:0;text-align:center;font-family:Fraunces,serif;font-size:28px;font-weight:900;letter-spacing:.3em;text-transform:uppercase"><button class="ghost" id="mpDolacz" style="min-height:54px">Dołącz</button></div></div>'
+    +'<div class="datastate" id="mpStan0"></div>');
+  $("mpNick").value=MULTI.ja.nick;$("mpKod").value=z;if(blad)$("mpStan0").textContent=blad;
+  const nick=()=>{const n=$("mpNick").value.trim();if(!n){$("mpStan0").textContent="Wpisz swoje imię.";return false;}MULTI.ja.nick=n;localStorage.setItem("nick",n);return true;};
+  $("mpUtworz").onclick=()=>{if(nick())utworzPokoj();};
+  $("mpDolacz").onclick=()=>{const k=$("mpKod").value.trim().toUpperCase();if(k.length!==4){$("mpStan0").textContent="Kod ma 4 znaki.";return;}if(nick())dolaczDoPokoju(k);};
+}
+const escH=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+function listaGraczy(punkty){
+  return '<div class="mp-gracze">'+MULTI.gracze.map((g,i)=>'<div class="mp-gracz'+(g.id===MULTI.ja.id?" ja":"")+'"><span class="av" style="background:'+KOL[i%8]+'">'+AV[i%8]+'</span><b>'+escH(g.nick)+(g.id===MULTI.ja.id?" (Ty)":"")+'</b>'+(punkty?'<span class="pkt">'+fmt(g.pts||0)+'</span>':"")+'</div>').join("")+'</div>';
+}
+function ekranLobby(){
+  $("runda").textContent="pokój "+MULTI.kod;
+  const h=MULTI.host;
+  lobby((h?'<p>Kod pokoju. Znajomi wpisują go u siebie albo otwierają link.</p><div class="mp-kod">'+MULTI.kod+'</div><button class="ghost" id="mpLink">Wyślij link do pokoju</button>'
+      :'<p>Jesteś w pokoju <b style="color:var(--gold)">'+MULTI.kod+'</b>. Gospodarz zaraz zacznie.</p>')
+    +listaGraczy()
+    +(h?'<label class="field"><span>Liczba pytań</span><select id="mpIle"><option value="11">11, każda gra raz</option><option value="22">22, każda gra dwa razy</option></select></label>'
+      +'<button class="big" id="mpStart"'+(MULTI.gracze.length<2?" disabled":"")+'>'+(MULTI.gracze.length<2?"Czekam na drugą osobę…":"Zaczynamy")+'</button>':'<div class="datastate">Czekamy na start…</div>'));
+  if(h){
+    $("mpLink").onclick=async()=>{const u=location.origin+location.pathname+"?tryb=pojedynek&pokoj="+MULTI.kod,t="Zagraj ze mną w PolskoZnawcę! Pokój "+MULTI.kod+": "+u;
+      try{if(navigator.share){await navigator.share({text:t});return;}}catch(e){if(e.name==="AbortError")return;}
+      try{await navigator.clipboard.writeText(t);ZP.komunikat("Skopiowano link do pokoju.");}catch(e){ZP.komunikat(u,6000);}};
+    $("mpStart").onclick=startPojedynku;
+  }
+}
+function nowyKod(){const z="ABCDEFGHJKLMNPRSTUWXYZ23456789";return [...Array(4)].map(()=>z[Math.floor(Math.random()*z.length)]).join("");}
+function utworzPokoj(){
+  MULTI.host=true;MULTI.kod=nowyKod();$("mpStan0").textContent="Tworzę pokój…";
+  const peer=MULTI.peer=new Peer(PREFIKS+MULTI.kod);
+  peer.on("open",id=>{MULTI.ja.id=id;MULTI.gracze=[{id,nick:MULTI.ja.nick,pts:0}];ekranLobby();});
+  peer.on("error",e=>{if(e.type==="unavailable-id"){peer.destroy();utworzPokoj();}else lobbyStart("Błąd połączenia: "+e.type+". Spróbuj ponownie.");});
+  peer.on("connection",c=>{
+    c.on("data",m=>odGracza(c,m));
+    c.on("close",()=>{delete MULTI.conns[c.peer];MULTI.gracze=MULTI.gracze.filter(g=>g.id!==c.peer);rozeslijLobby();});
+  });
+}
+function dolaczDoPokoju(k){
+  MULTI.host=false;MULTI.kod=k;$("mpStan0").textContent="Łączę z pokojem "+k+"…";
+  const peer=MULTI.peer=new Peer();
+  peer.on("open",id=>{
+    MULTI.ja.id=id;
+    const c=peer.connect(PREFIKS+k,{reliable:true});MULTI.conns.host=c;
+    const t=setTimeout(()=>lobbyStart("Nie znalazłem pokoju "+k+". Sprawdź kod."),10000);
+    c.on("open",()=>{clearTimeout(t);c.send({t:"hej",nick:MULTI.ja.nick});});
+    c.on("data",m=>odGospodarza(m));
+    c.on("close",()=>lobbyStart("Gospodarz zamknął pokój."));
+  });
+  peer.on("error",e=>lobbyStart(e.type==="peer-unavailable"?"Nie ma pokoju "+k+".":"Błąd połączenia: "+e.type));
+}
+function doWszystkich(m){Object.values(MULTI.conns).forEach(c=>{try{c.send(m);}catch(e){}});odGospodarza(m);}
+function rozeslijLobby(){doWszystkich({t:"lobby",gracze:MULTI.gracze.map(g=>({id:g.id,nick:g.nick,pts:g.pts}))});}
+function wyslijOdp(m){if(MULTI.host)przyjmijOdp(MULTI.ja.id,m);else MULTI.conns.host.send(m);}
+// gospodarz
+function odGracza(c,m){
+  if(m.t==="hej"){
+    if(MULTI.gra){c.send({t:"blad",tekst:"Gra już trwa."});return;}
+    if(MULTI.gracze.length>=8){c.send({t:"blad",tekst:"Pokój jest pełny."});return;}
+    MULTI.conns[c.peer]=c;MULTI.gracze.push({id:c.peer,nick:String(m.nick).slice(0,14),pts:0});rozeslijLobby();
+  }
+  if(m.t==="odp")przyjmijOdp(c.peer,m);
+}
+async function startPojedynku(){
+  await laduj();
+  MULTI.gracze.forEach(g=>g.pts=0);
+  MULTI.gra={i:-1,odp:{},seed:Math.random().toString(36).slice(2,8),n:+$("mpIle").value};
+  doWszystkich({t:"start",seed:MULTI.gra.seed,n:MULTI.gra.n});
+  setTimeout(()=>nastepnaRunda(),1800);
+}
+function nastepnaRunda(){
+  const g=MULTI.gra;g.i++;
+  if(g.i>=Q.length){doWszystkich({t:"koniec",gracze:MULTI.gracze.map(x=>({id:x.id,nick:x.nick,pts:x.pts}))});MULTI.gra=null;return;}
+  g.odp={};doWszystkich({t:"runda",i:g.i});
+  clearTimeout(g.t);g.t=setTimeout(zamknijRunde,(CZAS_RUNDY+3)*1000);
+}
+function przyjmijOdp(id,m){
+  const g=MULTI.gra;if(!g||m.i!==g.i||g.odp[id])return;
+  g.odp[id]={pts:Math.max(0,Math.min(1000,+m.pts||0)),ms:+m.ms||CZAS_RUNDY*1000};
+  doWszystkich({t:"odpowiedzial",id,ile:Object.keys(g.odp).length,z:MULTI.gracze.length});
+  if(Object.keys(g.odp).length>=MULTI.gracze.length)zamknijRunde();
+}
+function zamknijRunde(){
+  const g=MULTI.gra;if(!g||g.zamknieta===g.i)return;g.zamknieta=g.i;clearTimeout(g.t);
+  // premia za szybkość dla dwóch najszybszych dobrych odpowiedzi
+  const dobre=Object.entries(g.odp).filter(([,o])=>o.pts>=500).sort((a,b)=>a[1].ms-b[1].ms);
+  const dod={};Object.entries(g.odp).forEach(([id,o])=>dod[id]=o.pts);
+  if(dobre[0])dod[dobre[0][0]]+=300;if(dobre[1])dod[dobre[1][0]]+=150;
+  MULTI.gracze.forEach(x=>x.pts+=dod[x.id]||0);
+  const szybki=dobre[0]&&MULTI.gracze.find(x=>x.id===dobre[0][0]);
+  doWszystkich({t:"wynik",i:g.i,dod,szybki:szybki?{nick:szybki.nick,ms:dobre[0][1].ms}:null,gracze:MULTI.gracze.map(x=>({id:x.id,nick:x.nick,pts:x.pts}))});
+  setTimeout(nastepnaRunda,4500);
+}
+// każdy gracz, także gospodarz
+async function odGospodarza(m){
+  if(m.t==="blad")lobbyStart(m.tekst);
+  if(m.t==="lobby"){MULTI.gracze=m.gracze;ekranLobby();}
+  if(m.t==="start"){
+    await laduj();
+    Q=budujPytania(ZP.seeded("pojedynek-"+m.seed),m.n,null,KOLEJ_TURNIEJ);st={i:-1,res:[]};
+    lobby('<h2 style="text-align:center;margin-top:30%">Uwaga…</h2><div class="mp-kod" id="odl">3</div>');
+    let n=3;const id=setInterval(()=>{n--;if(n<=0)clearInterval(id);else if($("odl"))$("odl").textContent=n;},550);
+  }
+  if(m.t==="runda"){
+    $("lobby").classList.add("hidden");
+    if(!$("segmenty").children.length||$("segmenty").children.length!==Q.length)$("segmenty").innerHTML=Q.map(()=>"<i></i>").join("");
+    ["segmenty","gora","pytanie","stage"].forEach(id=>$(id).classList.remove("hidden"));
+    st.i=m.i-1;nastepne();st.t0=performance.now();
+    $("suma").textContent=fmt((MULTI.gracze.find(g=>g.id===MULTI.ja.id)||{}).pts||0);
+  }
+  if(m.t==="odpowiedzial"&&$("mpStan"))$("mpStan").textContent="Odpowiedziało "+m.ile+" z "+m.z+"…";
+  if(m.t==="wynik"){
+    MULTI.gracze=m.gracze;
+    if(!st.odp)czasMinal(true);
+    const moje=m.dod[MULTI.ja.id]||0,ja=MULTI.gracze.find(g=>g.id===MULTI.ja.id)||{pts:0};
+    $("suma").textContent=fmt(ja.pts);
+    const s=$("mpStan");
+    if(s)s.innerHTML=(m.szybki?'⚡ Najszybciej: <b>'+escH(m.szybki.nick)+'</b> ('+(m.szybki.ms/1000).toFixed(1).replace(".",",")+' s) · ':'')+'Ty +'+fmt(moje)
+      +'<div class="mp-tabela">'+MULTI.gracze.slice().sort((a,b)=>b.pts-a.pts).map(g=>'<span'+(g.id===MULTI.ja.id?' class="ja"':'')+'>'+escH(g.nick)+' '+fmt(g.pts)+'</span>').join("")+'</div>';
+  }
+  if(m.t==="koniec")podium(m.gracze);
+}
+function zegar(){
+  $("tbar").classList.remove("hidden");$("tfill").style.width="100%";
+  const nr=st.i;
+  ZP.pasek($("tbar"),$("tfill"),CZAS_RUNDY,()=>{if(st.i===nr&&!st.odp)czasMinal(false);},()=>st.odp||st.i!==nr);
+}
+function czasMinal(cicho){
+  if(st.odp)return;
+  const q=Q[st.i];
+  if(q&&q.t==="g"&&st.guess){$("okBtn").click();return;}
+  if(POLE)POLE.wylacz(true);
+  $("okBtn").classList.add("hidden");
+  [...$("answers").children].forEach(x=>x.disabled=true);
+  $("karty2").querySelectorAll("button").forEach(x=>x.disabled=true);
+  wynikRundy(0,false,"Czas minął");
+}
+function podium(gr){
+  schowaj();["segmenty","gora","pytanie","stage"].forEach(id=>$(id).classList.add("hidden"));
+  $("runda").textContent="koniec";
+  const r=gr.slice().sort((a,b)=>b.pts-a.pts),idx=g=>MULTI.gracze.findIndex(x=>x.id===g.id);
+  MULTI.gracze=gr;
+  const pod=[r[1],r[0],r[2]].map((g,i)=>g?'<div class="m'+[2,1,3][i]+'"><span>'+AV[idx(g)%8]+'</span><b>'+escH(g.nick)+'</b>'+fmt(g.pts)+'</div>':'<div style="visibility:hidden"></div>').join("");
+  lobby('<h2 style="text-align:center">'+(r[0].id===MULTI.ja.id?"Wygrywasz!":escH(r[0].nick)+" wygrywa")+'</h2><div class="mp-podium">'+pod+'</div>'+listaGraczy(true)
+    +(MULTI.host?'<button class="big" id="mpRewanz">Rewanż</button>':'<div class="datastate">Gospodarz może zaproponować rewanż.</div>'));
+  if(r[0].id===MULTI.ja.id)setTimeout(ZP.fanfary,400);
+  if(MULTI.host)$("mpRewanz").onclick=()=>{MULTI.gracze.forEach(g=>g.pts=0);rozeslijLobby();};
+}
+window.addEventListener("beforeunload",()=>{try{MULTI&&MULTI.peer&&MULTI.peer.destroy();}catch(e){}});
 
 /* ---------- wynik ---------- */
 function koniec(){
@@ -419,7 +706,7 @@ function pokazWynik(res){
   const rows=w.querySelector(".rows");
   res.forEach((r,i)=>{const q=Q[i];if(!q)return;const d=document.createElement("div");d.className="r";
     d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
-    d.querySelector("b").textContent=q.t==="g"?q.c.n:q.t==="k"?q.p.full:q.t==="r"?q.c.n+": "+q.c.rzeka:q.t==="w"?q.a.n+" i "+q.b.n:q.c.n;
+    d.querySelector("b").textContent=q.t==="k"?q.p.full:q.t==="r"?q.c.n+": "+q.c.rzeka:q.t==="w"||q.t==="s"?(q.a.label||q.a.n)+" i "+(q.b.label||q.b.n):q.t==="t"?q.p.kod+": "+q.p.nazwa:q.t==="c"?q.c.n+": "+q.kluby.map(k=>k.klub).join(", "):q.t==="v"?q.c.n+": "+q.woj:q.c.n;
     d.querySelector("small").textContent=TYPY[r.t][1];
     const pt=d.querySelector(".pt");pt.textContent=r.pts;pt.className="pt "+(r.pts>=700?"ok":r.pts<300?"no":"");rows.appendChild(d);});
   w.classList.remove("hidden");
