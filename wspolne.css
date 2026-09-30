@@ -285,3 +285,31 @@ svg.laduje .cien{animation:migotanie 1s ease-in-out infinite}
 #zp-ency .ency-pasek b{font-family:"Fraunces",serif;font-size:18px}
 #zp-ency .ency-pasek button{width:40px;height:40px;border-radius:12px;border:1px solid var(--line-2);background:var(--ink-2);font-size:18px}
 #zp-ency iframe{flex:1;border:0;width:100%;background:var(--ink)}
+
+/* ── motyw „gra planszowa” dla ekranów gier (zgodny z planszą przygód) ── */
+html.plansza{--ink:#7DB36B;--ink-2:#FFF6E0;--ink-3:#F3E6C4;--line:#3A2A14;--line-2:#3A2A14;--paper:#3A2A14;--dim:#5A4A2F;
+  --gold:#F5B82E;--gold-2:#FFD15C;--gold-ink:#3A2A14;--ok:#27AE60;--red:#E84A3C;--teal:#1F7A6A;--warn:#E8A33A;--cien:0 5px 0 #3A2A14}
+html.plansza body{background:#7DB36B;font-family:Rubik,"Space Grotesk",system-ui,sans-serif;color:#3A2A14}
+html.plansza h1,html.plansza .setup h2,html.plansza .kr-ekran h2,html.plansza .summary .score,html.plansza .pytanie,html.plansza .wynik .suma,html.plansza .saga-wynik h2{font-family:Bungee,"Fraunces",sans-serif;font-weight:400;letter-spacing:0}
+html.plansza header{background:#FFF6E0;margin:calc(-1*(env(safe-area-inset-top,0px) + 8px)) -12px 0;padding:calc(env(safe-area-inset-top,0px) + 8px) 12px 8px;border-bottom:4px solid #3A2A14}
+html.plansza .back{background:#F5B82E;border:3px solid #3A2A14;box-shadow:0 3px 0 #3A2A14}
+html.plansza .big,html.plansza .feedback .next,html.plansza .klocek{background:#F5B82E;border:3px solid #3A2A14;box-shadow:0 5px 0 #3A2A14;color:#3A2A14;font-family:Bungee,sans-serif;font-weight:400}
+html.plansza .big:active,html.plansza .feedback .next:active{transform:translateY(4px);box-shadow:0 1px 0 #3A2A14}
+html.plansza .ghost{background:#FFF6E0;border:3px solid #3A2A14;box-shadow:0 4px 0 #3A2A14;color:#3A2A14}
+html.plansza .stage,html.plansza .panel,html.plansza .kr-karta,html.plansza .answers button,html.plansza .kr-woj,html.plansza .wpis input,html.plansza input[type=text],html.plansza select,
+html.plansza .ostatnia,html.plansza .karty2 .k,html.plansza .typy div,html.plansza .meta div,html.plansza .staty div,html.plansza .mp-gracz,html.plansza .wg{border:3px solid #3A2A14;box-shadow:0 4px 0 #3A2A14}
+html.plansza .answers button{background:#FFF6E0;color:#3A2A14;font-family:Rubik,sans-serif;font-weight:700}
+html.plansza .answers button.right{background:#27AE60;color:#fff}html.plansza .answers button.wrong{background:#E84A3C;color:#fff}
+html.plansza .feedback,html.plansza .stats,html.plansza .gora{background:#FFF6E0;border:3px solid #3A2A14;border-radius:14px;padding:6px 10px;box-shadow:0 4px 0 #3A2A14}
+html.plansza .feedback .txt strong{font-family:Bungee,sans-serif;font-weight:400;color:#3A2A14}
+html.plansza .tbar{background:#FFF6E0;border:2px solid #3A2A14;height:10px;border-radius:6px}
+html.plansza .segmenty i{background:#FFF6E0;border:2px solid #3A2A14;height:10px}
+html.plansza .segmenty i.g{background:#27AE60}html.plansza .segmenty i.y{background:#F5B82E}html.plansza .segmenty i.r{background:#E84A3C}html.plansza .segmenty i.teraz{background:#3A2A14}
+html.plansza .chip{color:#3A2A14;background:#F5B82E;border:2px solid #3A2A14}
+html.plansza .wpis .pokaz,html.plansza .pokazBtn{background:#FFF6E0;border:3px dashed #3A2A14;color:#3A2A14}
+html.plansza .kr-karta.wybrana{background:#F5B82E;box-shadow:0 4px 0 #3A2A14}
+html.plansza .kr-karta.wybrana b{color:#3A2A14}
+html.plansza .rows .r{border-bottom:2px dashed rgba(58,42,20,.35)}
+html.plansza .odznaka-d{background:#FFF6E0;color:#3A2A14;border:3px solid #3A2A14;animation:none}
+html.plansza .datastate,html.plansza .round{color:#3A2A14}
+html.plansza #zp-komunikat{background:#FFF6E0;color:#3A2A14;border:3px solid #3A2A14;box-shadow:0 5px 0 #3A2A14}

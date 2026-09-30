@@ -140,6 +140,19 @@ svg path{fill-rule:evenodd}
 .mp-dymek{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:900;background:rgba(10,24,27,.92);border:1px solid var(--ok);color:var(--paper);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap;animation:dymek 1.8s both;pointer-events:none}
 @keyframes dymek{0%{opacity:0;transform:translate(-50%,-6px)}12%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
 #wpis.bez-podp .pokaz{display:none}
+.saga-wynik{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;text-align:center}
+.saga-wynik h2{font-family:"Fraunces",serif;font-weight:900;font-size:34px;margin:0}
+.saga-wynik p{margin:0;color:var(--dim)}
+.saga-gw{display:flex;justify-content:center;gap:10px;margin-top:10px}
+.saga-gw span{font-size:64px;line-height:1;color:#2E4A4F;transform:scale(.8)}
+.saga-gw span:nth-child(2){font-size:80px;margin-top:-14px}
+.saga-gw span.zdobyta{color:#FFC93C;text-shadow:0 4px 0 #B8860B;animation:gwiazda .5s cubic-bezier(.3,1.6,.5,1) both}
+@keyframes gwiazda{0%{transform:scale(0) rotate(-40deg);opacity:0}100%{transform:scale(1) rotate(0);opacity:1}}
+.saga-odbl{background:rgba(93,202,165,.15);border:1px solid var(--ok);border-radius:14px;padding:10px;font-size:14px}
+.saga-odbl.nie{background:rgba(224,70,90,.12);border-color:var(--red)}
+.saga-wynik .btnrow a{flex:1;display:grid;place-items:center;text-decoration:none;min-height:54px;color:inherit}
+.saga-wynik>a.ghost{color:inherit}
+.saga-wynik .btnrow a.big{color:var(--gold-ink)}
 .pojedynek-wynik{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:16px;padding:10px 14px;animation:wejscie .4s .3s both}
 .pojedynek-wynik div{text-align:center}.pojedynek-wynik small{display:block;color:var(--dim);font-size:12px}
 .pojedynek-wynik b{font-family:"Fraunces",serif;font-size:26px}
@@ -171,7 +184,7 @@ svg path{fill-rule:evenodd}
     <span class="odznaka-d" id="odznaka">Wyzwanie dnia</span>
     <h2 id="startTytul">Osiem pytań,<br>jedna próba</h2>
     <p id="startOpis">Każdego dnia ten sam zestaw dla wszystkich. Porównaj wynik ze znajomymi.</p>
-    <div class="typy">
+    <div class="typy" id="typyLista">
       <div><span>🛰️</span>Z lotu ptaka</div><div><span>📍</span>Gdzie to jest?</div><div><span>📷</span>Co to za miasto?</div>
       <div><span>🗺️</span>Kształt powiatu</div><div><span>🛡️</span>Herb</div><div><span>🚗</span>Tablice</div>
       <div><span>⚖️</span>Więcej czy mniej</div><div><span>🌊</span>Rzeka</div><div id="typyWiecej" class="hidden"><span>⚽🤝🧭</span>Kluby, granice, województwa</div>
@@ -210,6 +223,7 @@ svg path{fill-rule:evenodd}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="konto.js"></script>
+<script src="saga.js"></script>
 <script src="tablice-powiaty.js"></script>
 <script src="peerjs.min.js"></script>
 <script src="topojson-client.min.js?v=16"></script>
@@ -217,7 +231,7 @@ svg path{fill-rule:evenodd}
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
-const TRYB=URLP.get("tryb")==="turniej"?"turniej":URLP.get("tryb")==="pojedynek"?"pojedynek":"dzien";
+const TRYB=["turniej","pojedynek","saga","kostka"].indexOf(URLP.get("tryb"))>=0?URLP.get("tryb"):"dzien";
 const MULTI=TRYB==="pojedynek"?{host:false,conns:{},gracze:[],ja:{id:"",nick:localStorage.getItem("nick")||"",aw:(window.Konto?Konto.profil().awatar:"🦊")},peer:null,kod:"",gra:null}:null;
 // wyzwanie od znajomego: te same pytania (ziarno i ustawienia w linku) i jego wynik do pobicia
 let RYWAL=URLP.get("od")?{nick:URLP.get("od").slice(0,20),wynik:+URLP.get("wynik")||0,nr:+URLP.get("nr")||0}:null;
@@ -291,7 +305,29 @@ function budujPytania(rnd,ile,filtr,kolej){
 
 /* ---------- start ---------- */
 function zapisane(){try{return JSON.parse(localStorage.getItem(KLUCZ)||"null");}catch(e){return null;}}
+let POZIOM=null;
+function krainaStart(){
+  // poziom planszy przygód albo rzut kostką: gotowa konfiguracja, bez konfiguratora
+  const reszta=gry=>gry.concat(WSZYSTKIE.filter(t=>!gry.some(g=>g.t===t)).map(t=>({t,ile:0})));
+  if(TRYB==="saga"){
+    POZIOM=Saga.poziom(Math.max(0,Math.min(Saga.ILE-1,+(URLP.get("poziom")||0))));
+    KONFIG={preset:"",gry:reszta(POZIOM.gry),kolej:"przeplatane",czas:0,podp:true,premia:false,wielk:"dsm",obszar:[POZIOM.woj]};
+    $("tytul").textContent="Poziom "+(POZIOM.n+1);document.title="Poziom "+(POZIOM.n+1)+" · PolskoZnawca";
+    $("odznaka").textContent=POZIOM.kraina.nazwa+" · poziom "+(POZIOM.nrWSwiecie+1)+" z "+Saga.NA_SWIAT;
+    $("startTytul").innerHTML=(POZIOM.boss?"Stolica regionu:<br>"+POZIOM.kraina.stolica:POZIOM.nazwa);
+    const s=Saga.stan(),gw=s.gw[POZIOM.n]||0;
+    $("startOpis").innerHTML=POZIOM.pytan+" pytań z województwa "+POZIOM.woj+". "+(POZIOM.boss?"Potrzebujesz 2 gwiazdek, żeby wyruszyć do kolejnej krainy.":"Zdobądź choć jedną gwiazdkę, żeby iść dalej.")+(gw?"<br>Twój rekord: "+"★".repeat(gw)+"☆".repeat(3-gw):"");
+  }else{
+    const f=Saga.KOSTKA.find(k=>k.id===URLP.get("kat"))||Saga.KOSTKA[0];
+    KONFIG={preset:"",gry:reszta(f.gry.map(([t,ile])=>({t,ile}))),kolej:"losowo",czas:0,podp:true,premia:false,wielk:"dsm",obszar:[]};
+    $("tytul").textContent="Rzut kostką";$("odznaka").textContent="Kostka wskazała: "+f.nazwa;
+    $("startTytul").innerHTML=f.nazwa+"!";$("startOpis").textContent="Pięć szybkich pytań z tej kategorii, z całej Polski.";
+  }
+  $("typyLista").innerHTML=KONFIG.gry.filter(g=>g.ile).map(g=>'<div><span>'+TYPY[g.t][0]+'</span>'+TYPY[g.t][1]+' ×'+g.ile+'</div>').join("");
+  $("start").classList.remove("hidden");
+}
 async function init(){
+  if(TRYB==="saga"||TRYB==="kostka"){krainaStart();$("stanDanych").textContent="Wczytywanie…";await laduj();$("stanDanych").textContent="";$("zaczynam").disabled=false;$("zaczynam").textContent="Graj";return;}
   if(MULTI){$("tytul").textContent="Kto pierwszy, ten lepszy";document.title="Kto pierwszy, ten lepszy · PolskoZnawca";lobbyStart();laduj();return;}
   if(TRYB==="turniej"){
     $("tytul").textContent="Turniej";
@@ -338,7 +374,7 @@ $("zaczynam").onclick=()=>{
   }else{
     if(!ZIARNO||st){ZIARNO=Math.random().toString(36).slice(2,8);RYWAL=null;}
     Q=pytaniaZKonfig(KONFIG,ZP.seeded("turniej-"+ZIARNO));
-    if(Q.length<6){ZP.komunikat("Za mało danych dla tego wyboru. Zaznacz większy obszar albo więcej wielkości miast.");return;}
+    if(Q.length<3){ZP.komunikat("Za mało danych dla tego wyboru. Zaznacz większy obszar albo więcej wielkości miast.");return;}
     st={i:-1,res:[]};
   }
   $("start").classList.add("hidden");
@@ -812,7 +848,31 @@ function podium(gr){
 window.addEventListener("beforeunload",()=>{try{MULTI&&MULTI.peer&&MULTI.peer.destroy();}catch(e){}});
 
 /* ---------- wynik ---------- */
+function wynikSaga(){
+  schowaj();["segmenty","gora","pytanie","stage","start"].forEach(id=>$(id).classList.add("hidden"));
+  const suma=st.res.reduce((a,r)=>a+r.pts,0),max=st.res.length*1000,proc=Math.round(100*suma/Math.max(1,max));
+  const gw=Saga.gwiazdki(proc),przed=Saga.stan(),bylOdbl=Saga.odblokowany(POZIOM.n+1,przed);
+  const s=Saga.zapisz(POZIOM.n,gw,suma),teraz=POZIOM.n+1<Saga.ILE&&Saga.odblokowany(POZIOM.n+1,s);
+  const zal=gw>=POZIOM.progGwiazd;
+  const w=$("wynik");
+  w.innerHTML='<div class="saga-wynik"><div class="saga-gw">'+[1,2,3].map(i=>'<span class="'+(i<=gw?"zdobyta":"")+'" style="animation-delay:'+(0.3+i*0.35)+'s">★</span>').join("")+'</div>'
+    +'<h2>'+(gw===3?"Perfekcyjnie!":gw===2?"Świetnie!":gw===1?"Zaliczone!":"Tym razem nie")+'</h2>'
+    +'<p>'+fmt(suma)+' pkt · '+proc+'% · '+POZIOM.kraina.nazwa+', poziom '+(POZIOM.nrWSwiecie+1)+'</p>'
+    +(zal&&!bylOdbl&&teraz?'<div class="saga-odbl">'+(POZIOM.boss?'Nowa kraina odblokowana: <b>'+Saga.SWIATY[POZIOM.swiat+1].nazwa+'</b>':'Odblokowany poziom '+(POZIOM.n+2))+'</div>':'')
+    +(!zal?'<div class="saga-odbl nie">'+(POZIOM.boss?"Stolica regionu wymaga 2 gwiazdek.":"Potrzebujesz choć jednej gwiazdki.")+'</div>':'')
+    +'<div class="btnrow">'+(teraz?'<a class="big" href="wyzwanie.html?tryb=saga&poziom='+(POZIOM.n+1)+'">Następny poziom</a>':'')
+    +'<a class="ghost" href="wyzwanie.html?tryb=saga&poziom='+POZIOM.n+'">Jeszcze raz</a></div>'
+    +'<a class="ghost" href="./#poziom='+(teraz?POZIOM.n+1:POZIOM.n)+'" style="display:grid;place-items:center;text-decoration:none;color:inherit">Wróć na planszę</a><div class="rows"></div></div>';
+  const rows=w.querySelector(".rows");
+  st.res.forEach((r,i)=>{const q=Q[i];if(!q)return;const d=document.createElement("div");d.className="r";
+    d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
+    d.querySelector("b").textContent=q.t==="k"?q.p.full:q.t==="t"?q.p.kod+": "+q.p.nazwa:q.t==="s"||q.t==="w"?(q.a.label||q.a.n)+" i "+(q.b.label||q.b.n):q.c.n;
+    d.querySelector("small").textContent=TYPY[r.t][1];const pt=d.querySelector(".pt");pt.textContent=r.pts;pt.className="pt "+(r.pts>=700?"ok":r.pts<300?"no":"");rows.appendChild(d);});
+  w.classList.remove("hidden");
+  if(gw>=2)setTimeout(ZP.fanfary,1200);
+}
 function koniec(){
+  if(TRYB==="saga")return wynikSaga();
   const suma=st.res.reduce((a,r)=>a+r.pts,0);
   if(TRYB==="dzien"){
     localStorage.setItem(KLUCZ,JSON.stringify({res:st.res,done:true}));

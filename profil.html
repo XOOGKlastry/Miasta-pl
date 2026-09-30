@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="wspolne.css?v=16" />
 <style>
 .przewijana{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:10px}
-.karta-gracza{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#173238,#11262A);border:1px solid var(--line-2);border-radius:20px;padding:14px}
+.karta-gracza{display:flex;align-items:center;gap:14px;background:var(--ink-2);border:3px solid var(--line-2);border-radius:20px;padding:14px;box-shadow:var(--cien)}
 .awatar{width:72px;height:72px;border-radius:50%;background:var(--gold);display:grid;place-items:center;font-size:40px;flex:none;border:3px solid var(--ink);box-shadow:0 0 0 2px var(--gold)}
 .karta-gracza input{width:100%;font-family:"Fraunces",serif;font-size:22px;font-weight:900;background:transparent;border:none;border-bottom:1px dashed var(--line-2);border-radius:0;padding:4px 0}
 .karta-gracza small{color:var(--dim);font-size:12.5px}
@@ -63,6 +63,7 @@
   </section>
   <section class="sekcja"><h3>Więcej</h3>
     <div class="linki">
+      <button id="motyw">🎨 Wygląd gier: <b id="motywNazwa"></b></button>
       <a href="statystyki.html">📊 Szczegółowe statystyki <span>›</span></a>
       <a href="encyklopedia.html">📖 Encyklopedia <span>›</span></a>
       <a href="admin.html">🛠️ Panel admina <span>›</span></a>
@@ -95,6 +96,8 @@ function rysuj(){
 $("nick").onchange=()=>{Konto.ustaw({nick:$("nick").value.trim().slice(0,14)});ZP.komunikat("Zapisano nick.");};
 $("usun").onclick=()=>{if(confirm("Usunąć profil, postęp i rekordy z tego urządzenia? Tego nie da się cofnąć.")){Konto.usunDane();location.href="./";}};
 $("wersja").textContent="wersja testowa";
+const mot=()=>localStorage.getItem("motyw")||"plansza";$("motywNazwa").textContent=mot()==="plansza"?"plansza (jasny)":"ciemny";
+$("motyw").onclick=()=>{localStorage.setItem("motyw",mot()==="plansza"?"ciemny":"plansza");location.reload();};
 rysuj();ZP.fitViewport();ZP.registerSW();
 </script>
 </body>

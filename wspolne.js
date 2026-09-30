@@ -633,6 +633,17 @@ function komunikat(tekst,ms){
   clearTimeout(el._t);el._t=setTimeout(()=>{el.className="";},ms||3800);
 }
 
+/* ---- motyw: „plansza” (jasny, jak plansza przygód) albo „ciemny” (dotychczasowy) ---- */
+(function(){
+  let m="plansza";try{m=localStorage.getItem("motyw")||"plansza";}catch(e){}
+  if(m==="plansza"){
+    document.documentElement.classList.add("plansza");
+    if(!document.querySelector('link[href*="family=Bungee"]')){
+      const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap";document.head.appendChild(l);
+    }
+  }
+})();
+
 /* ---- telefon: wysokość widocznego ekranu (klawiatura) ---- */
 function fitViewport(){
   const vv=window.visualViewport;

@@ -73,3 +73,11 @@ W **Miastach na czas** nie ma wyboru małe/średnie/duże — gra idzie przez ws
 - `baza.json`: ludność i powierzchnia z GUS (Bank Danych Lokalnych), herby i linki z Wikidata, hasła województw poprawione.
 - Po każdej odpowiedzi w grach jest odnośnik do encyklopedii (`ZP.dopiszEncykl`), otwierany w okienku nad grą (`ZP.encyklopedia`).
 - `kluby.json` i `kluby.html` („Jaki to klub?”): Ekstraklasa, 1. i 2. liga sezonu 2026/27 oraz znane kluby niższych lig; edycja w panelu admina (zakładka „Kluby”).
+
+
+## Nowy układ: plansza przygód
+
+- `index.html`: plansza przygód jak w grach typu saga. 16 krain (województwa, od Bałtyku po Tatry), w każdej 6 poziomów, ostatni to „stolica regionu” (wymaga 2 gwiazdek). Poziomy grane są w `wyzwanie.html?tryb=saga&poziom=N`, pytania pochodzą z danego województwa. Definicje: `saga.js`, postęp: `localStorage["saga-v1"]`.
+- Kostka na planszy losuje kategorię (Mapa, Zdjęcia, Symbole, Granice, Liczby, Rzeki) i uruchamia `wyzwanie.html?tryb=kostka&kat=…`.
+- Dolny pasek: Plansza, Codzienne (`codzienne.html`), Znajomi, Gry (`gry.html`, wszystkie gry i własna gra), Profil.
+- Wygląd: `plansza.css` dla nowych ekranów i motyw `html.plansza` w `wspolne.css` dla wszystkich gier (przełącznik w profilu: plansza albo ciemny).

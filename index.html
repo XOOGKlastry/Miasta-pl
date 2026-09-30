@@ -3,194 +3,206 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>PolskoZnawca — Cudze chwalicie, a Polskę znacie?</title>
-<meta name="theme-color" content="#0C1A1D" />
+<title>PolskoZnawca · Plansza</title>
+<meta name="theme-color" content="#FFF6E0" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <link rel="manifest" href="manifest.webmanifest" />
-<link rel="apple-touch-icon" href="icon-192.png?v=14" />
+<link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="icon" href="icon.svg?v=14" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="plansza.css?v=1" />
 <style>
-:root{--ink:#0A181B;--ink-2:#11262A;--ink-3:#173238;--line:#1E4148;--paper:#E8F1EE;--dim:#8FAAA8;
-  --gold:#F2C14E;--teal:#7FD8C6;--red:#E4485A;--r:16px}
-*{box-sizing:border-box}
-html,body{margin:0;padding:0;height:100%}
-body{background:var(--ink);color:var(--paper);overflow:hidden;font-family:"Space Grotesk",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
-.wrap{height:var(--app-h,100dvh);max-width:560px;margin:0 auto;display:flex;flex-direction:column;position:relative}
-
-/* nagłówek */
-header{display:flex;align-items:center;gap:10px;flex:none;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 6px}
-header img{width:38px;height:38px;border-radius:10px;flex:none}
-header h1{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:22px;line-height:1;margin:0}
-header .tag{display:block;font-size:11.5px;color:var(--dim);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-header>div:nth-child(2){min-width:0}
-.zeton{margin-left:auto;display:flex;gap:6px;flex:none}
-.zeton span,.zeton a{white-space:nowrap;display:flex;align-items:center;gap:4px;background:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums}
-.zeton .poz{color:var(--teal)}
-
-/* przewijana część */
-.srodek{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:4px 0 10px;scrollbar-width:none}
-.srodek::-webkit-scrollbar{display:none}
-
-/* wyzwanie dnia: jedyny głośny element */
-.dzien{position:relative;display:block;margin:4px 14px 10px;padding:13px 16px 12px;border-radius:22px;overflow:hidden;
-  background:linear-gradient(135deg,#F2C14E 0%,#F6A94A 55%,#E4485A 130%);color:#2A1804;min-height:108px}
-.dzien svg.kontur{position:absolute;right:-18px;top:-10px;width:170px;height:170px;opacity:.28}
-.dzien svg.kontur path{fill:#2A1804;stroke:none}
-.dzien .nr{font-size:13px;font-weight:700;opacity:.8}
-.dzien h2{font-family:"Fraunces",Georgia,serif;font-weight:900;font-size:28px;line-height:1;margin:4px 0 6px;max-width:72%}
-.dzien p{margin:0;font-size:13px;max-width:62%;opacity:.9;line-height:1.35}
-.dzien .akcja{position:absolute;right:14px;bottom:14px;background:#2A1804;color:#FFE7A3;border-radius:999px;padding:9px 16px;font-weight:700;font-size:14px}
-.dzien .kratki{position:absolute;right:14px;bottom:16px;font-size:17px;letter-spacing:2px}
-.dzien:active{transform:scale(.99)}
-.skroty{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:7px;margin:0 14px 10px}
-.skroty a{display:flex;flex-direction:column;justify-content:center;gap:1px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:8px 10px;min-width:0;min-height:62px}
-.skroty a:active{background:var(--ink-3)}
-.skroty .em{font-size:18px;line-height:1}
-.skroty a b{font-size:13px;line-height:1.15}
-.skroty a small{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* kategorie: zwarte karty w dwóch kolumnach, wszystkie gry widać od razu */
-.sekcja{margin:0 14px 9px}
-.sekcja h2{font-family:"Fraunces",Georgia,serif;font-weight:700;font-size:16px;margin:0 0 5px;display:flex;align-items:center;gap:8px}
-.sekcja h2::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--kol)}
-.siatka{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.gra{display:grid;grid-template-columns:30px 1fr;column-gap:9px;align-items:center;padding:7px 10px 8px;min-height:48px;
-  border-radius:14px;background:var(--ink-2);border:1px solid var(--line);border-left:3px solid var(--kol);position:relative;overflow:hidden;transition:transform .15s}
-.gra:active{transform:scale(.97);background:var(--ink-3)}
-.gra .ico{width:30px;height:30px;display:grid;place-items:center}
-.gra .ico svg,.gra .ico img{width:100%;height:100%;object-fit:contain}
-.gra b{font-size:13.5px;line-height:1.15}
-
-.gra .postep{position:absolute;left:0;right:0;bottom:0;height:3px;background:transparent}
-.gra .postep i{display:block;height:100%;width:0;background:var(--kol)}
-.gra .nowa{position:absolute;top:7px;right:8px;width:7px;height:7px;border-radius:50%;background:var(--kol);font-size:0}
-.s-mapa{--kol:var(--teal)}.s-adm{--kol:var(--gold)}.s-sym{--kol:var(--red)}
-.plate{width:32px;height:14px;border-radius:3px;background:#F4F4F2;border:1px solid #111;display:flex;overflow:hidden}
-.plate i{width:7px;background:#1546B8}
-.plate span{flex:1;display:grid;place-items:center;color:#111;font:700 10px/1 "Space Grotesk",sans-serif}
-
-/* dolna nawigacja */
-nav.dol{flex:none;display:flex;border-top:1px solid var(--line);background:rgba(10,24,27,.96);padding:6px 8px calc(env(safe-area-inset-bottom,0px) + 6px)}
-nav.dol a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;border-radius:12px;font-size:11.5px;color:var(--dim)}
-nav.dol a span{font-size:20px;line-height:1}
-nav.dol a.akt{color:var(--gold)}
-nav.dol a:active{background:var(--ink-2)}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
-@media (max-height:700px){.dzien{min-height:104px}.dzien p{display:none}}
+.mapa{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.mapa::-webkit-scrollbar{display:none}
+.plotno{position:relative;width:100%}
+.pas{position:absolute;left:0;right:0}
+.pas::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(58,42,20,.08) 1.5px,transparent 1.5px);background-size:16px 16px}
+.sciezka{position:absolute;left:0;top:0;pointer-events:none}
+.baner{position:absolute;left:12px;right:12px;display:flex;align-items:center;gap:10px;padding:8px 12px;z-index:2}
+.baner svg.woj{width:54px;height:46px;flex:none}
+.baner svg.woj path{fill:var(--zolt);stroke:var(--braz);stroke-width:1.6;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.baner b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:16px;line-height:1.05}
+.baner small{font-size:12px;font-weight:700;color:var(--braz-2)}
+.baner .gw{margin-left:auto;font-weight:900;font-size:14px;white-space:nowrap}
+.baner.zamk{filter:grayscale(.7);opacity:.85}
+.wezel{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;z-index:3;background:none;border:none;padding:0}
+.wezel .kolo{width:58px;height:58px;border-radius:50%;border:4px solid var(--braz);display:grid;place-items:center;font-family:Bungee,sans-serif;font-size:19px;
+  box-shadow:0 5px 0 var(--braz);transition:transform .1s,box-shadow .1s;background:var(--zolt)}
+.wezel:active .kolo{transform:translateY(4px);box-shadow:0 1px 0 var(--braz)}
+.wezel.zrobiony .kolo{background:var(--zolt)}
+.wezel.teraz .kolo{background:var(--czer);color:#fff;animation:puls 1.6s ease-in-out infinite}
+.wezel.zamkniety .kolo{background:#C9C0A0;color:#8A7F62;box-shadow:0 5px 0 #8A7F62;border-color:#8A7F62}
+.wezel.boss .kolo{width:74px;height:74px;font-size:15px}
+.wezel .gwiazdki{margin-top:5px;display:flex;gap:1px;font-size:15px;line-height:1;color:#6E6446;text-shadow:0 1px 0 var(--krem)}
+.wezel .gwiazdki .z{color:#FFC93C;text-shadow:0 2px 0 var(--braz)}
+@keyframes puls{0%,100%{box-shadow:0 5px 0 var(--braz),0 0 0 0 rgba(232,74,60,.6)}50%{box-shadow:0 5px 0 var(--braz),0 0 0 12px rgba(232,74,60,0)}}
+.pionek{position:absolute;z-index:4;width:34px;height:46px;transform:translate(-50%,-100%);pointer-events:none;transition:left .9s cubic-bezier(.4,1.4,.6,1),top .9s cubic-bezier(.4,1.4,.6,1)}
+.pionek svg{width:100%;height:100%;animation:skok 1.2s ease-in-out infinite}
+@keyframes skok{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.kostka-btn{position:absolute;right:14px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:6;width:66px;height:66px;border-radius:18px;background:var(--krem);border:4px solid var(--braz);box-shadow:0 6px 0 var(--braz);display:grid;place-items:center;padding:0}
+.kostka-btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--braz)}
+.kostka-btn span{position:absolute;bottom:-22px;left:50%;transform:translateX(-50%);font-family:Bungee,sans-serif;font-size:11px;color:var(--krem);white-space:nowrap;text-shadow:0 2px 0 var(--braz)}
+.dzis-btn{position:absolute;left:14px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:6;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:16px;background:var(--krem);border:4px solid var(--braz);box-shadow:0 6px 0 var(--braz);font-weight:900;font-size:13px;max-width:62%}
+.dzis-btn i{width:10px;height:10px;border-radius:50%;background:var(--czer);flex:none;animation:puls-k 1.2s infinite}
+@keyframes puls-k{50%{transform:scale(1.4)}}
+/* arkusz poziomu */
+.cien{position:absolute;inset:0;z-index:20;background:rgba(40,28,10,.55);animation:pojaw .2s both}
+@keyframes pojaw{from{opacity:0}}
+.arkusz{position:absolute;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));z-index:21;padding:16px;animation:wjedz .3s cubic-bezier(.2,1.3,.4,1) both}
+@keyframes wjedz{from{transform:translateY(40px);opacity:0}}
+.arkusz h2{font-family:Bungee,sans-serif;font-weight:400;font-size:26px;margin:0}
+.arkusz p{margin:4px 0 10px;font-weight:700;color:var(--braz-2)}
+.arkusz .gry{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.arkusz .gry span{background:#fff;border:3px solid var(--braz);border-radius:10px;padding:4px 9px;font-size:12.5px;font-weight:700}
+.arkusz .rek{font-size:26px;color:#6E6446;letter-spacing:2px}.arkusz .rek .z{color:#FFC93C;text-shadow:0 2px 0 var(--braz)}
+.arkusz .rzad{display:flex;gap:10px;align-items:center}
+.arkusz .klocek{flex:1}
+/* kostka */
+.rzut{position:absolute;inset:0;z-index:21;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:20px}
+.scena{width:130px;height:130px;perspective:600px}
+.kostka{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 1.6s cubic-bezier(.2,.9,.25,1)}
+.sciana{position:absolute;inset:0;background:var(--krem);border:5px solid var(--braz);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:Bungee,sans-serif;font-size:13px}
+.sciana svg{width:46px;height:46px}
+.rzut .wynik{font-family:Bungee,sans-serif;font-size:28px;color:var(--krem);text-shadow:0 3px 0 var(--braz);text-align:center;min-height:36px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <img src="icon.svg?v=14" alt="">
-    <div><h1>PolskoZnawca</h1><span class="tag">Cudze chwalicie, a Polskę znacie?</span></div>
-    <div class="zeton"><span id="seria" title="Dni z rzędu w wyzwaniu">🔥 0</span><a href="profil.html" class="poz" id="poziom" title="Twój profil">Poz. 1</a></div>
+  <header class="gora">
+    <img src="icon.svg?v=14" alt="" width="36" height="36" style="border-radius:10px;border:3px solid var(--braz)">
+    <h1>PolskoZnawca<small id="kraina">Plansza przygód</small></h1>
+    <span class="zeton"><span class="gw">★</span><span id="sumaGw">0</span></span>
+    <span class="zeton" title="Seria dni"><svg width="16" height="16" viewBox="0 0 24 24" fill="#E84A3C" stroke="#3A2A14" stroke-width="2"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 3 3 5 1-2 0-5 0-8z"/></svg><span id="seria">0</span></span>
   </header>
-
-  <div class="srodek">
-  <a class="dzien" href="wyzwanie.html" id="dzien">
-    <svg class="kontur" viewBox="0 0 100 100" id="pl" aria-hidden="true"></svg>
-    <span class="nr" id="dNr">Wyzwanie dnia</span>
-    <h2 id="dTyt">Osiem pytań na dziś</h2>
-    <p id="dOpis">Ten sam zestaw dla wszystkich. Porównaj wynik ze znajomymi.</p>
-    <span class="akcja" id="dAkcja">Zagraj</span>
-  </a>
-  <div class="skroty">
-    <a href="szostka.html"><span class="em">🎯</span><b>Do sześciu razy sztuka</b><small id="szStan">miasto dnia</small></a>
-    <a href="cieplo.html"><span class="em">🌡️</span><b>Ciepło-zimno</b><small id="cStan">gmina dnia</small></a>
-    <a href="wyzwanie.html?tryb=turniej"><span class="em">🎛️</span><b>Własna gra</b><small>ustaw gry i kolejność</small></a>
-  </div>
-
-  <section class="sekcja s-mapa"><h2>Mapa i miasta</h2><div class="siatka">
-    <a class="gra" href="gdzie.html" data-k="miasto" title="Wskaż miasto na mapie"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 12 L20 6 L34 9 L40 20 L36 36 L22 40 L9 34 L5 22 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M23 12c-5 0-8 3.6-8 8 0 6 8 13 8 13s8-7 8-13c0-4.4-3-8-8-8z" fill="#F2C14E"/></svg></span><b>Gdzie to jest?</b><i class="postep"><i></i></i></a>
-    <a class="gra" href="zdjecie.html" data-k="miasto" title="Miasto z lotu ptaka"><span class="ico"><svg viewBox="0 0 46 46"><rect x="3" y="3" width="40" height="40" rx="5" fill="#3F5A33"/><path d="M3 30 L20 22 L43 34 V43 H3Z" fill="#6E8B45"/><path d="M3 12 L43 20" stroke="#B9B2A0" stroke-width="3"/><path d="M24 3 L18 43" stroke="#B9B2A0" stroke-width="2.5"/><rect x="27" y="7" width="8" height="6" fill="#B24A3E"/><rect x="8" y="16" width="6" height="7" fill="#C9C2B0"/><rect x="29" y="24" width="7" height="5" fill="#B24A3E"/><path d="M3 40 C14 36 26 44 43 38" stroke="#5AA9E6" stroke-width="3" fill="none"/></svg></span><b>Z lotu ptaka</b><i class="postep"><i></i></i></a>
-    <a class="gra" href="miasto.html" data-k="miejsce" title="Zdjęcie rynku albo zabytku"><span class="ico"><svg viewBox="0 0 46 46"><rect x="3" y="8" width="40" height="30" rx="4" fill="#1D3D43" stroke="#F2C14E" stroke-width="2"/><path d="M9 34 V22 L14 17 L19 22 V34 M22 34 V14 L26 9 L30 14 V34 M33 34 V24 H38 V34" fill="#E8F1EE"/><circle cx="36" cy="14" r="3" fill="#F2C14E"/></svg></span><b>Co to za miasto?</b><i class="postep"><i></i></i></a>
-    <a class="gra" href="miasta.html" data-k="" title="Ile miast wymienisz?"><span class="ico"><svg viewBox="0 0 46 46"><g fill="#F2C14E"><circle cx="12" cy="14" r="5"/><circle cx="30" cy="10" r="3.5"/><circle cx="24" cy="26" r="6.5"/><circle cx="36" cy="30" r="3.5"/><circle cx="12" cy="34" r="3.5"/></g></svg></span><b>Miasta na czas</b><i class="postep"><i></i></i></a>
-  </div></section>
-  <section class="sekcja s-sym"><h2>Polska na co dzień</h2><div class="siatka">
-    <a class="gra" href="tablice.html" data-k="" title="Kody tablic rejestracyjnych"><span class="ico"><span class="plate"><i></i><span>WA</span></span></span><b>Tablice</b><i class="postep"><i></i></i></a>
-    <a class="gra" href="kluby.html" data-k="klub" title="Kluby piłkarskie z miast"><span class="ico"><svg viewBox="0 0 46 46"><circle cx="23" cy="23" r="18" fill="#E8F1EE" stroke="#0A181B" stroke-width="1.5"/><path d="M23 13 l7 5 -3 8 h-8 l-3 -8z" fill="#0A181B"/><path d="M23 13 V6 M30 18 l7 -3 M27 26 l4 7 M19 26 l-4 7 M16 18 l-7 -3" stroke="#0A181B" stroke-width="1.5"/></svg></span><b>Jaki to klub?</b><i class="postep"><i></i></i></a>
-    <a class="gra" href="herb.html" data-k="herb" title="Herb i cztery miasta"><span class="ico"><img src="herby/tychy.webp" alt=""></span><b>Jaki to herb?</b><i class="postep"><i></i></i></a>
-    <a class="gra" href="rzeki.html" data-k="rzeka" title="Miasto i jego rzeka"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 6 C18 14, 4 22, 14 30 C22 36, 18 40, 22 44" stroke="#5AA9E6" stroke-width="5" fill="none"/><circle cx="30" cy="18" r="5" fill="#F2C14E"/></svg></span><b>Nad jaką rzeką?</b><i class="postep"><i></i></i></a>
-    <a class="gra" href="wiecej.html" data-k="ludnosc" title="Które miasto jest większe?"><span class="ico"><svg viewBox="0 0 46 46"><path d="M23 6 V38 M14 40 H32" stroke="#E8F1EE" stroke-width="2.5" stroke-linecap="round"/><path d="M8 13 H38" stroke="#E8F1EE" stroke-width="2.5" stroke-linecap="round" transform="rotate(-8 23 13)"/><circle cx="23" cy="6" r="2.5" fill="#E8F1EE"/><path d="M8 12 L3 25 H14 Z M38 8 L33 21 H44 Z" fill="none" stroke="#E8F1EE" stroke-width="1.6" stroke-linejoin="round"/><path d="M3 25 A5.5 3.5 0 0 0 14 25 Z" fill="#F2C14E"/><path d="M33 21 A5.5 3.5 0 0 0 44 21 Z" fill="#4F7F86"/></svg></span><b>Więcej czy mniej?</b><i class="postep"><i></i></i></a>
-  </div></section>
-  <section class="sekcja s-adm"><h2>Granice</h2><div class="siatka">
-    <a class="gra" href="ksztalt.html" data-k="powiat" title="Sam kontur na zdjęciu"><span class="ico"><svg viewBox="0 0 46 46"><path d="M10 14 L17 7 L26 10 L33 6 L39 14 L36 22 L40 30 L31 39 L22 35 L13 38 L7 29 L11 22 Z" fill="#3F5A33" stroke="#F2C14E" stroke-width="2"/></svg></span><b>Kształt powiatu</b><i class="postep"><i></i></i></a>
-    <a class="gra" href="slepa.html" data-k="powiat" title="Znajdź na pustej mapie"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 8 H38 V38 H8 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M8 8 H23 V23 H8 Z" fill="#5DCAA5" opacity=".7"/><circle cx="30" cy="30" r="5" fill="#F2C14E"/></svg></span><b>Gdzie ten powiat?</b><i class="postep"><i></i></i></a>
-    <a class="gra" href="slepa.html?tryb=g" data-k="gmina" title="Znajdź na pustej mapie"><span class="ico"><svg viewBox="0 0 46 46"><path d="M8 8 H38 V38 H8 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M8 23 H23 M23 8 V38 M23 30 H38" stroke="#4F7F86"/><path d="M23 23 H38 V30 H23 Z" fill="#5DCAA5" opacity=".8"/><circle cx="30" cy="26" r="3.5" fill="#F2C14E"/></svg></span><b>Gdzie ta gmina?</b><i class="postep"><i></i></i></a>
-    <a class="gra" href="sasiedzi.html" data-k="powiat" title="Czy mają wspólną granicę?"><span class="ico"><svg viewBox="0 0 46 46"><path d="M4 8 H22 V38 H4 Z" fill="#F2C14E"/><path d="M24 8 H42 V38 H24 Z" fill="#5DCAA5"/></svg></span><b>Graniczą czy nie?</b><i class="postep"><i></i></i></a>
-    <a class="gra" href="powiaty.html" data-k="powiat" title="Wszystkie w województwie"><span class="ico"><svg viewBox="0 0 46 46"><path d="M6 8 H40 V38 H6 Z" fill="#1D3D43" stroke="#4F7F86"/><path d="M6 8 H22 V22 H6 Z" fill="#F2C14E"/></svg></span><b>Wymień powiaty</b><i class="postep"><i></i></i></a>
-  </div></section>
-  </div>
-
+  <div class="mapa" id="mapa"><div class="plotno" id="plotno"></div></div>
+  <a class="dzis-btn" href="codzienne.html" id="dzisBtn"><i></i><span id="dzisTxt">Wyzwanie dnia czeka</span></a>
+  <button class="kostka-btn" id="kostkaBtn" aria-label="Rzuć kostką"><svg width="40" height="40" viewBox="0 0 40 40"><rect x="3" y="3" width="34" height="34" rx="8" fill="#E84A3C" stroke="#3A2A14" stroke-width="3"/><circle cx="12" cy="12" r="3.3" fill="#fff"/><circle cx="28" cy="12" r="3.3" fill="#fff"/><circle cx="20" cy="20" r="3.3" fill="#fff"/><circle cx="12" cy="28" r="3.3" fill="#fff"/><circle cx="28" cy="28" r="3.3" fill="#fff"/></svg><span>Rzuć kostką</span></button>
+  <div id="warstwa"></div>
   <nav class="dol">
-    <a class="akt" href="./"><span>🎮</span>Graj</a>
-    <a href="pojedynek.html"><span>⚔️</span>Ze znajomymi</a>
-    <a href="encyklopedia.html"><span>📖</span>Encyklopedia</a>
-    <a href="profil.html"><span id="navAw">👤</span>Profil</a>
-  </nav>
+  <a href="./" class="akt" data-n="plansza"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20c0-4 3-4 3-8s-3-4-3-8"/><circle cx="16" cy="6" r="2.5"/><circle cx="16" cy="18" r="2.5"/><path d="M16 8.5v7"/></svg>Plansza</a>
+  <a href="codzienne.html" data-n="codzienne"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Codzienne</a>
+  <a href="wyzwanie.html?tryb=pojedynek" data-n="znajomi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15 20c0-2.5 1.5-4.5 4-4.5"/></svg>Znajomi</a>
+  <a href="gry.html" data-n="gry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Gry</a>
+  <a href="profil.html" data-n="profil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Profil</a>
+</nav>
 </div>
 <script src="konto.js"></script>
+<script src="saga.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-try{const pr=Konto.profil();document.getElementById("navAw").textContent=pr.awatar;}catch(e){}
+const TYPY={z:"Z lotu ptaka",g:"Gdzie to jest?",m:"Co to za miasto?",k:"Kształt powiatu",h:"Herb",t:"Tablice",r:"Rzeka",c:"Kluby",w:"Więcej czy mniej",s:"Graniczą?",v:"Województwo"};
+const IKK={mapa:'<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',zdjecia:'<rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M8 7l1.5-3h5L16 7"/>',
+  symbole:'<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>',granice:'<path d="M5 4l9 2 5 6-3 8-9-1-3-7z"/>',liczby:'<path d="M12 3v18M5 21h14M4 8h16M7 8l-3 7h6zM17 8l-3 7h6z"/>',woda:'<path d="M3 8c3-3 6 3 9 0s6 3 9 0M3 15c3-3 6 3 9 0s6 3 9 0"/>'};
 const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}catch(e){return d;}};
-// wyzwanie dnia i seria
-(function(){
-  const d=new Date(),dzien=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-  const nr=Math.floor((new Date(dzien+"T12:00:00")-new Date(2026,8,20))/864e5)+1;
-  const ds=czytaj("dzis-"+dzien,null),ser=czytaj("dzis-seria",{n:0,last:""});
-  const wczoraj=new Date(d);wczoraj.setDate(d.getDate()-1);
-  const wk=wczoraj.getFullYear()+"-"+String(wczoraj.getMonth()+1).padStart(2,"0")+"-"+String(wczoraj.getDate()).padStart(2,"0");
-  const seria=(ser.last===dzien||ser.last===wk)?ser.n:0;
-  $("seria").textContent="🔥 "+seria;
-  $("dNr").textContent="Wyzwanie dnia #"+nr;
-  if(ds&&ds.done){
-    const tot=ds.res.reduce((a,r)=>a+r.pts,0);
-    $("dTyt").textContent=tot.toLocaleString("pl-PL")+" pkt";
-    const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);const s=Math.floor((m-n)/1000);
-    $("dOpis").textContent="Dzisiejsze za Tobą. Kolejne za "+Math.floor(s/3600)+" h "+Math.floor(s%3600/60)+" min.";
-    const a=$("dAkcja");a.className="kratki";a.textContent=ds.res.map(r=>r.pts>=700?"🟩":r.pts>=300?"🟨":"🟥").join("");
-  }else if(ds&&ds.res&&ds.res.length){$("dTyt").textContent="Dokończ wyzwanie";$("dOpis").textContent="Zostało "+(8-ds.res.length)+" z 8 pytań.";$("dAkcja").textContent="Wróć";}
-  else if(seria>0){$("dOpis").textContent="Seria "+seria+" "+(seria===1?"dzień":"dni")+". Zagraj, żeby jej nie przerwać.";}
-})();
-// poziom i opanowanie z trybu nauki
-(function(){
-  const n=czytaj("nauka-v1",{});let ok=0;const opan={},razem={};
-  Object.entries(n).forEach(([k,r])=>{ok+=r.ok||0;const kind=k.split(":")[0];razem[kind]=(razem[kind]||0)+1;if((r.ok||0)-(r.no||0)>=2)opan[kind]=(opan[kind]||0)+1;});
-  $("poziom").textContent="Poz. "+(Math.floor(Math.sqrt(ok/8))+1);
-  const PULA={miasto:260,miejsce:130,powiat:380,gmina:2477,herb:1000,rzeka:830,klub:62,ludnosc:260};
-  document.querySelectorAll(".gra").forEach(a=>{
-    const k=a.dataset.k,bar=a.querySelector(".postep i");
-    if(!k||!razem[k]){a.insertAdjacentHTML("beforeend",'<span class="nowa">nowa</span>');a.querySelector(".postep").style.visibility="hidden";return;}
-    bar.style.width=Math.max(3,Math.min(100,100*(opan[k]||0)/PULA[k])).toFixed(1)+"%";
-    a.title=(opan[k]||0)+" opanowanych";
-  });
-})();
-// stan „Do sześciu razy sztuka”
-(function(){
-  const d=new Date(),k="szostka-"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
-  const s=czytaj(k,null),st=czytaj("szostka-stat",{});
-  if(s&&s.proby&&s.proby.length){
-    const done=st.ost===k.slice(8);
-    $("szStan").textContent=done?"rozwiązane ✓":"próba "+s.proby.length+" z 6";
+const STEP=96,BANER=110,GORA=140,DOL=150;
+let WOJ={},stan=Saga.stan(),biez=Saga.biezacy(stan);
+
+function wspolrzedne(W){
+  // od dołu: poziom 0 na dole, każda kraina zaczyna się banerem
+  const pts=[],H=GORA+DOL+Saga.ILE*STEP+Saga.SWIATY.length*BANER;
+  for(let n=0;n<Saga.ILE;n++){
+    const s=Math.floor(n/Saga.NA_SWIAT);
+    const y=H-DOL-n*STEP-(s+1)*BANER-STEP/2;
+    const x=W/2+Math.sin(n*0.95)*Math.min(120,W*0.3);
+    pts.push({x,y});
   }
-  const c=czytaj("cieplo-"+k.slice(8),null),cs=czytaj("cieplo-stat",{});
-  if(c&&c.proby&&c.proby.length)$("cStan").textContent=cs.ost===k.slice(8)?"rozwiązane ✓":c.proby.length+" prób";
+  return {pts,H};
+}
+function gwiazdkiHtml(g){return [1,2,3].map(i=>'<span class="'+(i<=g?"z":"")+'">★</span>').join("");}
+function rysuj(){
+  const W=$("mapa").clientWidth,{pts,H}=wspolrzedne(W),pl=$("plotno");
+  pl.style.height=H+"px";
+  let h="";
+  // pasy krain
+  Saga.SWIATY.forEach((sw,s)=>{
+    const dol=H-DOL-s*(Saga.NA_SWIAT*STEP+BANER)+ (s===0?DOL:0),gora=H-DOL-(s+1)*(Saga.NA_SWIAT*STEP+BANER);
+    h+='<div class="pas" style="top:'+gora+'px;height:'+(dol-gora)+'px;background:'+sw.kolor+'"></div>';
+  });
+  // ścieżka
+  let d="M"+pts[0].x.toFixed(0)+" "+(pts[0].y+60).toFixed(0);
+  pts.forEach((p,i)=>{if(i===0){d+=" L"+p.x.toFixed(0)+" "+p.y.toFixed(0);return;}const a=pts[i-1];d+=" C"+a.x.toFixed(0)+" "+((a.y+p.y)/2).toFixed(0)+" "+p.x.toFixed(0)+" "+((a.y+p.y)/2).toFixed(0)+" "+p.x.toFixed(0)+" "+p.y.toFixed(0);});
+  h+='<svg class="sciezka" width="'+W+'" height="'+H+'"><path d="'+d+'" fill="none" stroke="#3A2A14" stroke-width="34" stroke-linecap="round" opacity=".25"/><path d="'+d+'" fill="none" stroke="#F3E6C4" stroke-width="26" stroke-linecap="round"/><path d="'+d+'" fill="none" stroke="#B89A5E" stroke-width="3" stroke-dasharray="10 10"/></svg>';
+  // banery krain
+  Saga.SWIATY.forEach((sw,s)=>{
+    const y=H-DOL-s*(Saga.NA_SWIAT*STEP+BANER)-BANER+18;
+    const gw=[...Array(Saga.NA_SWIAT)].reduce((a,_,i)=>a+(stan.gw[s*Saga.NA_SWIAT+i]||0),0);
+    const otw=Saga.odblokowany(s*Saga.NA_SWIAT,stan);
+    h+='<div class="baner pole'+(otw?"":" zamk")+'" style="top:'+y+'px">'+(WOJ[sw.woj]||'<svg class="woj"></svg>')+'<div><b>'+sw.nazwa+'</b><small>Kraina '+(s+1)+' · stolica: '+sw.stolica+'</small></div><span class="gw">★ '+gw+'/'+(Saga.NA_SWIAT*3)+'</span></div>';
+  });
+  // węzły
+  pts.forEach((p,n)=>{
+    const poz=Saga.poziom(n),g=stan.gw[n]||0,otw=Saga.odblokowany(n,stan);
+    const kl=(n===biez?"teraz":otw?"zrobiony":"zamkniety")+(poz.boss?" boss":"");
+    const tresc=!otw?'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A7F62" stroke-width="2.6"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
+      :poz.boss?'<svg width="34" height="30" viewBox="0 0 34 30"><path d="M3 26 L3 8 L10 15 L17 3 L24 15 L31 8 L31 26 Z" fill="'+(n===biez?"#fff":"#E84A3C")+'" stroke="#3A2A14" stroke-width="2.5" stroke-linejoin="round"/></svg>':String(n+1);
+    h+='<button class="wezel '+kl+'" data-n="'+n+'" style="left:'+p.x.toFixed(0)+'px;top:'+p.y.toFixed(0)+'px"><span class="kolo">'+tresc+'</span>'+(otw&&n!==biez||g?'<span class="gwiazdki">'+gwiazdkiHtml(g)+'</span>':'')+'</button>';
+  });
+  h+='<div class="pionek" id="pionek"><svg viewBox="0 0 34 46"><ellipse cx="17" cy="43" rx="12" ry="3" fill="#3A2A14" opacity=".35"/><path d="M8 40 Q8 30 13 26 Q9 22 9 16 A8 8 0 0 1 25 16 Q25 22 21 26 Q26 30 26 40 Z" fill="#2E86DE" stroke="#3A2A14" stroke-width="3" stroke-linejoin="round"/><circle cx="14" cy="14" r="2.5" fill="#fff" opacity=".7"/></svg></div>';
+  pl.innerHTML=h;
+  pl.querySelectorAll(".wezel").forEach(b=>b.onclick=()=>arkusz(+b.dataset.n));
+  return pts;
+}
+function pionekNa(p,natychmiast){const pn=$("pionek");if(natychmiast)pn.style.transition="none";pn.style.left=p.x+"px";pn.style.top=(p.y-34)+"px";if(natychmiast){void pn.offsetWidth;pn.style.transition="";}}
+function arkusz(n){
+  const poz=Saga.poziom(n),otw=Saga.odblokowany(n,stan),g=stan.gw[n]||0;
+  const w=$("warstwa");
+  w.innerHTML='<div class="cien" id="cien"></div><div class="arkusz pole"><h2>'+(poz.boss?"Stolica: "+poz.kraina.stolica:"Poziom "+(n+1))+'</h2>'
+    +'<p>'+poz.kraina.nazwa+' · '+(poz.boss?"poziom mistrzowski":poz.nazwa)+' · '+poz.pytan+' pytań</p>'
+    +'<div class="gry">'+poz.gry.map(x=>'<span>'+TYPY[x.t]+(x.ile>1?" ×"+x.ile:"")+'</span>').join("")+'</div>'
+    +'<div class="rzad"><span class="rek">'+gwiazdkiHtml(g)+'</span>'+(otw?'<a class="klocek" href="wyzwanie.html?tryb=saga&poziom='+n+'">Graj</a>':'<span style="font-weight:700;font-size:14px">Zdobądź '+(Saga.poziom(n-1).boss?"2 gwiazdki":"gwiazdkę")+' na poziomie '+n+', żeby tu wejść.</span>')+'</div></div>';
+  $("cien").onclick=()=>{w.innerHTML="";};
+}
+function kostka(){
+  const K=Saga.KOSTKA,w=$("warstwa");
+  const obr=["rotateY(0deg)","rotateY(-90deg)","rotateY(-180deg)","rotateY(90deg)","rotateX(-90deg)","rotateX(90deg)"];
+  const poz=["translateZ(65px)","rotateY(90deg) translateZ(65px)","rotateY(180deg) translateZ(65px)","rotateY(-90deg) translateZ(65px)","rotateX(90deg) translateZ(65px)","rotateX(-90deg) translateZ(65px)"];
+  w.innerHTML='<div class="cien" id="cien"></div><div class="rzut"><div class="scena"><div class="kostka" id="kost">'
+    +K.map((k,i)=>'<div class="sciana" style="transform:'+poz[i]+'"><svg viewBox="0 0 24 24" fill="none" stroke="#3A2A14" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'+IKK[k.id]+'</svg>'+k.nazwa+'</div>').join("")
+    +'</div></div><div class="wynik" id="kWynik">Rzucam…</div><a class="klocek" id="kGraj" style="visibility:hidden">Graj</a><button class="klocek jasny" id="kZnowu" style="visibility:hidden">Rzuć jeszcze raz</button></div>';
+  $("cien").onclick=()=>{w.innerHTML="";};
+  const rzuc=()=>{
+    const i=Math.floor(Math.random()*6),k=$("kost");
+    $("kGraj").style.visibility="hidden";$("kZnowu").style.visibility="hidden";$("kWynik").textContent="Rzucam…";
+    const spin=" rotateX("+(720+Math.floor(Math.random()*2)*360)+"deg) rotateY("+(720+Math.floor(Math.random()*2)*360)+"deg)";
+    k.style.transition="none";k.style.transform="rotateX(0) rotateY(0)";void k.offsetWidth;k.style.transition="";
+    k.style.transform=spin+" "+obr[i];
+    if(navigator.vibrate)try{navigator.vibrate([20,40,20,40,30]);}catch(e){}
+    setTimeout(()=>{$("kWynik").textContent=K[i].nazwa+"!";const g=$("kGraj");g.href="wyzwanie.html?tryb=kostka&kat="+K[i].id;g.textContent="Graj: "+K[i].nazwa;g.style.visibility="visible";$("kZnowu").style.visibility="visible";},1650);
+  };
+  $("kZnowu").onclick=rzuc;setTimeout(rzuc,60);
+}
+$("kostkaBtn").onclick=kostka;
+// stan dnia i pasek u góry
+(function(){
+  const d=new Date(),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  const ds=czytaj("dzis-"+k,null),ser=czytaj("dzis-seria",{n:0,last:""});
+  $("seria").textContent=ser.last===k||ser.n?ser.n||0:0;
+  if(ds&&ds.done){$("dzisTxt").textContent="Dzisiejsze zrobione";$("dzisBtn").querySelector("i").style.background="#27AE60";$("dzisBtn").querySelector("i").style.animation="none";}
+  $("sumaGw").textContent=Saga.sumaGwiazd(stan)+"/"+Saga.ILE*3;
+  $("kraina").textContent=Saga.poziom(biez).kraina.nazwa+" · poziom "+(biez+1);
 })();
-// kontur Polski w karcie wyzwania
+function start(){
+  const pts=rysuj();
+  const h=location.hash.match(/poziom=(\d+)/),cel=h?Math.min(+h[1],biez):biez;
+  const m=$("mapa"),naSrodek=p=>{m.scrollTop=p.y-m.clientHeight*0.55;};
+  // po przejściu poziomu pionek przeskakuje z poprzedniego pola na nowe
+  if(h&&cel>0&&cel===biez){naSrodek(pts[cel-1]);pionekNa(pts[cel-1],true);setTimeout(()=>{pionekNa(pts[cel]);m.scrollTo({top:pts[cel].y-m.clientHeight*0.55,behavior:"smooth"});},450);}
+  else{naSrodek(pts[cel]);pionekNa(pts[biez],true);}
+}
 fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
-  const k=Math.cos(52*Math.PI/180),W=13.9,E=24.3,N=55.0,S=48.9;
-  const s=Math.min(100/((E-W)*k),100/(N-S)),ox=(100-(E-W)*k*s)/2,oy=(100-(N-S)*s)/2;
-  const P=([lon,lat])=>(ox+(lon-W)*k*s).toFixed(2)+" "+(oy+(N-lat)*s).toFixed(2);
-  let d="";gj.features.forEach(f=>{const g=f.geometry,polys=g.type==="Polygon"?[g.coordinates]:g.coordinates;polys.forEach(p=>{d+="M"+p[0].filter((_,i)=>i%2===0).map(P).join("L")+"Z";});});
-  $("pl").innerHTML='<path d="'+d+'"/>';
-}).catch(()=>{});
+  gj.features.forEach(f=>{
+    const g=f.geometry,polys=g.type==="Polygon"?[g.coordinates]:g.coordinates;let b=[1e9,1e9,-1e9,-1e9];
+    polys.forEach(p=>p[0].forEach(([x,y])=>{b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);}));
+    const k=Math.cos((b[1]+b[3])/2*Math.PI/180),s=Math.min(52/((b[2]-b[0])*k),44/(b[3]-b[1]));
+    const d=polys.map(p=>"M"+p[0].filter((_,i)=>i%2===0).map(([x,y])=>((x-b[0])*k*s+1).toFixed(1)+" "+((b[3]-y)*s+1).toFixed(1)).join("L")+"Z").join("");
+    WOJ[f.properties.nazwa]='<svg class="woj" viewBox="0 0 54 46"><path d="'+d+'"/></svg>';
+  });
+}).catch(()=>{}).finally(start);
 (function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();
+window.addEventListener("resize",()=>{clearTimeout(window._r);window._r=setTimeout(start,200);});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
 </body>
