@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Kto pierwszy, ten lepszy · PolskoZnawca</title>
+<meta name="theme-color" content="#0A181B" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=16" />
+<style>
+.ekran{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;animation:wejscie .3s both}
+.ekran h2{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(30px,9vw,42px);line-height:1.02;margin:6px 0 0}
+.ekran p{margin:0;color:var(--dim);font-size:15px}
+.kod{font-family:"Fraunces",serif;font-weight:900;font-size:64px;letter-spacing:.14em;text-align:center;color:var(--gold);line-height:1}
+.kod-pole{text-align:center;font-family:"Fraunces",serif;font-size:32px;font-weight:900;letter-spacing:.3em;text-transform:uppercase}
+.gracze{display:flex;flex-direction:column;gap:6px}
+.gracz{display:flex;align-items:center;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;animation:wejscie .3s both}
+.gracz .av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-size:20px;flex:none}
+.gracz b{flex:1;font-size:16px}
+.gracz .pkt{font-family:"Fraunces",serif;font-weight:900;font-size:20px;color:var(--gold);font-variant-numeric:tabular-nums}
+.gracz.ja{border-color:var(--gold)}
+.gracz.odp .av{box-shadow:0 0 0 3px var(--ok)}
+.pytanie{flex:none;text-align:center;font-family:"Fraunces",serif;font-weight:900;font-size:clamp(24px,7.5vw,34px);line-height:1.1}
+.pytanie small{display:block;font-family:"Space Grotesk",sans-serif;font-weight:700;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--teal);margin-bottom:4px}
+.obraz{flex:1;min-height:110px;display:grid;place-items:center;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);overflow:hidden}
+.obraz.jasna{background:#E9EEEC}
+.obraz img{max-width:70%;max-height:90%;object-fit:contain}
+.obraz svg{width:90%;height:90%}
+.obraz svg path{fill:rgba(242,193,78,.2);stroke:var(--gold);stroke-width:2;vector-effect:non-scaling-stroke;stroke-linejoin:round;fill-rule:evenodd}
+.obraz .tablica{display:flex;height:74px;border:3px solid #111;border-radius:8px;background:#F4F4F2;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.obraz .tablica i{width:34px;background:#1546B8;display:grid;place-items:end center;color:#fff;font:700 13px/1 "Space Grotesk";padding-bottom:6px;font-style:normal}
+.obraz .tablica span{padding:0 22px;display:grid;place-items:center;color:#111;font:700 46px/1 "Space Grotesk",sans-serif;letter-spacing:.06em}
+.obraz .wielkie{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(28px,9vw,40px);text-align:center;padding:10px}
+.answers button.moja{outline:3px solid var(--paper);outline-offset:-3px}
+.pierwszy{flex:none;text-align:center;font-size:15px;min-height:22px;color:var(--dim)}
+.pierwszy b{color:var(--gold)}
+.podium{display:flex;align-items:flex-end;justify-content:center;gap:10px;height:190px}
+.podium div{flex:1;max-width:120px;border-radius:14px 14px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:10px;gap:4px;animation:rosnij .7s cubic-bezier(.2,.7,.3,1) both}
+.podium .m1{height:100%;background:linear-gradient(180deg,var(--gold),#B88A1F);color:var(--gold-ink)}
+.podium .m2{height:74%;background:#9FB3B1;color:#10292c;animation-delay:.15s}
+.podium .m3{height:56%;background:#B7784A;color:#2A1804;animation-delay:.3s}
+.podium b{font-size:15px;text-align:center;padding:0 4px}.podium span{font-size:26px}
+@keyframes rosnij{from{transform:scaleY(0);transform-origin:bottom}to{transform:none}}
+.stan{font-size:13px;color:var(--dim);text-align:center;min-height:18px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Kto pierwszy, ten lepszy</h1>
+  <span class="round" id="runda"></span>
+</header>
+<main id="main"></main>
+</div>
+
+<script src="peerjs.min.js"></script>
+<script src="tablice-powiaty.js"></script>
+<script src="topojson-client.min.js?v=16"></script>
+<script src="wspolne.js?v=16"></script>
+<script>
+const {$,shuffle,fmt}=ZP;
+const PREFIKS="polskoznawca-kpt-",CZAS=15000;
+const AV=["🦊","🐻","🦉","🐺","🦌","🐗","🦅","🐿️"],KOL=["#F2C14E","#7FD8C6","#E4485A","#5AA9E6","#B08AE8","#F29B4E","#5DCAA5","#E8F1EE"];
+let peer=null,host=false,conns={},ja={id:"",nick:""},gracze=[],KOD="",gra=null,D=null;
+const nick0=localStorage.getItem("nick")||"";
+
+/* ---------- ekrany ---------- */
+function ekran(html){$("main").innerHTML='<section class="ekran">'+html+'</section>';}
+function ekranStart(blad){
+  $("runda").textContent="";
+  const z=new URLSearchParams(location.search).get("pokoj")||"";
+  ekran('<h2>Kto pierwszy,<br>ten lepszy</h2><p>Dwie do ośmiu osób, każda na swoim telefonie. Te same pytania w tej samej chwili; punkty dostaje ten, kto pierwszy odpowie dobrze.</p>'
+    +'<label class="field"><span>Twoje imię</span><input type="text" id="nick" maxlength="14" placeholder="np. Dawid"></label>'
+    +'<button class="big" id="utworz">Utwórz pokój</button>'
+    +'<div class="field"><span>albo dołącz kodem</span><div style="display:flex;gap:8px"><input type="text" id="kodPole" class="kod-pole" maxlength="4" placeholder="KOD" style="flex:1;min-width:0"><button class="ghost" id="dolacz" style="min-height:54px">Dołącz</button></div></div>'
+    +'<div class="stan" id="stan"></div>');
+  $("nick").value=nick0;$("kodPole").value=z.toUpperCase();
+  if(blad)$("stan").textContent=blad;
+  $("utworz").onclick=()=>{if(zapiszNick())utworz();};
+  $("dolacz").onclick=()=>{const k=$("kodPole").value.trim().toUpperCase();if(k.length!==4){$("stan").textContent="Kod ma 4 znaki.";return;}if(zapiszNick())dolacz(k);};
+}
+function zapiszNick(){const n=$("nick").value.trim();if(!n){$("stan").textContent="Wpisz swoje imię.";$("nick").focus();return false;}ja.nick=n;localStorage.setItem("nick",n);return true;}
+function listaGraczy(punkty,odp){
+  return '<div class="gracze">'+gracze.map((g,i)=>'<div class="gracz'+(g.id===ja.id?" ja":"")+(odp&&odp[g.id]?" odp":"")+'"><span class="av" style="background:'+KOL[i%8]+'">'+AV[i%8]+'</span><b>'+esc(g.nick)+(g.id===ja.id?" (Ty)":"")+'</b>'+(punkty?'<span class="pkt">'+fmt(g.pts||0)+'</span>':"")+'</div>').join("")+'</div>';
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+function ekranLobby(){
+  $("runda").textContent="pokój "+KOD;
+  ekran((host?'<p>Kod pokoju. Znajomi wpisują go u siebie albo otwierają link.</p><div class="kod">'+KOD+'</div><button class="ghost" id="link">Wyślij link do pokoju</button>'
+      :'<p>Jesteś w pokoju <b style="color:var(--gold)">'+KOD+'</b>. Gospodarz zaraz zacznie.</p>')
+    +listaGraczy()
+    +(host?'<label class="field"><span>Liczba pytań</span><select id="ile"><option>8</option><option selected>12</option><option>16</option><option>20</option></select></label><button class="big" id="startGry"'+(gracze.length<2?" disabled":"")+'>'+(gracze.length<2?"Czekam na drugą osobę…":"Zaczynamy")+'</button>':'<div class="stan">Czekamy na start…</div>'));
+  if(host){
+    $("link").onclick=async()=>{const u=location.origin+location.pathname+"?pokoj="+KOD,t="Zagraj ze mną w PolskoZnawcę! Pokój "+KOD+": "+u;
+      try{if(navigator.share){await navigator.share({text:t});return;}}catch(e){if(e.name==="AbortError")return;}
+      try{await navigator.clipboard.writeText(t);ZP.komunikat("Skopiowano link do pokoju.");}catch(e){ZP.komunikat(u,6000);}};
+    $("startGry").onclick=startGry;
+  }
+}
+
+/* ---------- połączenie (PeerJS: sygnalizacja przez darmowy serwer, dane płyną bezpośrednio między telefonami) ---------- */
+function nowyKod(){const z="ABCDEFGHJKLMNPRSTUWXYZ23456789";return [...Array(4)].map(()=>z[Math.floor(Math.random()*z.length)]).join("");}
+function utworz(){
+  host=true;KOD=nowyKod();$("stan").textContent="Tworzę pokój…";
+  peer=new Peer(PREFIKS+KOD);
+  peer.on("open",id=>{ja.id=id;gracze=[{id,nick:ja.nick,pts:0}];ladujDane();ekranLobby();});
+  peer.on("error",e=>{if(e.type==="unavailable-id"){peer.destroy();utworz();}else ekranStart("Błąd połączenia: "+e.type+". Spróbuj ponownie.");});
+  peer.on("connection",c=>{
+    c.on("data",m=>odHosta(c,m));
+    c.on("close",()=>{delete conns[c.peer];gracze=gracze.filter(g=>g.id!==c.peer);wyslijLobby();if(!gra)ekranLobby();});
+  });
+}
+function dolacz(k){
+  host=false;KOD=k;$("stan").textContent="Łączę z pokojem "+k+"…";
+  peer=new Peer();
+  peer.on("open",id=>{
+    ja.id=id;
+    const c=peer.connect(PREFIKS+k,{reliable:true});conns.host=c;
+    const t=setTimeout(()=>ekranStart("Nie znalazłem pokoju "+k+". Sprawdź kod."),9000);
+    c.on("open",()=>{clearTimeout(t);c.send({t:"hej",nick:ja.nick});});
+    c.on("data",m=>odGospodarza(m));
+    c.on("close",()=>ekranStart("Gospodarz zamknął pokój."));
+  });
+  peer.on("error",e=>ekranStart(e.type==="peer-unavailable"?"Nie ma pokoju "+k+".":"Błąd połączenia: "+e.type));
+}
+function doWszystkich(m){Object.values(conns).forEach(c=>{try{c.send(m);}catch(e){}});odGospodarza(m,true);}
+function wyslijLobby(){doWszystkich({t:"lobby",gracze:gracze.map(g=>({id:g.id,nick:g.nick,pts:g.pts}))});}
+
+/* ---------- gospodarz ---------- */
+function odHosta(c,m){
+  if(m.t==="hej"){
+    if(gra){c.send({t:"blad",tekst:"Gra już trwa."});return;}
+    if(gracze.length>=8){c.send({t:"blad",tekst:"Pokój jest pełny."});return;}
+    conns[c.peer]=c;gracze.push({id:c.peer,nick:String(m.nick).slice(0,14),pts:0});wyslijLobby();
+  }
+  if(m.t==="odp")przyjmijOdp(c.peer,m);
+}
+async function ladujDane(){
+  if(D)return D;
+  const pob=u=>fetch(u,{cache:"no-cache"}).then(r=>r.json()).catch(()=>({}));
+  const [h,r,k,pw,popr]=await Promise.all([pob("herby.json"),pob("rzeki.json"),pob("kluby.json"),ZP.loadPowiaty(),ZP.poprawki()]);
+  D={herby:ZP.popHerby(h.miasta||[],popr,c=>c.n),rzeki:ZP.popRzeki(r.miasta||[],popr),kluby:(k.kluby||[]),pow:pw.filter(p=>!p.city),
+     miasta:ZP.FALLBACK.map(([n,lat,lon,pop])=>({n,lat,lon,pop})),tab:(window.POWIATY||[])};
+  return D;
+}
+function cztery(poprawna,pula){const o=shuffle([...new Set(pula.filter(x=>x!==poprawna))]).slice(0,3);return shuffle(o.concat([poprawna]));}
+function pytania(ile){
+  const typy=["herb","ksztalt","tablica","rzeka","klub","wiecej","woj"],qs=[];
+  const sas=(c,lista,klucz)=>lista.filter(x=>klucz(x)!==klucz(c)).sort((a,b)=>ZP.km(c,a)-ZP.km(c,b)).slice(0,8).map(klucz);
+  for(let i=0;qs.length<ile&&i<ile*4;i++){
+    const t=typy[i%typy.length];
+    if(t==="herb"){const c=ZP.pick(D.herby);qs.push({typ:"Jaki to herb?",img:c.img,jasna:1,tekst:"",opcje:cztery(c.n,sas(c,D.herby,x=>x.n)),ok:c.n});}
+    if(t==="ksztalt"){const p=ZP.pick(D.pow),P=ZP.projection([p.f],300,6);qs.push({typ:"Kształt powiatu",svg:'<svg viewBox="0 0 300 '+P.H.toFixed(0)+'"><path d="'+P.path(p.f.geometry,0.6)+'"/></svg>',tekst:"Który to powiat?",opcje:cztery(p.label,D.pow.filter(x=>x.woj===p.woj).map(x=>x.label)),ok:p.label});}
+    if(t==="tablica"&&D.tab.length){const p=ZP.pick(D.tab);qs.push({typ:"Tablice",tablica:p.kod,tekst:"Skąd to auto?",opcje:cztery(p.nazwa,D.tab.filter(x=>x.woj===p.woj).map(x=>x.nazwa)),ok:p.nazwa});}
+    if(t==="rzeka"&&D.rzeki.length){const c=ZP.pick(D.rzeki);qs.push({typ:"Rzeka",wielkie:c.n,tekst:"Nad jaką rzeką?",opcje:cztery(c.rzeka,sas(c,D.rzeki,x=>x.rzeka)),ok:c.rzeka});}
+    if(t==="klub"&&D.kluby.length){const c=ZP.pick(D.kluby.filter(k=>k.liga!=="niższe ligi")),inne=D.kluby.filter(k=>k.miasto!==c.miasto).map(k=>k.pelna);
+      qs.push({typ:"Kluby",wielkie:c.miasto,tekst:"Który klub gra w tym mieście?",opcje:cztery(c.pelna,inne),ok:c.pelna});}
+    if(t==="wiecej"){const a=ZP.pick(D.miasta),b=ZP.pick(D.miasta.filter(x=>Math.abs(x.pop-a.pop)/Math.min(x.pop,a.pop)>0.15));qs.push({typ:"Więcej czy mniej",tekst:"Które miasto ma więcej mieszkańców?",opcje:shuffle([a.n,b.n]),ok:a.pop>b.pop?a.n:b.n});}
+    if(t==="woj"){const c=ZP.pick(D.miasta),w=ZP.wojOf(c.lon,c.lat);if(w)qs.push({typ:"Województwo",wielkie:c.n,tekst:"W którym województwie?",opcje:cztery(w,Object.values(ZP.WOJ_KOD)),ok:w});}
+  }
+  return qs;
+}
+async function startGry(){
+  await ladujDane();
+  gracze.forEach(g=>g.pts=0);
+  gra={qs:pytania(+$("ile").value),i:-1,odp:{}};
+  doWszystkich({t:"start",n:gra.qs.length});
+  setTimeout(nastepnePytanie,1800);
+}
+function nastepnePytanie(){
+  gra.i++;
+  if(gra.i>=gra.qs.length){doWszystkich({t:"koniec",gracze:gracze.map(g=>({id:g.id,nick:g.nick,pts:g.pts}))});gra=null;return;}
+  gra.odp={};const q=gra.qs[gra.i],bez={...q};delete bez.ok;
+  doWszystkich({t:"pytanie",i:gra.i,n:gra.qs.length,q:bez});
+  clearTimeout(gra.t);gra.t=setTimeout(zamknijPytanie,CZAS+1500);
+}
+function przyjmijOdp(id,m){
+  if(!gra||m.i!==gra.i||gra.odp[id])return;
+  gra.odp[id]={wybor:m.wybor,ms:Math.max(0,+m.ms||CZAS)};
+  doWszystkich({t:"odpowiedzial",id});
+  if(Object.keys(gra.odp).length>=gracze.length)zamknijPytanie();
+}
+function zamknijPytanie(){
+  if(!gra||gra.zamkniete===gra.i)return;gra.zamkniete=gra.i;clearTimeout(gra.t);
+  const q=gra.qs[gra.i];
+  const dobre=Object.entries(gra.odp).filter(([,o])=>o.wybor===q.ok).sort((a,b)=>a[1].ms-b[1].ms);
+  const wyn={};
+  dobre.forEach(([id],n)=>{wyn[id]=n===0?1000:300;const g=gracze.find(x=>x.id===id);if(g)g.pts+=wyn[id];});
+  const p=dobre[0]&&gracze.find(g=>g.id===dobre[0][0]);
+  doWszystkich({t:"wynik",i:gra.i,ok:q.ok,pierwszy:p?{nick:p.nick,ms:dobre[0][1].ms,id:p.id}:null,wyn,gracze:gracze.map(g=>({id:g.id,nick:g.nick,pts:g.pts}))});
+  setTimeout(nastepnePytanie,3600);
+}
+
+/* ---------- każdy gracz (także gospodarz) ---------- */
+let biez=null;
+function odGospodarza(m,lokalnie){
+  if(m.t==="blad"){ekranStart(m.tekst);return;}
+  if(m.t==="lobby"){gracze=m.gracze;ekranLobby();}
+  if(m.t==="start"){$("runda").textContent="";ekran('<h2 style="text-align:center;margin-top:30%">Uwaga…</h2><div class="kod" id="odl">3</div>');let n=3;const id=setInterval(()=>{n--;if(n<=0)clearInterval(id);else if($("odl"))$("odl").textContent=n;},550);}
+  if(m.t==="pytanie")pokazPytanie(m);
+  if(m.t==="odpowiedzial"&&biez){biez.odp[m.id]=1;const l=document.getElementById("kto");if(l)l.innerHTML=listaGraczyMini(biez.odp);}
+  if(m.t==="wynik")pokazWynik(m);
+  if(m.t==="koniec")pokazKoniec(m);
+}
+function listaGraczyMini(odp){return gracze.map((g,i)=>'<span style="display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;margin:0 2px;background:'+KOL[i%8]+';opacity:'+(odp[g.id]?1:.3)+'">'+AV[i%8]+'</span>').join("");}
+function pokazPytanie(m){
+  const q=m.q;biez={i:m.i,t0:performance.now(),odp:{},wybor:null};
+  $("runda").textContent=(m.i+1)+" / "+m.n;
+  let obraz="";
+  if(q.img)obraz='<img alt="" src="'+q.img+'">';
+  if(q.svg)obraz=q.svg;
+  if(q.tablica)obraz='<div class="tablica"><i>PL</i><span>'+esc(q.tablica)+'</span></div>';
+  if(q.wielkie)obraz='<div class="wielkie">'+esc(q.wielkie)+'</div>';
+  ekran('<div class="tbar" id="tbar"><i id="tfill"></i></div><div class="pytanie"><small>'+esc(q.typ)+'</small>'+esc(q.tekst||"")+'</div>'
+    +(obraz?'<div class="obraz'+(q.jasna?" jasna":"")+'">'+obraz+'</div>':'<div style="flex:1"></div>')
+    +'<div class="answers" id="odpowiedzi"'+(q.opcje.length===2?' style="grid-template-columns:1fr 1fr"':'')+'></div><div class="stan" id="kto">'+listaGraczyMini({})+'</div>');
+  const box=$("odpowiedzi");
+  q.opcje.forEach(o=>{const b=document.createElement("button");b.textContent=o;b.onclick=()=>odpowiedz(o,b);box.appendChild(b);});
+  ZP.pasek($("tbar"),$("tfill"),CZAS/1000,()=>{if(biez&&biez.wybor==null)odpowiedz(null,null);},()=>!biez||biez.wybor!=null);
+}
+function odpowiedz(o,b){
+  if(!biez||biez.wybor!=null)return;
+  biez.wybor=o;const ms=Math.round(performance.now()-biez.t0);
+  document.querySelectorAll("#odpowiedzi button").forEach(x=>{x.disabled=true;if(x===b)x.classList.add("moja");else x.classList.add("fade");});
+  const m={t:"odp",i:biez.i,wybor:o,ms};
+  if(host)przyjmijOdp(ja.id,m);else conns.host.send(m);
+}
+function pokazWynik(m){
+  const moje=m.wyn[ja.id];
+  document.querySelectorAll("#odpowiedzi button").forEach(x=>{x.classList.remove("fade");if(x.textContent===m.ok)x.classList.add("right");else if(x.classList.contains("moja"))x.classList.add("wrong");else x.classList.add("fade");});
+  if(biez)ZP.poswiata(!!moje);
+  gracze=m.gracze;
+  const k=$("kto");if(k)k.innerHTML=m.pierwszy?'⚡ Pierwszy: <b style="color:var(--gold)">'+esc(m.pierwszy.nick)+'</b> ('+(m.pierwszy.ms/1000).toFixed(1).replace(".",",")+' s)'+(moje?" · Ty +"+moje:""):"Nikt nie trafił";
+  biez=null;
+}
+function pokazKoniec(m){
+  gracze=m.gracze;const r=gracze.slice().sort((a,b)=>b.pts-a.pts);
+  $("runda").textContent="koniec";
+  const pod=[r[1],r[0],r[2]].map((g,i)=>g?'<div class="m'+[2,1,3][i]+'"><span>'+AV[gracze.indexOf(g)%8]+'</span><b>'+esc(g.nick)+'</b>'+fmt(g.pts)+'</div>':'<div style="visibility:hidden"></div>').join("");
+  ekran('<h2 style="text-align:center">'+(r[0].id===ja.id?"Wygrywasz!":esc(r[0].nick)+" wygrywa")+'</h2><div class="podium">'+pod+'</div>'
+    +listaGraczy(true)+(host?'<button class="big" id="rewanz">Rewanż</button>':'<div class="stan">Gospodarz może zaproponować rewanż.</div>'));
+  if(r[0].id===ja.id)setTimeout(ZP.fanfary,400);
+  if(host)$("rewanz").onclick=()=>{gracze.forEach(g=>g.pts=0);wyslijLobby();};
+}
+window.addEventListener("beforeunload",()=>{try{peer&&peer.destroy();}catch(e){}});
+ekranStart();
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

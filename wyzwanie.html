@@ -77,6 +77,12 @@ svg path{fill-rule:evenodd}
 .meta div{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px;font-size:12px;color:var(--dim)}
 .meta b{display:block;font-family:"Fraunces",serif;font-size:22px;color:var(--paper)}
 .wynik .rows{flex:1}
+.pojedynek-wynik{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:16px;padding:10px 14px;animation:wejscie .4s .3s both}
+.pojedynek-wynik div{text-align:center}.pojedynek-wynik small{display:block;color:var(--dim);font-size:12px}
+.pojedynek-wynik b{font-family:"Fraunces",serif;font-size:26px}
+.pojedynek-wynik span{font-size:30px}
+.pojedynek-wynik.wygr{border-color:var(--ok)}.pojedynek-wynik.przegr{border-color:var(--red)}
+.pojedynek-opis{margin:0;font-size:13.5px;color:var(--dim)}
 </style>
 </head>
 <body>
@@ -137,7 +143,11 @@ svg path{fill-rule:evenodd}
 <script src="wspolne.js?v=16"></script>
 <script>
 const {$,fmt}=ZP;
-const TRYB=new URLSearchParams(location.search).get("tryb")==="turniej"?"turniej":"dzien";
+const URLP=new URLSearchParams(location.search);
+const TRYB=URLP.get("tryb")==="turniej"?"turniej":"dzien";
+// wyzwanie od znajomego: te same pytania (ziarno i ustawienia w linku) i jego wynik do pobicia
+let RYWAL=URLP.get("od")?{nick:URLP.get("od").slice(0,20),wynik:+URLP.get("wynik")||0,nr:+URLP.get("nr")||0}:null;
+let ZIARNO=URLP.get("seed")||"";
 const DZIEN=ZP.dayKey(),START=new Date(2026,8,20);
 const NR=Math.floor((new Date(DZIEN+"T12:00:00")-START)/864e5)+1;
 const KLUCZ="dzis-"+DZIEN;
@@ -193,14 +203,26 @@ async function init(){
     $("odznaka").textContent="Turniej";
     $("startTytul").innerHTML="Dwanaście pytań,<br>sześć konkurencji";
     $("startOpis").textContent="Po dwa pytania z każdej gry. Grasz, ile chcesz; liczy się najlepszy wynik.";
-    $("setup").classList.remove("hidden");
     ZP.zakresy($("scope"));
-    ZP.kreatorGry({klucz:"turniej2",kroki:["obszar","wielkosc"]});
+    if(ZIARNO){
+      // link z wyzwaniem: bez kreatora, ustawienia z linku
+      ZP.ustawObszar((URLP.get("o")||"").split(",").filter(Boolean));
+      const w=URLP.get("w")||"dsm";$("scope").querySelectorAll("input").forEach(x=>{x.checked=w.indexOf(x.value)>=0;});
+      $("start").classList.remove("hidden");
+    }else{
+      $("setup").classList.remove("hidden");
+      ZP.kreatorGry({klucz:"turniej2",kroki:["obszar","wielkosc"]});
+    }
   }else{
     const s=zapisane();
     $("start").classList.remove("hidden");
     $("odznaka").textContent="Wyzwanie dnia #"+NR;
     if(s&&s.done){await laduj();Q=budujPytania(ZP.seeded("pz-dzien-"+DZIEN),6);return pokazWynik(s.res);}
+  }
+  if(RYWAL&&(TRYB==="turniej"||RYWAL.nr===NR)){
+    $("odznaka").textContent="⚔️ Wyzwanie od: "+RYWAL.nick;
+    $("startTytul").innerHTML=RYWAL.nick+" ma<br>"+fmt(RYWAL.wynik)+" pkt";
+    $("startOpis").textContent=TRYB==="turniej"?"Te same 12 pytań, które dostał(a) "+RYWAL.nick+". Uda Ci się pobić ten wynik?":"Dzisiejsze wyzwanie. Uda Ci się pobić ten wynik?";
   }
   $("stanDanych").textContent="Wczytywanie map, herbów i zdjęć…";
   await laduj();
@@ -217,7 +239,8 @@ $("zaczynam").onclick=()=>{
     const s=zapisane();st={i:(s&&s.res?s.res.length:0)-1,res:(s&&s.res)||[]};
   }else{
     const stan=ZP.zakresStan($("scope"));
-    Q=budujPytania(Math.random,12,c=>ZP.wZakresie(c,stan)&&ZP.wObszarze(c));
+    if(!ZIARNO||st){ZIARNO=Math.random().toString(36).slice(2,8);RYWAL=null;}
+    Q=budujPytania(ZP.seeded("turniej-"+ZIARNO),12,c=>ZP.wZakresie(c,stan)&&ZP.wObszarze(c));
     if(Q.length<6){ZP.komunikat("Za mało danych dla tego wyboru. Zaznacz większy obszar albo więcej wielkości miast.");return;}
     st={i:-1,res:[]};
   }
@@ -383,7 +406,7 @@ function pokazWynik(res){
   w.innerHTML='<div class="ranga"></div><div class="suma"><b id="sumaAnim">0</b> <span>/ '+fmt(max)+'</span></div>'
     +'<div class="kafle">'+res.map((r,i)=>'<i class="'+kolor(r.pts)+'" style="animation-delay:'+(i*.08)+'s">'+TYPY[r.t][0]+'</i>').join("")+'</div>'
     +'<div class="meta"></div>'
-    +'<div class="btnrow"><button class="big" id="udostepnij">Udostępnij wynik</button></div>'
+    +'<div class="btnrow"><button class="ghost" id="udostepnij">Udostępnij obrazek</button><button class="big" id="rzuc">⚔️ Rzuć wyzwanie</button></div>'
     +'<div class="btnrow"><a class="ghost" href="./" style="display:grid;place-items:center;text-decoration:none;color:inherit">Inne gry</a>'
     +(TRYB==="turniej"?'<button class="ghost" id="jeszcze">Jeszcze raz</button>':'')+'</div>'
     +'<div class="rows"></div>';
@@ -401,8 +424,14 @@ function pokazWynik(res){
     const pt=d.querySelector(".pt");pt.textContent=r.pts;pt.className="pt "+(r.pts>=700?"ok":r.pts<300?"no":"");rows.appendChild(d);});
   w.classList.remove("hidden");
   const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/1200);$("sumaAnim").textContent=fmt(suma*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f);})(t0);
-  if(proc>=75)setTimeout(ZP.fanfary,500);
+  if(RYWAL&&(TRYB==="turniej"||RYWAL.nr===NR)){
+    const wygr=suma>RYWAL.wynik,rem=suma===RYWAL.wynik;
+    w.querySelector(".meta").insertAdjacentHTML("beforebegin",'<div class="pojedynek-wynik '+(wygr?"wygr":rem?"rem":"przegr")+'"><div><small>'+esc(RYWAL.nick)+'</small><b>'+fmt(RYWAL.wynik)+'</b></div><span>'+(wygr?"🏆":rem?"🤝":"⚔️")+'</span><div><small>Ty</small><b>'+fmt(suma)+'</b></div></div>'
+      +'<p class="pojedynek-opis">'+(wygr?"Wygrywasz pojedynek! Odeślij wyzwanie z nowym wynikiem.":rem?"Remis! Dokładnie tyle samo punktów.":esc(RYWAL.nick)+" tym razem lepszy. Spróbuj innego wyzwania albo rzuć własne.")+'</p>');
+    if(wygr)setTimeout(ZP.fanfary,700);
+  }else if(proc>=75)setTimeout(ZP.fanfary,500);
   $("udostepnij").onclick=()=>udostepnij(res,suma,max,ranga);
+  $("rzuc").onclick=()=>rzucWyzwanie(res,suma);
   if($("jeszcze"))$("jeszcze").onclick=()=>{w.classList.add("hidden");$("setup").classList.remove("hidden");};
   if(TRYB==="dzien")setInterval(()=>{const e=$("odl");if(e)e.textContent=nast();},30000);
 }
@@ -429,6 +458,18 @@ async function karta(res,suma,max,ranga){
   g.fillText("Zagraj i sprawdź, czy znasz Polskę lepiej:",90,1120);
   g.fillStyle="#F2C14E";g.font="700 40px 'Space Grotesk', sans-serif";g.fillText(location.host+location.pathname.replace(/[^/]*$/,""),90,1180);
   return new Promise(ok=>c.toBlob(ok,"image/png"));
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+async function rzucWyzwanie(res,suma){
+  let nick=localStorage.getItem("nick");
+  if(!nick){nick=(prompt("Jak się podpisać w wyzwaniu?","")||"").trim().slice(0,20);if(!nick)return;localStorage.setItem("nick",nick);}
+  const u=new URL(location.href.split("?")[0].split("#")[0]);
+  if(TRYB==="turniej"){u.searchParams.set("tryb","turniej");u.searchParams.set("seed",ZIARNO);u.searchParams.set("w",ZP.zakresStan($("scope")));if(ZP.OBSZAR.length)u.searchParams.set("o",ZP.OBSZAR.join(","));}
+  else u.searchParams.set("nr",NR);
+  u.searchParams.set("od",nick);u.searchParams.set("wynik",suma);
+  const tekst="⚔️ "+nick+" rzuca Ci wyzwanie w PolskoZnawcy: "+fmt(suma)+" pkt"+(TRYB==="turniej"?" w turnieju. Te same 12 pytań, pobijesz?":" w wyzwaniu dnia #"+NR+". Pobijesz?")+"\n"+res.map(r=>({g:"🟩",y:"🟨",r:"🟥"})[kolor(r.pts)]).join("")+"\n"+u.toString();
+  try{if(navigator.share){await navigator.share({text:tekst});return;}}catch(e){if(e&&e.name==="AbortError")return;}
+  try{await navigator.clipboard.writeText(tekst);ZP.komunikat("Skopiowano link z wyzwaniem. Wklej go znajomemu.");}catch(e){ZP.komunikat(u.toString(),8000);}
 }
 async function udostepnij(res,suma,max,ranga){
   const tekst="PolskoZnawca "+(TRYB==="dzien"?"#"+NR:"Turniej")+"\n"+res.map(r=>({g:"🟩",y:"🟨",r:"🟥"})[kolor(r.pts)]).join("")+" "+fmt(suma)+"/"+fmt(max)+" · "+ranga+"\n"+location.href.split("?")[0]+(TRYB==="turniej"?"?tryb=turniej":"");
