@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Profil · PolskoZnawca</title>
+<meta name="theme-color" content="#0A181B" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=16" />
+<style>
+.przewijana{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:10px}
+.karta-gracza{display:flex;align-items:center;gap:14px;background:linear-gradient(135deg,#173238,#11262A);border:1px solid var(--line-2);border-radius:20px;padding:14px}
+.awatar{width:72px;height:72px;border-radius:50%;background:var(--gold);display:grid;place-items:center;font-size:40px;flex:none;border:3px solid var(--ink);box-shadow:0 0 0 2px var(--gold)}
+.karta-gracza input{width:100%;font-family:"Fraunces",serif;font-size:22px;font-weight:900;background:transparent;border:none;border-bottom:1px dashed var(--line-2);border-radius:0;padding:4px 0}
+.karta-gracza small{color:var(--dim);font-size:12.5px}
+.poz{display:flex;align-items:center;gap:8px;margin-top:6px}
+.poz b{color:var(--teal);font-size:13px;white-space:nowrap}
+.poz i{flex:1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.poz i span{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:4px}
+.sekcja h3{font-size:12px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px}
+.awatary{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.awatary button{aspect-ratio:1;border-radius:14px;border:1px solid var(--line-2);background:var(--ink-2);font-size:24px}
+.awatary button.akt{border-color:var(--gold);background:#24413F}
+.kafle{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kafle div{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px;font-size:11.5px;color:var(--dim)}
+.kafle b{display:block;font-family:"Fraunces",serif;font-size:22px;color:var(--paper)}
+.metody{display:flex;flex-direction:column;gap:6px}
+.metoda{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.metoda .ik{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:18px;font-weight:900;flex:none;background:var(--ink-3)}
+.metoda div{flex:1;min-width:0}.metoda b{display:block;font-size:14.5px}.metoda small{color:var(--dim);font-size:12px}
+.metoda .zn{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--ink-3);color:var(--dim);white-space:nowrap}
+.metoda.akt{border-color:var(--ok)}.metoda.akt .zn{background:var(--ok);color:#06231A}
+.linki{display:flex;flex-direction:column;gap:6px}
+.linki a,.linki button{display:flex;justify-content:space-between;align-items:center;min-height:48px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--ink-2);text-decoration:none;color:inherit;font-size:14.5px;text-align:left}
+.linki .grozne{color:var(--red)}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <a class="back" href="./" aria-label="Wróć">‹</a>
+  <h1>Profil</h1>
+  <span class="round" id="wersja"></span>
+</header>
+<main class="przewijana">
+  <section class="karta-gracza">
+    <div class="awatar" id="awatar"></div>
+    <div style="flex:1;min-width:0">
+      <input id="nick" maxlength="14" placeholder="Twój nick" />
+      <small id="od"></small>
+      <div class="poz"><b id="poziom"></b><i><span id="pasek"></span></i></div>
+    </div>
+  </section>
+  <section class="sekcja"><h3>Awatar</h3><div class="awatary" id="awatary"></div></section>
+  <section class="sekcja"><h3>Twoje wyniki</h3><div class="kafle" id="kafle"></div></section>
+  <section class="sekcja"><h3>Konto</h3>
+    <div class="metody" id="metody"></div>
+    <p class="datastate" style="margin-top:8px">Na razie grasz jako gość: postęp jest zapisany na tym urządzeniu. Logowanie przez Google i e-mail pozwoli przenieść go na inne urządzenia i grać w rankingach.</p>
+  </section>
+  <section class="sekcja"><h3>Więcej</h3>
+    <div class="linki">
+      <a href="statystyki.html">📊 Szczegółowe statystyki <span>›</span></a>
+      <a href="encyklopedia.html">📖 Encyklopedia <span>›</span></a>
+      <a href="admin.html">🛠️ Panel admina <span>›</span></a>
+      <button class="grozne" id="usun">🗑️ Usuń moje dane z tego urządzenia</button>
+    </div>
+  </section>
+</main>
+</div>
+<script src="konto.js"></script>
+<script src="wspolne.js?v=16"></script>
+<script>
+const {$,fmt}=ZP;
+const p=Konto.profil();
+const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}catch(e){return d;}};
+function rysuj(){
+  const pr=Konto.profil(),poz=Konto.poziom();
+  $("awatar").textContent=pr.awatar;$("nick").value=pr.nick||"";
+  $("od").textContent="Gracz od "+new Date(pr.utworzono).toLocaleDateString("pl-PL")+" · "+(pr.metoda==="gosc"?"konto gościa":pr.metoda);
+  $("poziom").textContent="Poziom "+poz.poziom;$("pasek").style.width=Math.round(100*poz.postep)+"%";
+  $("awatary").innerHTML=Konto.AWATARY.map(a=>'<button class="'+(a===pr.awatar?"akt":"")+'">'+a+'</button>').join("");
+  $("awatary").querySelectorAll("button").forEach(b=>b.onclick=()=>{Konto.ustaw({awatar:b.textContent});rysuj();});
+  const ser=czytaj("dzis-seria",{n:0}),sz=czytaj("szostka-stat",{gry:0,wygrane:0,seria:0}),ci=czytaj("cieplo-stat",{gry:0,suma:0});
+  const kafle=[["Trafień",fmt(poz.xp)],["Do poziomu "+(poz.poziom+1),fmt(poz.doNastepnego)],["Seria wyzwań",ser.n||0],
+    ["Wyzwanie: rekord",fmt(+(localStorage.getItem("dzis-best")||0))],["Sześć prób: wygrane",sz.gry?Math.round(100*sz.wygrane/sz.gry)+"%":"–"],["Ciepło-zimno: średnio",ci.gry?(ci.suma/ci.gry).toFixed(1)+" prób":"–"]];
+  $("kafle").innerHTML=kafle.map(([a,b])=>'<div>'+a+'<b>'+b+'</b></div>').join("");
+  const IK={gosc:"👤",google:"G",email:"✉️",apple:""};
+  $("metody").innerHTML=Konto.METODY.map(m=>'<div class="metoda'+(m.id===pr.metoda?" akt":"")+'" data-m="'+m.id+'"><span class="ik">'+IK[m.id]+'</span><div><b>'+m.nazwa+'</b><small>'+m.opis+'</small></div><span class="zn">'+(m.id===pr.metoda?"aktywne":m.dostepna?"wybierz":"wkrótce")+'</span></div>').join("");
+  $("metody").querySelectorAll(".metoda").forEach(d=>d.onclick=()=>{const m=d.dataset.m;if(m===pr.metoda)return;Konto.zaloguj(m).catch(e=>ZP.komunikat(e.message,4200));});
+}
+$("nick").onchange=()=>{Konto.ustaw({nick:$("nick").value.trim().slice(0,14)});ZP.komunikat("Zapisano nick.");};
+$("usun").onclick=()=>{if(confirm("Usunąć profil, postęp i rekordy z tego urządzenia? Tego nie da się cofnąć.")){Konto.usunDane();location.href="./";}};
+$("wersja").textContent="wersja testowa";
+rysuj();ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

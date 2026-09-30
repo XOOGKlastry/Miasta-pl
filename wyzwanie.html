@@ -107,6 +107,39 @@ svg path{fill-rule:evenodd}
 .mp-podium b{font-size:15px;text-align:center}.mp-podium span{font-size:26px}
 @keyframes rosnij{from{transform:scaleY(0);transform-origin:bottom}to{transform:none}}
 #lobby{justify-content:flex-start;gap:12px;overflow:auto}
+/* konfigurator rozgrywki */
+.konfig{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;animation:wejscie .3s both}
+.konfig h2{font-family:"Fraunces",serif;font-weight:900;font-size:26px;margin:0}
+.presety{display:flex;gap:6px;overflow-x:auto;flex:none;scrollbar-width:none}.presety::-webkit-scrollbar{display:none}
+.presety button{flex:none;border-radius:999px;border:1px solid var(--line-2);background:var(--ink-2);padding:7px 12px;font-size:13px;font-weight:700;white-space:nowrap}
+.presety button.akt{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.lista-gier{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:5px}
+.wg{display:grid;grid-template-columns:30px 1fr auto auto;gap:8px;align-items:center;background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:6px 8px;transition:opacity .2s,border-color .2s}
+.wg.off{opacity:.45}.wg.on{border-color:var(--line-2)}
+.wg .ik{font-size:20px;text-align:center}
+.wg b{font-size:14px}
+.stepper{display:flex;align-items:center;gap:2px}
+.stepper button,.kol button{width:32px;height:32px;border-radius:9px;border:1px solid var(--line-2);background:var(--ink-3);font-size:17px;font-weight:700;line-height:1}
+.stepper span{min-width:24px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums;color:var(--gold)}
+.kol{display:flex;gap:2px}
+.kol button{width:28px;font-size:13px}
+.opcje-k{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex:none}
+.opcje-k label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.opcje-k select{min-height:40px;padding:6px 10px;font-size:14px;text-transform:none;letter-spacing:0}
+.chipy-k{display:flex;gap:5px;flex-wrap:wrap}
+.chipy-k button{border-radius:999px;border:1px solid var(--line-2);background:var(--ink-2);padding:5px 10px;font-size:12.5px}
+.chipy-k button.akt{background:#24413F;border-color:var(--gold);color:var(--gold)}
+.obsz-btn{flex:none;min-height:40px;font-size:13.5px;text-align:left;padding:0 12px}
+.podsum{flex:none;font-size:13px;color:var(--dim);text-align:center}.podsum b{color:var(--gold)}
+/* kto już odpowiedział (na żywo) */
+.mp-pasek{display:flex;gap:3px;margin-left:6px}
+.mp-pasek i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-style:normal;opacity:.3;filter:grayscale(1);transition:opacity .2s,filter .2s,transform .2s;position:relative}
+.mp-pasek i.jest{opacity:1;filter:none;animation:odpowiedzial .5s}
+.mp-pasek i.jest::after{content:"✓";position:absolute;right:-3px;bottom:-3px;width:12px;height:12px;border-radius:50%;background:var(--ok);color:#06231A;font-size:9px;font-weight:900;display:grid;place-items:center}
+@keyframes odpowiedzial{0%{transform:scale(1)}40%{transform:scale(1.45)}100%{transform:scale(1)}}
+.mp-dymek{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:900;background:rgba(10,24,27,.92);border:1px solid var(--ok);color:var(--paper);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap;animation:dymek 1.8s both;pointer-events:none}
+@keyframes dymek{0%{opacity:0;transform:translate(-50%,-6px)}12%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
+#wpis.bez-podp .pokaz{display:none}
 .pojedynek-wynik{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:16px;padding:10px 14px;animation:wejscie .4s .3s both}
 .pojedynek-wynik div{text-align:center}.pojedynek-wynik small{display:block;color:var(--dim);font-size:12px}
 .pojedynek-wynik b{font-family:"Fraunces",serif;font-size:26px}
@@ -148,7 +181,7 @@ svg path{fill-rule:evenodd}
   </section>
 
   <div class="segmenty hidden" id="segmenty"></div>
-  <div class="gora hidden" id="gora"><span class="chip" id="chip"></span><span class="pkt" id="suma">0</span></div>
+  <div class="gora hidden" id="gora"><span class="chip" id="chip"></span><span class="mp-pasek" id="mpPasek"></span><span class="pkt" id="suma">0</span></div>
   <div class="pytanie hidden" id="pytanie"></div>
   <div class="tbar hidden" id="tbar"><i id="tfill"></i></div>
   <section class="stage hidden" id="stage">
@@ -171,10 +204,12 @@ svg path{fill-rule:evenodd}
 
   <section class="wynik hidden" id="wynik"></section>
   <section class="start hidden" id="lobby"></section>
+  <section class="konfig hidden" id="konfig"></section>
 </main>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="konto.js"></script>
 <script src="tablice-powiaty.js"></script>
 <script src="peerjs.min.js"></script>
 <script src="topojson-client.min.js?v=16"></script>
@@ -183,7 +218,7 @@ svg path{fill-rule:evenodd}
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
 const TRYB=URLP.get("tryb")==="turniej"?"turniej":URLP.get("tryb")==="pojedynek"?"pojedynek":"dzien";
-const MULTI=TRYB==="pojedynek"?{host:false,conns:{},gracze:[],ja:{id:"",nick:localStorage.getItem("nick")||""},peer:null,kod:"",gra:null}:null;
+const MULTI=TRYB==="pojedynek"?{host:false,conns:{},gracze:[],ja:{id:"",nick:localStorage.getItem("nick")||"",aw:(window.Konto?Konto.profil().awatar:"🦊")},peer:null,kod:"",gra:null}:null;
 // wyzwanie od znajomego: te same pytania (ziarno i ustawienia w linku) i jego wynik do pobicia
 let RYWAL=URLP.get("od")?{nick:URLP.get("od").slice(0,20),wynik:+URLP.get("wynik")||0,nr:+URLP.get("nr")||0}:null;
 let ZIARNO=URLP.get("seed")||"";
@@ -265,15 +300,16 @@ async function init(){
     $("startTytul").innerHTML="Wszystkie gry<br>w jednym turnieju";
     $("startOpis").textContent="Z lotu ptaka, mapa, zdjęcia, kształty, herby, tablice, rzeki, kluby, granice i więcej. Liczy się najlepszy wynik.";
     ZP.zakresy($("scope"));
-    if(ZIARNO){
-      // link z wyzwaniem: bez kreatora, ustawienia z linku
-      ZP.ustawObszar((URLP.get("o")||"").split(",").filter(Boolean));
-      const w=URLP.get("w")||"dsm";$("scope").querySelectorAll("input").forEach(x=>{x.checked=w.indexOf(x.value)>=0;});
+    $("tytul").textContent="Własna gra";document.title="Własna gra · PolskoZnawca";$("odznaka").textContent="Własna gra";
+    const zLinku=URLP.get("k")&&zKodu(URLP.get("k"));
+    if(ZIARNO&&(zLinku||URLP.get("w"))){
+      // link z wyzwaniem: te same ustawienia i pytania, bez konfiguratora
+      if(zLinku)KONFIG=zLinku;else{KONFIG=nowaKonfig("Turniej");KONFIG.wielk=URLP.get("w")||"dsm";KONFIG.obszar=(URLP.get("o")||"").split(",").filter(Boolean);}
+      $("startOpis").innerHTML=opisKonfig(KONFIG);
       $("start").classList.remove("hidden");
     }else{
-      $("setup").classList.remove("hidden");
-      ZP.kreatorGry({klucz:"turniej3",kroki:["obszar","wielkosc",{pole:"rounds",tytul:"Jak długi turniej?",domyslny:"22",opcje:[
-      {v:"11",t:"Szybki",opis:"11 pytań, każda gra raz",ilu:'<div class="kr-ikona">⚡</div>'},{v:"22",t:"Pełny",opis:"22 pytania, każda gra dwa razy",ilu:'<div class="kr-ikona">🏆</div>'},{v:"33",t:"Maraton",opis:"33 pytania",ilu:'<div class="kr-ikona">🏃</div>'}]}]});
+      $("konfig").classList.remove("hidden");
+      konfigurator($("konfig"),()=>{$("konfig").classList.add("hidden");$("zaczynam").click();},"Zagraj");
     }
   }else{
     const s=zapisane();
@@ -300,13 +336,13 @@ $("zaczynam").onclick=()=>{
     Q=budujPytania(ZP.seeded("pz-dzien-"+DZIEN),8,null,KOLEJ_DZIEN);
     const s=zapisane();st={i:(s&&s.res?s.res.length:0)-1,res:(s&&s.res)||[]};
   }else{
-    const stan=ZP.zakresStan($("scope"));
     if(!ZIARNO||st){ZIARNO=Math.random().toString(36).slice(2,8);RYWAL=null;}
-    Q=budujPytania(ZP.seeded("turniej-"+ZIARNO),+(URLP.get("n")||$("rounds").value||22),c=>ZP.wZakresie(c,stan)&&ZP.wObszarze(c),KOLEJ_TURNIEJ);
+    Q=pytaniaZKonfig(KONFIG,ZP.seeded("turniej-"+ZIARNO));
     if(Q.length<6){ZP.komunikat("Za mało danych dla tego wyboru. Zaznacz większy obszar albo więcej wielkości miast.");return;}
     st={i:-1,res:[]};
   }
   $("start").classList.add("hidden");
+  ustawPodp();
   $("segmenty").innerHTML=Q.map(()=>"<i></i>").join("");
   ["segmenty","gora","pytanie","stage"].forEach(id=>$(id).classList.remove("hidden"));
   nastepne();
@@ -325,7 +361,8 @@ function nastepne(){
   segmenty();
   const st2=$("stage");st2.style.animation="none";void st2.offsetWidth;st2.style.animation="";
   ({z:rundaZ,g:rundaG,k:rundaK,h:rundaH,m:rundaM,r:rundaR,w:rundaW,t:rundaT,c:rundaC,s:rundaS,v:rundaV})[q.t](q);
-  if(MULTI)zegar();
+  const czas=TRYB==="dzien"?0:KONFIG.czas;
+  if(czas>0)zegar(czas);
 }
 function wpisz(nazwy,poprawne,opcje){
   if(!POLE)POLE=ZP.poleWpisu($("wpis"),()=>st.nazwy,v=>odpWpis(v),{poprawne:()=>st.poprawne,pokazEtykieta:"Pokaż podpowiedzi<br><small>połowa punktów</small>",pokaz:()=>{st.podp=true;pokazOpcje();}});
@@ -509,6 +546,91 @@ function wynikRundy(pts,ok,naglowek){
   }
 }
 
+/* ---------- konfigurator rozgrywki: jakie gry, ile pytań, w jakiej kolejności ---------- */
+const WSZYSTKIE=["z","g","m","k","h","t","r","c","w","s","v"];
+const PRESETY={
+  "Turniej":{gry:WSZYSTKIE.map(t=>({t,ile:2})),kolej:"przeplatane"},
+  "Szybka":{gry:WSZYSTKIE.map(t=>({t,ile:1})),kolej:"przeplatane"},
+  "Z lotu ptaka":{gry:[{t:"z",ile:10}],kolej:"po kolei"},
+  "Mapa i miasta":{gry:[{t:"z",ile:3},{t:"g",ile:3},{t:"m",ile:3},{t:"v",ile:2}],kolej:"przeplatane"},
+  "Symbole":{gry:[{t:"h",ile:3},{t:"t",ile:3},{t:"c",ile:3},{t:"r",ile:3}],kolej:"przeplatane"},
+  "Granice":{gry:[{t:"k",ile:4},{t:"s",ile:4},{t:"v",ile:3}],kolej:"przeplatane"},
+  "Ekspert":{gry:WSZYSTKIE.map(t=>({t,ile:2})),kolej:"losowo",podp:false,czas:20}
+};
+function nowaKonfig(preset){
+  const p=PRESETY[preset||"Turniej"];
+  const gry=WSZYSTKIE.map(t=>({t,ile:0}));
+  // kolejność z presetu na górze, reszta wyłączona pod spodem
+  const ord=p.gry.map(g=>g.t).concat(WSZYSTKIE.filter(t=>!p.gry.some(g=>g.t===t)));
+  return {preset:preset||"Turniej",gry:ord.map(t=>({t,ile:(p.gry.find(g=>g.t===t)||{}).ile||0})),kolej:p.kolej,czas:p.czas!=null?p.czas:(MULTI?30:0),podp:p.podp!==false,premia:true,wielk:"dsm",obszar:[]};
+}
+let KONFIG=null;
+try{KONFIG=JSON.parse(localStorage.getItem(MULTI?"konfig-multi":"konfig-single")||"null");}catch(e){}
+if(!KONFIG||!KONFIG.gry)KONFIG=nowaKonfig();
+const zapiszKonfig=()=>{try{localStorage.setItem(MULTI?"konfig-multi":"konfig-single",JSON.stringify(KONFIG));}catch(e){}};
+const kodKonfig=c=>btoa(unescape(encodeURIComponent(JSON.stringify({g:c.gry.filter(x=>x.ile).map(x=>x.t+x.ile).join("."),k:c.kolej[0],c:c.czas,p:c.podp?1:0,b:c.premia?1:0,w:c.wielk,o:c.obszar.join(",")})))).replace(/=+$/,"");
+function zKodu(s){
+  try{const j=JSON.parse(decodeURIComponent(escape(atob(s))));
+    const gry=j.g.split(".").map(x=>({t:x[0],ile:+x.slice(1)}));
+    return {preset:"",gry:gry.concat(WSZYSTKIE.filter(t=>!gry.some(g=>g.t===t)).map(t=>({t,ile:0}))),kolej:{p:"po kolei",l:"losowo"}[j.k]||"przeplatane",czas:+j.c||0,podp:!!j.p,premia:!!j.b,wielk:j.w||"dsm",obszar:(j.o||"").split(",").filter(Boolean)};
+  }catch(e){return null;}
+}
+function sekwencja(c,rnd){
+  const gry=c.gry.filter(g=>g.ile>0);
+  if(c.kolej==="po kolei")return gry.flatMap(g=>Array(g.ile).fill(g.t));
+  if(c.kolej==="losowo")return losuj(rnd,gry.flatMap(g=>Array(g.ile).fill(g.t)));
+  const zost=gry.map(g=>({t:g.t,n:g.ile})),out=[];
+  while(zost.some(z=>z.n>0))zost.forEach(z=>{if(z.n>0){out.push(z.t);z.n--;}});
+  return out;
+}
+function pytaniaZKonfig(c,rnd){
+  ZP.ustawObszar(c.obszar);
+  const seq=sekwencja(c,rnd);
+  return budujPytania(rnd,seq.length,x=>ZP.wZakresie(x,c.wielk)&&ZP.wObszarze(x),seq);
+}
+function ileMinut(c){const n=c.gry.reduce((a,g)=>a+g.ile,0);return {n,min:Math.max(1,Math.round(n*(c.czas||25)/60))};}
+function konfigurator(box,naStart,etykieta){
+  const c=KONFIG;
+  const rys=()=>{
+    const {n,min}=ileMinut(c);
+    box.innerHTML='<h2>Ustaw rozgrywkę</h2>'
+      +'<div class="presety">'+Object.keys(PRESETY).map(k=>'<button data-p="'+k+'" class="'+(c.preset===k?"akt":"")+'">'+k+'</button>').join("")+'</div>'
+      +'<div class="lista-gier">'+c.gry.map((g,i)=>'<div class="wg '+(g.ile?"on":"off")+'" data-i="'+i+'"><span class="ik">'+TYPY[g.t][0]+'</span><b>'+TYPY[g.t][1]+'</b>'
+        +'<span class="stepper"><button data-a="-">−</button><span>'+g.ile+'</span><button data-a="+">+</button></span>'
+        +'<span class="kol"><button data-a="u"'+(i?"":" disabled")+'>↑</button><button data-a="d"'+(i<c.gry.length-1?"":" disabled")+'>↓</button></span></div>').join("")+'</div>'
+      +'<div class="opcje-k">'
+      +'<label>Kolejność<select id="kKol"><option>przeplatane</option><option>po kolei</option><option>losowo</option></select></label>'
+      +'<label>Czas na pytanie<select id="kCzas"><option value="0">bez limitu</option><option value="15">15 s</option><option value="20">20 s</option><option value="30">30 s</option><option value="45">45 s</option></select></label>'
+      +'<label>Podpowiedzi<select id="kPodp"><option value="1">dozwolone</option><option value="0">wyłączone</option></select></label>'
+      +(MULTI?'<label>Premia za szybkość<select id="kPrem"><option value="1">tak</option><option value="0">nie</option></select></label>':'<label>Miasta<select id="kWielk"><option value="dsm">wszystkie</option><option value="d">duże</option><option value="ds">duże i średnie</option><option value="sm">średnie i małe</option></select></label>')
+      +'</div>'
+      +'<button class="ghost obsz-btn" id="kObszBtn">📍 Obszar: '+(c.obszar.length?(c.obszar.length===1?c.obszar[0]:c.obszar.length+" województw"):"cała Polska")+' '+(box._obsz?"▴":"▾")+'</button>'
+      +'<div class="chipy-k'+(box._obsz?"":" hidden")+'" id="kObsz"><button data-w="" class="'+(c.obszar.length?"":"akt")+'">cała Polska</button>'+Object.values(ZP.WOJ_KOD).sort((a,b)=>a.localeCompare(b,"pl")).map(w=>'<button data-w="'+w+'" class="'+(c.obszar.indexOf(w)>=0?"akt":"")+'">'+w+'</button>').join("")+'</div>'
+      +'<div class="podsum"><b>'+n+'</b> pytań · około <b>'+min+'</b> min</div>'
+      +(naStart?'<button class="big" id="kStart"'+(n?"":" disabled")+'>'+(etykieta||"Zagraj")+'</button>':'');
+    box.querySelector("#kKol").value=c.kolej;box.querySelector("#kCzas").value=String(c.czas);box.querySelector("#kPodp").value=c.podp?"1":"0";
+    if(MULTI)box.querySelector("#kPrem").value=c.premia?"1":"0";else box.querySelector("#kWielk").value=c.wielk;
+    box.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{const o=c.obszar,w=c.wielk;KONFIG=Object.assign(nowaKonfig(b.dataset.p),{obszar:o,wielk:w});Object.assign(c,KONFIG);KONFIG=c;zmiana();});
+    box.querySelectorAll(".wg").forEach(r=>r.onclick=e=>{
+      const b=e.target.closest("button");if(!b)return;const i=+r.dataset.i,g=c.gry[i],a=b.dataset.a;
+      if(a==="+")g.ile=Math.min(10,g.ile+1);if(a==="-")g.ile=Math.max(0,g.ile-1);
+      if(a==="u"&&i>0)[c.gry[i-1],c.gry[i]]=[c.gry[i],c.gry[i-1]];if(a==="d"&&i<c.gry.length-1)[c.gry[i+1],c.gry[i]]=[c.gry[i],c.gry[i+1]];
+      c.preset="";zmiana();
+    });
+    box.querySelector("#kKol").onchange=e=>{c.kolej=e.target.value;c.preset="";zmiana();};
+    box.querySelector("#kCzas").onchange=e=>{c.czas=+e.target.value;zmiana();};
+    box.querySelector("#kPodp").onchange=e=>{c.podp=e.target.value==="1";zmiana();};
+    if(MULTI)box.querySelector("#kPrem").onchange=e=>{c.premia=e.target.value==="1";zmiana();};
+    else box.querySelector("#kWielk").onchange=e=>{c.wielk=e.target.value;zmiana();};
+    box.querySelector("#kObszBtn").onclick=()=>{box._obsz=!box._obsz;zmiana();};
+    box.querySelectorAll("#kObsz button").forEach(b=>b.onclick=()=>{const w=b.dataset.w;if(!w)c.obszar=[];else{const i=c.obszar.indexOf(w);if(i>=0)c.obszar.splice(i,1);else c.obszar.push(w);}zmiana();});
+    if(naStart)box.querySelector("#kStart").onclick=naStart;
+  };
+  const zmiana=()=>{zapiszKonfig();const sc=box.querySelector(".lista-gier"),y=sc?sc.scrollTop:0;rys();const s2=box.querySelector(".lista-gier");if(s2)s2.scrollTop=y;if(MULTI&&MULTI.host)rozeslijLobbyKonfig();};
+  rys();
+}
+function opisKonfig(c){const {n,min}=ileMinut(c);return c.gry.filter(g=>g.ile).map(g=>TYPY[g.t][0]+" "+g.ile).join("  ")+"<br>"+n+" pytań · "+c.kolej+(c.czas?" · "+c.czas+" s na pytanie":"")+(c.podp?"":" · bez podpowiedzi");}
+
 /* ---------- gra na kilku telefonach: te same gry i pytania, punkty za szybkość ---------- */
 const PREFIKS="polskoznawca-kpt-",CZAS_RUNDY=30;
 const AV=["🦊","🐻","🦉","🐺","🦌","🐗","🦅","🐿️"],KOL=["#F2C14E","#7FD8C6","#E4485A","#5AA9E6","#B08AE8","#F29B4E","#5DCAA5","#E8F1EE"];
@@ -528,7 +650,7 @@ function lobbyStart(blad){
 }
 const escH=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
 function listaGraczy(punkty){
-  return '<div class="mp-gracze">'+MULTI.gracze.map((g,i)=>'<div class="mp-gracz'+(g.id===MULTI.ja.id?" ja":"")+'"><span class="av" style="background:'+KOL[i%8]+'">'+AV[i%8]+'</span><b>'+escH(g.nick)+(g.id===MULTI.ja.id?" (Ty)":"")+'</b>'+(punkty?'<span class="pkt">'+fmt(g.pts||0)+'</span>':"")+'</div>').join("")+'</div>';
+  return '<div class="mp-gracze">'+MULTI.gracze.map((g,i)=>'<div class="mp-gracz'+(g.id===MULTI.ja.id?" ja":"")+'"><span class="av" style="background:'+KOL[i%8]+'">'+(g.aw||AV[i%8])+'</span><b>'+escH(g.nick)+(g.id===MULTI.ja.id?" (Ty)":"")+'</b>'+(punkty?'<span class="pkt">'+fmt(g.pts||0)+'</span>':"")+'</div>').join("")+'</div>';
 }
 function ekranLobby(){
   $("runda").textContent="pokój "+MULTI.kod;
@@ -536,20 +658,26 @@ function ekranLobby(){
   lobby((h?'<p>Kod pokoju. Znajomi wpisują go u siebie albo otwierają link.</p><div class="mp-kod">'+MULTI.kod+'</div><button class="ghost" id="mpLink">Wyślij link do pokoju</button>'
       :'<p>Jesteś w pokoju <b style="color:var(--gold)">'+MULTI.kod+'</b>. Gospodarz zaraz zacznie.</p>')
     +listaGraczy()
-    +(h?'<label class="field"><span>Liczba pytań</span><select id="mpIle"><option value="11">11, każda gra raz</option><option value="22">22, każda gra dwa razy</option></select></label>'
-      +'<button class="big" id="mpStart"'+(MULTI.gracze.length<2?" disabled":"")+'>'+(MULTI.gracze.length<2?"Czekam na drugą osobę…":"Zaczynamy")+'</button>':'<div class="datastate">Czekamy na start…</div>'));
+    +(h?'<button class="ghost" id="mpUst">🎛️ Ustaw rozgrywkę</button><div class="datastate" id="mpOpis">'+opisKonfig(KONFIG)+'</div>'
+      +'<button class="big" id="mpStart"'+(MULTI.gracze.length<2?" disabled":"")+'>'+(MULTI.gracze.length<2?"Czekam na drugą osobę…":"Zaczynamy")+'</button>'
+      :'<div class="datastate" id="mpOpis">'+(MULTI.konfigOpis||"Gospodarz ustawia rozgrywkę…")+'</div><div class="datastate">Czekamy na start…</div>'));
   if(h){
     $("mpLink").onclick=async()=>{const u=location.origin+location.pathname+"?tryb=pojedynek&pokoj="+MULTI.kod,t="Zagraj ze mną w PolskoZnawcę! Pokój "+MULTI.kod+": "+u;
       try{if(navigator.share){await navigator.share({text:t});return;}}catch(e){if(e.name==="AbortError")return;}
       try{await navigator.clipboard.writeText(t);ZP.komunikat("Skopiowano link do pokoju.");}catch(e){ZP.komunikat(u,6000);}};
     $("mpStart").onclick=startPojedynku;
+    $("mpUst").onclick=()=>{
+      $("lobby").classList.add("hidden");$("konfig").classList.remove("hidden");
+      konfigurator($("konfig"),()=>{$("konfig").classList.add("hidden");ekranLobby();},"Gotowe, wróć do pokoju");
+    };
   }
 }
+function rozeslijLobbyKonfig(){Object.values(MULTI.conns).forEach(c=>{try{c.send({t:"konfig",opis:opisKonfig(KONFIG)});}catch(e){}});}
 function nowyKod(){const z="ABCDEFGHJKLMNPRSTUWXYZ23456789";return [...Array(4)].map(()=>z[Math.floor(Math.random()*z.length)]).join("");}
 function utworzPokoj(){
   MULTI.host=true;MULTI.kod=nowyKod();$("mpStan0").textContent="Tworzę pokój…";
   const peer=MULTI.peer=new Peer(PREFIKS+MULTI.kod);
-  peer.on("open",id=>{MULTI.ja.id=id;MULTI.gracze=[{id,nick:MULTI.ja.nick,pts:0}];ekranLobby();});
+  peer.on("open",id=>{MULTI.ja.id=id;MULTI.gracze=[{id,nick:MULTI.ja.nick,aw:MULTI.ja.aw,pts:0}];ekranLobby();});
   peer.on("error",e=>{if(e.type==="unavailable-id"){peer.destroy();utworzPokoj();}else lobbyStart("Błąd połączenia: "+e.type+". Spróbuj ponownie.");});
   peer.on("connection",c=>{
     c.on("data",m=>odGracza(c,m));
@@ -563,36 +691,37 @@ function dolaczDoPokoju(k){
     MULTI.ja.id=id;
     const c=peer.connect(PREFIKS+k,{reliable:true});MULTI.conns.host=c;
     const t=setTimeout(()=>lobbyStart("Nie znalazłem pokoju "+k+". Sprawdź kod."),10000);
-    c.on("open",()=>{clearTimeout(t);c.send({t:"hej",nick:MULTI.ja.nick});});
+    c.on("open",()=>{clearTimeout(t);c.send({t:"hej",nick:MULTI.ja.nick,aw:MULTI.ja.aw});});
     c.on("data",m=>odGospodarza(m));
     c.on("close",()=>lobbyStart("Gospodarz zamknął pokój."));
   });
   peer.on("error",e=>lobbyStart(e.type==="peer-unavailable"?"Nie ma pokoju "+k+".":"Błąd połączenia: "+e.type));
 }
 function doWszystkich(m){Object.values(MULTI.conns).forEach(c=>{try{c.send(m);}catch(e){}});odGospodarza(m);}
-function rozeslijLobby(){doWszystkich({t:"lobby",gracze:MULTI.gracze.map(g=>({id:g.id,nick:g.nick,pts:g.pts}))});}
+function rozeslijLobby(){doWszystkich({t:"lobby",gracze:MULTI.gracze.map(g=>({id:g.id,nick:g.nick,aw:g.aw,pts:g.pts}))});}
 function wyslijOdp(m){if(MULTI.host)przyjmijOdp(MULTI.ja.id,m);else MULTI.conns.host.send(m);}
 // gospodarz
 function odGracza(c,m){
   if(m.t==="hej"){
     if(MULTI.gra){c.send({t:"blad",tekst:"Gra już trwa."});return;}
     if(MULTI.gracze.length>=8){c.send({t:"blad",tekst:"Pokój jest pełny."});return;}
-    MULTI.conns[c.peer]=c;MULTI.gracze.push({id:c.peer,nick:String(m.nick).slice(0,14),pts:0});rozeslijLobby();
+    MULTI.conns[c.peer]=c;MULTI.gracze.push({id:c.peer,nick:String(m.nick).slice(0,14),aw:String(m.aw||"").slice(0,4),pts:0});rozeslijLobby();
+    setTimeout(()=>{try{c.send({t:"konfig",opis:opisKonfig(KONFIG)});}catch(e){}},300);
   }
   if(m.t==="odp")przyjmijOdp(c.peer,m);
 }
 async function startPojedynku(){
   await laduj();
   MULTI.gracze.forEach(g=>g.pts=0);
-  MULTI.gra={i:-1,odp:{},seed:Math.random().toString(36).slice(2,8),n:+$("mpIle").value};
-  doWszystkich({t:"start",seed:MULTI.gra.seed,n:MULTI.gra.n});
+  MULTI.gra={i:-1,odp:{},seed:Math.random().toString(36).slice(2,8)};
+  doWszystkich({t:"start",seed:MULTI.gra.seed,k:kodKonfig(KONFIG)});
   setTimeout(()=>nastepnaRunda(),1800);
 }
 function nastepnaRunda(){
   const g=MULTI.gra;g.i++;
-  if(g.i>=Q.length){doWszystkich({t:"koniec",gracze:MULTI.gracze.map(x=>({id:x.id,nick:x.nick,pts:x.pts}))});MULTI.gra=null;return;}
+  if(g.i>=Q.length){doWszystkich({t:"koniec",gracze:MULTI.gracze.map(x=>({id:x.id,nick:x.nick,aw:x.aw,pts:x.pts}))});MULTI.gra=null;return;}
   g.odp={};doWszystkich({t:"runda",i:g.i});
-  clearTimeout(g.t);g.t=setTimeout(zamknijRunde,(CZAS_RUNDY+3)*1000);
+  clearTimeout(g.t);g.t=setTimeout(zamknijRunde,((KONFIG.czas||60)+3)*1000);
 }
 function przyjmijOdp(id,m){
   const g=MULTI.gra;if(!g||m.i!==g.i||g.odp[id])return;
@@ -605,19 +734,21 @@ function zamknijRunde(){
   // premia za szybkość dla dwóch najszybszych dobrych odpowiedzi
   const dobre=Object.entries(g.odp).filter(([,o])=>o.pts>=500).sort((a,b)=>a[1].ms-b[1].ms);
   const dod={};Object.entries(g.odp).forEach(([id,o])=>dod[id]=o.pts);
-  if(dobre[0])dod[dobre[0][0]]+=300;if(dobre[1])dod[dobre[1][0]]+=150;
+  if(KONFIG.premia){if(dobre[0])dod[dobre[0][0]]+=300;if(dobre[1])dod[dobre[1][0]]+=150;}
   MULTI.gracze.forEach(x=>x.pts+=dod[x.id]||0);
   const szybki=dobre[0]&&MULTI.gracze.find(x=>x.id===dobre[0][0]);
-  doWszystkich({t:"wynik",i:g.i,dod,szybki:szybki?{nick:szybki.nick,ms:dobre[0][1].ms}:null,gracze:MULTI.gracze.map(x=>({id:x.id,nick:x.nick,pts:x.pts}))});
+  doWszystkich({t:"wynik",i:g.i,dod,szybki:szybki?{nick:szybki.nick,ms:dobre[0][1].ms}:null,gracze:MULTI.gracze.map(x=>({id:x.id,nick:x.nick,aw:x.aw,pts:x.pts}))});
   setTimeout(nastepnaRunda,4500);
 }
 // każdy gracz, także gospodarz
 async function odGospodarza(m){
   if(m.t==="blad")lobbyStart(m.tekst);
-  if(m.t==="lobby"){MULTI.gracze=m.gracze;ekranLobby();}
+  if(m.t==="lobby"){MULTI.gracze=m.gracze;if($("konfig").classList.contains("hidden"))ekranLobby();}
+  if(m.t==="konfig"){MULTI.konfigOpis=m.opis;const o=$("mpOpis");if(o&&!MULTI.host)o.innerHTML=m.opis;}
   if(m.t==="start"){
     await laduj();
-    Q=budujPytania(ZP.seeded("pojedynek-"+m.seed),m.n,null,KOLEJ_TURNIEJ);st={i:-1,res:[]};
+    KONFIG=zKodu(m.k)||nowaKonfig();ustawPodp();
+    Q=pytaniaZKonfig(KONFIG,ZP.seeded("pojedynek-"+m.seed));st={i:-1,res:[]};
     lobby('<h2 style="text-align:center;margin-top:30%">Uwaga…</h2><div class="mp-kod" id="odl">3</div>');
     let n=3;const id=setInterval(()=>{n--;if(n<=0)clearInterval(id);else if($("odl"))$("odl").textContent=n;},550);
   }
@@ -626,9 +757,19 @@ async function odGospodarza(m){
     if(!$("segmenty").children.length||$("segmenty").children.length!==Q.length)$("segmenty").innerHTML=Q.map(()=>"<i></i>").join("");
     ["segmenty","gora","pytanie","stage"].forEach(id=>$(id).classList.remove("hidden"));
     st.i=m.i-1;nastepne();st.t0=performance.now();
+    $("mpPasek").innerHTML=MULTI.gracze.map((g,i)=>'<i data-id="'+g.id+'" title="'+escH(g.nick)+'" style="background:'+KOL[i%8]+'">'+(g.aw||AV[i%8])+'</i>').join("");
     $("suma").textContent=fmt((MULTI.gracze.find(g=>g.id===MULTI.ja.id)||{}).pts||0);
   }
-  if(m.t==="odpowiedzial"&&$("mpStan"))$("mpStan").textContent="Odpowiedziało "+m.ile+" z "+m.z+"…";
+  if(m.t==="odpowiedzial"){
+    if($("mpStan"))$("mpStan").textContent="Odpowiedziało "+m.ile+" z "+m.z+"…";
+    const av=document.querySelector('#mpPasek i[data-id="'+m.id+'"]');if(av)av.classList.add("jest");
+    if(m.id!==MULTI.ja.id){
+      const g=MULTI.gracze.find(x=>x.id===m.id);
+      const d=document.createElement("div");d.className="mp-dymek";d.textContent="⚡ "+(g?g.nick:"Ktoś")+" już odpowiedział"+(g&&/a$/i.test(g.nick)?"a":"");
+      $("stage").appendChild(d);setTimeout(()=>d.remove(),1900);
+      if(navigator.vibrate&&!st.odp)try{navigator.vibrate(25);}catch(e){}
+    }
+  }
   if(m.t==="wynik"){
     MULTI.gracze=m.gracze;
     if(!st.odp)czasMinal(true);
@@ -640,10 +781,12 @@ async function odGospodarza(m){
   }
   if(m.t==="koniec")podium(m.gracze);
 }
-function zegar(){
+function ustawPodp(){$("wpis").classList.toggle("bez-podp",TRYB!=="dzien"&&!KONFIG.podp);}
+function zegar(sek){
+  sek=sek||CZAS_RUNDY;
   $("tbar").classList.remove("hidden");$("tfill").style.width="100%";
   const nr=st.i;
-  ZP.pasek($("tbar"),$("tfill"),CZAS_RUNDY,()=>{if(st.i===nr&&!st.odp)czasMinal(false);},()=>st.odp||st.i!==nr);
+  ZP.pasek($("tbar"),$("tfill"),sek,()=>{if(st.i===nr&&!st.odp)czasMinal(false);},()=>st.odp||st.i!==nr);
 }
 function czasMinal(cicho){
   if(st.odp)return;
@@ -660,7 +803,7 @@ function podium(gr){
   $("runda").textContent="koniec";
   const r=gr.slice().sort((a,b)=>b.pts-a.pts),idx=g=>MULTI.gracze.findIndex(x=>x.id===g.id);
   MULTI.gracze=gr;
-  const pod=[r[1],r[0],r[2]].map((g,i)=>g?'<div class="m'+[2,1,3][i]+'"><span>'+AV[idx(g)%8]+'</span><b>'+escH(g.nick)+'</b>'+fmt(g.pts)+'</div>':'<div style="visibility:hidden"></div>').join("");
+  const pod=[r[1],r[0],r[2]].map((g,i)=>g?'<div class="m'+[2,1,3][i]+'"><span>'+(g.aw||AV[idx(g)%8])+'</span><b>'+escH(g.nick)+'</b>'+fmt(g.pts)+'</div>':'<div style="visibility:hidden"></div>').join("");
   lobby('<h2 style="text-align:center">'+(r[0].id===MULTI.ja.id?"Wygrywasz!":escH(r[0].nick)+" wygrywa")+'</h2><div class="mp-podium">'+pod+'</div>'+listaGraczy(true)
     +(MULTI.host?'<button class="big" id="mpRewanz">Rewanż</button>':'<div class="datastate">Gospodarz może zaproponować rewanż.</div>'));
   if(r[0].id===MULTI.ja.id)setTimeout(ZP.fanfary,400);
@@ -678,7 +821,7 @@ function koniec(){
     if(ser.last!==DZIEN){ser.n=ser.last===ZP.dayKey(w)?ser.n+1:1;ser.last=DZIEN;localStorage.setItem("dzis-seria",JSON.stringify(ser));}
     if(suma>+(localStorage.getItem("dzis-best")||0))localStorage.setItem("dzis-best",suma);
   }else{
-    const k="turniej-best-"+ZP.zakresStan($("scope"))+"-"+(ZP.OBSZAR.length?ZP.OBSZAR.slice().sort().join(","):"pl");
+    const k="wlasna-best-"+kodKonfig(KONFIG).slice(0,60);
     st.rekord=suma>+(localStorage.getItem(k)||0);if(st.rekord)localStorage.setItem(k,suma);
   }
   pokazWynik(st.res);
@@ -751,7 +894,7 @@ async function rzucWyzwanie(res,suma){
   let nick=localStorage.getItem("nick");
   if(!nick){nick=(prompt("Jak się podpisać w wyzwaniu?","")||"").trim().slice(0,20);if(!nick)return;localStorage.setItem("nick",nick);}
   const u=new URL(location.href.split("?")[0].split("#")[0]);
-  if(TRYB==="turniej"){u.searchParams.set("tryb","turniej");u.searchParams.set("seed",ZIARNO);u.searchParams.set("w",ZP.zakresStan($("scope")));if(ZP.OBSZAR.length)u.searchParams.set("o",ZP.OBSZAR.join(","));}
+  if(TRYB==="turniej"){u.searchParams.set("tryb","turniej");u.searchParams.set("seed",ZIARNO);u.searchParams.set("k",kodKonfig(KONFIG));}
   else u.searchParams.set("nr",NR);
   u.searchParams.set("od",nick);u.searchParams.set("wynik",suma);
   const tekst="⚔️ "+nick+" rzuca Ci wyzwanie w PolskoZnawcy: "+fmt(suma)+" pkt"+(TRYB==="turniej"?" w turnieju. Te same 12 pytań, pobijesz?":" w wyzwaniu dnia #"+NR+". Pobijesz?")+"\n"+res.map(r=>({g:"🟩",y:"🟨",r:"🟥"})[kolor(r.pts)]).join("")+"\n"+u.toString();

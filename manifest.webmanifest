@@ -1,7 +1,7 @@
 {
-  "name": "PolskoZnawca \u2014 Cudze chwalicie, a Polsk\u0119 znacie?",
+  "name": "PolskoZnawca: Cudze chwalicie, a Polskę znacie?",
   "short_name": "PolskoZnawca",
-  "description": "Gry geograficzne o Polsce: miasta na czas, zdjęcia lotnicze Esri, tablice, herby i mapa.",
+  "description": "Gry geograficzne o Polsce: z lotu ptaka, mapa, herby, tablice, kluby, rzeki i granice. Grasz sam albo ze znajomymi.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
@@ -10,8 +10,77 @@
   "theme_color": "#0C1A1D",
   "lang": "pl",
   "icons": [
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "id": "./",
+  "categories": [
+    "education",
+    "games",
+    "trivia"
+  ],
+  "shortcuts": [
+    {
+      "name": "Wyzwanie dnia",
+      "url": "./wyzwanie.html",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Ciepło-zimno",
+      "url": "./cieplo.html",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Do sześciu razy sztuka",
+      "url": "./szostka.html",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Ze znajomymi",
+      "url": "./wyzwanie.html?tryb=pojedynek",
+      "icons": [
+        {
+          "src": "icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }
