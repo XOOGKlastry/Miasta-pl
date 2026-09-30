@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Ciepło-zimno · PolskoZnawca</title>
+<meta name="theme-color" content="#0A181B" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="wspolne.css?v=16" />
+<style>
+.tryby{display:flex;gap:6px;flex:none}
+.tryby button{flex:1;min-height:38px;border-radius:12px;border:1px solid var(--line-2);background:var(--ink-2);font-size:13.5px;font-weight:700}
+.tryby button.akt{background:var(--gold);border-color:var(--gold);color:var(--gold-ink)}
+.stage{flex:1;min-height:180px;position:relative;overflow:hidden}
+#mapa{position:absolute;inset:0;width:100%;height:100%}
+#mapa .woj{fill:#132C31;stroke:#2E6068;stroke-width:1;vector-effect:non-scaling-stroke}
+#mapa .g{stroke:#0A181B;stroke-width:.6;vector-effect:non-scaling-stroke;animation:zapal .5s both;cursor:pointer}
+#mapa .g.ost{stroke:#fff;stroke-width:2}
+#mapa .cel{fill:#5DCAA5;stroke:#fff;stroke-width:2;vector-effect:non-scaling-stroke}
+@keyframes zapal{from{opacity:0}to{opacity:1}}
+.licznik{position:absolute;left:10px;top:10px;z-index:3;background:rgba(10,24,27,.88);border:1px solid var(--line-2);border-radius:999px;padding:5px 12px;font-size:13px;color:var(--dim)}
+.licznik b{color:var(--gold);font-size:15px}
+.skala{position:absolute;left:10px;bottom:10px;z-index:3;display:flex;align-items:center;gap:6px;font-size:11px;color:var(--dim);background:rgba(10,24,27,.85);border-radius:999px;padding:4px 10px}
+.skala i{width:90px;height:8px;border-radius:4px;background:linear-gradient(90deg,#8E1328,#E4485A,#F29B4E,#F2E6A0,#9DC4DA)}
+.ostatnia{flex:none;display:flex;align-items:center;gap:10px;min-height:46px;padding:0 12px;border-radius:14px;background:var(--ink-2);border:1px solid var(--line);animation:wejscie .3s both}
+.ostatnia .kolko{width:22px;height:22px;border-radius:50%;flex:none;border:2px solid rgba(255,255,255,.25)}
+.ostatnia .nm{flex:1;min-width:0}
+.ostatnia .nm b{display:block;font-family:"Fraunces",serif;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ostatnia .nm small{color:var(--dim);font-size:12px}
+.ostatnia .km{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.najblizsze{flex:none;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.najblizsze::-webkit-scrollbar{display:none}
+.najblizsze span{flex:none;display:flex;align-items:center;gap:5px;background:var(--ink-2);border:1px solid var(--line);border-radius:999px;padding:4px 10px 4px 5px;font-size:12.5px}
+.najblizsze span i{width:12px;height:12px;border-radius:50%}
+.pasek-dol{flex:none;display:flex;gap:8px}
+.pasek-dol .wpis{flex:1}
+.pasek-dol .pas{flex:none;min-height:56px;padding:0 12px;font-size:12.5px}
+.koniec{flex:none;display:flex;flex-direction:column;gap:10px;animation:wejscie .35s both}
+.koniec h2{font-family:"Fraunces",serif;font-weight:900;font-size:26px;margin:0;line-height:1.05}
+.koniec p{margin:0;color:var(--dim);font-size:14px}
+.staty{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.staty div{background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center;font-size:11px;color:var(--dim)}
+.staty b{display:block;font-family:"Fraunces",serif;font-size:21px;color:var(--paper)}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <a class="back" href="./" aria-label="Wróć do listy gier">‹</a>
+  <h1>Ciepło-zimno</h1>
+  <span class="round" id="nr"></span>
+</header>
+<div class="tryby"><button class="akt" data-t="dzien">Gmina dnia</button><button data-t="trening">Trening</button></div>
+<main>
+  <section class="stage" id="stage">
+    <svg id="mapa" preserveAspectRatio="xMidYMid meet"></svg>
+    <span class="licznik" id="licznik">Wczytywanie gmin…</span>
+    <span class="skala">gorąco <i></i> zimno</span>
+  </section>
+  <div class="ostatnia hidden" id="ostatnia"></div>
+  <div class="najblizsze" id="najblizsze"></div>
+  <div class="pasek-dol" id="pasekDol"><div class="wpis" id="wpis"></div><button class="ghost pas" id="poddaj">Poddaję się</button></div>
+  <section class="koniec hidden" id="koniec"></section>
+</main>
+</div>
+
+<script src="topojson-client.min.js?v=16"></script>
+<script src="wspolne.js?v=16"></script>
+<script>
+const {$,fmt}=ZP;
+const START=new Date(2026,9,1),DZIEN=ZP.dayKey();
+const NR=Math.max(1,Math.floor((new Date(DZIEN+"T12:00:00")-START)/864e5)+1);
+const TYP={"1":"gmina miejska","2":"gmina wiejska","3":"gmina miejsko-wiejska"};
+let G=[],PO_ETYK=new Map(),P=null,tryb="dzien",cel=null,proby=[],koniec=false,POLE=null;
+
+/* ---------- dane: wszystkie gminy z sąsiedztwem ---------- */
+async function laduj(){
+  const [t,pw,woj]=await Promise.all([fetch("gminy.topojson?v=16").then(r=>r.json()),ZP.loadPowiaty(),ZP.loadWoj()]);
+  const obj=Object.values(t.objects).sort((a,b)=>b.geometries.length-a.geometries.length)[0];
+  const fs=topojson.feature(t,obj).features,sas=topojson.neighbors(obj.geometries);
+  const powN={};pw.forEach(p=>powN[p.k]=p.city?"miasto "+p.n:"pow. "+p.n);
+  fs.forEach((f,i)=>{
+    const k=String(f.properties.k);if(!/[123]$/.test(k)||!f.geometry)return;
+    let b=[1e9,1e9,-1e9,-1e9],sx=0,sy=0,n=0;
+    const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
+    polys.forEach(p=>p[0].forEach(([x,y])=>{b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);sx+=x;sy+=y;n++;}));
+    G.push({i,k,n:f.properties.n,typ:TYP[k.slice(-1)],pow:powN[k.slice(0,4)]||"",woj:ZP.WOJ_KOD[k.slice(0,2)],f,bb:b,lon:sx/n,lat:sy/n,sas:sas[i]});
+  });
+  const idx={};G.forEach(g=>idx[g.i]=g);G.forEach(g=>g.sas=g.sas.map(j=>idx[j]).filter(Boolean));
+  // etykiety: nazwy powtarzające się dostają dopisek z powiatem albo typem gminy
+  const ile={};G.forEach(g=>ile[g.n]=(ile[g.n]||0)+1);
+  G.forEach(g=>{
+    let e=g.n;
+    if(ile[g.n]>1){const wPow=G.filter(x=>x.n===g.n&&x.k.slice(0,4)===g.k.slice(0,4)).length;e+=" ("+(wPow>1?(g.typ==="gmina miejska"?"miasto":"gmina wiejska"):g.pow)+")";}
+    g.etyk=e;PO_ETYK.set(ZP.norm(e),g);
+  });
+  P=ZP.projection(woj.map(w=>w.f),500,6);
+  const svg=$("mapa");svg.setAttribute("viewBox","0 0 500 "+P.H.toFixed(0));
+  svg.innerHTML='<g id="tlo">'+woj.map(w=>'<path class="woj" d="'+P.path(w.f.geometry)+'"/>').join("")+'</g><g id="warstwa"></g>';
+  ZP.zoomSvg(svg,$("stage")).reset();
+}
+
+/* ---------- ciepło: odległość i kolor ---------- */
+function odleglosc(a,b){
+  if(a===b)return 0;
+  if(a.sas.indexOf(b)>=0)return 0.5;   // graniczą
+  return ZP.km(a,b);
+}
+function kolor(d){
+  if(d===0)return "#5DCAA5";
+  const st=[[0,[142,19,40]],[25,[228,72,90]],[90,[242,155,78]],[220,[242,230,160]],[450,[157,196,218]]];
+  for(let i=1;i<st.length;i++)if(d<=st[i][0]){const [d0,c0]=st[i-1],[d1,c1]=st[i],t=(d-d0)/(d1-d0);return "rgb("+c0.map((v,j)=>Math.round(v+(c1[j]-v)*t)).join(",")+")";}
+  return "rgb(157,196,218)";
+}
+const emoji=d=>d===0?"✅":d<=1?"🔥":d<=40?"🟥":d<=100?"🟧":d<=220?"🟨":"🟦";
+const opisD=d=>d===0?"to ta gmina!":d<=1?"graniczy z szukaną!":fmt(Math.round(d))+" km";
+
+/* ---------- rozgrywka ---------- */
+const klucz=()=>"cieplo-"+DZIEN;
+function staty(){try{return JSON.parse(localStorage.getItem("cieplo-stat")||"null")||{gry:0,suma:0,seria:0,najl:0,ost:""};}catch(e){return {gry:0,suma:0,seria:0,najl:0,ost:""};}}
+function losuj(){
+  const pula=G.filter(g=>g.typ!=="gmina wiejska");   // gminy z miastem: łatwiej je znać
+  const r=tryb==="dzien"?ZP.seeded("cieplo-"+DZIEN):Math.random;
+  return pula[Math.floor(r()*pula.length)];
+}
+function start(){
+  koniec=false;proby=[];cel=losuj();
+  if(tryb==="dzien"){try{const s=JSON.parse(localStorage.getItem(klucz())||"null");if(s&&s.proby)proby=s.proby.map(k=>G.find(g=>g.k===k)).filter(Boolean);}catch(e){}}
+  $("nr").textContent=tryb==="dzien"?"#"+NR:"trening";
+  $("warstwa").innerHTML="";$("koniec").classList.add("hidden");$("pasekDol").classList.remove("hidden");$("ostatnia").classList.add("hidden");
+  proby.forEach(g=>rysujGmine(g,false));
+  odswiez();
+  if(proby.indexOf(cel)>=0)zakoncz(true,true);
+  else{POLE.wyczysc();POLE.wylacz(false);POLE.focus();}
+}
+function rysujGmine(g,ostatnia){
+  const d=odleglosc(g,cel);
+  document.querySelectorAll("#warstwa .ost").forEach(x=>x.classList.remove("ost"));
+  $("warstwa").insertAdjacentHTML("beforeend",'<path class="g'+(ostatnia?" ost":"")+'" data-k="'+g.k+'" fill="'+kolor(d)+'" d="'+P.path(g.f.geometry,0.4)+'"><title>'+g.etyk+'</title></path>');
+}
+function odswiez(){
+  const n=proby.length;
+  $("licznik").innerHTML=n?"Próby: <b>"+n+"</b>"+(n>=12&&!koniec?" · woj. "+cel.woj:"")+(n>=20&&!koniec?", "+cel.pow:""):"Wpisz dowolną gminę";
+  const ost=proby[n-1],box=$("ostatnia");
+  if(ost){
+    const d=odleglosc(ost,cel);
+    box.innerHTML='<span class="kolko" style="background:'+kolor(d)+'"></span><span class="nm"><b></b><small></small></span><span class="km"></span>';
+    box.querySelector("b").textContent=ost.etyk;box.querySelector("small").textContent=ost.typ+", woj. "+ost.woj;box.querySelector(".km").textContent=opisD(d);
+    box.classList.remove("hidden");box.style.animation="none";void box.offsetWidth;box.style.animation="";
+  }
+  // najbliższe dotychczasowe próby, żeby było widać, gdzie jest ciepło
+  const top=proby.slice().sort((a,b)=>odleglosc(a,cel)-odleglosc(b,cel)).slice(0,6);
+  $("najblizsze").innerHTML=top.map(g=>'<span><i style="background:'+kolor(odleglosc(g,cel))+'"></i></span>').join("");
+  [...$("najblizsze").children].forEach((s,i)=>s.append(top[i].n+" · "+(odleglosc(top[i],cel)<=1?"graniczy":fmt(Math.round(odleglosc(top[i],cel)))+" km")));
+}
+function zgadnij(v){
+  if(koniec)return;
+  POLE.wylacz(true);
+  let g=PO_ETYK.get(ZP.norm(v));
+  if(!g){const takie=G.filter(x=>ZP.norm(x.n)===ZP.norm(v));if(takie.length===1)g=takie[0];
+    else if(takie.length>1){ZP.komunikat("Jest kilka gmin „"+v+"”. Wybierz z listy.");POLE.wylacz(false);return;}}
+  if(!g){ZP.komunikat("Nie ma gminy „"+v+"”.");POLE.wylacz(false);return;}
+  if(proby.indexOf(g)>=0){ZP.komunikat(g.etyk+" już była.");POLE.wyczysc();POLE.wylacz(false);return;}
+  proby.push(g);
+  if(tryb==="dzien")localStorage.setItem(klucz(),JSON.stringify({proby:proby.map(x=>x.k)}));
+  rysujGmine(g,true);
+  const d=odleglosc(g,cel);
+  if(d<=1)ZP.poswiata(true);
+  odswiez();
+  if(g===cel){koniec=true;setTimeout(()=>zakoncz(true,false),500);return;}
+  POLE.wyczysc();POLE.wylacz(false);POLE.focus();
+}
+function zakoncz(wygrana,zPamieci){
+  koniec=true;$("pasekDol").classList.add("hidden");
+  if(proby.indexOf(cel)<0)$("warstwa").insertAdjacentHTML("beforeend",'<path class="cel" d="'+P.path(cel.f.geometry,0.4)+'"/>');
+  const st=staty();
+  if(tryb==="dzien"&&!zPamieci&&st.ost!==DZIEN){
+    const w=new Date();w.setDate(w.getDate()-1);
+    st.gry++;if(wygrana){st.suma+=proby.length;st.seria=st.ost===ZP.dayKey(w)&&st.seria>0?st.seria+1:1;st.najl=st.najl?Math.min(st.najl,proby.length):proby.length;}else st.seria=0;
+    st.ost=DZIEN;localStorage.setItem("cieplo-stat",JSON.stringify(st));
+    ZP.zapisz("gmina",cel.k,wygrana&&proby.length<=15,true);
+  }
+  if(wygrana&&!zPamieci&&proby.length<=10)setTimeout(ZP.fanfary,300);
+  odswiez();
+  const k=$("koniec");
+  k.innerHTML='<h2></h2><p></p>'
+    +(tryb==="dzien"?'<div class="staty"><div>Gry<b>'+st.gry+'</b></div><div>Średnio prób<b>'+(st.gry?(st.suma/Math.max(1,st.gry)).toFixed(1):"–")+'</b></div><div>Seria<b>'+st.seria+'</b></div><div>Najlepiej<b>'+(st.najl||"–")+'</b></div></div>':"")
+    +'<div class="btnrow"><button class="ghost" id="ency">O gminie</button><button class="big" id="dalej">'+(tryb==="dzien"?"Udostępnij":"Następna gmina")+'</button></div>';
+  k.querySelector("h2").textContent=wygrana?"Znaleziona w "+proby.length+" "+(proby.length===1?"próbie":"próbach"):"Szukana gmina";
+  k.querySelector("p").textContent=cel.etyk+", "+cel.typ+", "+cel.pow+", woj. "+cel.woj+"."+(tryb==="dzien"?" Nowa gmina o północy.":"");
+  k.classList.remove("hidden");
+  $("ency").onclick=()=>ZP.encyklopedia({g:cel.k,nazwa:cel.n});
+  $("dalej").onclick=tryb==="dzien"?()=>udostepnij(wygrana):start;
+}
+async function udostepnij(wygrana){
+  const tekst="Ciepło-zimno #"+NR+": "+(wygrana?proby.length+" "+(proby.length===1?"próba":proby.length<5?"próby":"prób"):"poddałem się")+"\n"
+    +proby.map(g=>emoji(odleglosc(g,cel))).join("")+"\n"+location.href.split("?")[0].split("#")[0];
+  try{if(navigator.share){await navigator.share({text:tekst});return;}}catch(e){if(e&&e.name==="AbortError")return;}
+  try{await navigator.clipboard.writeText(tekst);ZP.komunikat("Skopiowano wynik. Wklej go znajomym.");}catch(e){ZP.komunikat(tekst,8000);}
+}
+$("poddaj").onclick=()=>{if(!koniec&&confirm("Pokazać szukaną gminę? Seria się przerwie."))zakoncz(false,false);};
+document.querySelector(".tryby").onclick=e=>{
+  const b=e.target.closest("button");if(!b||b.dataset.t===tryb||!G.length)return;
+  tryb=b.dataset.t;document.querySelectorAll(".tryby button").forEach(x=>x.classList.toggle("akt",x===b));start();
+};
+$("mapa").addEventListener("click",e=>{const p=e.target.closest(".g");if(p)ZP.komunikat(p.querySelector("title").textContent,1800);});
+laduj().then(()=>{
+  POLE=ZP.poleWpisu($("wpis"),()=>G.map(g=>g.etyk),v=>zgadnij(v),{placeholder:"Wpisz gminę…",poprawne:()=>cel&&!koniec?[cel.etyk]:[]});
+  start();
+}).catch(e=>{$("licznik").textContent="Nie udało się wczytać gmin.";});
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>
