@@ -92,6 +92,7 @@
 </div>
 
 <script src="topojson-client.min.js?v=16"></script>
+<script src="efekty.js?v=1"></script>
 <script src="wspolne.js?v=16"></script>
 <script>
 const {$,fmt}=ZP;
@@ -195,10 +196,11 @@ function temperatura(d,poprz){
   return d<poprz?(poprz-d>120||d<40?["goraco","Dużo cieplej!","🔥"]:["cieplo","Cieplej","🔥"]):(d-poprz>120?["lod","Dużo zimniej!","🧊"]:["zimno","Zimniej","❄️"]);
 }
 function efekt([klasa,tekst,ikona]){
+  if(window.Efekty&&(klasa==="goraco"||klasa==="cieplo"))Efekty.plomien($("stage"),klasa==="goraco"?2000:1500,klasa==="goraco"?[[.55,.03,.05],[1,.3,.05]]:[[.6,.2,.02],[1,.6,.1]]);
   document.querySelectorAll(".efekt").forEach(e=>e.remove());
   const e=document.createElement("div");e.className="efekt "+klasa;
   let cz="";
-  if(klasa!=="bez")for(let i=0;i<14;i++){
+  if(klasa!=="bez"&&!(window.Efekty&&(klasa==="goraco"||klasa==="cieplo")&&!Efekty.SPOKOJ))for(let i=0;i<14;i++){
     const ik=klasa==="cieplo"||klasa==="goraco"?(i%3?"🔥":"✨"):(i%3?"❄️":"✨");
     cz+='<span class="cz" style="left:'+(4+Math.random()*90).toFixed(0)+'%;animation-delay:'+(Math.random()*.5).toFixed(2)+'s;font-size:'+(18+Math.random()*18).toFixed(0)+'px">'+ik+'</span>';
   }

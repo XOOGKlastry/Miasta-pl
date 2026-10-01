@@ -19,6 +19,8 @@
 .mapa::-webkit-scrollbar{display:none}
 .plotno{position:relative;width:100%}
 .pas{position:absolute;left:0;right:0}
+.mgla{position:absolute;left:0;right:0;pointer-events:none;z-index:4;overflow:hidden}
+.falsz{position:fixed;z-index:940;width:58px;height:58px;border-radius:50%;border:4px solid #8A7F62;background:#C9C0A0;display:grid;place-items:center;transform:translate(-50%,-50%);pointer-events:none}
 .pas::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(58,42,20,.08) 1.5px,transparent 1.5px);background-size:16px 16px}
 .sciezka{position:absolute;left:0;top:0;pointer-events:none}
 .baner{position:absolute;left:12px;right:12px;display:flex;align-items:center;gap:10px;padding:8px 12px;z-index:2}
@@ -78,6 +80,7 @@
     <span class="zeton" title="Seria dni"><svg width="16" height="16" viewBox="0 0 24 24" fill="#E84A3C" stroke="#3A2A14" stroke-width="2"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 3 3 5 1-2 0-5 0-8z"/></svg><span id="seria">0</span></span>
   </header>
   <div class="mapa" id="mapa"><div class="plotno" id="plotno"></div></div>
+  <div class="mgla" id="mgla"></div>
   <a class="dzis-btn" href="codzienne.html" id="dzisBtn"><i></i><span id="dzisTxt">Wyzwanie dnia czeka</span></a>
   <button class="kostka-btn" id="kostkaBtn" aria-label="Rzuć kostką"><svg width="40" height="40" viewBox="0 0 40 40"><rect x="3" y="3" width="34" height="34" rx="8" fill="#E84A3C" stroke="#3A2A14" stroke-width="3"/><circle cx="12" cy="12" r="3.3" fill="#fff"/><circle cx="28" cy="12" r="3.3" fill="#fff"/><circle cx="20" cy="20" r="3.3" fill="#fff"/><circle cx="12" cy="28" r="3.3" fill="#fff"/><circle cx="28" cy="28" r="3.3" fill="#fff"/></svg><span>Rzuć kostką</span></button>
   <div id="warstwa"></div>
@@ -89,6 +92,7 @@
   <a href="profil.html" data-n="profil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Profil</a>
 </nav>
 </div>
+<script src="efekty.js?v=1"></script>
 <script src="konto.js"></script>
 <script src="saga.js"></script>
 <script>
@@ -98,7 +102,7 @@ const IKK={mapa:'<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><
   symbole:'<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>',granice:'<path d="M5 4l9 2 5 6-3 8-9-1-3-7z"/>',liczby:'<path d="M12 3v18M5 21h14M4 8h16M7 8l-3 7h6zM17 8l-3 7h6z"/>',woda:'<path d="M3 8c3-3 6 3 9 0s6 3 9 0M3 15c3-3 6 3 9 0s6 3 9 0"/>'};
 const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}catch(e){return d;}};
 const STEP=96,BANER=110,GORA=140,DOL=150;
-let WOJ={},stan=Saga.stan(),biez=Saga.biezacy(stan);
+let WOJ={},stan=Saga.stan(),biez=Saga.biezacy(stan),PASY=[],MGLA=null;
 
 function wspolrzedne(W){
   // od dołu: poziom 0 na dole, każda kraina zaczyna się banerem
@@ -117,8 +121,10 @@ function rysuj(){
   pl.style.height=H+"px";
   let h="";
   // pasy krain
+  PASY=[];
   Saga.SWIATY.forEach((sw,s)=>{
     const dol=H-DOL-s*(Saga.NA_SWIAT*STEP+BANER)+ (s===0?DOL:0),gora=H-DOL-(s+1)*(Saga.NA_SWIAT*STEP+BANER);
+    PASY.push({s,top:gora,bottom:dol-(s===0?DOL:0)-BANER*0.2});
     h+='<div class="pas" style="top:'+gora+'px;height:'+(dol-gora)+'px;background:'+sw.kolor+'"></div>';
   });
   // ścieżka
@@ -142,7 +148,7 @@ function rysuj(){
   });
   h+='<div class="pionek" id="pionek"><svg viewBox="0 0 34 46"><ellipse cx="17" cy="43" rx="12" ry="3" fill="#3A2A14" opacity=".35"/><path d="M8 40 Q8 30 13 26 Q9 22 9 16 A8 8 0 0 1 25 16 Q25 22 21 26 Q26 30 26 40 Z" fill="#2E86DE" stroke="#3A2A14" stroke-width="3" stroke-linejoin="round"/><circle cx="14" cy="14" r="2.5" fill="#fff" opacity=".7"/></svg></div>';
   pl.innerHTML=h;
-  pl.querySelectorAll(".wezel").forEach(b=>b.onclick=()=>arkusz(+b.dataset.n));
+  pl.querySelectorAll(".wezel").forEach(b=>b.onclick=e=>{if(window.Efekty)Efekty.fala(e.clientX,e.clientY);setTimeout(()=>arkusz(+b.dataset.n),120);});
   return pts;
 }
 function pionekNa(p,natychmiast){const pn=$("pionek");if(natychmiast)pn.style.transition="none";pn.style.left=p.x+"px";pn.style.top=(p.y-34)+"px";if(natychmiast){void pn.offsetWidth;pn.style.transition="";}}
@@ -184,8 +190,27 @@ $("kostkaBtn").onclick=kostka;
   $("sumaGw").textContent=Saga.sumaGwiazd(stan)+"/"+Saga.ILE*3;
   $("kraina").textContent=Saga.poziom(biez).kraina.nazwa+" · poziom "+(biez+1);
 })();
+function zamkniete(){
+  // mgła wisi nad krainami, których pierwszy poziom jest jeszcze zamknięty (oprócz świeżo otwartej, ta rozwieje się na oczach gracza)
+  return PASY.filter(p=>!Saga.odblokowany(p.s*Saga.NA_SWIAT,stan)||p.s===NOWA_KRAINA);
+}
+let NOWA_KRAINA=-1;
 function start(){
+  let nowy=-1;try{nowy=+(sessionStorage.getItem("saga-nowy")||-1);sessionStorage.removeItem("saga-nowy");}catch(e){}
+  if(nowy>0&&nowy%Saga.NA_SWIAT===0)NOWA_KRAINA=nowy/Saga.NA_SWIAT;
   const pts=rysuj();
+  const mg=$("mgla"),m0=$("mapa");mg.style.top=m0.offsetTop+"px";mg.style.height=m0.clientHeight+"px";
+  if(window.Efekty){if(MGLA)MGLA.stop();MGLA=Efekty.chmury(mg,m0,zamkniete);}
+  if(nowy>0&&window.Efekty)setTimeout(()=>{
+    // świeżo odblokowane pole: kłódka pęka na odłamki
+    const w=document.querySelector('.wezel[data-n="'+nowy+'"] .kolo');if(!w)return;
+    const r=w.getBoundingClientRect(),f=document.createElement("span");f.className="falsz";
+    f.style.left=(r.left+r.width/2)+"px";f.style.top=(r.top+r.height/2)+"px";
+    f.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A7F62" stroke-width="2.6"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+    document.body.appendChild(f);
+    setTimeout(()=>{Efekty.rozbij(f,["#C9C0A0","#B3AA88","#8A7F62","#E8DFC2"],()=>f.remove());Efekty.fala(r.left+r.width/2,r.top+r.height/2,"#F5B82E");
+      if(NOWA_KRAINA>=0&&MGLA){const p=PASY.find(x=>x.s===NOWA_KRAINA);if(p)MGLA.rozwiej(p.top,p.bottom);NOWA_KRAINA=-1;}},700);
+  },1500);
   const h=location.hash.match(/poziom=(\d+)/),cel=h?Math.min(+h[1],biez):biez;
   const m=$("mapa"),naSrodek=p=>{m.scrollTop=p.y-m.clientHeight*0.55;};
   // po przejściu poziomu pionek przeskakuje z poprzedniego pola na nowe

@@ -77,6 +77,7 @@
 
 </div>
 
+<script src="efekty.js?v=1"></script>
 <script src="wspolne.js?v=16"></script>
 <script>
 const $=id=>document.getElementById(id);
@@ -247,6 +248,7 @@ function next(){
     else{game.qs.splice(game.i,1);game.i--;next();}
   };
   img.src=imgUrl(q.c.file);
+  if(window.Efekty)Efekty.czasteczki(img,900);
   game.pokazano=false;
   if(game.wpis){POLE.wyczysc();POLE.wylacz(false);POLE.focus();$("answers").classList.add("hidden");}
   $("answers").innerHTML="";

@@ -227,6 +227,7 @@ svg path{fill-rule:evenodd}
 <script src="tablice-powiaty.js"></script>
 <script src="peerjs.min.js"></script>
 <script src="topojson-client.min.js?v=16"></script>
+<script src="efekty.js?v=1"></script>
 <script src="wspolne.js?v=16"></script>
 <script>
 const {$,fmt}=ZP;
@@ -385,7 +386,7 @@ $("zaczynam").onclick=()=>{
 };
 
 /* ---------- rundy ---------- */
-function schowaj(){const pm=$("paraMapa");if(pm)pm.remove();["mapa","lot","tablica","para","ksztalt","rzekaMapa","foto","herbImg","miastoDuze","karty2","podpis","answers","wpis","okBtn","feedback","tbar"].forEach(id=>$(id).classList.add("hidden"));$("stage").classList.remove("jasna");$("answers").classList.remove("dwa");}
+function schowaj(){if(window.Efekty)Efekty.przerwij();const pm=$("paraMapa");if(pm)pm.remove();["mapa","lot","tablica","para","ksztalt","rzekaMapa","foto","herbImg","miastoDuze","karty2","podpis","answers","wpis","okBtn","feedback","tbar"].forEach(id=>$(id).classList.add("hidden"));$("stage").classList.remove("jasna");$("answers").classList.remove("dwa");}
 function segmenty(){[...$("segmenty").children].forEach((d,i)=>{const r=st.res[i];d.className=r?kolor(r.pts):(i===st.i?"teraz":"");});}
 function nastepne(){
   st.i++;schowaj();
@@ -500,12 +501,12 @@ function rundaK(q){
 function rundaH(q){
   $("pytanie").textContent="Czyj to herb?";
   $("stage").classList.add("jasna");
-  $("herbImg").src=q.c.img;$("herbImg").classList.remove("hidden");
+  $("herbImg").src=q.c.img;$("herbImg").classList.remove("hidden");Efekty.czasteczki($("herbImg"),900);
   wpisz(D.herby.map(c=>c.n),[q.c.n],q.opcje);
 }
 function rundaM(q){
   $("pytanie").textContent="Co to za miasto?";
-  $("foto").src=q.foto.img;$("foto").classList.remove("hidden");
+  $("foto").src=q.foto.img;$("foto").classList.remove("hidden");Efekty.czasteczki($("foto"),1100);
   $("podpis").textContent="Fot. "+(q.foto.autor||"")+(q.foto.licencja?", "+q.foto.licencja:"")+", Wikimedia Commons";$("podpis").classList.remove("hidden");
   wpisz(D.miejsca.map(c=>c.n),[q.c.n],q.opcje);
 }
@@ -870,6 +871,8 @@ function wynikSaga(){
     d.querySelector("small").textContent=TYPY[r.t][1];const pt=d.querySelector(".pt");pt.textContent=r.pts;pt.className="pt "+(r.pts>=700?"ok":r.pts<300?"no":"");rows.appendChild(d);});
   w.classList.remove("hidden");
   if(gw>=2)setTimeout(ZP.fanfary,1200);
+  if(gw===3)setTimeout(()=>Efekty.plomien(null,2400,[[.6,.35,.02],[1,.8,.2]]),1500);
+  if(zal&&!bylOdbl&&teraz){try{sessionStorage.setItem("saga-nowy",POZIOM.n+1);}catch(e){}}
 }
 function koniec(){
   if(TRYB==="saga")return wynikSaga();
