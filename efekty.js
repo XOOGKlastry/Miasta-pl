@@ -75,40 +75,51 @@ window.Efekty=(function(){
     })(t0);
   }
 
-  /* ---------- CZĄSTECZKI: obraz składa się z pikseli (herb, zdjęcie miasta) ---------- */
-  let AKTYWNE=[];
-  function przerwij(){AKTYWNE.forEach(a=>{a.stop=true;a.c.remove();a.img.style.opacity="";});AKTYWNE=[];}
-  function czasteczki(img,ms){
+  /* ---------- ODWRÓCENIE KARTY: herb odwraca się jak karta z talii, po nim przebiega błysk ---------- */
+  let ANIM=[];
+  function przerwij(){ANIM.forEach(a=>{try{a.cancel();}catch(e){}});ANIM=[];document.querySelectorAll(".efekt-blysk,.efekt-lampa").forEach(e=>e.remove());}
+  function poZaladowaniu(img,fn){if(img.complete&&img.naturalWidth)requestAnimationFrame(fn);else img.addEventListener("load",()=>requestAnimationFrame(fn),{once:true});}
+  function odwroc(img){
     if(SPOKOJ)return;
     przerwij();
-    const start=()=>{
-      const r=img.getBoundingClientRect();if(!r.width||!r.height)return;
-      // obraz rysowany tak jak w CSS (object-fit: contain albo cover)
-      const fit=getComputedStyle(img).objectFit,iw=img.naturalWidth,ih=img.naturalHeight;
-      const s=fit==="cover"?Math.max(r.width/iw,r.height/ih):Math.min(r.width/iw,r.height/ih),dw=iw*s,dh=ih*s,ox=(r.width-dw)/2,oy=(r.height-dh)/2;
-      const krok=Math.max(4,Math.round(Math.sqrt(dw*dh/2600)));
-      const src=document.createElement("canvas");src.width=Math.ceil(r.width/krok);src.height=Math.ceil(r.height/krok);
-      const sg=src.getContext("2d");
-      try{sg.drawImage(img,ox/krok,oy/krok,dw/krok,dh/krok);var dane=sg.getImageData(0,0,src.width,src.height).data;}catch(e){return;}
-      const cz=[];
-      for(let y=0;y<src.height;y++)for(let x=0;x<src.width;x++){const i=(y*src.width+x)*4;if(dane[i+3]<40)continue;
-        const kat=Math.random()*Math.PI*2,d=80+Math.random()*Math.max(r.width,r.height)*.6;
-        cz.push({x:x*krok,y:y*krok,sx:r.width/2+Math.cos(kat)*d,sy:r.height/2+Math.sin(kat)*d,op:Math.random()*.35,k:"rgb("+dane[i]+","+dane[i+1]+","+dane[i+2]+")"});}
-      const c=document.createElement("canvas");c.width=r.width*DPR;c.height=r.height*DPR;
-      c.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;pointer-events:none;z-index:950";
-      document.body.appendChild(c);const g=c.getContext("2d");g.scale(DPR,DPR);
-      img.style.opacity="0";
-      const ja={c,img,stop:false};AKTYWNE.push(ja);
-      const t0=performance.now();ms=ms||1000;
-      (function klatka(t){
-        if(ja.stop)return;
-        const dt=Math.min(1,(t-t0)/ms);g.clearRect(0,0,r.width,r.height);
-        cz.forEach(p=>{const q=Math.min(1,Math.max(0,(dt-p.op)/(1-p.op))),e=1-Math.pow(1-q,3);
-          g.fillStyle=p.k;g.globalAlpha=Math.min(1,q*2);g.fillRect(p.sx+(p.x-p.sx)*e,p.sy+(p.y-p.sy)*e,krok+.6,krok+.6);});
-        if(dt<1)requestAnimationFrame(klatka);else{img.style.transition="opacity .25s";img.style.opacity="1";AKTYWNE=AKTYWNE.filter(a=>a!==ja);setTimeout(()=>c.remove(),260);}
-      })(t0);
-    };
-    if(img.complete&&img.naturalWidth)requestAnimationFrame(start);else img.addEventListener("load",()=>requestAnimationFrame(start),{once:true});
+    img.style.opacity="0";
+    poZaladowaniu(img,()=>{
+      img.style.opacity="";
+      ANIM.push(img.animate([
+        {transform:"perspective(700px) rotateY(-180deg) scale(.7)",filter:"brightness(.2)",opacity:0},
+        {transform:"perspective(700px) rotateY(-90deg) scale(.85)",filter:"brightness(.4)",opacity:1,offset:.35},
+        {transform:"perspective(700px) rotateY(12deg) scale(1.06)",filter:"brightness(1.15)",offset:.75},
+        {transform:"perspective(700px) rotateY(0deg) scale(1)",filter:"brightness(1)"}
+      ],{duration:800,easing:"cubic-bezier(.2,.7,.3,1)"}));
+      // błysk światła przesuwający się po herbie po odwróceniu
+      const r=img.getBoundingClientRect(),b=document.createElement("div");b.className="efekt-blysk";
+      b.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;pointer-events:none;z-index:950;overflow:hidden;"
+        +"-webkit-mask:url('"+img.src+"') center/contain no-repeat;mask:url('"+img.src+"') center/contain no-repeat";
+      b.innerHTML='<i style="position:absolute;top:-20%;bottom:-20%;width:38%;left:-50%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.85),transparent);transform:skewX(-18deg)"></i>';
+      document.body.appendChild(b);
+      const a=b.firstChild.animate([{left:"-50%"},{left:"130%"}],{duration:650,delay:700,easing:"ease-in-out",fill:"forwards"});
+      ANIM.push(a);a.onfinish=()=>b.remove();
+    });
+  }
+
+  /* ---------- MIGAWKA: zdjęcie „robione” aparatem: błysk flesza, przysłona się otwiera, obraz się wywołuje ---------- */
+  function migawka(img){
+    if(SPOKOJ)return;
+    przerwij();
+    img.style.opacity="0";
+    poZaladowaniu(img,()=>{
+      img.style.opacity="";
+      const r=(img.closest(".stage,.zdjecie,.frame")||img.parentElement).getBoundingClientRect();
+      const f=document.createElement("div");f.className="efekt-lampa";
+      f.style.cssText="position:fixed;left:"+r.left+"px;top:"+r.top+"px;width:"+r.width+"px;height:"+r.height+"px;pointer-events:none;z-index:950;background:#fff;border-radius:14px";
+      document.body.appendChild(f);
+      const fa=f.animate([{opacity:.95},{opacity:0}],{duration:450,easing:"ease-out",fill:"forwards"});fa.onfinish=()=>f.remove();ANIM.push(fa);
+      ANIM.push(img.animate([
+        {clipPath:"circle(0% at 50% 50%)",filter:"blur(10px) saturate(0) sepia(.6) brightness(1.4)"},
+        {clipPath:"circle(40% at 50% 50%)",filter:"blur(6px) saturate(.3) sepia(.4) brightness(1.2)",offset:.35},
+        {clipPath:"circle(75% at 50% 50%)",filter:"blur(0) saturate(1) sepia(0) brightness(1)"}
+      ],{duration:1100,easing:"cubic-bezier(.3,.7,.2,1)"}));
+    });
   }
 
   /* ---------- FALA: kręgi rozchodzące się od miejsca stuknięcia ---------- */
@@ -160,5 +171,5 @@ window.Efekty=(function(){
     },stop(){wl=false;c.remove();}};
   }
 
-  return {plomien,rozbij,czasteczki,przerwij,fala,chmury,SPOKOJ};
+  return {plomien,rozbij,odwroc,migawka,przerwij,fala,chmury,SPOKOJ};
 })();

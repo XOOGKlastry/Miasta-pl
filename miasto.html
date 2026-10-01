@@ -73,7 +73,7 @@
 </main>
 </div>
 
-<script src="efekty.js?v=1"></script>
+<script src="efekty.js?v=2"></script>
 <script src="wspolne.js?v=16"></script>
 <script>
 const {$,shuffle,fmt}=ZP;
@@ -129,7 +129,7 @@ function next(){
   const img=$("zdj");img.classList.add("loading");img.classList.remove("jest");$("spin").classList.remove("hidden");
   img.onload=()=>{img.classList.remove("loading");$("spin").classList.add("hidden");requestAnimationFrame(()=>img.classList.add("jest"));};
   img.src=q.z.img;
-  if(window.Efekty)Efekty.czasteczki(img,1100);
+  if(window.Efekty)Efekty.migawka(img);
   $("autor").textContent="Fot. "+(q.z.autor||"autor nieznany")+(q.z.licencja?", "+q.z.licencja:"")+", Wikimedia Commons";
   $("answers").innerHTML="";$("answers").classList.toggle("hidden",game.wpis);
   if(game.wpis){POLE.wyczysc();POLE.wylacz(false);POLE.focus();}

@@ -227,7 +227,7 @@ svg path{fill-rule:evenodd}
 <script src="tablice-powiaty.js"></script>
 <script src="peerjs.min.js"></script>
 <script src="topojson-client.min.js?v=16"></script>
-<script src="efekty.js?v=1"></script>
+<script src="efekty.js?v=2"></script>
 <script src="wspolne.js?v=16"></script>
 <script>
 const {$,fmt}=ZP;
@@ -501,12 +501,12 @@ function rundaK(q){
 function rundaH(q){
   $("pytanie").textContent="Czyj to herb?";
   $("stage").classList.add("jasna");
-  $("herbImg").src=q.c.img;$("herbImg").classList.remove("hidden");Efekty.czasteczki($("herbImg"),900);
+  $("herbImg").src=q.c.img;$("herbImg").classList.remove("hidden");Efekty.odwroc($("herbImg"));
   wpisz(D.herby.map(c=>c.n),[q.c.n],q.opcje);
 }
 function rundaM(q){
   $("pytanie").textContent="Co to za miasto?";
-  $("foto").src=q.foto.img;$("foto").classList.remove("hidden");Efekty.czasteczki($("foto"),1100);
+  $("foto").src=q.foto.img;$("foto").classList.remove("hidden");Efekty.migawka($("foto"));
   $("podpis").textContent="Fot. "+(q.foto.autor||"")+(q.foto.licencja?", "+q.foto.licencja:"")+", Wikimedia Commons";$("podpis").classList.remove("hidden");
   wpisz(D.miejsca.map(c=>c.n),[q.c.n],q.opcje);
 }
