@@ -2,6 +2,7 @@
 :root{--filc:#7DB36B;--filc-2:#6CA35A;--krem:#FFF6E0;--krem-2:#F3E6C4;--braz:#3A2A14;--braz-2:#5A4A2F;
   --czer:#E84A3C;--nieb:#2E86DE;--zolt:#F5B82E;--ziel:#27AE60;--fiol:#8E5CC9;--r:16px}
 *{box-sizing:border-box}
+.hidden{display:none!important}
 html,body{margin:0;padding:0;height:100%}
 body{background:var(--filc);color:var(--braz);font-family:Rubik,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
 a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}

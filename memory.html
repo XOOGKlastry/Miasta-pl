@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Memory · PolskoZnawca</title>
+<meta name="theme-color" content="#FFF6E0" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="plansza.css?v=2" />
+<style>
+.tresc{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:10px 12px 12px}
+.tryby{display:flex;gap:6px;flex:none;overflow-x:auto;scrollbar-width:none}
+.tryby button{flex:none;border:3px solid var(--braz);border-radius:12px;background:var(--krem);padding:6px 12px;font-weight:900;font-size:13px;box-shadow:0 3px 0 var(--braz)}
+.tryby button.akt{background:var(--zolt)}
+.licznik{flex:none;display:flex;gap:8px}
+.licznik span{flex:1;text-align:center;font-weight:900;font-size:13px;padding:6px;background:var(--krem);border:3px solid var(--braz);border-radius:12px}
+.licznik b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:20px}
+.stol{flex:1;min-height:0;display:grid;gap:8px;align-content:center}
+.karta{position:relative;perspective:700px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.karta .w{position:absolute;inset:0;transform-style:preserve-3d;transition:transform .45s cubic-bezier(.3,1.3,.5,1)}
+.karta.odkryta .w,.karta.para .w{transform:rotateY(180deg)}
+.strona{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:3px solid var(--braz);border-radius:12px;box-shadow:0 4px 0 var(--braz);display:grid;place-items:center;overflow:hidden;padding:4px;text-align:center}
+.tyl{background:var(--czer);background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.18) 0 6px,transparent 6px 12px)}
+.tyl i{width:46%;aspect-ratio:1;border-radius:50%;overflow:hidden;border:3px solid var(--braz);background:linear-gradient(#F4F4F2 50%,#DC1E35 50%)}
+.przod{background:#fff;transform:rotateY(180deg);font-weight:900;font-size:13px;line-height:1.1;color:var(--braz)}
+.przod img{max-width:86%;max-height:86%;object-fit:contain}
+.przod svg{width:84%;height:84%}
+.przod svg path{fill:var(--zolt);stroke:var(--braz);stroke-width:1.5;vector-effect:non-scaling-stroke}
+.tabl{display:flex;height:30%;min-height:24px;width:92%;border:2px solid #111;border-radius:4px;background:#F4F4F2;overflow:hidden}
+.tabl i{width:16%;background:#1546B8}.tabl span{flex:1;display:grid;place-items:center;color:#111;font:700 clamp(11px,4vw,17px)/1 Rubik,sans-serif}
+.karta.para .przod{background:#E4F7DF;animation:para .5s}
+.karta.zla .przod{background:#FFE1DC;animation:zla .35s}
+@keyframes para{50%{transform:rotateY(180deg) scale(1.1)}}
+@keyframes zla{25%{transform:rotateY(180deg) translateX(-5px)}75%{transform:rotateY(180deg) translateX(5px)}}
+.koniec{position:absolute;inset:0;z-index:30;background:rgba(40,28,10,.55);display:grid;place-items:center;padding:16px;animation:pojaw .25s both}
+@keyframes pojaw{from{opacity:0}}
+.koniec .pole{padding:18px;text-align:center;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px}
+.koniec h2{font-family:Bungee,sans-serif;font-weight:400;font-size:26px;margin:0}
+.koniec .gw{font-size:52px;letter-spacing:4px;color:#C9BFA0}.koniec .gw .z{color:#FFC93C;text-shadow:0 3px 0 var(--braz)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="gora"><a href="gry.html" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Memory<small id="podtytul">znajdź pary</small></h1></header>
+  <main class="tresc">
+    <div class="tryby" id="tryby">
+      <button data-t="herby" class="akt">Herb i miasto</button>
+      <button data-t="tablice">Tablica i powiat</button>
+      <button data-t="woj">Województwo i stolica</button>
+    </div>
+    <div class="tryby" id="rozmiary">
+      <button data-n="6">6 par</button><button data-n="8" class="akt">8 par</button><button data-n="10">10 par</button>
+    </div>
+    <div class="licznik"><span>Ruchy<b id="ruchy">0</b></span><span>Pary<b id="pary">0/8</b></span><span>Czas<b id="czas">0:00</b></span></div>
+    <div class="stol" id="stol"></div>
+  </main>
+  <div id="warstwa"></div>
+</div>
+<script src="tablice-powiaty.js"></script>
+<script src="efekty.js?v=17"></script>
+<script src="wspolne.js?v=17"></script>
+<script>
+const {$}=ZP;
+let TRYB="herby",ILE=8,HERBY=[],WOJ=[],gra=null,zegar=null;
+const STOLICE={"dolnośląskie":"Wrocław","kujawsko-pomorskie":"Bydgoszcz i Toruń","lubelskie":"Lublin","lubuskie":"Zielona Góra i Gorzów","łódzkie":"Łódź","małopolskie":"Kraków","mazowieckie":"Warszawa","opolskie":"Opole","podkarpackie":"Rzeszów","podlaskie":"Białystok","pomorskie":"Gdańsk","śląskie":"Katowice","świętokrzyskie":"Kielce","warmińsko-mazurskie":"Olsztyn","wielkopolskie":"Poznań","zachodniopomorskie":"Szczecin"};
+function sylwetka(f){
+  const P=ZP.projection([f],100,4);return '<svg viewBox="0 0 100 '+P.H.toFixed(0)+'"><path d="'+P.path(f.geometry,0.4)+'"/></svg>';
+}
+function pary(){
+  if(TRYB==="herby")return ZP.shuffle(HERBY.filter(h=>h.pop>15000)).slice(0,ILE).map(h=>({id:h.n,a:'<img alt="" src="'+h.img+'">',b:h.n}));
+  if(TRYB==="tablice")return ZP.shuffle(window.POWIATY.filter(p=>p.typ==="miasto"&&!/Warszawa/.test(p.nazwa))).slice(0,ILE).map(p=>({id:p.kod,a:'<span class="tabl"><i></i><span>'+p.kod+'</span></span>',b:p.nazwa}));
+  return ZP.shuffle(WOJ).slice(0,ILE).map(w=>({id:w.name,a:sylwetka(w.f),b:STOLICE[w.name]||w.name}));
+}
+function nowa(){
+  clearInterval(zegar);$("warstwa").innerHTML="";
+  const p=pary(),karty=ZP.shuffle(p.flatMap(x=>[{id:x.id,html:x.a},{id:x.id,html:'<span>'+x.b+'</span>'}]));
+  gra={karty,odkryte:[],ruchy:0,pary:0,n:p.length,start:0,blok:false};
+  const kol=p.length<=6?3:4;
+  const s=$("stol");s.style.gridTemplateColumns="repeat("+kol+",minmax(0,1fr))";
+  s.innerHTML=karty.map((k,i)=>'<div class="karta" data-i="'+i+'"><div class="w"><div class="strona tyl"><i></i></div><div class="strona przod">'+k.html+'</div></div></div>').join("");
+  // karty kwadratowe, ale mieszczące się na ekranie
+  const wier=Math.ceil(karty.length/kol),r=s.getBoundingClientRect(),bok=Math.min((r.width-(kol-1)*8)/kol,(r.height-(wier-1)*8)/wier);
+  s.querySelectorAll(".karta").forEach(k=>{k.style.height=bok+"px";k.onclick=()=>odkryj(+k.dataset.i);});
+  $("ruchy").textContent=0;$("pary").textContent="0/"+p.length;$("czas").textContent="0:00";
+}
+function odkryj(i){
+  if(gra.blok)return;
+  const el=document.querySelector('.karta[data-i="'+i+'"]');
+  if(el.classList.contains("odkryta")||el.classList.contains("para"))return;
+  if(!gra.start){gra.start=Date.now();zegar=setInterval(()=>{const s=Math.floor((Date.now()-gra.start)/1000);$("czas").textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0");},500);}
+  el.classList.add("odkryta");gra.odkryte.push(i);
+  if(gra.odkryte.length<2)return;
+  gra.ruchy++;$("ruchy").textContent=gra.ruchy;
+  const [a,b]=gra.odkryte,ea=document.querySelector('.karta[data-i="'+a+'"]'),eb=el;
+  gra.odkryte=[];
+  if(gra.karty[a].id===gra.karty[b].id){
+    setTimeout(()=>{[ea,eb].forEach(e=>{e.classList.remove("odkryta");e.classList.add("para");});
+      const r=eb.getBoundingClientRect();if(window.Efekty)Efekty.fala(r.left+r.width/2,r.top+r.height/2,"#27AE60");},250);
+    gra.pary++;$("pary").textContent=gra.pary+"/"+gra.n;
+    if(gra.pary===gra.n)setTimeout(koniec,700);
+  }else{
+    gra.blok=true;
+    setTimeout(()=>{[ea,eb].forEach(e=>e.classList.add("zla"));},350);
+    setTimeout(()=>{[ea,eb].forEach(e=>e.classList.remove("odkryta","zla"));gra.blok=false;},950);
+  }
+}
+function koniec(){
+  clearInterval(zegar);
+  const sek=Math.round((Date.now()-gra.start)/1000),nadmiar=gra.ruchy-gra.n;
+  const gw=nadmiar<=Math.ceil(gra.n*.5)?3:nadmiar<=gra.n?2:1;
+  const k="memory-"+TRYB+"-"+gra.n,rek=+(localStorage.getItem(k)||0),nowy=!rek||gra.ruchy<rek;
+  if(nowy)localStorage.setItem(k,gra.ruchy);
+  $("warstwa").innerHTML='<div class="koniec"><div class="pole"><h2>Wszystkie pary!</h2><div class="gw">'+[1,2,3].map(i=>'<span class="'+(i<=gw?"z":"")+'">★</span>').join("")+'</div>'
+    +'<b>'+gra.ruchy+' ruchów · '+Math.floor(sek/60)+':'+String(sek%60).padStart(2,"0")+'</b><span style="font-weight:700">'+(nowy?"Nowy rekord!":"Rekord: "+rek+" ruchów")+'</span>'
+    +'<button class="klocek" id="znowu">Jeszcze raz</button><a class="klocek jasny" href="gry.html">Inne gry</a></div></div>';
+  $("znowu").onclick=nowa;
+  if(gw===3)setTimeout(ZP.fanfary,200);
+}
+document.querySelectorAll("#tryby button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#tryby button").forEach(x=>x.classList.toggle("akt",x===b));TRYB=b.dataset.t;nowa();});
+document.querySelectorAll("#rozmiary button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#rozmiary button").forEach(x=>x.classList.toggle("akt",x===b));ILE=+b.dataset.n;nowa();});
+Promise.all([fetch("herby.json").then(r=>r.json()).catch(()=>({miasta:[]})),ZP.loadWoj(),ZP.poprawki()]).then(([h,w,p])=>{
+  HERBY=ZP.popHerby(h.miasta||[],p,c=>c.n);WOJ=w;nowa();
+});
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

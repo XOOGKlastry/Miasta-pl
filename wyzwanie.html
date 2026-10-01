@@ -247,7 +247,7 @@ const KLUCZ="dzis-"+DZIEN;
 const TYPY={z:["🛰️","Z lotu ptaka"],g:["📍","Gdzie to jest?"],k:["🗺️","Kształt powiatu"],h:["🛡️","Jaki to herb?"],m:["📷","Co to za miasto?"],r:["🌊","Nad jaką rzeką?"],w:["⚖️","Więcej czy mniej?"],
   t:["🚗","Tablice"],c:["⚽","Jaki to klub?"],s:["🤝","Graniczą czy nie?"],v:["🧭","Województwo"]};
 // kolejność konkurencji: wyzwanie dnia (8 pytań) i turniej (wszystkie gry po kolei)
-const KOLEJ_DZIEN=["z","g","m","k","h","t","w","r"],KOLEJ_TURNIEJ=["z","g","m","k","h","t","r","c","w","s","v"];
+const KOLEJ_DZIEN=["z","g","m","h","t","w","r","k"],KOLEJ_TURNIEJ=["z","g","m","k","h","t","r","c","w","s","v"];
 const SCORE=km=>Math.round(1000*Math.exp(-km/(TRYB==="saga"?320:150)));
 const kolor=p=>p>=700?"g":p>=300?"y":"r";
 const RANGI=[[85,"Geograf roku"],[70,"Kartograf"],[50,"Przewodnik"],[30,"Krajoznawca"],[0,"Turysta"]];
@@ -458,8 +458,14 @@ function rundaZ(q){
     L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,attribution:"Esri"}).addTo(lotMap);
   }
   if(lotZnacznik){lotMap.removeLayer(lotZnacznik);lotZnacznik=null;}
-  lotMap.setMinZoom(z-2);lotMap.setMaxBounds(L.latLngBounds([sr[0]-.2,sr[1]-.3],[sr[0]+.2,sr[1]+.3]));
-  setTimeout(()=>{lotMap.invalidateSize();lotMap.setView(sr,z,{animate:false});},30);
+  // poprzednia runda kończy się odlotem nad mapę; niedokończona animacja potrafiła przestawić kadr o kilkadziesiąt km,
+  // dlatego najpierw ją zatrzymujemy, ustawiamy widok, a dopiero potem limity przybliżenia i przesuwania
+  const ustaw=()=>{
+    lotMap.stop();lotMap.setMaxBounds(null);lotMap.setMinZoom(3);
+    lotMap.invalidateSize({pan:false});lotMap.setView(sr,z,{animate:false});
+    lotMap.setMinZoom(z-2);lotMap.setMaxBounds(L.latLngBounds([sr[0]-.06,sr[1]-.09],[sr[0]+.06,sr[1]+.09]));
+  };
+  ustaw();setTimeout(ustaw,40);
   wpisz(D.miasta.map(c=>c.n),[q.c.n],q.opcje);
 }
 function rundaT(q){
@@ -624,6 +630,11 @@ function zKodu(s){
   }catch(e){return null;}
 }
 function sekwencja(c,rnd){
+  const s=sekwencja0(c,rnd);
+  // kształt powiatu jest najtrudniejszy, więc zawsze trafia na koniec zestawu
+  return s.filter(t=>t!=="k").concat(s.filter(t=>t==="k"));
+}
+function sekwencja0(c,rnd){
   const gry=c.gry.filter(g=>g.ile>0);
   if(c.kolej==="po kolei")return gry.flatMap(g=>Array(g.ile).fill(g.t));
   if(c.kolej==="losowo")return losuj(rnd,gry.flatMap(g=>Array(g.ile).fill(g.t)));

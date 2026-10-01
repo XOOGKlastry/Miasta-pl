@@ -21,13 +21,14 @@ window.Saga=(function(){
     {woj:"małopolskie",nazwa:"Małopolska i Tatry",stolica:"Kraków",kolor:"#9AA7B0"}
   ];
   const NA_SWIAT=6;
+  // od najłatwiejszych do najtrudniejszych; kształt powiatu dopiero pod koniec krainy
   const PRZEPISY=[
     {nazwa:"Zwiad",gry:[["z",2],["g",2],["v",1]]},
     {nazwa:"Pamiątki",gry:[["m",2],["h",2],["t",1]]},
-    {nazwa:"Granice",gry:[["k",2],["s",2],["w",1]]},
     {nazwa:"Rzeki i kluby",gry:[["r",2],["c",2],["g",1]]},
-    {nazwa:"Wszystkiego po trochu",gry:[["z",1],["m",1],["h",1],["t",1],["k",1],["s",1]]},
-    {nazwa:"Stolica regionu",gry:[["z",2],["g",1],["m",1],["h",1],["k",1],["t",1],["s",1]],boss:true}
+    {nazwa:"Wszystkiego po trochu",gry:[["z",1],["m",1],["h",1],["t",1],["w",1],["s",1]]},
+    {nazwa:"Granice",gry:[["s",2],["w",1],["k",2]]},
+    {nazwa:"Stolica regionu",gry:[["z",2],["g",1],["m",1],["h",1],["t",1],["s",1],["k",1]],boss:true}
   ];
   const ILE=SWIATY.length*NA_SWIAT;
   function poziom(n){

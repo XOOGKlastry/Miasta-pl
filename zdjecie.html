@@ -242,6 +242,7 @@ function nextRound(){
   if(game.zoom){
     // zoom out: zaczynamy od kilku ulic i co 4 sekundy oddalamy
     const j=0.0016;
+    map.stop();unlock();
     map.setView([c.lat+(Math.random()-.5)*j,c.lon+(Math.random()-.5)*j*1.7],Z0,{animate:false});
     lockZoom();
     if(game.wpis)ZP.fokus($("guess"));
@@ -253,6 +254,8 @@ function nextRound(){
   // środek kadru: urząd miasta (albo centrum z OSM), przesunięty najwyżej o ok. 150 m
   const dLat=(Math.random()-.5)*0.0026;
   const dLon=(Math.random()-.5)*0.0042;
+  // zatrzymaj odlot z poprzedniej rundy, inaczej kończąca się animacja przestawia kadr
+  map.stop();unlock();
   map.setView([c.lat+dLat,c.lon+dLon],z,{animate:false});
   lockView(z);
   if(game.wpis)ZP.fokus($("guess"));

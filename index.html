@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="plansza.css?v=1" />
+<link rel="stylesheet" href="plansza.css?v=2" />
 <style>
 .mapa{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .mapa::-webkit-scrollbar{display:none}
@@ -22,7 +22,7 @@
 .instaluj{flex:none;display:flex;align-items:center;gap:10px;padding:8px 10px;background:#FFE7A3;border-bottom:4px solid var(--braz);position:relative;z-index:5}
 .instaluj span{flex:1;min-width:0}.instaluj b{display:block;font-size:14px}.instaluj small{display:block;font-size:11px;font-weight:700;color:var(--braz-2)}
 .instaluj .klocek{min-height:40px;padding:0 12px;font-size:13px}
-.instaluj .zamknij{background:none;border:none;font-size:18px;padding:4px 6px;color:var(--braz)}
+.instaluj .zamknij{background:#fff;border:3px solid var(--braz);border-radius:12px;width:40px;height:40px;flex:none;font-size:18px;font-weight:900;color:var(--braz);display:grid;place-items:center;padding:0}
 .mgla{position:absolute;left:0;right:0;pointer-events:none;z-index:4;overflow:hidden}
 .falsz{position:fixed;z-index:940;width:58px;height:58px;border-radius:50%;border:4px solid #8A7F62;background:#C9C0A0;display:grid;place-items:center;transform:translate(-50%,-50%);pointer-events:none}
 .pas::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(58,42,20,.08) 1.5px,transparent 1.5px);background-size:16px 16px}
@@ -188,9 +188,9 @@ function kostka(){
 }
 $("kostkaBtn").onclick=kostka;
 // zaproszenie do instalacji: pokazujemy, dopóki gra nie jest zainstalowana i gracz go nie zamknął
-function pokazInstaluj(){const ukryte=localStorage.getItem("instaluj-ukryj")==="1";$("instaluj").classList.toggle("hidden",ukryte||!Instaluj.mozna());}
+function pokazInstaluj(){const ukryte=localStorage.getItem("instaluj-ukryj")==="1"||localStorage.getItem("zainstalowana")==="1";$("instaluj").classList.toggle("hidden",ukryte||!Instaluj.mozna());}
 Instaluj.naZmiane(pokazInstaluj);setTimeout(pokazInstaluj,1200);
-$("instBtn").onclick=()=>Instaluj.zainstaluj();
+$("instBtn").onclick=async()=>{const ok=await Instaluj.zainstaluj();if(ok)localStorage.setItem("zainstalowana","1");pokazInstaluj();};
 $("instX").onclick=()=>{localStorage.setItem("instaluj-ukryj","1");pokazInstaluj();};
 // stan dnia i pasek u góry
 (function(){

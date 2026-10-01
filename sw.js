@@ -1,8 +1,8 @@
 // Działa offline, ale zawsze najpierw próbuje sieci, żeby poprawki docierały od razu.
-const CACHE = "polskoznawca-v34";
+const CACHE = "polskoznawca-v35";
 const ASSETS = [
   "./", "./index.html", "./miasta.html", "./zdjecie.html", "./herb.html", "./gdzie.html", "./ksztalt.html",
-  "./wiecej.html", "./sasiedzi.html", "./dzis.html", "./wyzwanie.html", "./szostka.html", "./cieplo.html", "./profil.html", "./saga.js", "./instaluj.js", "./efekty.js?v=17", "./plansza.css", "./gry.html", "./codzienne.html", "./konto.js", "./pojedynek.html", "./peerjs.min.js", "./kluby.html", "./encyklopedia.html", "./powiaty.html", "./rzeki.html", "./statystyki.html", "./slepa.html", "./miasto.html", "./turniej.html", "./tablice.html",
+  "./wiecej.html", "./sasiedzi.html", "./dzis.html", "./wyzwanie.html", "./szostka.html", "./cieplo.html", "./profil.html", "./saga.js", "./memory.html", "./instaluj.js", "./efekty.js?v=17", "./plansza.css", "./gry.html", "./codzienne.html", "./konto.js", "./pojedynek.html", "./peerjs.min.js", "./kluby.html", "./encyklopedia.html", "./powiaty.html", "./rzeki.html", "./statystyki.html", "./slepa.html", "./miasto.html", "./turniej.html", "./tablice.html",
   "./tablice-app.js", "./tablice-powiaty.js", "./tablice-poland.js",
   "./wspolne.js?v=17", "./wspolne.css?v=17", "./topojson-client.min.js?v=17", "./powiaty.topojson?v=16", "./woj.geojson?v=16",
   "./manifest.webmanifest", "./icon.svg"
