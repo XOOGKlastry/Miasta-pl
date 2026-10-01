@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Karty · PolskoZnawca</title>
+<meta name="theme-color" content="#FFF6E0" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="plansza.css?v=2" />
+<style>
+.tresc{flex:1;min-height:0;overflow:auto;padding:10px 12px 20px;display:flex;flex-direction:column;gap:12px}
+.rzadkosci{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+.rzadkosci button{border:3px solid var(--braz);border-radius:12px;padding:5px 2px;font-weight:900;font-size:10px;line-height:1.15;background:#fff}
+.rzadkosci button b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:15px}
+.rzadkosci button.akt{box-shadow:0 0 0 3px var(--zolt)}
+.naglowek{font-family:Bungee,sans-serif;font-size:16px;color:var(--krem);text-shadow:0 2px 0 var(--braz);margin:2px 2px -4px}
+.siatka{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+/* karta */
+.k{--x:50%;--y:50%;position:relative;aspect-ratio:5/7;border-radius:12px;border:3px solid var(--braz);box-shadow:0 4px 0 var(--braz);overflow:hidden;display:flex;flex-direction:column;
+  background:var(--tlo);color:var(--braz);transform-style:preserve-3d;transition:transform .15s;cursor:pointer}
+.k .ramka{position:absolute;inset:4px;border-radius:8px;border:2px solid var(--ramka);pointer-events:none}
+.k .nr{position:absolute;right:7px;top:6px;font-size:8.5px;font-weight:900;opacity:.75}
+.k .rz{position:absolute;left:7px;top:5px;font-size:8.5px;font-weight:900;text-transform:uppercase;letter-spacing:.5px}
+.k .obraz{flex:1;min-height:0;display:grid;place-items:center;padding:16px 10px 2px}
+.k .obraz svg{width:100%;height:100%}
+.k .obraz svg path{fill:var(--ksztalt);stroke:var(--braz);stroke-width:1.4;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.k .herb{position:absolute;right:6px;bottom:36px;width:24%;aspect-ratio:1;object-fit:contain;filter:drop-shadow(0 2px 1px rgba(0,0,0,.35))}
+.k .opis{padding:4px 7px 7px;text-align:center}
+.k .opis b{display:block;font-size:11.5px;line-height:1.1;font-weight:900}
+.k .opis small{display:block;font-size:8.5px;font-weight:700;opacity:.8}
+.k::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:var(--mieszanie,soft-light);opacity:var(--blask,.6);background:var(--holo)}
+.k.r-zwykla{--tlo:#F6EEDA;--ramka:#C9B38A;--ksztalt:#D9C8A0;--holo:none;--blask:0}
+.k.r-braz{--tlo:linear-gradient(160deg,#F1D3B5,#D99A68);--ramka:#9C5A2C;--ksztalt:#E7B183;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,230,200,.8),transparent 45%)}
+.k.r-srebro{--tlo:linear-gradient(160deg,#F4F6F8,#B8C2CC);--ramka:#7D8A96;--ksztalt:#DDE3E8;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.95),transparent 42%),linear-gradient(115deg,transparent 30%,rgba(255,255,255,.6) 48%,transparent 60%)}
+.k.r-zloto{--tlo:linear-gradient(160deg,#FFF1B8,#E3A915);--ramka:#9A6B00;--ksztalt:#FFD65A;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,250,210,1),transparent 40%),repeating-linear-gradient(115deg,transparent 0 12px,rgba(255,255,255,.35) 12px 16px);--blask:.75}
+.k.r-diament{--tlo:linear-gradient(160deg,#E9F7FF,#B9E3FF 40%,#E7D6FF);--ramka:#4C7BD9;--ksztalt:#CFEAFF;--mieszanie:color-dodge;--blask:.55;
+  --holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.95),transparent 30%),linear-gradient(calc(var(--kat,115) * 1deg),#ff6b6b33,#ffd93d55,#6bff9a44,#6bd5ff55,#c06bff44,#ff6b6b33);background-size:auto,300% 300%}
+.k.r-diament .ramka{border-width:3px;border-image:linear-gradient(135deg,#7ad,#d7f,#7fd,#fd7) 1}
+.k.zablokowana{--tlo:#3A2A14;color:#C9BFA0;cursor:default}
+.k.zablokowana .obraz svg path{fill:#5A4A2F;stroke:#6E5D3D}
+.k.zablokowana::after{display:none}
+.k .nowa{position:absolute;left:50%;top:-2px;transform:translateX(-50%);background:var(--czer);color:#fff;font-size:9px;font-weight:900;padding:2px 8px;border-radius:0 0 8px 8px;z-index:2}
+/* powiększenie i odsłanianie */
+.duza{position:fixed;inset:0;z-index:40;background:rgba(20,14,5,.7);display:grid;place-items:center;padding:20px;animation:pojaw .2s both}
+@keyframes pojaw{from{opacity:0}}
+.duza .k{width:min(78vw,320px);cursor:default;animation:wejscie .5s cubic-bezier(.3,1.4,.5,1) both}
+.duza .k .opis b{font-size:20px}.duza .k .opis small{font-size:12px}.duza .k .rz,.duza .k .nr{font-size:12px}
+@keyframes wejscie{from{transform:rotateY(180deg) scale(.6)}}
+.duza p{color:#FFF6E0;text-align:center;font-weight:700;margin:12px 0 0;max-width:320px}
+.puste{background:var(--krem);border:3px dashed var(--braz);border-radius:14px;padding:14px;font-weight:700;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="gora"><a href="profil.html" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Karty<small id="stan">wczytywanie kolekcji…</small></h1></header>
+  <main class="tresc" id="tresc">
+    <div class="rzadkosci" id="rzadkosci"></div>
+    <div id="nowe"></div>
+    <div class="naglowek" id="naglKol">Twoja kolekcja</div>
+    <div class="siatka" id="kolekcja"></div>
+    <div class="naglowek">Do zdobycia</div>
+    <div class="siatka" id="dozdobycia"></div>
+  </main>
+</div>
+<script src="topojson-client.min.js?v=17"></script>
+<script src="wspolne.js?v=17"></script>
+<script>
+const {$,fmt}=ZP;
+const RZ={diament:"Diamentowa",zloto:"Złota",srebro:"Srebrna",braz:"Brązowa",zwykla:"Zwykła"},KOL=["diament","zloto","srebro","braz","zwykla"];
+let KARTY=[],PO_K={},GEO={},filtr="";
+/* rzadkość: im mniej mieszkańców, tym rzadsza karta; 3 najmniejsze miasta i 3 najmniejsze gminy są diamentowe */
+function rzadkosci(gminy){
+  const z=gminy.filter(g=>g.ludnosc).sort((a,b)=>a.ludnosc-b.ludnosc),n=z.length;
+  const miasta=z.filter(g=>g.typ==="gmina miejska").slice(0,3),wiejskie=z.filter(g=>g.typ!=="gmina miejska").slice(0,3);
+  const diam=new Set(miasta.concat(wiejskie).map(g=>g.k));
+  z.forEach((g,i)=>{g.rz=diam.has(g.k)?"diament":i<n*.03?"zloto":i<n*.15?"srebro":i<n*.45?"braz":"zwykla";});
+  gminy.forEach(g=>{if(!g.rz)g.rz="zwykla";});
+}
+/* które karty są zdobyte: każda trafna odpowiedź o gminie, mieście (po nazwie) albo mieście na prawach powiatu */
+function zdobyte(){
+  let n={};try{n=JSON.parse(localStorage.getItem("nauka-v1")||"{}");}catch(e){}
+  const poNazwie={};KARTY.forEach(g=>{const k=ZP.norm(g.n);(poNazwie[k]=poNazwie[k]||[]).push(g);});
+  const wybierz=lista=>lista.find(g=>g.typ==="gmina miejska")||lista.find(g=>g.typ==="gmina miejsko-wiejska")||lista[0];
+  const mam=new Set();
+  Object.entries(n).forEach(([klucz,r])=>{
+    if(!(r.ok>0))return;
+    const i=klucz.indexOf(":"),rodz=klucz.slice(0,i),id=klucz.slice(i+1);
+    if(rodz==="gmina"){if(PO_K[id])mam.add(id);return;}
+    if(rodz==="powiat"&&+id.slice(2,4)>=60){const g=KARTY.find(x=>x.k.startsWith(id));if(g)mam.add(g.k);return;}
+    if(["miasto","herb","miejsce","rzeka","klub"].indexOf(rodz)>=0){const l=poNazwie[ZP.norm(id)];if(l)mam.add(wybierz(l).k);}
+  });
+  return mam;
+}
+function ksztalt(g){
+  const f=GEO[g.k];if(!f)return "";
+  const P=ZP.projection([f],100,4);return '<svg viewBox="0 0 100 '+P.H.toFixed(0)+'" preserveAspectRatio="xMidYMid meet"><path d="'+P.path(f.geometry,0.35)+'"/></svg>';
+}
+function karta(g,otwarta,nowa){
+  const herb=otwarta&&HERBY[g.n]&&g.typ!=="gmina wiejska"?'<img class="herb" alt="" src="'+HERBY[g.n]+'">':"";
+  return '<div class="k r-'+g.rz+(otwarta?"":" zablokowana")+'" data-k="'+g.k+'">'+(nowa?'<span class="nowa">NOWA</span>':'')+'<span class="ramka"></span><span class="rz">'+RZ[g.rz]+'</span><span class="nr">#'+g.nr+'</span>'
+    +'<div class="obraz">'+ksztalt(g)+'</div>'+herb
+    +'<div class="opis"><b>'+(otwarta?g.n:"???")+'</b><small>'+(otwarta?(g.ludnosc?fmt(g.ludnosc)+" mieszk.":"")+" · woj. "+ZP.WOJ_KOD[g.k.slice(0,2)]:"woj. "+ZP.WOJ_KOD[g.k.slice(0,2)])+'</small></div></div>';
+}
+let HERBY={};
+function holo(el){
+  // połysk karty podąża za palcem albo za przechyleniem telefonu
+  const ruch=(x,y)=>{el.style.setProperty("--x",x+"%");el.style.setProperty("--y",y+"%");el.style.setProperty("--kat",90+x);el.style.transform="perspective(600px) rotateY("+((x-50)/6)+"deg) rotateX("+((50-y)/6)+"deg)";};
+  el.addEventListener("pointermove",e=>{const r=el.getBoundingClientRect();ruch(100*(e.clientX-r.left)/r.width,100*(e.clientY-r.top)/r.height);});
+  el.addEventListener("pointerleave",()=>{el.style.transform="";});
+  if(window.DeviceOrientationEvent)window.addEventListener("deviceorientation",e=>{if(e.gamma==null)return;ruch(Math.max(0,Math.min(100,50+e.gamma*1.6)),Math.max(0,Math.min(100,50+(e.beta-40)*1.6)));});
+}
+function pokazDuza(g,otwarta,opis){
+  const d=document.createElement("div");d.className="duza";
+  d.innerHTML=karta(g,otwarta)+'<p>'+(opis||(otwarta?(g.typ+", "+(g.ludnosc?fmt(g.ludnosc)+" mieszkańców":"")):"Ta karta jeszcze czeka. Zdobędziesz ją, trafiając "+(g.typ==="gmina wiejska"?"tę gminę w grach Ciepło-zimno albo Gdzie ta gmina?":"to miasto w dowolnej grze.")))+'</p>';
+  d.onclick=()=>d.remove();document.body.appendChild(d);holo(d.querySelector(".k"));
+}
+function rysuj(){
+  const mam=zdobyte();
+  let widziane=[];try{widziane=JSON.parse(localStorage.getItem("karty-widziane")||"[]");}catch(e){}
+  const nowe=[...mam].filter(k=>widziane.indexOf(k)<0);
+  const licz={};KOL.forEach(r=>licz[r]=[0,0]);KARTY.forEach(g=>{licz[g.rz][1]++;if(mam.has(g.k))licz[g.rz][0]++;});
+  $("stan").textContent="zebrane "+mam.size+" z "+KARTY.length;
+  $("rzadkosci").innerHTML=KOL.map(r=>'<button data-r="'+r+'" class="'+(filtr===r?"akt":"")+'" style="background:'+({diament:"#D9EFFF",zloto:"#FFE27A",srebro:"#E3E8EC",braz:"#EBC09B",zwykla:"#FFF6E0"})[r]+'">'+RZ[r]+'<b>'+licz[r][0]+'/'+licz[r][1]+'</b></button>').join("");
+  $("rzadkosci").querySelectorAll("button").forEach(b=>b.onclick=()=>{filtr=filtr===b.dataset.r?"":b.dataset.r;rysuj();});
+  const kol=[...mam].map(k=>PO_K[k]).filter(g=>!filtr||g.rz===filtr).sort((a,b)=>KOL.indexOf(a.rz)-KOL.indexOf(b.rz)||a.ludnosc-b.ludnosc);
+  $("kolekcja").innerHTML=kol.length?kol.map(g=>karta(g,true,nowe.indexOf(g.k)>=0)).join(""):'<div class="puste" style="grid-column:1/-1">Jeszcze pusto. Każda trafna odpowiedź o mieście albo gminie daje kartę. Najrzadsze są najmniejsze gminy!</div>';
+  // do zdobycia: najrzadsze karty, których jeszcze nie masz
+  const brak=KARTY.filter(g=>!mam.has(g.k)&&(filtr?g.rz===filtr:(g.rz==="diament"||g.rz==="zloto"))).sort((a,b)=>KOL.indexOf(a.rz)-KOL.indexOf(b.rz)||a.ludnosc-b.ludnosc).slice(0,24);
+  $("dozdobycia").innerHTML=brak.map(g=>karta(g,false)).join("");
+  document.querySelectorAll("#kolekcja .k").forEach(el=>{holo(el);el.onclick=()=>pokazDuza(PO_K[el.dataset.k],true);});
+  document.querySelectorAll("#dozdobycia .k").forEach(el=>el.onclick=()=>pokazDuza(PO_K[el.dataset.k],false));
+  // nowe karty od ostatniej wizyty odsłaniamy po kolei
+  if(nowe.length){
+    localStorage.setItem("karty-widziane",JSON.stringify([...new Set(widziane.concat(nowe))]));
+    const najrzadsze=nowe.map(k=>PO_K[k]).sort((a,b)=>KOL.indexOf(a.rz)-KOL.indexOf(b.rz))[0];
+    setTimeout(()=>{pokazDuza(najrzadsze,true,"Nowa karta! "+(nowe.length>1?"Razem nowych: "+nowe.length+".":""));if(najrzadsze.rz==="diament"||najrzadsze.rz==="zloto")ZP.fanfary();},400);
+  }
+}
+Promise.all([fetch("baza.json").then(r=>r.json()),fetch("gminy.topojson?v=17").then(r=>r.json()),fetch("herby.json").then(r=>r.json()).catch(()=>({miasta:[]}))]).then(([b,t,h])=>{
+  KARTY=b.gminy.filter(g=>/[123]$/.test(g.k));
+  rzadkosci(KARTY);
+  KARTY.sort((a,b)=>(a.ludnosc||1e9)-(b.ludnosc||1e9)).forEach((g,i)=>{g.nr=i+1;PO_K[g.k]=g;});
+  const obj=Object.values(t.objects).sort((a,c)=>c.geometries.length-a.geometries.length)[0];
+  topojson.feature(t,obj).features.forEach(f=>{if(f.geometry)GEO[String(f.properties.k)]=f;});
+  (h.miasta||[]).forEach(c=>HERBY[c.n]=c.img);
+  rysuj();
+}).catch(e=>{$("stan").textContent="nie udało się wczytać kolekcji";});
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

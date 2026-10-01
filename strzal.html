@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Szybki strzał · PolskoZnawca</title>
+<meta name="theme-color" content="#FFF6E0" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="plansza.css?v=2" />
+<style>
+.tresc{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:10px 12px 14px;position:relative}
+.licznik{flex:none;display:flex;gap:8px}
+.licznik span{flex:1;text-align:center;font-weight:900;font-size:12px;padding:5px;background:var(--krem);border:3px solid var(--braz);border-radius:12px}
+.licznik b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:20px}
+.czas{flex:none;height:14px;border:3px solid var(--braz);border-radius:8px;background:var(--krem);overflow:hidden}
+.czas i{display:block;height:100%;background:var(--ziel);transition:width .2s linear,background .3s}
+.czas.malo i{background:var(--czer)}
+.talia{flex:1;min-height:0;position:relative}
+.kartka{position:absolute;inset:6% 4%;background:var(--krem);border:4px solid var(--braz);border-radius:22px;box-shadow:0 7px 0 var(--braz);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center;
+  touch-action:none;user-select:none;-webkit-user-select:none;transition:transform .25s cubic-bezier(.2,.8,.3,1),opacity .25s}
+.kartka.pod{transform:scale(.94) translateY(16px);filter:brightness(.92);z-index:1}
+.kartka.gora{z-index:2;cursor:grab}
+.kartka .typ{font-size:12px;font-weight:900;letter-spacing:1px;text-transform:uppercase;color:var(--braz-2)}
+.kartka .zdanie{font-family:Bungee,sans-serif;font-size:clamp(20px,6.4vw,28px);line-height:1.15}
+.kartka img{max-width:44%;max-height:30%;object-fit:contain}
+.kartka .tabl{display:flex;height:52px;border:3px solid #111;border-radius:7px;background:#F4F4F2;overflow:hidden}
+.kartka .tabl i{width:26px;background:#1546B8}.kartka .tabl span{padding:0 16px;display:grid;place-items:center;color:#111;font:700 32px/1 Rubik,sans-serif;letter-spacing:.05em}
+.stempel{position:absolute;top:22px;font-family:Bungee,sans-serif;font-size:26px;padding:4px 12px;border:4px solid;border-radius:10px;opacity:0;transform:rotate(-14deg)}
+.stempel.p{left:18px;color:var(--ziel)}.stempel.f{right:18px;color:var(--czer);transform:rotate(14deg)}
+.przyciski{flex:none;display:flex;gap:12px}
+.przyciski button{flex:1;min-height:62px;border:4px solid var(--braz);border-radius:18px;box-shadow:0 5px 0 var(--braz);font-family:Bungee,sans-serif;font-size:18px}
+.przyciski button:active{transform:translateY(4px);box-shadow:0 1px 0 var(--braz)}
+.przyciski .f{background:#FFD3CC}.przyciski .p{background:#D4F2CF}
+.seria{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);font-family:Bungee,sans-serif;font-size:40px;color:var(--zolt);text-shadow:0 3px 0 var(--braz);pointer-events:none;z-index:5;animation:seria .8s both}
+@keyframes seria{0%{opacity:0;transform:translate(-50%,-30%) scale(.5)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-90%) scale(1)}}
+.start,.koniec{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:16px;background:rgba(40,28,10,.5)}
+.start .pole,.koniec .pole{padding:20px;text-align:center;width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px}
+.start h2,.koniec h2{font-family:Bungee,sans-serif;font-weight:400;font-size:28px;margin:0}
+.start p,.koniec p{margin:0;font-weight:700;color:var(--braz-2)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="gora"><a href="gry.html" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Szybki strzał<small>prawda czy fałsz, 60 sekund</small></h1></header>
+  <main class="tresc">
+    <div class="licznik"><span>Punkty<b id="pkt">0</b></span><span>Seria<b id="seria">0</b></span><span>Rekord<b id="rek">0</b></span></div>
+    <div class="czas" id="czas"><i id="czasI" style="width:100%"></i></div>
+    <div class="talia" id="talia"></div>
+    <div class="przyciski"><button class="f" id="bF">✗ Fałsz</button><button class="p" id="bP">Prawda ✓</button></div>
+    <div class="start" id="start"><div class="pole"><h2>Szybki strzał</h2><p>Przesuń kartę w prawo, jeśli zdanie jest prawdziwe, w lewo, jeśli fałszywe. Seria dobrych odpowiedzi mnoży punkty.</p><button class="klocek" id="graj">Start</button></div></div>
+  </main>
+</div>
+<script src="tablice-powiaty.js"></script>
+<script src="efekty.js?v=17"></script>
+<script src="topojson-client.min.js?v=17"></script>
+<script src="wspolne.js?v=17"></script>
+<script>
+const {$,shuffle,pick,fmt}=ZP;
+const CZAS=60;
+let D={},gra=null,zegar=null;
+const rek=()=>+(localStorage.getItem("strzal-rekord")||0);$("rek").textContent=rek();
+/* ---------- zdania: połowa prawdziwych, połowa podmienionych ---------- */
+function zdanie(){
+  const prawda=Math.random()<.5,t=pick(["tablica","woj","rzeka","herb","klub","wiecej","sasiad"]);
+  if(t==="tablica"){const a=pick(D.tab),b=prawda?a:pick(D.tab.filter(x=>x.woj===a.woj&&x!==a));
+    return {typ:"Tablice",html:'<span class="tabl"><i></i><span>'+a.kod+'</span></span><div class="zdanie">to '+b.nazwa+'</div>',prawda,wyjasn:a.kod+" to "+a.nazwa};}
+  if(t==="woj"){const c=pick(D.miasta),w=ZP.wojOf(c.lon,c.lat),inne=Object.values(ZP.WOJ_KOD).filter(x=>x!==w),pok=prawda?w:pick(inne);
+    return {typ:"Województwa",html:'<div class="zdanie">'+c.n+' leży w województwie '+pok+'</div>',prawda,wyjasn:c.n+": woj. "+w};}
+  if(t==="rzeka"){const c=pick(D.rzeki),r=prawda?c.rzeka:pick(D.rzeki.filter(x=>x.rzeka!==c.rzeka&&ZP.km(x,c)<150)).rzeka;
+    return {typ:"Rzeki",html:'<div class="zdanie">'+c.n+' leży nad rzeką '+r+'</div>',prawda,wyjasn:c.n+": "+c.rzeka};}
+  if(t==="herb"){const h=pick(D.herby),n=prawda?h.n:pick(D.herby.filter(x=>x!==h&&ZP.km(x,h)<120)).n;
+    return {typ:"Herby",html:'<img alt="" src="'+h.img+'"><div class="zdanie">To herb: '+n+'</div>',prawda,wyjasn:"To herb: "+h.n};}
+  if(t==="klub"){const k=pick(D.kluby),m=prawda?k.miasto:pick(D.kluby.filter(x=>x.miasto!==k.miasto)).miasto;
+    return {typ:"Kluby",html:'<div class="zdanie">'+k.klub+' gra w mieście '+m+'</div>',prawda,wyjasn:k.pelna};}
+  if(t==="wiecej"){const a=pick(D.miasta),b=pick(D.miasta.filter(x=>Math.abs(x.pop-a.pop)/Math.min(x.pop,a.pop)>.15));
+    return {typ:"Ludność",html:'<div class="zdanie">'+a.n+' ma więcej mieszkańców niż '+b.n+'</div>',prawda:a.pop>b.pop,wyjasn:a.n+" "+fmt(a.pop)+", "+b.n+" "+fmt(b.pop)};}
+  const a=pick(D.pow.filter(p=>p.nb.length)),sas=D.pow.filter(x=>a.nb.indexOf(x.k)>=0),obce=D.pow.filter(x=>x!==a&&a.nb.indexOf(x.k)<0&&ZP.km(x,a)<70);
+  const b=prawda||!obce.length?pick(sas):pick(obce);
+  return {typ:"Granice",html:'<div class="zdanie">'+a.label+' graniczy z: '+b.label+'</div>',prawda:a.nb.indexOf(b.k)>=0,wyjasn:a.nb.indexOf(b.k)>=0?"Graniczą":"Nie graniczą"};
+}
+/* ---------- talia z przeciąganiem ---------- */
+function dobierz(){
+  const t=$("talia");
+  t.querySelectorAll(".kartka.gora").forEach(e=>e.remove());
+  let pod=t.querySelector(".kartka.pod");
+  if(!pod){pod=nowaKartka();t.appendChild(pod);}
+  pod.classList.remove("pod");pod.classList.add("gora");gra.biez=pod._z;
+  const nast=nowaKartka();nast.classList.add("pod");t.insertBefore(nast,pod);
+  przeciaganie(pod);
+}
+function nowaKartka(){
+  const z=zdanie(),d=document.createElement("div");d.className="kartka";d._z=z;
+  d.innerHTML='<span class="stempel p">PRAWDA</span><span class="stempel f">FAŁSZ</span><span class="typ">'+z.typ+'</span>'+z.html;
+  return d;
+}
+function przeciaganie(k){
+  let x0=null,dx=0;
+  k.addEventListener("pointerdown",e=>{x0=e.clientX;k.setPointerCapture(e.pointerId);k.style.transition="none";});
+  k.addEventListener("pointermove",e=>{if(x0===null)return;dx=e.clientX-x0;k.style.transform="translateX("+dx+"px) rotate("+dx/18+"deg)";
+    k.querySelector(".stempel.p").style.opacity=Math.max(0,dx/90);k.querySelector(".stempel.f").style.opacity=Math.max(0,-dx/90);});
+  const pusc=()=>{if(x0===null)return;x0=null;k.style.transition="";
+    if(Math.abs(dx)>80)odpowiedz(dx>0);else{k.style.transform="";k.querySelectorAll(".stempel").forEach(s=>s.style.opacity=0);}dx=0;};
+  k.addEventListener("pointerup",pusc);k.addEventListener("pointercancel",pusc);
+}
+function odpowiedz(wybor){
+  if(!gra||gra.koniec)return;
+  const k=$("talia").querySelector(".kartka.gora");if(!k)return;
+  const z=gra.biez,ok=wybor===z.prawda;
+  k.style.transform="translateX("+(wybor?520:-520)+"px) rotate("+(wybor?30:-30)+"deg)";k.style.opacity="0";
+  k.querySelector(".stempel."+(wybor?"p":"f")).style.opacity=1;
+  setTimeout(()=>k.remove(),260);
+  if(ok){gra.seria++;const mn=1+Math.floor(gra.seria/5);gra.pkt+=100*mn;
+    if(gra.seria%5===0){const s=document.createElement("div");s.className="seria";s.textContent="×"+(mn);$("talia").appendChild(s);setTimeout(()=>s.remove(),900);}}
+  else{gra.seria=0;gra.bledy.push(z);gra.koniecCzasu-=3000;if(navigator.vibrate)try{navigator.vibrate(60);}catch(e){}}
+  ZP.poswiata(ok);
+  $("pkt").textContent=fmt(gra.pkt);$("seria").textContent=gra.seria;
+  dobierz();
+}
+function start(){
+  $("start").classList.add("hidden");document.querySelectorAll(".koniec").forEach(e=>e.remove());
+  $("talia").innerHTML="";
+  gra={pkt:0,seria:0,bledy:[],koniecCzasu:Date.now()+CZAS*1000,koniec:false};
+  $("pkt").textContent=0;$("seria").textContent=0;
+  dobierz();
+  clearInterval(zegar);zegar=setInterval(()=>{
+    const z=Math.max(0,gra.koniecCzasu-Date.now());$("czasI").style.width=(100*z/(CZAS*1000))+"%";$("czas").classList.toggle("malo",z<10000);
+    if(z<=0)koniec();
+  },100);
+}
+function koniec(){
+  clearInterval(zegar);gra.koniec=true;
+  const r=rek(),nowy=gra.pkt>r;if(nowy){localStorage.setItem("strzal-rekord",gra.pkt);$("rek").textContent=fmt(gra.pkt);}
+  const d=document.createElement("div");d.className="koniec";
+  d.innerHTML='<div class="pole"><h2>'+fmt(gra.pkt)+' pkt</h2><p>'+(nowy?"Nowy rekord!":"Rekord: "+fmt(r)+" pkt")+'</p>'
+    +(gra.bledy.length?'<p style="font-size:13px;text-align:left">Pomyłki:<br>'+gra.bledy.slice(0,4).map(z=>"• "+z.wyjasn).join("<br>")+'</p>':'<p>Bez ani jednej pomyłki!</p>')
+    +'<button class="klocek" id="znowu">Jeszcze raz</button><a class="klocek jasny" href="gry.html">Inne gry</a></div>';
+  document.querySelector(".tresc").appendChild(d);$("znowu").onclick=start;
+  if(nowy&&gra.pkt>0)setTimeout(ZP.fanfary,200);
+}
+$("bP").onclick=()=>odpowiedz(true);$("bF").onclick=()=>odpowiedz(false);
+document.addEventListener("keydown",e=>{if(e.key==="ArrowRight")odpowiedz(true);if(e.key==="ArrowLeft")odpowiedz(false);});
+Promise.all([fetch("herby.json").then(r=>r.json()),fetch("rzeki.json").then(r=>r.json()),fetch("kluby.json").then(r=>r.json()),ZP.loadPowiaty(),ZP.loadWoj(),ZP.poprawki()]).then(([h,r,k,pw,woj,p])=>{
+  D={herby:ZP.popHerby(h.miasta||[],p,c=>c.n).filter(c=>c.pop>8000),rzeki:ZP.popRzeki(r.miasta||[],p),kluby:k.kluby||[],pow:pw,
+     miasta:ZP.FALLBACK.map(([n,lat,lon,pop])=>({n,lat,lon,pop})),tab:(window.POWIATY||[]).filter(x=>!/Warszawa/.test(x.nazwa))};
+  $("graj").onclick=start;
+});
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>
