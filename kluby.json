@@ -29,7 +29,11 @@
     "Kolejorz"
    ],
    "lat": 52.41,
-   "lon": 16.93
+   "lon": 16.93,
+   "herb": "kluby/lech-poznan.webp",
+   "herbPlik": "Logo Lech Poznań 100 1922-2022.jpg",
+   "herbAutor": "Klapi",
+   "herbLicencja": "CC BY-SA 4.0"
   },
   {
    "miasto": "Kraków",
@@ -69,7 +73,11 @@
    "liga": "Ekstraklasa",
    "aliasy": [],
    "lat": 51.77,
-   "lon": 19.46
+   "lon": 19.46,
+   "herb": "kluby/widzew-lodz.webp",
+   "herbPlik": "Mural to Widzew Łódź football club, Łódź 9 Kazimierza Street (new logo cropped).jpg",
+   "herbAutor": "Zorro2212",
+   "herbLicencja": "CC BY-SA 4.0"
   },
   {
    "miasto": "Katowice",
@@ -81,7 +89,11 @@
     "GieKSa"
    ],
    "lat": 50.26,
-   "lon": 19.02
+   "lon": 19.02,
+   "herb": "kluby/gks-katowice.webp",
+   "herbPlik": "Dab Katowice.svg",
+   "herbAutor": "vector version Bastian",
+   "herbLicencja": "Public domain"
   },
   {
    "miasto": "Zabrze",
@@ -101,7 +113,11 @@
     "Jaga"
    ],
    "lat": 53.13,
-   "lon": 23.16
+   "lon": 23.16,
+   "herb": "kluby/jagiellonia-bialystok.webp",
+   "herbPlik": "Jagiellonia Białystok Logo 1.png",
+   "herbAutor": "Unknown authorUnknown author",
+   "herbLicencja": "CC0"
   },
   {
    "miasto": "Kielce",
@@ -148,7 +164,11 @@
    "liga": "Ekstraklasa",
    "aliasy": [],
    "lat": 51.4,
-   "lon": 21.15
+   "lon": 21.15,
+   "herb": "kluby/radomiak-radom.webp",
+   "herbPlik": "Herb radomiaka 300dpi.png",
+   "herbAutor": "Radomiak Radom",
+   "herbLicencja": "Public domain"
   },
   {
    "miasto": "Częstochowa",
@@ -157,7 +177,11 @@
    "liga": "Ekstraklasa",
    "aliasy": [],
    "lat": 50.81,
-   "lon": 19.12
+   "lon": 19.12,
+   "herb": "kluby/rakow-czestochowa.webp",
+   "herbPlik": "Rks rakow crest ai.svg",
+   "herbAutor": "Raków Częstochowa",
+   "herbLicencja": "Public domain"
   },
   {
    "miasto": "Płock",
@@ -168,7 +192,11 @@
     "Nafciarze"
    ],
    "lat": 52.55,
-   "lon": 19.71
+   "lon": 19.71,
+   "herb": "kluby/wisla-plock.webp",
+   "herbPlik": "Wisla Płock.png",
+   "herbAutor": "Wisła Płock S.A.",
+   "herbLicencja": "Public domain"
   },
   {
    "miasto": "Lubin",
@@ -284,7 +312,11 @@
    "liga": "1. liga",
    "aliasy": [],
    "lat": 51.77,
-   "lon": 19.46
+   "lon": 19.46,
+   "herb": "kluby/lks-lodz.webp",
+   "herbPlik": "LKS Lodz.png",
+   "herbAutor": "ŁKS Łódź",
+   "herbLicencja": "Public domain"
   },
   {
    "miasto": "Bytom",
@@ -324,7 +356,11 @@
     "Czarne Koszule"
    ],
    "lat": 52.23,
-   "lon": 21.01
+   "lon": 21.01,
+   "herb": "kluby/polonia-warszawa.webp",
+   "herbPlik": "Poloniawarszawa1.svg",
+   "herbAutor": "Polonia Warszawa",
+   "herbLicencja": "Public domain"
   },
   {
    "miasto": "Rzeszów",
@@ -389,7 +425,11 @@
     "GKS Tychy"
    ],
    "lat": 50.13,
-   "lon": 18.99
+   "lon": 18.99,
+   "herb": "kluby/gks-tychy.webp",
+   "herbPlik": "Gkstychy.png",
+   "herbAutor": "хоккейный клуб ГКС",
+   "herbLicencja": "Public domain"
   },
   {
    "miasto": "Bydgoszcz",
@@ -398,7 +438,11 @@
    "liga": "2. liga",
    "aliasy": [],
    "lat": 53.12,
-   "lon": 18
+   "lon": 18,
+   "herb": "kluby/zawisza-bydgoszcz.webp",
+   "herbPlik": "Zawisza Logo.svg",
+   "herbAutor": "Unknown authorUnknown author",
+   "herbLicencja": "Public domain"
   },
   {
    "miasto": "Bielsko-Biała",
@@ -537,7 +581,11 @@
    "liga": "niższe ligi",
    "aliasy": [],
    "lat": 53.01,
-   "lon": 18.6
+   "lon": 18.6,
+   "herb": "kluby/elana-torun.webp",
+   "herbPlik": "Elana Toruń Logo.png",
+   "herbAutor": "Unknown authorUnknown author",
+   "herbLicencja": "Public domain"
   },
   {
    "miasto": "Sosnowiec",
@@ -577,7 +625,11 @@
    "liga": "niższe ligi",
    "aliasy": [],
    "lat": 54.16,
-   "lon": 19.4
+   "lon": 19.4,
+   "herb": "kluby/olimpia-elblag.webp",
+   "herbPlik": "Zks-olimpia-elblag.png",
+   "herbAutor": "all-free-download.com",
+   "herbLicencja": "CC BY-SA 4.0"
   },
   {
    "miasto": "Tarnów",
