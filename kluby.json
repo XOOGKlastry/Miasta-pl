@@ -74,10 +74,7 @@
    "aliasy": [],
    "lat": 51.77,
    "lon": 19.46,
-   "herb": "kluby/widzew-lodz.webp",
-   "herbPlik": "Mural to Widzew Łódź football club, Łódź 9 Kazimierza Street (new logo cropped).jpg",
-   "herbAutor": "Zorro2212",
-   "herbLicencja": "CC BY-SA 4.0"
+   "herbRecznie": true
   },
   {
    "miasto": "Katowice",
@@ -90,10 +87,7 @@
    ],
    "lat": 50.26,
    "lon": 19.02,
-   "herb": "kluby/gks-katowice.webp",
-   "herbPlik": "Dab Katowice.svg",
-   "herbAutor": "vector version Bastian",
-   "herbLicencja": "Public domain"
+   "herbRecznie": true
   },
   {
    "miasto": "Zabrze",
