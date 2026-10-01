@@ -9,7 +9,7 @@ UA = "PolskoZnawca/1.0 (https://github.com/XOOGKlastry/Miasta-pl; gra edukacyjna
 SERWERY = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
            "https://maps.mail.ru/osm/tools/overpass/api/interpreter"]
 Q = """[out:json][timeout:300];
-area["ISO3166-1"="PL"][admin_level=2]->.pl;
+area(id:3600049715)->.pl;
 node["place"~"^(city|town)$"](area.pl)->.m;
 nwr["amenity"="townhall"](area.pl)->.u;
 .m out;
@@ -22,11 +22,14 @@ def overpass():
         try:
             req = urllib.request.Request(url, data=("data=" + urllib.parse.quote(Q)).encode(), headers={"User-Agent": UA})
             with urllib.request.urlopen(req, timeout=360) as r:
-                return json.loads(r.read())["elements"]
+                el = json.loads(r.read())["elements"]
+            if len(el) > 500:   # pusta odpowiedź serwera traktujemy jak błąd i pytamy następny
+                return el
+            print("  za mało danych z", url, len(el), file=sys.stderr)
         except Exception as e:
             print("  ponawiam", url, e, file=sys.stderr)
             time.sleep(20 * (i + 1))
-    raise RuntimeError("Overpass nie odpowiada")
+    return []
 
 
 def norm(s):
@@ -40,6 +43,8 @@ def km(a, b):
 
 def main():
     el = overpass()
+    if not el:
+        sys.exit("brak danych z Overpass, zostawiam poprzedni centra.json")
     miasta = [e for e in el if e.get("tags", {}).get("place") in ("city", "town") and e.get("tags", {}).get("name")]
     urzedy = []
     for e in el:
