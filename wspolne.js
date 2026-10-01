@@ -625,6 +625,23 @@ function dopiszEncykl(fb,c){
   txt.appendChild(a);
 }
 
+/* ---- środki miast (urząd miasta albo centrum) dla widoków z lotu ptaka ---- */
+let CENTRA=null;
+function centra(){
+  if(!CENTRA)CENTRA=fetch("centra.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({}));
+  return CENTRA;
+}
+function doCentrum(lista,mapa){
+  // podmienia lat/lon miast na urząd lub centrum, jeśli leży nie dalej niż 8 km od dotychczasowego punktu
+  let n=0;
+  lista.forEach(c=>{
+    const k=mapa[c.n||c.name];if(!k)return;
+    let best=null,bd=1e9;k.forEach(([lat,lon,zr])=>{const d=km(c,{lat,lon});if(d<bd){bd=d;best=[lat,lon,zr];}});
+    if(best&&bd<8){c.lat=best[0];c.lon=best[1];c.srodek=best[2];n++;}
+  });
+  return n;
+}
+
 /* ---- krótki komunikat na dole ekranu ---- */
 function komunikat(tekst,ms){
   let el=document.getElementById("zp-komunikat");
@@ -785,5 +802,5 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

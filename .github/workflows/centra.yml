@@ -1,0 +1,37 @@
+name: Środki miast (urzędy)
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "narzedzia/pobierz_centra.py"
+      - ".github/workflows/centra.yml"
+  schedule:
+    - cron: "0 5 5 * *"   # raz w miesiącu
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  centra:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Środki miast
+        run: python narzedzia/pobierz_centra.py 2>&1 | tee narzedzia/centra.log
+      - name: Zapisz zmiany
+        if: always()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add narzedzia/centra.log
+          [ -f centra.json ] && git add centra.json || true
+          if ! git diff --cached --quiet; then git commit -m "Środki miast: aktualizacja"; for i in 1 2 3 4 5; do git pull --rebase -X theirs && git push && break; sleep $((i*7)); done; fi

@@ -264,6 +264,7 @@ async function laduj(){
   D.miejsca=(mj.miasta||[]).filter(c=>c.zdjecia&&c.zdjecia.length);
   D.rzeki=ZP.popRzeki(rj.miasta||[],popr);
   D.miasta=ZP.FALLBACK.map(([n,lat,lon,pop])=>({n,lat,lon,pop}));
+  ZP.doCentrum(D.miasta,await ZP.centra());
   PL=ZP.projection(woj.map(w=>w.f),500,8);
   baseSvg=woj.map(w=>'<path class="w" d="'+PL.path(w.f.geometry)+'"/>').join("");
 }
@@ -285,7 +286,7 @@ function budujPytania(rnd,ile,filtr,kolej){
   for(let i=0;qs.length<ile&&i<ile*4;i++){
     const t=kolej[i%kolej.length],src=lista[t];if(!src||!src.length)continue;
     const c=src.shift();
-    if(t==="z")qs.push({t,c,opcje:czteryNaj(rnd,c,D.miasta,x=>x.n),dx:(rnd()-.5)*0.01,dy:(rnd()-.5)*0.008});
+    if(t==="z")qs.push({t,c,opcje:czteryNaj(rnd,c,D.miasta,x=>x.n),dx:(rnd()-.5)*0.0025,dy:(rnd()-.5)*0.0016});
     if(t==="g")qs.push({t,c});
     if(t==="k")qs.push({t,p:c,opcje:czteryNaj(rnd,c,D.pow,x=>x.label)});
     if(t==="h")qs.push({t,c,opcje:czteryNaj(rnd,c,D.herby,x=>x.n)});

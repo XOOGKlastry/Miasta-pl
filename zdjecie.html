@@ -193,8 +193,11 @@ function zoomFor(pop){
 
 /* ---------- rozgrywka ---------- */
 let game=null;
+let CENTRA_OK=false;
+ZP.centra().then(m=>{CENTRA_OK=m;});
 function startGame(){
   $("scoreboard").classList.remove("hidden");
+  if(CENTRA_OK&&!startGame.zrobione){ZP.doCentrum(ALL.map(c=>{c.n=c.n||c.name;return c;}),CENTRA_OK);startGame.zrobione=true;}
   buildPool();
   if(pool.length<5){note("Za mało miast w tym zakresie.","bad");return;}
   const total=+$("rounds").value;
@@ -238,7 +241,7 @@ function nextRound(){
   $("feedback").classList.add("hidden");
   if(game.zoom){
     // zoom out: zaczynamy od kilku ulic i co 4 sekundy oddalamy
-    const j=0.004;
+    const j=0.0016;
     map.setView([c.lat+(Math.random()-.5)*j,c.lon+(Math.random()-.5)*j*1.7],Z0,{animate:false});
     lockZoom();
     if(game.wpis)ZP.fokus($("guess"));
@@ -247,9 +250,9 @@ function nextRound(){
   }
   // widok: kadr wyśrodkowany na mieście + małe losowe przesunięcie
   const z=zoomFor(c.pop);
-  const jitter=0.09;
-  const dLat=(Math.random()-.5)*jitter/(z-9);   // im ciaśniej, tym mniejsze przesunięcie
-  const dLon=(Math.random()-.5)*jitter/(z-9)*1.6;
+  // środek kadru: urząd miasta (albo centrum z OSM), przesunięty najwyżej o ok. 150 m
+  const dLat=(Math.random()-.5)*0.0026;
+  const dLon=(Math.random()-.5)*0.0042;
   map.setView([c.lat+dLat,c.lon+dLon],z,{animate:false});
   lockView(z);
   if(game.wpis)ZP.fokus($("guess"));
