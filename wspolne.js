@@ -642,6 +642,27 @@ function doCentrum(lista,mapa){
   return n;
 }
 
+/* ---- własny podkład mapy (bez zewnętrznych kafelków): ląd, powiaty, województwa, rzeki ----
+   Esri wycofuje ciemny podkład World_Dark_Gray_Base, więc „Gdzie to jest?” rysuje mapę z własnych danych.
+   Działa offline i nie wymaga żadnego klucza. */
+async function podkladWektorowy(map,opcje){
+  opcje=opcje||{};
+  const motyw=document.documentElement.classList.contains("plansza");
+  const K=motyw?{tlo:"#A9D3C7",lad:"#F3E6C4",pow:"#C9B38A",woj:"#7A6440",rz:"#4F95C9"}:{tlo:"#0F2226",lad:"#1D3D43",pow:"#2C5158",woj:"#6FA3AA",rz:"#3E7FA8"};
+  map.getContainer().style.background=K.tlo;
+  const [woj,pw]=await Promise.all([loadWoj(),loadPowiaty().catch(()=>[])]);
+  const fc=l=>({type:"FeatureCollection",features:l.map(x=>x.f)});
+  L.geoJSON(fc(woj),{style:{stroke:false,fill:true,fillColor:K.lad,fillOpacity:1},interactive:false}).addTo(map);
+  if(pw.length)L.geoJSON(fc(pw),{style:{color:K.pow,weight:.7,opacity:.9,fill:false},interactive:false}).addTo(map);
+  // rzeki (te same przebiegi co w grze „Nad jaką rzeką?”)
+  fetch("rzeki-geo.json").then(r=>r.ok?r.json():{}).then(g=>{
+    const linie=[];Object.values(g).forEach(l=>l.forEach(x=>linie.push(x.map(([lo,la])=>[la,lo]))));
+    if(linie.length)L.polyline(linie,{color:K.rz,weight:1.3,opacity:.75,interactive:false}).addTo(map);
+  }).catch(()=>{});
+  L.geoJSON(fc(woj),{style:{color:K.woj,weight:1.8,opacity:.95,fill:false},interactive:false}).addTo(map);
+  return woj;
+}
+
 /* ---- krótki komunikat na dole ekranu ---- */
 function komunikat(tekst,ms){
   let el=document.getElementById("zp-komunikat");
@@ -802,5 +823,5 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

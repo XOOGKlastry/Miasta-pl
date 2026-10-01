@@ -43,7 +43,7 @@ window.Saga=(function(){
     if(!(s.wynik[n]>=wynik))s.wynik[n]=wynik;
     s.ost=n;localStorage.setItem(KLUCZ,JSON.stringify(s));return s;
   }
-  function gwiazdki(proc){return proc>=85?3:proc>=65?2:proc>=40?1:0;}
+  function gwiazdki(proc){return proc>=80?3:proc>=55?2:proc>=30?1:0;}
   function odblokowany(n,s){
     s=s||stan();if(n===0)return true;
     const p=poziom(n-1);return (s.gw[n-1]||0)>=p.progGwiazd;

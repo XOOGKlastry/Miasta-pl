@@ -19,6 +19,10 @@
 .mapa::-webkit-scrollbar{display:none}
 .plotno{position:relative;width:100%}
 .pas{position:absolute;left:0;right:0}
+.instaluj{flex:none;display:flex;align-items:center;gap:10px;padding:8px 10px;background:#FFE7A3;border-bottom:4px solid var(--braz);position:relative;z-index:5}
+.instaluj span{flex:1;min-width:0}.instaluj b{display:block;font-size:14px}.instaluj small{display:block;font-size:11px;font-weight:700;color:var(--braz-2)}
+.instaluj .klocek{min-height:40px;padding:0 12px;font-size:13px}
+.instaluj .zamknij{background:none;border:none;font-size:18px;padding:4px 6px;color:var(--braz)}
 .mgla{position:absolute;left:0;right:0;pointer-events:none;z-index:4;overflow:hidden}
 .falsz{position:fixed;z-index:940;width:58px;height:58px;border-radius:50%;border:4px solid #8A7F62;background:#C9C0A0;display:grid;place-items:center;transform:translate(-50%,-50%);pointer-events:none}
 .pas::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(58,42,20,.08) 1.5px,transparent 1.5px);background-size:16px 16px}
@@ -79,6 +83,7 @@
     <span class="zeton"><span class="gw">★</span><span id="sumaGw">0</span></span>
     <span class="zeton" title="Seria dni"><svg width="16" height="16" viewBox="0 0 24 24" fill="#E84A3C" stroke="#3A2A14" stroke-width="2"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 3 3 5 1-2 0-5 0-8z"/></svg><span id="seria">0</span></span>
   </header>
+  <div class="instaluj hidden" id="instaluj"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3A2A14" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 7v7M9 11l3 3 3-3"/></svg><span><b>Zainstaluj grę</b><small>ikona na ekranie, pełny ekran, działa bez internetu</small></span><button class="klocek" id="instBtn">Zainstaluj</button><button class="zamknij" id="instX" aria-label="Zamknij">✕</button></div>
   <div class="mapa" id="mapa"><div class="plotno" id="plotno"></div></div>
   <div class="mgla" id="mgla"></div>
   <a class="dzis-btn" href="codzienne.html" id="dzisBtn"><i></i><span id="dzisTxt">Wyzwanie dnia czeka</span></a>
@@ -92,7 +97,8 @@
   <a href="profil.html" data-n="profil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Profil</a>
 </nav>
 </div>
-<script src="efekty.js?v=2"></script>
+<script src="efekty.js?v=17"></script>
+<script src="instaluj.js"></script>
 <script src="konto.js"></script>
 <script src="saga.js"></script>
 <script>
@@ -181,6 +187,11 @@ function kostka(){
   $("kZnowu").onclick=rzuc;setTimeout(rzuc,60);
 }
 $("kostkaBtn").onclick=kostka;
+// zaproszenie do instalacji: pokazujemy, dopóki gra nie jest zainstalowana i gracz go nie zamknął
+function pokazInstaluj(){const ukryte=localStorage.getItem("instaluj-ukryj")==="1";$("instaluj").classList.toggle("hidden",ukryte||!Instaluj.mozna());}
+Instaluj.naZmiane(pokazInstaluj);setTimeout(pokazInstaluj,1200);
+$("instBtn").onclick=()=>Instaluj.zainstaluj();
+$("instX").onclick=()=>{localStorage.setItem("instaluj-ukryj","1");pokazInstaluj();};
 // stan dnia i pasek u góry
 (function(){
   const d=new Date(),k=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");

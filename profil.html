@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=16" />
+<link rel="stylesheet" href="wspolne.css?v=17" />
 <style>
 .przewijana{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:10px}
 .karta-gracza{display:flex;align-items:center;gap:14px;background:var(--ink-2);border:3px solid var(--line-2);border-radius:20px;padding:14px;box-shadow:var(--cien)}
@@ -63,6 +63,7 @@
   </section>
   <section class="sekcja"><h3>Więcej</h3>
     <div class="linki">
+      <button id="instaluj">📲 Zainstaluj aplikację na telefonie <span>›</span></button>
       <button id="motyw">🎨 Wygląd gier: <b id="motywNazwa"></b></button>
       <a href="statystyki.html">📊 Szczegółowe statystyki <span>›</span></a>
       <a href="encyklopedia.html">📖 Encyklopedia <span>›</span></a>
@@ -72,8 +73,9 @@
   </section>
 </main>
 </div>
+<script src="instaluj.js"></script>
 <script src="konto.js"></script>
-<script src="wspolne.js?v=16"></script>
+<script src="wspolne.js?v=17"></script>
 <script>
 const {$,fmt}=ZP;
 const p=Konto.profil();
@@ -96,6 +98,8 @@ function rysuj(){
 $("nick").onchange=()=>{Konto.ustaw({nick:$("nick").value.trim().slice(0,14)});ZP.komunikat("Zapisano nick.");};
 $("usun").onclick=()=>{if(confirm("Usunąć profil, postęp i rekordy z tego urządzenia? Tego nie da się cofnąć.")){Konto.usunDane();location.href="./";}};
 $("wersja").textContent="wersja testowa";
+const odsw=()=>{const b=$("instaluj");if(Instaluj.zainstalowana()){b.innerHTML="✅ Aplikacja jest zainstalowana";b.disabled=true;}};odsw();Instaluj.naZmiane(odsw);
+$("instaluj").onclick=()=>Instaluj.zainstaluj();
 const mot=()=>localStorage.getItem("motyw")||"plansza";$("motywNazwa").textContent=mot()==="plansza"?"plansza (jasny)":"ciemny";
 $("motyw").onclick=()=>{localStorage.setItem("motyw",mot()==="plansza"?"ciemny":"plansza");location.reload();};
 rysuj();ZP.fitViewport();ZP.registerSW();

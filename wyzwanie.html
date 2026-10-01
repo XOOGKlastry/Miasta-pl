@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
-<link rel="stylesheet" href="wspolne.css?v=16" />
+<link rel="stylesheet" href="wspolne.css?v=17" />
 <style>
 svg path{fill-rule:evenodd}
 /* segmenty postępu */
@@ -230,9 +230,9 @@ svg path{fill-rule:evenodd}
 <script src="saga.js"></script>
 <script src="tablice-powiaty.js"></script>
 <script src="peerjs.min.js"></script>
-<script src="topojson-client.min.js?v=16"></script>
-<script src="efekty.js?v=2"></script>
-<script src="wspolne.js?v=16"></script>
+<script src="topojson-client.min.js?v=17"></script>
+<script src="efekty.js?v=17"></script>
+<script src="wspolne.js?v=17"></script>
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
@@ -248,7 +248,7 @@ const TYPY={z:["🛰️","Z lotu ptaka"],g:["📍","Gdzie to jest?"],k:["🗺️
   t:["🚗","Tablice"],c:["⚽","Jaki to klub?"],s:["🤝","Graniczą czy nie?"],v:["🧭","Województwo"]};
 // kolejność konkurencji: wyzwanie dnia (8 pytań) i turniej (wszystkie gry po kolei)
 const KOLEJ_DZIEN=["z","g","m","k","h","t","w","r"],KOLEJ_TURNIEJ=["z","g","m","k","h","t","r","c","w","s","v"];
-const SCORE=km=>Math.round(1000*Math.exp(-km/150));
+const SCORE=km=>Math.round(1000*Math.exp(-km/(TRYB==="saga"?320:150)));
 const kolor=p=>p>=700?"g":p>=300?"y":"r";
 const RANGI=[[85,"Geograf roku"],[70,"Kartograf"],[50,"Przewodnik"],[30,"Krajoznawca"],[0,"Turysta"]];
 let D={},Q=[],st=null,map=null,warstwy=null,POLE=null,PL=null,baseSvg="",lotMap=null,lotZnacznik=null;
@@ -317,7 +317,7 @@ function krainaStart(){
   const reszta=gry=>gry.concat(WSZYSTKIE.filter(t=>!gry.some(g=>g.t===t)).map(t=>({t,ile:0})));
   if(TRYB==="saga"){
     POZIOM=Saga.poziom(Math.max(0,Math.min(Saga.ILE-1,+(URLP.get("poziom")||0))));
-    KONFIG={preset:"",gry:reszta(POZIOM.gry),kolej:"przeplatane",czas:0,podp:true,premia:false,wielk:"dsm",obszar:[POZIOM.woj]};
+    KONFIG={preset:"",gry:reszta(POZIOM.gry),kolej:"przeplatane",czas:0,podp:true,premia:false,wielk:POZIOM.nrWSwiecie<=2?"ds":"dsm",obszar:[POZIOM.woj]};
     $("tytul").textContent="Poziom "+(POZIOM.n+1);document.title="Poziom "+(POZIOM.n+1)+" · PolskoZnawca";
     $("odznaka").textContent=POZIOM.kraina.nazwa+" · poziom "+(POZIOM.nrWSwiecie+1)+" z "+Saga.NA_SWIAT;
     $("startTytul").innerHTML=(POZIOM.boss?"Stolica regionu:<br>"+POZIOM.kraina.stolica:POZIOM.nazwa);
@@ -409,7 +409,8 @@ function nastepne(){
 function wpisz(nazwy,poprawne,opcje){
   if(!POLE)POLE=ZP.poleWpisu($("wpis"),()=>st.nazwy,v=>odpWpis(v),{poprawne:()=>st.poprawne,pokazEtykieta:"Pokaż podpowiedzi<br><small>połowa punktów</small>",pokaz:()=>{st.podp=true;pokazOpcje();}});
   st.nazwy=nazwy;st.poprawne=poprawne;st.opcje=opcje;
-  $("wpis").classList.remove("hidden");POLE.wyczysc();POLE.wylacz(false);POLE.focus();
+  $("wpis").classList.remove("hidden");POLE.wyczysc();POLE.wylacz(false);
+  if(TRYB==="saga"){pokazOpcje();$("wpis").classList.add("bez-podp");}else POLE.focus();
 }
 function pokazOpcje(){
   const box=$("answers");box.innerHTML="";box.classList.remove("hidden");
@@ -428,13 +429,14 @@ function rundaG(q){
   if(!map){
     const PLB=L.latLngBounds([48.9,14.0],[55.0,24.3]);
     map=L.map("mapa",{zoomControl:true,attributionControl:true,minZoom:5,maxZoom:12,maxBounds:PLB.pad(0.4),zoomSnap:0.25});
-    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",{maxZoom:16,attribution:"Esri"}).addTo(map);
-    L.geoJSON({type:"FeatureCollection",features:D.woj.map(w=>w.f)},{style:{color:"#4F7F86",weight:1,fill:false},interactive:false}).addTo(map);
+    ZP.podkladWektorowy(map);
     warstwy=L.layerGroup().addTo(map);
     map.on("click",e=>{if(st.odp||Q[st.i].t!=="g")return;st.guess=e.latlng;warstwy.clearLayers();L.circleMarker(e.latlng,{radius:8,color:"#0A181B",weight:2,fillColor:"#E8F1EE",fillOpacity:1}).addTo(warstwy);$("okBtn").disabled=false;});
   }
   warstwy.clearLayers();
-  setTimeout(()=>{map.invalidateSize();map.fitBounds([[49,14.1],[54.9,24.2]]);},30);
+  // na planszy przygód mapa startuje od razu na województwie, z którego jest pytanie
+  const wj=TRYB==="saga"&&D.woj.find(w=>w.name===POZIOM.woj);
+  setTimeout(()=>{map.invalidateSize();if(wj)map.fitBounds(L.geoJSON(wj.f).getBounds().pad(0.08));else map.fitBounds([[49,14.1],[54.9,24.2]]);},30);
   $("okBtn").classList.remove("hidden");$("okBtn").disabled=true;
 }
 $("okBtn").onclick=()=>{
@@ -444,13 +446,13 @@ $("okBtn").onclick=()=>{
   L.circleMarker([q.c.lat,q.c.lon],{radius:9,color:"#0A181B",weight:2,fillColor:"#F2C14E",fillOpacity:1}).addTo(warstwy).bindTooltip(q.c.n,{permanent:true,direction:"top",className:"cel-lbl"});
   map.flyToBounds(L.latLngBounds([[g.lat,g.lon],[q.c.lat,q.c.lon]]).pad(0.5),{duration:.8,maxZoom:9});
   $("okBtn").classList.add("hidden");
-  wynikRundy(SCORE(d),d<=30,"Błąd "+(d<10?d.toFixed(1):Math.round(d))+" km");
+  wynikRundy(SCORE(d),d<=(TRYB==="saga"?45:30),"Błąd "+(d<10?d.toFixed(1):Math.round(d))+" km");
 };
 function rundaZ(q){
   // Z lotu ptaka: zdjęcie satelitarne bez podpisów, można je przesuwać i przybliżać
   $("pytanie").textContent="Jakie to miasto?";
   $("lot").classList.remove("hidden");
-  const z=q.c.pop>300000?13:q.c.pop>80000?14:15,sr=[q.c.lat+q.dy,q.c.lon+q.dx];
+  const z=(q.c.pop>300000?13:q.c.pop>80000?14:15)-(TRYB==="saga"?1:0),sr=[q.c.lat+q.dy,q.c.lon+q.dx];
   if(!lotMap){
     lotMap=L.map("lot",{zoomControl:true,attributionControl:true,zoomSnap:0.5});
     L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",{maxZoom:18,attribution:"Esri"}).addTo(lotMap);
