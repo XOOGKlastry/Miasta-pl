@@ -380,9 +380,11 @@ function kRysuj(){
     if(q&&!ZP.norm(c.miasto+" "+c.pelna+" "+c.klub).includes(q))return;
     const d=document.createElement("div");d.className="wiersz";d.style.flexWrap="wrap";
     d.innerHTML='<input data-p="pelna" placeholder="Pełna nazwa" style="width:100%"><input data-p="klub" placeholder="Krótka nazwa" style="flex:1;width:auto"><input data-p="miasto" placeholder="Miasto" style="flex:1;width:auto">'
-      +'<select data-p="liga" style="flex:1;min-height:40px;width:auto">'+LIGI_A.map(l=>'<option>'+l+'</option>').join("")+'</select><button>Usuń</button>';
+      +'<select data-p="liga" style="flex:1;min-height:40px;width:auto">'+LIGI_A.map(l=>'<option>'+l+'</option>').join("")+'</select><button>Usuń</button>'
+      +(c.herb?'<span style="display:flex;align-items:center;gap:6px;width:100%"><img src="'+c.herb+'" style="width:30px;height:30px;object-fit:contain;background:#fff;border-radius:6px"><small style="flex:1">'+(c.herbLicencja||"")+'</small><button data-h>Usuń herb</button></span>':'');
     d.querySelectorAll("[data-p]").forEach(el=>{el.value=c[el.dataset.p]||"";el.onchange=()=>{c[el.dataset.p]=el.value.trim();KLUBY_ZM=true;szkic();};});
     d.querySelector("button").onclick=()=>{KLUBY.kluby.splice(i,1);KLUBY_ZM=true;szkic();kRysuj();};
+    const bh=d.querySelector("[data-h]");if(bh)bh.onclick=()=>{["herb","herbPlik","herbAutor","herbLicencja"].forEach(x=>delete c[x]);c.herbRecznie=true;KLUBY_ZM=true;szkic();kRysuj();};
     box.appendChild(d);
   });
 }

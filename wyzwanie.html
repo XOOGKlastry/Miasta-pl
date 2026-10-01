@@ -140,6 +140,10 @@ svg path{fill-rule:evenodd}
 .mp-dymek{position:absolute;left:50%;top:10px;transform:translateX(-50%);z-index:900;background:rgba(10,24,27,.92);border:1px solid var(--ok);color:var(--paper);border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap;animation:dymek 1.8s both;pointer-events:none}
 @keyframes dymek{0%{opacity:0;transform:translate(-50%,-6px)}12%{opacity:1;transform:translate(-50%,0)}80%{opacity:1}100%{opacity:0}}
 #wpis.bez-podp .pokaz{display:none}
+.herb-klubu{position:absolute;z-index:4;display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--ink-2);border:3px solid var(--line-2);border-radius:18px;padding:10px 12px;box-shadow:0 6px 0 var(--line-2);animation:herbWjazd .6s cubic-bezier(.3,1.5,.5,1) both}
+.herb-klubu img{width:120px;height:120px;object-fit:contain}
+.herb-klubu small{font-weight:700;font-size:12px}
+@keyframes herbWjazd{from{transform:translateY(-40px) scale(.4);opacity:0}}
 .saga-wynik{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;text-align:center}
 .saga-wynik h2{font-family:"Fraunces",serif;font-weight:900;font-size:34px;margin:0}
 .saga-wynik p{margin:0;color:var(--dim)}
@@ -386,7 +390,7 @@ $("zaczynam").onclick=()=>{
 };
 
 /* ---------- rundy ---------- */
-function schowaj(){if(window.Efekty)Efekty.przerwij();const pm=$("paraMapa");if(pm)pm.remove();["mapa","lot","tablica","para","ksztalt","rzekaMapa","foto","herbImg","miastoDuze","karty2","podpis","answers","wpis","okBtn","feedback","tbar"].forEach(id=>$(id).classList.add("hidden"));$("stage").classList.remove("jasna");$("answers").classList.remove("dwa");}
+function schowaj(){if(window.Efekty)Efekty.przerwij();const pm=$("paraMapa");if(pm)pm.remove();const hk=$("herbKlubu");if(hk)hk.remove();["mapa","lot","tablica","para","ksztalt","rzekaMapa","foto","herbImg","miastoDuze","karty2","podpis","answers","wpis","okBtn","feedback","tbar"].forEach(id=>$(id).classList.add("hidden"));$("stage").classList.remove("jasna");$("answers").classList.remove("dwa");}
 function segmenty(){[...$("segmenty").children].forEach((d,i)=>{const r=st.res[i];d.className=r?kolor(r.pts):(i===st.i?"teraz":"");});}
 function nastepne(){
   st.i++;schowaj();
@@ -551,6 +555,10 @@ function wynikRundy(pts,ok,naglowek){
   if(q.t==="z"&&lotMap){
     lotZnacznik=L.circleMarker([q.c.lat,q.c.lon],{radius:9,color:"#0A181B",weight:2,fillColor:"#F2C14E",fillOpacity:1}).addTo(lotMap).bindTooltip(q.c.n,{permanent:true,direction:"top",className:"cel-lbl"});
     lotMap.setMaxBounds(null);lotMap.setMinZoom(5);lotMap.flyTo([q.c.lat,q.c.lon],10,{duration:1.2});
+  }
+  if(q.t==="c"&&ok){
+    const traf=q.kluby.find(k=>k.herb&&ZP.pasuje(POLE&&POLE.input?POLE.input.value:"",[k.klub,k.pelna].concat(k.aliasy||[])))||q.kluby.find(k=>k.herb);
+    if(traf){$("stage").insertAdjacentHTML("beforeend",'<div class="herb-klubu" id="herbKlubu"><img alt="" src="'+traf.herb+'"><small>'+traf.pelna+'</small></div>');Efekty.odwroc($("herbKlubu").querySelector("img"));}
   }
   if(q.t==="s"){
     const P=ZP.projection([q.a.f,q.b.f],400,20),svg='<svg id="paraMapa" viewBox="0 0 400 '+P.H.toFixed(0)+'">'

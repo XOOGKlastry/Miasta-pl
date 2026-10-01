@@ -28,11 +28,19 @@
 .boisko{position:absolute;inset:12% 10%;border:2px solid rgba(143,170,168,.25);border-radius:10px;pointer-events:none}
 .boisko::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:2px solid rgba(143,170,168,.25)}
 .boisko::after{content:"";position:absolute;left:50%;top:50%;width:26%;aspect-ratio:1;border:2px solid rgba(143,170,168,.25);border-radius:50%;transform:translate(-50%,-50%)}
-.pilka{font-size:64px;animation:pilka 2.4s ease-in-out infinite;position:relative;z-index:1}
-@keyframes pilka{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-14px) rotate(180deg)}}
+.pilka{width:84px;height:84px;animation:pilka 2.4s ease-in-out infinite;position:relative;z-index:1;filter:drop-shadow(0 10px 8px rgba(0,0,0,.35))}
+.pilka svg{width:100%;height:100%;animation:krec 3.2s linear infinite}
+@keyframes krec{to{transform:rotate(360deg)}}
+@keyframes pilka{0%,100%{transform:translateY(0)}45%{transform:translateY(-38px)}55%{transform:translateY(-38px)}}
 .lista-klubow{position:relative;z-index:2;display:flex;flex-direction:column;gap:6px;width:88%;max-width:360px}
-.lista-klubow div{background:rgba(10,24,27,.88);border:1px solid var(--line-2);border-radius:12px;padding:8px 12px;display:flex;justify-content:space-between;gap:8px;animation:wejscie .3s both}
-.lista-klubow b{font-family:"Fraunces",serif}
+.lista-klubow div{background:var(--ink-2);color:var(--paper);border:2px solid var(--line-2);border-radius:12px;padding:8px 12px;display:flex;justify-content:space-between;gap:8px;animation:wejscie .3s both}
+.lista-klubow b{font-family:"Fraunces",serif;flex:1}
+.lista-klubow div{align-items:center}
+.mini-herb{width:26px;height:26px;object-fit:contain;flex:none}
+.herb-klubu{position:absolute;right:10px;top:10px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(255,246,224,.92);border:3px solid #3A2A14;border-radius:16px;padding:8px;box-shadow:0 5px 0 #3A2A14;animation:herbWjazd .6s cubic-bezier(.3,1.5,.5,1) both}
+.herb-klubu img{width:96px;height:96px;object-fit:contain}
+.herb-klubu small{font-size:9px;color:#5A4A2F;max-width:110px;text-align:center;line-height:1.1}
+@keyframes herbWjazd{from{transform:translateY(-30px) scale(.4);opacity:0}}
 .lista-klubow small{color:var(--dim);white-space:nowrap}
 </style>
 </head>
@@ -60,9 +68,10 @@
   <div class="target hidden" id="target"><div class="kind" id="tKind"></div><div class="nm" id="tName"></div><span class="liga hidden" id="tLiga"></span></div>
   <section class="stage hidden" id="stage">
     <div class="boisko"></div>
-    <div class="pilka" id="pilka">⚽</div>
+    <div class="pilka" id="pilka"><svg viewBox="0 0 48 48" aria-hidden="true"><defs><clipPath id="kpilka"><circle cx="24" cy="24" r="21"/></clipPath><radialGradient id="cpilka" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".65" stop-color="#F0F0F0"/><stop offset="1" stop-color="#B8B8B8"/></radialGradient></defs><circle cx="24" cy="24" r="21" fill="url(#cpilka)"/><g clip-path="url(#kpilka)"><polygon points="24.00,17.80 29.90,22.08 27.64,29.02 20.36,29.02 18.10,22.08" fill="#1B1B1B" stroke="#1B1B1B" stroke-width="1" stroke-linejoin="round"/><polygon points="34.11,10.08 32.15,4.05 37.28,0.32 42.42,4.05 40.46,10.08" fill="#1B1B1B" stroke="#1B1B1B" stroke-width="1" stroke-linejoin="round"/><polygon points="40.36,29.32 45.49,25.58 50.63,29.32 48.67,35.35 42.32,35.35" fill="#1B1B1B" stroke="#1B1B1B" stroke-width="1" stroke-linejoin="round"/><polygon points="24.00,41.20 29.14,44.93 27.17,50.97 20.83,50.97 18.86,44.93" fill="#1B1B1B" stroke="#1B1B1B" stroke-width="1" stroke-linejoin="round"/><polygon points="7.64,29.32 5.68,35.35 -0.67,35.35 -2.63,29.32 2.51,25.58" fill="#1B1B1B" stroke="#1B1B1B" stroke-width="1" stroke-linejoin="round"/><polygon points="13.89,10.08 7.54,10.08 5.58,4.05 10.72,0.32 15.85,4.05" fill="#1B1B1B" stroke="#1B1B1B" stroke-width="1" stroke-linejoin="round"/><path d="M24.00 17.80L24.00 12.80M24.00 12.80L13.89 10.08M24.00 12.80L34.11 10.08M29.90 22.08L34.65 20.54M34.65 20.54L34.11 10.08M34.65 20.54L40.36 29.32M27.64 29.02L30.58 33.06M30.58 33.06L40.36 29.32M30.58 33.06L24.00 41.20M20.36 29.02L17.42 33.06M17.42 33.06L24.00 41.20M17.42 33.06L7.64 29.32M18.10 22.08L13.35 20.54M13.35 20.54L7.64 29.32M13.35 20.54L13.89 10.08" stroke="#1B1B1B" stroke-width="1.3" stroke-linecap="round" fill="none"/></g><circle cx="24" cy="24" r="21" fill="none" stroke="#1B1B1B" stroke-width="2.4"/><ellipse cx="15.5" cy="12.5" rx="4.5" ry="2.4" fill="#fff" opacity=".75" transform="rotate(-32 15.5 12.5)"/></svg></div>
     <svg id="map" preserveAspectRatio="xMidYMid meet" class="hidden"></svg>
     <div class="lista-klubow hidden" id="listaKl"></div>
+    <div class="herb-klubu hidden" id="herbKlubu"></div>
   </section>
   <div class="answers hidden" id="answers"></div>
   <div class="wpis hidden" id="wpis"></div>
@@ -130,7 +139,7 @@ function next(){
   $("tKind").textContent=m?"Jaki klub gra w mieście":"Z jakiego miasta jest klub";
   $("tName").textContent=m?q.k.miasto:q.k.klub;
   $("tLiga").textContent=q.k.liga;$("tLiga").classList.toggle("hidden",m);
-  $("map").classList.add("hidden");$("listaKl").classList.add("hidden");$("pilka").classList.remove("hidden");
+  $("map").classList.add("hidden");$("listaKl").classList.add("hidden");$("herbKlubu").classList.add("hidden");$("pilka").classList.remove("hidden");
   $("answers").classList.add("hidden");$("answers").innerHTML="";$("feedback").classList.add("hidden");
   POLE.wyczysc();POLE.wylacz(false);POLE.focus();
   POLE.input.placeholder=m?"Nazwa klubu…":"Nazwa miasta…";
@@ -154,7 +163,11 @@ function odp(v,btn){
   miasta.forEach((mm,i)=>{const k=KL.find(x=>x.miasto===mm);s+='<circle class="dot'+(i?" inny":"")+'" cx="'+P.x(k.lon).toFixed(1)+'" cy="'+P.y(k.lat).toFixed(1)+'" r="8"/><text x="'+P.x(k.lon).toFixed(1)+'" y="'+(P.y(k.lat)-14).toFixed(1)+'">'+mm+'</text>';});
   svg.innerHTML=s;svg.classList.remove("hidden");$("pilka").classList.add("hidden");
   const lista=miasta.flatMap(kluby);
-  $("listaKl").innerHTML=lista.map(k=>'<div><b>'+k.pelna+'</b><small>'+k.liga+'</small></div>').join("");
+  $("listaKl").innerHTML=lista.map(k=>'<div>'+(k.herb?'<img class="mini-herb" alt="" src="'+k.herb+'">':'')+'<b>'+k.pelna+'</b><small>'+k.liga+'</small></div>').join("");
+  // po dobrej odpowiedzi wjeżdża herb trafionego klubu (albo pierwszego z miasta)
+  const traf=lista.find(k=>ZP.pasuje(v,[k.klub,k.pelna].concat(k.aliasy||[])))||(ok?lista[0]:null);
+  const h=$("herbKlubu");h.innerHTML="";h.classList.add("hidden");
+  if(ok&&traf&&traf.herb){h.innerHTML='<img alt="Herb '+traf.pelna+'" src="'+traf.herb+'"><small>'+(traf.herbAutor?traf.herbAutor+", ":"")+(traf.herbLicencja||"Wikimedia Commons")+'</small>';h.classList.remove("hidden");if(window.Efekty)Efekty.odwroc(h.querySelector("img"));}
   $("listaKl").classList.remove("hidden");
   game.res.push({q,ok,got,v});
   const fb=$("feedback");
