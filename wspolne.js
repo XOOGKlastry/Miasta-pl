@@ -711,7 +711,9 @@ async function loadPowiaty(){
     return {f,k,n,city,woj:WOJ_KOD[k.slice(0,2)],bb:b,lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2,
       label:city?"m. "+n:n,full:(city?"miasto ":"powiat ")+n,short:n,nbi:nbi[i]};
   });
-  POWC.forEach(p=>{p.nb=p.nbi.map(i=>POWC[i].k);});
+  POWC.forEach(p=>{p.nb=[...new Set(p.nbi.map(i=>POWC[i].k))].filter(k=>k!==p.k);});
+  const ile={};POWC.forEach(p=>{const x=p.label;ile[x]=(ile[x]||0)+1;});
+  POWC.forEach(p=>{if(ile[p.label]>1){p.label+=" ("+p.woj+")";p.full+=" ("+p.woj+")";}});
   return POWC;
 }
 

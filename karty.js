@@ -25,11 +25,16 @@ window.Karty=(function(){
     z.forEach((x,i)=>{x.rz=diam.has(x.k)?"diament":i<n*.03?"zloto":i<n*.15?"srebro":i<n*.45?"braz":"zwykla";});
     g.forEach(x=>{if(!x.rz)x.rz="zwykla";x.woj=WOJ_KOD[x.k.slice(0,2)];});
     g.sort((a,c)=>(a.ludnosc||1e9)-(c.ludnosc||1e9)).forEach((x,i)=>x.nr=i+1);
-    // wskaźniki; bezrobocie odwrotnie (mniej bezrobotnych, wyższa ocena)
-    ocena(g,"ludnosc");ocena(g,"powierzchnia");ocena(g,"saldo_migracji");ocena(g,"wodociag_proc");ocena(g,"kanalizacja_proc");ocena(g,"bezrobocie_proc",true);
-    g.forEach(x=>{const w=Object.values(x.oc||{});x.ovr=w.length?Math.round(w.reduce((a,c)=>a+c,0)/w.length):0;});
+    const pow={};(b.powiaty||[]).forEach(p=>pow[p.k]=p.n);
+    g.forEach(x=>{const kp=x.k.slice(0,4);x.powiat=+kp.slice(2)>=61?"miasto na prawach powiatu":"powiat "+(pow[kp]||"");});
     const PO_K={},PO_N={};g.forEach(x=>{PO_K[x.k]=x;(PO_N[norm(x.n)]=PO_N[norm(x.n)]||[]).push(x);});
-    DANE={g,PO_K,PO_N};return DANE;
+    DANE={g,PO_K,PO_N};przelicz();return DANE;
+  }
+  // wskaźniki 1-99; bezrobocie odwrotnie (mniej bezrobotnych, wyższa ocena)
+  function przelicz(){
+    const g=DANE.g;g.forEach(x=>x.oc={});
+    ocena(g,"ludnosc");ocena(g,"powierzchnia");ocena(g,"saldo_migracji");ocena(g,"wodociag_proc");ocena(g,"kanalizacja_proc");ocena(g,"bezrobocie_proc",true);
+    g.forEach(x=>{const w=Object.values(x.oc);x.ovr=w.length?Math.round(w.reduce((a,c)=>a+c,0)/w.length):0;});
   }
   function gminaPoNazwie(n){
     const l=DANE.PO_N[norm(n)];if(!l)return null;
@@ -78,7 +83,7 @@ window.Karty=(function(){
       +"@keyframes kdPojaw{from{opacity:0}}"
       +".kd-tytul{font-family:Bungee,sans-serif;font-size:26px;color:#FFF6E0;text-shadow:0 3px 0 #3A2A14;text-align:center}"
       +".kd-rzad{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}"
-      +".kd-karta{width:96px;aspect-ratio:5/7;border:3px solid;border-radius:10px;box-shadow:0 5px 0 #3A2A14;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;padding:6px;color:#3A2A14;position:relative;animation:kdKarta .6s cubic-bezier(.3,1.5,.5,1) both;text-align:center}"
+      +".kd-karta{width:96px;aspect-ratio:5/7;border:3px solid;border-radius:10px;clip-path:polygon(50% 0,100% 6%,100% 88%,50% 100%,0 88%,0 6%);display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:2px;padding:6px;color:#3A2A14;position:relative;animation:kdKarta .6s cubic-bezier(.3,1.5,.5,1) both;text-align:center}"
       +".kd-karta b{font-size:12px;line-height:1.1}.kd-karta small{font-size:9px;font-weight:700}"
       +".kd-ovr{position:absolute;left:6px;top:4px;font-family:Bungee,sans-serif;font-size:22px}.kd-rz{position:absolute;right:6px;top:8px;font-size:8px;font-weight:900;text-transform:uppercase}"
       +"@keyframes kdKarta{from{transform:rotateY(180deg) scale(.3);opacity:0}}"
@@ -113,5 +118,5 @@ window.Karty=(function(){
     w.querySelector("button").onclick=zamknij;
   }
   async function sprawdzPoGrze(){try{const n=await nowe();if(n.length)setTimeout(()=>doInwentarza(n),1200);}catch(e){}}
-  return {zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,sprawdzPoGrze,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA};
+  return {przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,sprawdzPoGrze,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA};
 })();

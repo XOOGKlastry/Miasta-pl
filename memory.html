@@ -27,7 +27,10 @@
 .tyl{background:var(--czer);background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.18) 0 6px,transparent 6px 12px)}
 .tyl i{width:46%;aspect-ratio:1;border-radius:50%;overflow:hidden;border:3px solid var(--braz);background:linear-gradient(#F4F4F2 50%,#DC1E35 50%)}
 .przod{background:#fff;transform:rotateY(180deg);font-weight:900;font-size:13px;line-height:1.1;color:var(--braz)}
-.przod img{max-width:86%;max-height:86%;object-fit:contain}
+.przod{display:flex!important;flex-direction:column;gap:2px;padding:4px 3px}
+.przod .sym{flex:1;min-height:0;width:100%;display:grid;place-items:center}
+.przod .sym img,.przod .sym svg{max-width:88%;max-height:100%;object-fit:contain}
+.przod .pod{flex:none;font-size:clamp(8px,2.6vw,11px);font-weight:900;line-height:1.05;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .przod svg{width:84%;height:84%}
 .przod svg path{fill:var(--zolt);stroke:var(--braz);stroke-width:1.5;vector-effect:non-scaling-stroke}
 .tabl{display:flex;height:30%;min-height:24px;width:92%;border:2px solid #111;border-radius:4px;background:#F4F4F2;overflow:hidden}
@@ -52,10 +55,7 @@
       <button data-t="tablice">Tablica i powiat</button>
       <button data-t="woj">Województwo i stolica</button>
     </div>
-    <div class="tryby" id="rozmiary">
-      <button data-n="6">6 par</button><button data-n="8" class="akt">8 par</button><button data-n="10">10 par</button>
-    </div>
-    <div class="licznik"><span>Ruchy<b id="ruchy">0</b></span><span>Pary<b id="pary">0/8</b></span><span>Czas<b id="czas">0:00</b></span></div>
+    <div class="licznik"><span>Ruchy<b id="ruchy">0</b></span><span>Pary<b id="pary">0/10</b></span><span>Czas<b id="czas">0:00</b></span></div>
     <div class="stol" id="stol"></div>
   </main>
   <div id="warstwa"></div>
@@ -65,21 +65,22 @@
 <script src="wspolne.js?v=17"></script>
 <script>
 const {$}=ZP;
-let TRYB="herby",ILE=8,HERBY=[],WOJ=[],gra=null,zegar=null;
+let TRYB="herby",ILE=10,HERBY=[],WOJ=[],gra=null,zegar=null;
 const STOLICE={"dolnośląskie":"Wrocław","kujawsko-pomorskie":"Bydgoszcz i Toruń","lubelskie":"Lublin","lubuskie":"Zielona Góra i Gorzów","łódzkie":"Łódź","małopolskie":"Kraków","mazowieckie":"Warszawa","opolskie":"Opole","podkarpackie":"Rzeszów","podlaskie":"Białystok","pomorskie":"Gdańsk","śląskie":"Katowice","świętokrzyskie":"Kielce","warmińsko-mazurskie":"Olsztyn","wielkopolskie":"Poznań","zachodniopomorskie":"Szczecin"};
 function sylwetka(f){
   const P=ZP.projection([f],100,4);return '<svg viewBox="0 0 100 '+P.H.toFixed(0)+'"><path d="'+P.path(f.geometry,0.4)+'"/></svg>';
 }
 function pary(){
-  if(TRYB==="herby")return ZP.shuffle(HERBY.filter(h=>h.pop>15000)).slice(0,ILE).map(h=>({id:h.n,a:'<img alt="" src="'+h.img+'">',b:h.n}));
-  if(TRYB==="tablice")return ZP.shuffle(window.POWIATY.filter(p=>p.typ==="miasto"&&!/Warszawa/.test(p.nazwa))).slice(0,ILE).map(p=>({id:p.kod,a:'<span class="tabl"><i></i><span>'+p.kod+'</span></span>',b:p.nazwa}));
-  return ZP.shuffle(WOJ).slice(0,ILE).map(w=>({id:w.name,a:sylwetka(w.f),b:STOLICE[w.name]||w.name}));
+  const z=(obraz,nazwa)=>'<span class="sym">'+obraz+'</span><span class="pod">'+nazwa+'</span>';
+  if(TRYB==="herby")return ZP.shuffle(HERBY.filter(h=>h.pop>15000)).slice(0,ILE).map(h=>({id:h.n,a:z('<img alt="" src="'+h.img+'">',h.n)}));
+  if(TRYB==="tablice")return ZP.shuffle(window.POWIATY.filter(p=>p.typ==="miasto"&&!/Warszawa/.test(p.nazwa))).slice(0,ILE).map(p=>({id:p.kod,a:z('<span class="tabl"><i></i><span>'+p.kod+'</span></span>',p.nazwa)}));
+  return ZP.shuffle(WOJ).slice(0,ILE).map(w=>({id:w.name,a:z(sylwetka(w.f),w.name)}));
 }
 function nowa(){
   clearInterval(zegar);$("warstwa").innerHTML="";
-  const p=pary(),karty=ZP.shuffle(p.flatMap(x=>[{id:x.id,html:x.a},{id:x.id,html:'<span>'+x.b+'</span>'}]));
+  const p=pary(),karty=ZP.shuffle(p.flatMap(x=>[{id:x.id,html:x.a},{id:x.id,html:x.a}]));
   gra={karty,odkryte:[],ruchy:0,pary:0,n:p.length,start:0,blok:false};
-  const kol=p.length<=6?3:4;
+  const kol=4;
   const s=$("stol");s.style.gridTemplateColumns="repeat("+kol+",minmax(0,1fr))";
   s.innerHTML=karty.map((k,i)=>'<div class="karta" data-i="'+i+'"><div class="w"><div class="strona tyl"><i></i></div><div class="strona przod">'+k.html+'</div></div></div>').join("");
   // karty kwadratowe, ale mieszczące się na ekranie
@@ -112,7 +113,7 @@ function koniec(){
   clearInterval(zegar);
   const sek=Math.round((Date.now()-gra.start)/1000),nadmiar=gra.ruchy-gra.n;
   const gw=nadmiar<=Math.ceil(gra.n*.5)?3:nadmiar<=gra.n?2:1;
-  const k="memory-"+TRYB+"-"+gra.n,rek=+(localStorage.getItem(k)||0),nowy=!rek||gra.ruchy<rek;
+  const k="memory2-"+TRYB,rek=+(localStorage.getItem(k)||0),nowy=!rek||gra.ruchy<rek;
   if(nowy)localStorage.setItem(k,gra.ruchy);
   $("warstwa").innerHTML='<div class="koniec"><div class="pole"><h2>Wszystkie pary!</h2><div class="gw">'+[1,2,3].map(i=>'<span class="'+(i<=gw?"z":"")+'">★</span>').join("")+'</div>'
     +'<b>'+gra.ruchy+' ruchów · '+Math.floor(sek/60)+':'+String(sek%60).padStart(2,"0")+'</b><span style="font-weight:700">'+(nowy?"Nowy rekord!":"Rekord: "+rek+" ruchów")+'</span>'

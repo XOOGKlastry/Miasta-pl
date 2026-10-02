@@ -29,6 +29,12 @@
 .kartka img{max-width:44%;max-height:30%;object-fit:contain}
 .kartka .tabl{display:flex;height:52px;border:3px solid #111;border-radius:7px;background:#F4F4F2;overflow:hidden}
 .kartka .tabl i{width:26px;background:#1546B8}.kartka .tabl span{padding:0 16px;display:grid;place-items:center;color:#111;font:700 32px/1 Rubik,sans-serif;letter-spacing:.05em}
+.werdykt{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);font-family:Bungee,sans-serif;font-size:20px;padding:6px 14px;border-radius:12px;border:3px solid var(--braz);white-space:nowrap;animation:werdykt .25s cubic-bezier(.3,1.6,.5,1) both}
+.werdykt small{display:block;font-family:Rubik,sans-serif;font-size:11px;font-weight:700;max-width:260px;white-space:normal}
+.kartka.dobrze{background:#D4F2CF}.kartka.zle{background:#FFD3CC}
+.kartka.dobrze .werdykt{background:var(--ziel);color:#fff}.kartka.zle .werdykt{background:var(--czer);color:#fff}
+@keyframes werdykt{from{transform:translateX(-50%) scale(.3)}}
+.licznik span{min-width:0}
 .stempel{position:absolute;top:22px;font-family:Bungee,sans-serif;font-size:26px;padding:4px 12px;border:4px solid;border-radius:10px;opacity:0;transform:rotate(-14deg)}
 .stempel.p{left:18px;color:var(--ziel)}.stempel.f{right:18px;color:var(--czer);transform:rotate(14deg)}
 .przyciski{flex:none;display:flex;gap:12px}
@@ -47,7 +53,7 @@
 <div class="wrap">
   <header class="gora"><a href="gry.html" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Szybki strzał<small>prawda czy fałsz, 60 sekund</small></h1></header>
   <main class="tresc">
-    <div class="licznik"><span>Punkty<b id="pkt">0</b></span><span>Seria<b id="seria">0</b></span><span>Rekord<b id="rek">0</b></span></div>
+    <div class="licznik" style="font-size:11px"><span>Punkty<b id="pkt">0</b></span><span style="background:#D4F2CF">Dobrze<b id="dobre">0</b></span><span style="background:#FFD3CC">Źle<b id="zle">0</b></span><span>Seria<b id="seria">0</b></span><span>Rekord<b id="rek">0</b></span></div>
     <div class="czas" id="czas"><i id="czasI" style="width:100%"></i></div>
     <div class="talia" id="talia"></div>
     <div class="przyciski"><button class="f" id="bF">✗ Fałsz</button><button class="p" id="bP">Prawda ✓</button></div>
@@ -85,7 +91,7 @@ function zdanie(){
 /* ---------- talia z przeciąganiem ---------- */
 function dobierz(){
   const t=$("talia");
-  t.querySelectorAll(".kartka.gora").forEach(e=>e.remove());
+  t.querySelectorAll(".kartka.gora:not(.dobrze):not(.zle)").forEach(e=>e.remove());
   let pod=t.querySelector(".kartka.pod");
   if(!pod){pod=nowaKartka();t.appendChild(pod);}
   pod.classList.remove("pod");pod.classList.add("gora");gra.biez=pod._z;
@@ -107,24 +113,27 @@ function przeciaganie(k){
   k.addEventListener("pointerup",pusc);k.addEventListener("pointercancel",pusc);
 }
 function odpowiedz(wybor){
-  if(!gra||gra.koniec)return;
+  if(!gra||gra.koniec||gra.blok)return;
   const k=$("talia").querySelector(".kartka.gora");if(!k)return;
   const z=gra.biez,ok=wybor===z.prawda;
-  k.style.transform="translateX("+(wybor?520:-520)+"px) rotate("+(wybor?30:-30)+"deg)";k.style.opacity="0";
+  // od razu widać, czy odpowiedź była dobra; przy pomyłce krótkie wyjaśnienie
+  gra.blok=true;k.classList.add(ok?"dobrze":"zle");k.style.transform="";
   k.querySelector(".stempel."+(wybor?"p":"f")).style.opacity=1;
-  setTimeout(()=>k.remove(),260);
+  k.insertAdjacentHTML("beforeend",'<span class="werdykt">'+(ok?"Dobrze!":"Źle")+(ok?"":'<small>'+z.wyjasn+'</small>')+'</span>');
+  if(ok)gra.dobre++;else gra.zle++;
+  $("dobre").textContent=gra.dobre;$("zle").textContent=gra.zle;
+  setTimeout(()=>{k.style.transform="translateX("+(wybor?520:-520)+"px) rotate("+(wybor?30:-30)+"deg)";k.style.opacity="0";setTimeout(()=>k.remove(),260);gra.blok=false;dobierz();},ok?280:900);
   if(ok){gra.seria++;const mn=1+Math.floor(gra.seria/5);gra.pkt+=100*mn;
     if(gra.seria%5===0){const s=document.createElement("div");s.className="seria";s.textContent="×"+(mn);$("talia").appendChild(s);setTimeout(()=>s.remove(),900);}}
   else{gra.seria=0;gra.bledy.push(z);gra.koniecCzasu-=3000;if(navigator.vibrate)try{navigator.vibrate(60);}catch(e){}}
   ZP.poswiata(ok);
   $("pkt").textContent=fmt(gra.pkt);$("seria").textContent=gra.seria;
-  dobierz();
 }
 function start(){
   $("start").classList.add("hidden");document.querySelectorAll(".koniec").forEach(e=>e.remove());
   $("talia").innerHTML="";
-  gra={pkt:0,seria:0,bledy:[],koniecCzasu:Date.now()+CZAS*1000,koniec:false};
-  $("pkt").textContent=0;$("seria").textContent=0;
+  gra={pkt:0,seria:0,bledy:[],dobre:0,zle:0,blok:false,koniecCzasu:Date.now()+CZAS*1000,koniec:false};
+  $("pkt").textContent=0;$("seria").textContent=0;$("dobre").textContent=0;$("zle").textContent=0;
   dobierz();
   clearInterval(zegar);zegar=setInterval(()=>{
     const z=Math.max(0,gra.koniecCzasu-Date.now());$("czasI").style.width=(100*z/(CZAS*1000))+"%";$("czas").classList.toggle("malo",z<10000);

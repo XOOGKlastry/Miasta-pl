@@ -48,6 +48,11 @@ svg path{fill-rule:evenodd}
 #paraMapa path.a{fill:rgba(242,193,78,.55);stroke:var(--gold)}#paraMapa path.b{fill:rgba(127,216,198,.55);stroke:var(--teal)}
 #paraMapa text{font-family:"Fraunces",serif;font-weight:700;font-size:14px;text-anchor:middle;fill:#fff;paint-order:stroke;stroke:#0A181B;stroke-width:4px}
 .answers.dwa{grid-template-columns:1fr 1fr}
+.q-zdanie{font-size:clamp(20px,6vw,26px)!important;padding:0 6px}
+.tabl-q{display:inline-block;border:2px solid #111;border-radius:4px;background:#F4F4F2;color:#111;font:700 .9em Rubik,sans-serif;padding:0 8px 0 14px;box-shadow:inset 8px 0 0 #1546B8}
+.herb-q{display:block;width:70px;height:70px;object-fit:contain;margin:0 auto 6px}
+.para.q-ok{animation:qOk .4s}.para.q-zle{animation:qZle .4s}
+@keyframes qOk{30%{background:rgba(39,174,96,.25)}}@keyframes qZle{25%{transform:translateX(-6px);background:rgba(232,74,60,.2)}75%{transform:translateX(6px)}}
 #foto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 #herbImg{max-width:72%;max-height:86%;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
 .stage.jasna{background:#E9EEEC}
@@ -245,7 +250,7 @@ const DZIEN=ZP.dayKey(),START=new Date(2026,8,20);
 const NR=Math.floor((new Date(DZIEN+"T12:00:00")-START)/864e5)+1;
 const KLUCZ="dzis-"+DZIEN;
 const TYPY={z:["🛰️","Z lotu ptaka"],g:["📍","Gdzie to jest?"],k:["🗺️","Kształt powiatu"],h:["🛡️","Jaki to herb?"],m:["📷","Co to za miasto?"],r:["🌊","Nad jaką rzeką?"],w:["⚖️","Więcej czy mniej?"],
-  t:["🚗","Tablice"],c:["⚽","Jaki to klub?"],s:["🤝","Graniczą czy nie?"],v:["🧭","Województwo"]};
+  t:["🚗","Tablice"],c:["⚽","Jaki to klub?"],s:["🤝","Graniczą czy nie?"],v:["🧭","Województwo"],p:["🏛️","Powiat"],q:["⚡","Szybki strzał"]};
 // kolejność konkurencji: wyzwanie dnia (8 pytań) i turniej (wszystkie gry po kolei)
 const KOLEJ_DZIEN=["z","g","m","h","t","w","r","k"],KOLEJ_TURNIEJ=["z","g","m","k","h","t","r","c","w","s","v"];
 const SCORE=km=>Math.round(1000*Math.exp(-km/(TRYB==="saga"?320:150)));
@@ -275,13 +280,20 @@ function czteryNaj(rnd,c,pool,klucz){
   for(const x of near){if(s.has(klucz(x)))continue;s.add(klucz(x));o.push(klucz(x));if(o.length===7)break;}
   return losuj(rnd,losuj(rnd,o).slice(0,3).concat([klucz(c)]));
 }
+function wPoly(lon,lat,g){
+  const polys=g.type==="Polygon"?[g.coordinates]:g.coordinates;
+  return polys.some(p=>{let w=false;const r=p[0];for(let i=0,j=r.length-1;i<r.length;j=i++){const [xi,yi]=r[i],[xj,yj]=r[j];if(((yi>lat)!==(yj>lat))&&(lon<(xj-xi)*(lat-yi)/(yj-yi)+xi))w=!w;}return w;});
+}
+function powiatMiasta(c){return D.powAll.find(p=>!p.city&&lonLatWBb(c,p.bb)&&wPoly(c.lon,c.lat,p.f.geometry));}
+function lonLatWBb(c,b){return c.lon>=b[0]&&c.lon<=b[2]&&c.lat>=b[1]&&c.lat<=b[3];}
 function budujPytania(rnd,ile,filtr,kolej){
   filtr=filtr||(()=>true);kolej=kolej||KOLEJ_TURNIEJ;
   const wObsz=x=>!ZP.OBSZAR.length||ZP.wObszarze(x);
   const miasta=D.miasta.filter(filtr),herby=D.herby.filter(filtr),miejsca=D.miejsca.filter(filtr),rzeki=D.rzeki.filter(filtr),pow=D.pow.filter(wObsz);
   const kluby=D.kluby.filter(k=>wObsz(k)),tab=D.tab.filter(p=>!ZP.OBSZAR.length||ZP.OBSZAR.indexOf(p.woj)>=0),powAll=D.powAll.filter(wObsz);
   const lista={z:losuj(rnd,miasta),g:losuj(rnd,miasta),k:losuj(rnd,pow),h:losuj(rnd,herby),m:losuj(rnd,miejsca),r:losuj(rnd,rzeki),w:losuj(rnd,miasta.filter(c=>c.pop>0)),
-    t:losuj(rnd,tab),c:losuj(rnd,[...new Map(kluby.map(k=>[k.miasto,k])).values()]),s:losuj(rnd,powAll.filter(p=>p.nb&&p.nb.length)),v:losuj(rnd,miasta)};
+    t:losuj(rnd,tab),c:losuj(rnd,[...new Map(kluby.map(k=>[k.miasto,k])).values()]),s:losuj(rnd,powAll.filter(p=>p.nb&&p.nb.length)),v:losuj(rnd,miasta),
+    p:losuj(rnd,D.miasta.filter(x=>wObsz(x)&&!D.powAll.some(q=>q.city&&ZP.norm(q.short||q.n)===ZP.norm(x.n)))),q:[{}, {}, {}, {}]};
   const qs=[],skrot=k=>k.klub;
   for(let i=0;qs.length<ile&&i<ile*4;i++){
     const t=kolej[i%kolej.length],src=lista[t];if(!src||!src.length)continue;
@@ -301,9 +313,17 @@ function budujPytania(rnd,ile,filtr,kolej){
       qs.push({t,c:{n:c.miasto,lat:c.lat,lon:c.lon},kluby:wMiescie,opcje:losuj(rnd,inne.concat([skrot(c)]))});
     }
     if(t==="s"){
-      const sas=rnd()<0.5,kand=sas?D.powAll.filter(x=>c.nb.indexOf(x.k)>=0):D.powAll.filter(x=>x!==c&&c.nb.indexOf(x.k)<0&&ZP.km(c,x)<90);
+      // para graniczących albo nie; niegraniczące raz z bliska, raz z dowolnego miejsca obszaru
+      const sas=rnd()<0.5,inne=powAll.filter(x=>x.k!==c.k&&x.label!==c.label);
+      const kand=sas?inne.filter(x=>c.nb.indexOf(x.k)>=0):(rnd()<.5?inne.filter(x=>c.nb.indexOf(x.k)<0&&ZP.km(c,x)<90):inne.filter(x=>c.nb.indexOf(x.k)<0));
       if(kand.length)qs.push({t,a:c,b:kand[Math.floor(rnd()*kand.length)],sas});
     }
+    if(t==="p"){
+      const pw=powiatMiasta(c);
+      if(pw){const sas=D.powAll.filter(x=>!x.city&&pw.nb.indexOf(x.k)>=0&&x.label!==pw.label);
+        if(sas.length>=3)qs.push({t,c,pw,opcje:losuj(rnd,losuj(rnd,sas).slice(0,3).map(x=>x.label).concat([pw.label]))});}
+    }
+    if(t==="q")qs.push({t,c:{n:"Szybki strzał"}});
     if(t==="v"){const w=ZP.wojOf(c.lon,c.lat);if(w)qs.push({t,c,woj:w,opcje:losuj(rnd,losuj(rnd,Object.values(ZP.WOJ_KOD).filter(x=>x!==w)).slice(0,3).concat([w]))});}
   }
   return qs;
@@ -402,8 +422,8 @@ function nastepne(){
   $("suma").textContent=fmt(st.res.reduce((a,r)=>a+r.pts,0));
   segmenty();
   const st2=$("stage");st2.style.animation="none";void st2.offsetWidth;st2.style.animation="";
-  ({z:rundaZ,g:rundaG,k:rundaK,h:rundaH,m:rundaM,r:rundaR,w:rundaW,t:rundaT,c:rundaC,s:rundaS,v:rundaV})[q.t](q);
-  const czas=TRYB==="dzien"?0:KONFIG.czas;
+  ({z:rundaZ,g:rundaG,k:rundaK,h:rundaH,m:rundaM,r:rundaR,w:rundaW,t:rundaT,c:rundaC,s:rundaS,v:rundaV,p:rundaP,q:rundaQ})[q.t](q);
+  const czas=TRYB==="dzien"||q.t==="q"?0:KONFIG.czas;
   if(czas>0)zegar(czas);
 }
 function wpisz(nazwy,poprawne,opcje){
@@ -493,6 +513,53 @@ function rundaS(q){
     [...a.children].forEach(y=>{y.disabled=true;y.classList.add(y===x?(ok?"right":"wrong"):(ok?"fade":"right"));});
     wynikRundy(ok?1000:0,ok,ok?"Dobrze":"Niestety");};a.appendChild(x);});
 }
+function rundaP(q){
+  $("pytanie").textContent="W którym powiecie leży";
+  $("miastoDuze").textContent=q.c.n;$("miastoDuze").classList.remove("hidden");
+  const a=$("answers");a.innerHTML="";a.classList.remove("hidden");
+  q.opcje.forEach(o=>{const x=document.createElement("button");x.textContent=o;x.onclick=()=>{
+    if(st.odp)return;const ok=o===q.pw.label;
+    [...a.children].forEach(y=>{y.disabled=true;y.classList.add(y.textContent===q.pw.label?"right":y===x?"wrong":"fade");});
+    wynikRundy(ok?1000:0,ok,ok?"Dobrze":"Niestety");};a.appendChild(x);});
+}
+/* szybki strzał w środku zestawu: 20 sekund zdań prawda albo fałsz z obszaru gry */
+function zdanieQ(){
+  const ob=x=>!ZP.OBSZAR.length||ZP.wObszarze(x),pk=l=>l[Math.floor(Math.random()*l.length)];
+  const miasta=D.miasta.filter(ob),rzeki=D.rzeki.filter(ob),tab=D.tab.filter(p=>!ZP.OBSZAR.length||ZP.OBSZAR.indexOf(p.woj)>=0),pow=D.powAll.filter(ob),herby=D.herby.filter(ob);
+  for(let i=0;i<20;i++){
+    const prawda=Math.random()<.5,t=pk(["tab","rzeka","wiecej","sasiad","powiat","herb"]);
+    try{
+      if(t==="tab"&&tab.length>3){const a=pk(tab),b=prawda?a:pk(tab.filter(x=>x!==a));return {txt:'<span class="tabl-q">'+a.kod+'</span> to '+b.nazwa,prawda:a===b||a.nazwa===b.nazwa};}
+      if(t==="rzeka"&&rzeki.length>3){const c=pk(rzeki),r=prawda?c.rzeka:pk(D.rzeki.filter(x=>x.rzeka!==c.rzeka&&ZP.km(x,c)<150)).rzeka;return {txt:c.n+" leży nad rzeką "+r,prawda:r===c.rzeka};}
+      if(t==="wiecej"&&miasta.length>3){const a=pk(miasta),b=pk(miasta.filter(x=>x!==a&&Math.abs(x.pop-a.pop)/Math.min(x.pop,a.pop)>.15));return {txt:a.n+" ma więcej mieszkańców niż "+b.n,prawda:a.pop>b.pop};}
+      if(t==="sasiad"&&pow.length>3){const a=pk(pow.filter(p=>p.nb.length)),sas=pow.filter(x=>a.nb.indexOf(x.k)>=0),inne=pow.filter(x=>x.k!==a.k&&a.nb.indexOf(x.k)<0);
+        const b=prawda&&sas.length?pk(sas):pk(inne.length?inne:sas);return {txt:a.label+" graniczy z: "+b.label,prawda:a.nb.indexOf(b.k)>=0};}
+      if(t==="powiat"&&miasta.length>2){const c=pk(miasta),pw=powiatMiasta(c);if(!pw)continue;const b=prawda?pw:pk(pow.filter(x=>!x.city&&x.k!==pw.k));if(!b)continue;return {txt:c.n+" leży w powiecie "+b.label,prawda:b.k===pw.k};}
+      if(t==="herb"&&herby.length>3){const h=pk(herby),n=prawda?h.n:pk(herby.filter(x=>x!==h)).n;return {txt:'<img class="herb-q" alt="" src="'+h.img+'">To herb: '+n,prawda:n===h.n};}
+    }catch(e){}
+  }
+  const a=pk(D.miasta),w=ZP.wojOf(a.lon,a.lat);return {txt:a.n+" leży w województwie "+w,prawda:true};
+}
+function rundaQ(q){
+  $("pytanie").textContent="Szybki strzał: prawda czy fałsz?";
+  const box=$("para");box.classList.remove("hidden");
+  const a=$("answers");a.innerHTML="";a.classList.add("dwa");a.classList.remove("hidden");
+  let dobre=0,zle=0,biez=null,koniec=false;
+  const licz=()=>'<em>✓ '+dobre+' · ✗ '+zle+'</em>';
+  const nowe=()=>{biez=zdanieQ();box.innerHTML=licz()+'<b class="q-zdanie">'+biez.txt+'</b>';};
+  const odp=v=>{
+    if(koniec||!biez)return;const ok=v===biez.prawda;if(ok)dobre++;else zle++;
+    ZP.poswiata(ok);
+    box.classList.remove("q-ok","q-zle");void box.offsetWidth;box.classList.add(ok?"q-ok":"q-zle");
+    nowe();
+  };
+  [["✗ Fałsz",false],["Prawda ✓",true]].forEach(([t,v])=>{const x=document.createElement("button");x.textContent=t;x.onclick=()=>odp(v);a.appendChild(x);});
+  nowe();
+  $("tbar").classList.remove("hidden");$("tfill").style.width="100%";
+  const nr=st.i;
+  ZP.pasek($("tbar"),$("tfill"),20,()=>{if(st.i!==nr||st.odp)return;koniec=true;[...a.children].forEach(y=>y.disabled=true);
+    const pts=Math.max(0,Math.min(1000,dobre*125-zle*60));wynikRundy(pts,pts>=500,"Szybki strzał: "+dobre+" dobrze, "+zle+" źle");},()=>st.i!==nr||st.odp);
+}
 function rundaV(q){
   $("pytanie").textContent="W którym województwie leży";
   $("miastoDuze").textContent=q.c.n;$("miastoDuze").classList.remove("hidden");
@@ -575,7 +642,7 @@ function wynikRundy(pts,ok,naglowek){
       +'<text x="'+P.x(q.a.lon).toFixed(0)+'" y="'+P.y(q.a.lat).toFixed(0)+'">'+q.a.n+'</text><text x="'+P.x(q.b.lon).toFixed(0)+'" y="'+P.y(q.b.lat).toFixed(0)+'">'+q.b.n+'</text></svg>';
     $("para").classList.add("hidden");$("stage").insertAdjacentHTML("beforeend",svg);
   }
-  ZP.zapisz({z:"miasto",g:"miasto",k:"powiat",h:"herb",m:"miejsce",r:"rzeka",w:"ludnosc",t:"tablica",c:"klub",s:"powiat",v:"miasto"}[q.t],q.t==="k"?q.p.k:q.t==="t"?q.p.kod:q.t==="s"?q.a.k:(q.c?q.c.n:q.a.n),ok);
+  if(q.t!=="q")ZP.zapisz({z:"miasto",g:"miasto",k:"powiat",h:"herb",m:"miejsce",r:"rzeka",w:"ludnosc",t:"tablica",c:"klub",s:"powiat",v:"miasto",p:"miasto"}[q.t],q.t==="k"?q.p.k:q.t==="t"?q.p.kod:q.t==="s"?q.a.k:(q.c?q.c.n:q.a.n),ok);
   st.res.push({t:q.t,pts});
   if(TRYB==="dzien")localStorage.setItem(KLUCZ,JSON.stringify({res:st.res,done:false}));
   segmenty();
@@ -584,12 +651,13 @@ function wynikRundy(pts,ok,naglowek){
   (function f(t){const p=Math.min(1,(t-t0)/600);$("suma").textContent=fmt(s0+pts*p);if(p<1)requestAnimationFrame(f);})(t0);
   const odp=q.t==="g"||q.t==="z"?q.c.n+(q.c.pop?", "+fmt(q.c.pop)+" mieszk.":""):q.t==="k"?q.p.full:q.t==="r"?q.c.n+", rzeka "+q.c.rzeka
     :q.t==="w"?q.a.n+" "+fmt(q.a.pop)+" · "+q.b.n+" "+fmt(q.b.pop):q.t==="t"?q.p.kod+" to "+q.p.nazwa+(q.p.siedziba?" ("+q.p.siedziba+")":"")
-    :q.t==="c"?"W "+q.c.n+": "+q.kluby.map(k=>k.pelna).join(", "):q.t==="s"?(q.sas?"Graniczą":"Nie graniczą"):q.t==="v"?q.c.n+" leży w woj. "+q.woj:q.c.n;
+    :q.t==="c"?"W "+q.c.n+": "+q.kluby.map(k=>k.pelna).join(", "):q.t==="s"?(q.sas?"Graniczą":"Nie graniczą"):q.t==="v"?q.c.n+" leży w woj. "+q.woj
+    :q.t==="p"?q.c.n+" leży w: "+q.pw.full:q.t==="q"?"Koniec serii":q.c.n;
   const fb=$("feedback");
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=naglowek+" · +"+pts;
   fb.querySelector("span").textContent=odp;
-  const cel=q.t==="k"?{p:q.p.k,nazwa:q.p.full}:q.t==="s"?{p:q.a.k,nazwa:q.a.label||q.a.n}:q.t==="t"?null:q.t==="w"?{miasto:(q.a.pop>q.b.pop?q.a:q.b).n,lat:(q.a.pop>q.b.pop?q.a:q.b).lat,lon:(q.a.pop>q.b.pop?q.a:q.b).lon,nazwa:(q.a.pop>q.b.pop?q.a:q.b).n}:{miasto:q.c.n,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.n};
+  const cel=q.t==="k"?{p:q.p.k,nazwa:q.p.full}:q.t==="s"?{p:q.a.k,nazwa:q.a.label||q.a.n}:q.t==="t"||q.t==="q"?null:q.t==="p"?{p:q.pw.k,nazwa:q.pw.full}:q.t==="w"?{miasto:(q.a.pop>q.b.pop?q.a:q.b).n,lat:(q.a.pop>q.b.pop?q.a:q.b).lat,lon:(q.a.pop>q.b.pop?q.a:q.b).lon,nazwa:(q.a.pop>q.b.pop?q.a:q.b).n}:{miasto:q.c.n,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.n};
   ZP.dopiszEncykl(fb,cel);
   $("nextBtn").textContent=st.i+1>=Q.length?"Wynik":"Dalej";$("nextBtn").onclick=nastepne;
   fb.classList.remove("hidden");
@@ -601,7 +669,7 @@ function wynikRundy(pts,ok,naglowek){
 }
 
 /* ---------- konfigurator rozgrywki: jakie gry, ile pytań, w jakiej kolejności ---------- */
-const WSZYSTKIE=["z","g","m","k","h","t","r","c","w","s","v"];
+const WSZYSTKIE=["z","g","m","h","t","r","c","w","s","v","p","q","k"];
 const PRESETY={
   "Turniej":{gry:WSZYSTKIE.map(t=>({t,ile:2})),kolej:"przeplatane"},
   "Szybka":{gry:WSZYSTKIE.map(t=>({t,ile:1})),kolej:"przeplatane"},
@@ -934,7 +1002,7 @@ function pokazWynik(res){
   const rows=w.querySelector(".rows");
   res.forEach((r,i)=>{const q=Q[i];if(!q)return;const d=document.createElement("div");d.className="r";
     d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
-    d.querySelector("b").textContent=q.t==="k"?q.p.full:q.t==="r"?q.c.n+": "+q.c.rzeka:q.t==="w"||q.t==="s"?(q.a.label||q.a.n)+" i "+(q.b.label||q.b.n):q.t==="t"?q.p.kod+": "+q.p.nazwa:q.t==="c"?q.c.n+": "+q.kluby.map(k=>k.klub).join(", "):q.t==="v"?q.c.n+": "+q.woj:q.c.n;
+    d.querySelector("b").textContent=q.t==="k"?q.p.full:q.t==="r"?q.c.n+": "+q.c.rzeka:q.t==="w"||q.t==="s"?(q.a.label||q.a.n)+" i "+(q.b.label||q.b.n):q.t==="t"?q.p.kod+": "+q.p.nazwa:q.t==="c"?q.c.n+": "+q.kluby.map(k=>k.klub).join(", "):q.t==="v"?q.c.n+": "+q.woj:q.t==="p"?q.c.n+": "+q.pw.label:q.c.n;
     d.querySelector("small").textContent=TYPY[r.t][1];
     const pt=d.querySelector(".pt");pt.textContent=r.pts;pt.className="pt "+(r.pts>=700?"ok":r.pts<300?"no":"");rows.appendChild(d);});
   w.classList.remove("hidden");

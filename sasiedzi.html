@@ -124,10 +124,12 @@ $("area").onchange=$("rounds").onchange=refreshBest;
 $("tryb").onchange=()=>{$("areaField").style.display=$("tryb").value==="w"?"none":"";refreshBest();};
 
 function makePair(a,tak){
-  if(tak){const b=BYK[pick(a.nb)];return b?{a,b,ok:true}:null;}
-  // fałszywa para: blisko, ale bez wspólnej granicy (zwykle sąsiad sąsiada)
-  const near=SET.filter(o=>o!==a&&a.nb.indexOf(o.k)<0).sort((x,y)=>ZP.km(a,x)-ZP.km(a,y)).slice(0,$("tryb").value==="w"?5:10);
-  return near.length?{a,b:pick(near),ok:false}:null;
+  if(tak){const b=BYK[pick(a.nb)];return b&&b.k!==a.k&&b.label!==a.label?{a,b,ok:true}:null;}
+  const inne=SET.filter(o=>o.k!==a.k&&o.label!==a.label&&a.nb.indexOf(o.k)<0&&($("tryb").value==="w"||ZP.wObszarze(o)));
+  // fałszywa para: raz sąsiad sąsiada (trudna), raz z dowolnego miejsca obszaru, np. Warszawa i pabianicki
+  const near=inne.slice().sort((x,y)=>ZP.km(a,x)-ZP.km(a,y)).slice(0,$("tryb").value==="w"?5:10);
+  const zr=Math.random()<.5?near:inne;
+  return zr.length?{a,b:pick(zr),ok:false}:null;
 }
 function startGame(){
   const woj=$("tryb").value==="w",area=$("area").value;
