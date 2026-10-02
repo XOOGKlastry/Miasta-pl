@@ -230,10 +230,10 @@ def main():
             zm = znajdz(frazy, musi, nie)
             if not zm:
                 continue
-            dane, rok = dane_bdl(zm, 6)
+            wart, rok = dane_bdl(zm, 6)
             n = 0
             for x in gm_:
-                v = dane.get(x["k"][:7])
+                v = wart.get(x["k"][:7])
                 if v is not None:
                     x[pole] = round(float(v[0]), 2)
                     n += 1
