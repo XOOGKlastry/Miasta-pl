@@ -217,7 +217,8 @@ Promise.all([Karty.zaladuj(),fetch("gminy.topojson?v=17").then(r=>r.json()),fetc
   topojson.feature(t,obj).features.forEach(f=>{if(!f.geometry)return;const ps=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;let b=[1e9,1e9,-1e9,-1e9];
     ps.forEach(p=>p[0].forEach(([x,y])=>{b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);}));f._bb=b;GEO[String(f.properties.k)]=f;
     // powierzchnia z granic PRG, gdy brak jej w danych
-    const g=D.PO_K[String(f.properties.k)];if(g&&!g.powierzchnia){let a=0;ps.forEach(p=>p.forEach((r,ri)=>{let s=0;for(let i=0,j=r.length-1;i<r.length;j=i++)s+=(r[j][0]-r[i][0])*(r[j][1]+r[i][1]);a+=(ri?-1:1)*Math.abs(s)/2;}));
+    // powierzchnia zawsze z urzędowych granic PRG (w Wikidata zdarzają się błędy, np. Kutno 3359 km²)
+    const g=D.PO_K[String(f.properties.k)];if(g){let a=0;ps.forEach(p=>p.forEach((r,ri)=>{let s=0;for(let i=0,j=r.length-1;i<r.length;j=i++)s+=(r[j][0]-r[i][0])*(r[j][1]+r[i][1]);a+=(ri?-1:1)*Math.abs(s)/2;}));
       g.powierzchnia=Math.round(a*111.32*111.32*Math.cos((b[1]+b[3])/2*Math.PI/180)*10)/10;}});
   Karty.przelicz();
   rysuj();

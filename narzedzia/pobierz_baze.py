@@ -264,13 +264,32 @@ def main():
         ("kanalizacja_proc", 79130, None),
         ("wodociag_proc", 79133, None),
         ("bezrobocie_proc", 79214, None),
-        ("lesistosc_proc", None, lambda: z_tematu_nazwy(["lesistość"], ["%"], ["publiczn", "prywatn"])),
-        ("dochod_na_mieszk", None, lambda: z_tematu_nazwy(["dochody budżetów gmin na 1 mieszkańca", "dochody budżetu gminy na 1 mieszkańca", "dochody na 1 mieszkańca"],
-                                                          ["ogółem"], ["własne", "podatk", "dotacj", "subwencj", "majątk", "bieżąc"])),
+        ("dochod_na_mieszk", 76973, None),
+        ("lesistosc_proc", None, lambda: z_tematu_nazwy(["lesistość", "grunty leśne", "powierzchnia gruntów leśnych", "lasy"], ["lesisto"], ["publiczn", "prywatn"])
+                                       or znajdz(["lesistość"], ["lesisto"], ["publiczn", "prywatn"])),
     ]
+    # statystyki zmieniają się raz w roku: jeśli poprzednia baza już je ma, nie odpytujemy GUS ponownie
+    # (limit anonimowy to 100 zapytań na 15 minut); pełne odświeżenie co pół roku
+    stara = {}
+    try:
+        sb = json.load(open("baza.json", encoding="utf-8"))
+        swiezosc = time.time() - time.mktime(time.strptime(sb.get("zbudowano", "2000-01-01")[:10], "%Y-%m-%d"))
+        if swiezosc < 180 * 86400:
+            stara = {x["k"]: x for x in sb.get("gminy", [])}
+    except Exception as e:
+        print("brak poprzedniej bazy", e)
     for pole, stale, szukaj in STATY:
+        z_pamieci = [x for x in gm_ if pole in stara.get(x["k"], {})]
+        if len(z_pamieci) > 2000:
+            for x in gm_:
+                if pole in stara.get(x["k"], {}):
+                    x[pole] = stara[x["k"]][pole]
+            print("  ", pole, "z poprzedniej bazy:", len(z_pamieci))
+            continue
         try:
             zm = stale or szukaj()
+            if not zm:
+                print("  nie znaleziono zmiennej dla", pole)
             if not zm:
                 continue
             wart, rok = dane_bdl(zm, 6)
