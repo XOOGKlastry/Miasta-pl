@@ -31,9 +31,18 @@ window.Karty=(function(){
     DANE={g,PO_K,PO_N};przelicz();return DANE;
   }
   // wskaźniki 1-99; bezrobocie odwrotnie (mniej bezrobotnych, wyższa ocena)
+  // wskaźniki karty: miejsce w rankingu gmin (1-99) albo wprost procent (100% = 100 punktów)
+  const STATY=[
+    {k:"ludnosc",n:"Ludność",t:"r"},{k:"powierzchnia",n:"Powierzchnia",t:"r"},{k:"gestosc",n:"Gęstość",t:"r"},
+    {k:"saldo_migracji",n:"Migracja",t:"r"},{k:"dochod_na_mieszk",n:"Dochód",t:"r"},{k:"bezrobocie_proc",n:"Bezrobocie",t:"o"},
+    {k:"wodociag_proc",n:"Wodociągi",t:"p"},{k:"kanalizacja_proc",n:"Kanalizacja",t:"p"},{k:"lesistosc_proc",n:"Lesistość",t:"p"}];
   function przelicz(){
-    const g=DANE.g;g.forEach(x=>x.oc={});
-    ocena(g,"ludnosc");ocena(g,"powierzchnia");ocena(g,"saldo_migracji");ocena(g,"wodociag_proc");ocena(g,"kanalizacja_proc");ocena(g,"bezrobocie_proc",true);
+    const g=DANE.g;
+    g.forEach(x=>{x.oc={};if(x.ludnosc&&x.powierzchnia)x.gestosc=Math.round(x.ludnosc/x.powierzchnia*10)/10;});
+    STATY.forEach(s=>{
+      if(s.t==="p")g.forEach(x=>{if(x[s.k]!=null)x.oc[s.k]=Math.max(0,Math.min(100,Math.round(x[s.k])));});
+      else ocena(g,s.k,s.t==="o");
+    });
     g.forEach(x=>{const w=Object.values(x.oc);x.ovr=w.length?Math.round(w.reduce((a,c)=>a+c,0)/w.length):0;});
   }
   function gminaPoNazwie(n){
@@ -118,5 +127,5 @@ window.Karty=(function(){
     w.querySelector("button").onclick=zamknij;
   }
   async function sprawdzPoGrze(){try{const n=await nowe();if(n.length)setTimeout(()=>doInwentarza(n),1200);}catch(e){}}
-  return {przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,sprawdzPoGrze,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA};
+  return {STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,sprawdzPoGrze,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA};
 })();

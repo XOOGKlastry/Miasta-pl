@@ -282,7 +282,7 @@ function obserwujKoniec(){
 function kartyPoGrze(){
   const uruchom=()=>window.Karty&&Karty.sprawdzPoGrze();
   if(window.Karty)return uruchom();
-  const sc=document.createElement("script");sc.src="karty.js?v=1";sc.onload=uruchom;document.head.appendChild(sc);
+  const sc=document.createElement("script");sc.src="karty.js?v=2";sc.onload=uruchom;document.head.appendChild(sc);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujKoniec);else obserwujKoniec();
 

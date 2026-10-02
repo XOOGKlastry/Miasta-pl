@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="plansza.css?v=3" />
+<link rel="stylesheet" href="plansza.css?v=4" />
 <style>
 .mapa{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;position:relative;scrollbar-width:none;-webkit-overflow-scrolling:touch}
 .mapa::-webkit-scrollbar{display:none}
@@ -241,7 +241,7 @@ fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
 window.addEventListener("resize",()=>{clearTimeout(window._r);window._r=setTimeout(start,200);});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
-<script src="karty.js?v=1"></script>
+<script src="karty.js?v=2"></script>
 <script>setTimeout(()=>{Karty.liczbaNowych().then(n=>{const e=document.getElementById("kolNowe");if(e&&n>0){e.textContent=n>99?"99+":n;e.classList.remove("hidden");}}).catch(()=>{});},1500);</script>
 </body>
 </html>

@@ -152,6 +152,14 @@ $("szukaj").oninput=rysujListe;
 $("zakladki").onclick=e=>{const b=e.target.closest("button");if(!b)return;zakladka=b.dataset.t;document.querySelectorAll("#zakladki button").forEach(x=>x.classList.toggle("akt",x===b));rysujListe();$("lista").scrollTop=0;};
 
 /* ---------- karta jednostki ---------- */
+// wskaźniki z Banku Danych Lokalnych GUS (gminy)
+function wskazniki(x){
+  const l=(v,d)=>Number(v).toLocaleString("pl-PL",{maximumFractionDigits:d});
+  const W=[["Saldo migracji na 1000 osób",x.saldo_migracji,v=>(v>0?"+":"")+l(v,1)+"‰"],["Wodociągi (% mieszkańców)",x.wodociag_proc,v=>l(v,1)+"%"],
+    ["Kanalizacja (% mieszkańców)",x.kanalizacja_proc,v=>l(v,1)+"%"],["Bezrobocie (% w wieku produkcyjnym)",x.bezrobocie_proc,v=>l(v,1)+"%"],
+    ["Lesistość",x.lesistosc_proc,v=>l(v,1)+"%"],["Dochód gminy na mieszkańca",x.dochod_na_mieszk,v=>l(v,0)+" zł"]];
+  return W.filter(w=>w[1]!=null).map(w=>'<div>'+w[0]+' (GUS)<b>'+w[2](w[1])+'</b></div>').join("");
+}
 function pole(f){ // powierzchnia z geometrii, km²
   const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;let a=0;
   polys.forEach(pl=>pl.forEach((r,ri)=>{let s=0;for(let i=0,j=r.length-1;i<r.length;j=i++){const [x0,y0]=r[j],[x1,y1]=r[i];s+=(x0*y1-x1*y0)*Math.cos((y0+y1)/2*Math.PI/180);}a+=(ri?-1:1)*Math.abs(s)/2;}));
@@ -174,7 +182,8 @@ async function otworz(id,bezHistorii){
     +'<div class="okruchy"></div>'
     +'<div class="tytul">'+(herb?'<img alt="" src="'+herb+'">':'')+'<div><h2></h2><small>'+(x.typ||(x.rodzaj==="w"?"województwo":""))+'</small></div></div>'
     +'<div class="kafle"><div>Ludność'+(x.ludnosc_rok?" (GUS "+x.ludnosc_rok+")":"")+'<b>'+(x.ludnosc?fmt(x.ludnosc):"–")+'</b></div><div>Powierzchnia (PRG)<b id="kPow">'+(pow?fmt(pow)+" km²":"…")+'</b></div>'
-    +'<div>Gęstość<b id="kGest">'+(pow&&x.ludnosc?fmt(x.ludnosc/pow)+" os./km²":"–")+'</b></div><div>Kod TERYT<b>'+kod+'</b></div></div>'
+    +'<div>Gęstość<b id="kGest">'+(pow&&x.ludnosc?fmt(x.ludnosc/pow)+" os./km²":"–")+'</b></div><div>Kod TERYT<b>'+kod+'</b></div>'
+    +wskazniki(x)+'</div>'
     +'<div class="mapki"><svg class="ks" id="mKs" preserveAspectRatio="xMidYMid meet"></svg><svg class="pl" id="mPl" preserveAspectRatio="xMidYMid meet"></svg></div>'
     +'<div id="wGrach"></div><div class="sekcja" id="dzieci"></div>'
     +'<div class="akcje">'+(x.wiki?'<a class="big" target="_blank" rel="noopener" href="'+x.wiki+'">Wikipedia</a>':'<a class="ghost" target="_blank" rel="noopener" href="https://pl.wikipedia.org/w/index.php?search='+encodeURIComponent(x.pelna)+'">Szukaj w Wikipedii</a>')+'</div>';

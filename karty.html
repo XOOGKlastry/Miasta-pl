@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&family=Barlow+Condensed:wght@600;700;800&family=Spectral:ital,wght@1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="plansza.css?v=3" />
+<link rel="stylesheet" href="plansza.css?v=4" />
 <style>
 .tresc{flex:1;min-height:0;overflow:auto;padding:10px 12px 20px;display:flex;flex-direction:column;gap:12px}
 .rzadkosci{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
@@ -19,29 +19,36 @@
 .rzadkosci button.akt{box-shadow:0 0 0 3px var(--zolt)}
 .naglowek{font-family:Bungee,sans-serif;font-size:16px;color:var(--krem);text-shadow:0 2px 0 var(--braz);margin:2px 2px -4px}
 .siatka{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-/* karta w stylu FUT: tarcza, ocena ogólna, mapa w okienku, sześć wskaźników */
-.siatka{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
-.k{--x:50%;--y:50%;position:relative;aspect-ratio:5/7;container-type:inline-size;clip-path:polygon(50% 0,100% 5%,100% 87%,50% 100%,0 87%,0 5%);
+/* karta w stylu FUT: tarcza, ocena ogólna, mapa w okienku, dziewięć wskaźników z pełnymi nazwami */
+html,body{overflow-x:hidden}
+.tresc{overflow-x:hidden}
+.rzadkosci{grid-template-columns:repeat(5,minmax(0,1fr))!important}
+.rzadkosci button{font-size:9px!important;padding:5px 1px!important;min-width:0;overflow:hidden}
+.siatka{grid-template-columns:minmax(0,1fr)!important;gap:16px!important;justify-items:center}
+@media (min-width:720px){.siatka{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+.k{--x:50%;--y:50%;position:relative;width:min(100%,380px);aspect-ratio:5/8;container-type:inline-size;clip-path:polygon(50% 0,100% 4%,100% 90%,50% 100%,0 90%,0 4%);
   background:var(--tlo);color:#14233A;cursor:pointer;transition:transform .15s;filter:drop-shadow(0 4px 0 #3A2A14)}
-.k .ramka{position:absolute;inset:3.5cqw;clip-path:polygon(50% 0,100% 5%,100% 87%,50% 100%,0 87%,0 5%);border:.8cqw solid var(--ramka);pointer-events:none}
+.k .ramka{position:absolute;inset:3cqw;clip-path:polygon(50% 0,100% 4%,100% 90%,50% 100%,0 90%,0 4%);border:.7cqw solid var(--ramka);pointer-events:none}
 .k .lewa{position:absolute;left:7cqw;top:9cqw;width:22cqw;display:flex;flex-direction:column;align-items:center;gap:.6cqw}
 .k .ovr{font-family:"Barlow Condensed",Bungee,sans-serif;font-weight:800;font-size:19cqw;line-height:.85}
-.k .typ{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:6.5cqw;letter-spacing:.3cqw}
-.k .herb{width:12cqw;height:14cqw;object-fit:contain}
+.k .typ{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:6cqw;letter-spacing:.3cqw}
+.k .herb{width:13cqw;height:15cqw;object-fit:contain}
 .k .kres{width:10cqw;height:.7cqw;background:var(--ramka)}
 .k .wojs{font-size:4cqw;font-weight:900;letter-spacing:.3cqw}
-.k .mapka{position:absolute;right:7cqw;top:9cqw;width:58cqw;height:52cqw;border-radius:4cqw;overflow:hidden;border:.8cqw solid #14233A;background:#E9E3CF}
+.k .mapka{position:absolute;right:6cqw;top:8cqw;width:60cqw;height:52cqw;border-radius:4cqw;overflow:hidden;border:.8cqw solid #14233A;background:#E9E3CF}
 .k .mapka svg{width:100%;height:100%;display:block}
-.k .nazwa{position:absolute;left:4cqw;right:4cqw;top:64cqw;text-align:center;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:9.5cqw;line-height:1;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.k .jedn{position:absolute;left:6cqw;right:6cqw;top:75cqw;text-align:center;font-size:3.6cqw;font-weight:700;line-height:1.2;opacity:.85}
-.k .linia{position:absolute;left:16cqw;right:16cqw;top:85cqw;height:.6cqw;background:var(--ramka);opacity:.7}
-.k .st{position:absolute;left:11cqw;right:11cqw;top:88cqw;display:grid;grid-template-columns:1fr 1fr;column-gap:7cqw;row-gap:.8cqw}
-.k .st span{display:flex;align-items:center;gap:1.4cqw;font-family:"Barlow Condensed",sans-serif;font-weight:600;font-size:5.4cqw;letter-spacing:.2cqw}
-.k .st b{font-weight:800;font-size:8cqw;min-width:9cqw;text-align:right}
-.k .st svg{width:5cqw;height:5cqw;flex:none}
-.k .st i{font-style:normal;font-family:Rubik,sans-serif;font-weight:700;font-size:3cqw;opacity:.8;margin-left:auto;letter-spacing:0;white-space:nowrap}
-.duza .k .st{left:7cqw;right:7cqw;column-gap:4cqw}
-.k .rz{position:absolute;left:0;right:0;top:121cqw;text-align:center;font-size:3.6cqw;font-weight:900;letter-spacing:.6cqw;color:var(--ramka)}
+.k .nazwa{position:absolute;left:4cqw;right:4cqw;top:63cqw;text-align:center;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:10cqw;line-height:1;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k .jedn{position:absolute;left:6cqw;right:6cqw;top:74.5cqw;text-align:center;font-size:3.8cqw;font-weight:700;line-height:1.25;opacity:.85}
+.k .linia{position:absolute;left:14cqw;right:14cqw;top:85cqw;height:.6cqw;background:var(--ramka);opacity:.7}
+.k .st{position:absolute;left:6cqw;right:6cqw;top:88cqw;display:grid;grid-template-columns:1fr 1fr;column-gap:4cqw;row-gap:1.8cqw}
+.k .st span{display:grid;grid-template-columns:4.6cqw minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:1.6cqw;align-items:center}
+.k .st svg{grid-row:1/3;width:4.6cqw;height:4.6cqw}
+.k .st em{font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:3.6cqw;letter-spacing:0;text-transform:uppercase;white-space:nowrap;line-height:1.05}
+.k .st b{grid-row:1/3;grid-column:3;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:6.8cqw;line-height:1;text-align:right;min-width:7cqw}
+.k .st i{font-style:normal;font-family:Rubik,sans-serif;font-weight:700;font-size:2.8cqw;opacity:.75;white-space:nowrap}
+.k .rz{position:absolute;left:0;right:0;top:143cqw;text-align:center;font-size:3.6cqw;font-weight:900;letter-spacing:.6cqw;color:var(--ramka)}
+.mapka .ob{stroke:#B8AC8A;stroke-width:.5}
+.mapka text{font-family:Spectral,serif;font-style:italic;font-weight:600;fill:#2E2416;paint-order:stroke;stroke:rgba(255,255,255,.85);stroke-width:2.4px}
 .k::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:var(--mieszanie,soft-light);opacity:var(--blask,.6);background:var(--holo)}
 .k.r-zwykla{--tlo:linear-gradient(160deg,#FBF6E8,#E2D6B8);--ramka:#9C8A62;--holo:none;--blask:0}
 .k.r-braz{--tlo:linear-gradient(160deg,#F4DCC4,#C98B5C);--ramka:#7E4620;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,230,200,.8),transparent 45%)}
@@ -51,6 +58,7 @@
   --holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.95),transparent 30%),linear-gradient(calc(var(--kat,115) * 1deg),#ff6b6b33,#ffd93d55,#6bff9a44,#6bd5ff55,#c06bff44,#ff6b6b33)}
 .k.zablokowana{--tlo:#3A2A14!important;color:#C9BFA0;cursor:pointer}
 .k.zablokowana::after{display:none}.k.zablokowana .mapka{background:#2E2210;border-color:#5A4A2F}
+.duza .k{width:min(92vw,400px)}
 .k .nowa{position:absolute;left:50%;top:1.5cqw;transform:translateX(-50%);background:var(--czer);color:#fff;font-size:3.5cqw;font-weight:900;padding:.5cqw 3cqw;border-radius:0 0 2cqw 2cqw;z-index:2}
 .mapka .dr0{stroke:#D9452B;stroke-width:2.6}.mapka .dr1{stroke:#E8913A;stroke-width:2.2}.mapka .dr2{stroke:#F2C744;stroke-width:1.8}.mapka .dr3{stroke:#FFFFFF;stroke-width:1.4}
 .mapka .ob{stroke:#8E8164;stroke-width:.6}
@@ -81,42 +89,47 @@
 </div>
 <script src="topojson-client.min.js?v=17"></script>
 <script src="wspolne.js?v=17"></script>
-<script src="karty.js?v=1"></script>
+<script src="karty.js?v=2"></script>
 <script>
 const {$,fmt}=ZP;
 const RZ=Karty.RZ,KOL=Karty.KOLEJ;
 const IK={
  ludnosc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="9" cy="8" r="3.5"/><path d="M2 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/><circle cx="17.5" cy="9" r="2.6"/><path d="M17 14.6c3 .2 5 2.3 5 6.4"/></svg>',
  powierzchnia:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h3M3 15h3M9 3v3M15 3v3"/></svg>',
+ gestosc:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="6" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="12" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
  saldo_migracji:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg>',
+ dochod_na_mieszk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M9 8h6l-6 8h6"/></svg>',
+ bezrobocie_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4h6v3M3 13h18"/></svg>',
  wodociag_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/></svg>',
  kanalizacja_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M7 9h10M6 12h12M7 15h10"/></svg>',
- bezrobocie_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4h6v3M3 13h18"/></svg>'};
-const SKR={ludnosc:"LUD",powierzchnia:"POW",saldo_migracji:"MIG",wodociag_proc:"WOD",kanalizacja_proc:"KAN",bezrobocie_proc:"PRA"};
+ lesistosc_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M12 2l6 9h-3l4 6H5l4-6H6z"/><path d="M12 17v5"/></svg>'};
 const TYP={"gmina miejska":"MIA","gmina wiejska":"WIE","gmina miejsko-wiejska":"M-W"};
 const WS={"dolnośląskie":"DLŚ","kujawsko-pomorskie":"K-P","lubelskie":"LUB","lubuskie":"LBU","łódzkie":"ŁDZ","małopolskie":"MAŁ","mazowieckie":"MAZ","opolskie":"OPO","podkarpackie":"PKR","podlaskie":"PDL","pomorskie":"POM","śląskie":"ŚLĄ","świętokrzyskie":"ŚWK","warmińsko-mazurskie":"W-M","wielkopolskie":"WLK","zachodniopomorskie":"ZPM"};
 let D=null,GEO={},HERBY={},RZEKI=[],filtr="",stan=null;
 const liczba=(v,d)=>v==null?"–":Number(v).toLocaleString("pl-PL",{maximumFractionDigits:d==null?1:d});
 function wartosc(g,k){
-  const v=g[k];if(v==null)return "–";
-  if(k==="ludnosc")return liczba(v,0);
-  if(k==="powierzchnia")return liczba(v,0)+" km²";
+  const v=g[k];if(v==null)return "brak danych";
+  if(k==="ludnosc")return liczba(v,0)+" mieszk.";
+  if(k==="powierzchnia")return liczba(v,1)+" km²";
+  if(k==="gestosc")return liczba(v,0)+" os./km²";
   if(k==="saldo_migracji")return (v>0?"+":"")+liczba(v)+"‰";
+  if(k==="dochod_na_mieszk")return liczba(v,0)+" zł/os.";
   return liczba(v)+"%";
 }
+const mnp=g=>+g.k.slice(2,4)>=61;
 function herbSrc(g){
   if(HERBY[g.n]&&g.typ!=="gmina wiejska")return HERBY[g.n];
   return g.herb?"https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(g.herb)+"?width=60":"";
 }
 function karta(g,otwarta,nowa,postep,duza){
   const oc=g.oc||{};
-  const st=Object.keys(SKR).map(k=>'<span>'+IK[k]+'<b>'+(otwarta&&oc[k]!=null?oc[k]:"?")+'</b>'+SKR[k]+(duza&&otwarta?'<i>'+wartosc(g,k)+'</i>':'')+'</span>').join("");
+  const st=Karty.STATY.map(s=>'<span>'+IK[s.k]+'<em>'+s.n+'</em><b>'+(otwarta&&oc[s.k]!=null?oc[s.k]:"?")+'</b><i>'+(otwarta?wartosc(g,s.k):"")+'</i></span>').join("");
   const h=otwarta?herbSrc(g):"";
   return '<div class="k r-'+g.rz+(otwarta?"":" zablokowana")+'" data-k="'+g.k+'">'+(nowa?'<span class="nowa">NOWA</span>':'')+'<span class="ramka"></span>'
-    +'<div class="lewa"><span class="ovr">'+(otwarta&&g.ovr?g.ovr:"?")+'</span><span class="typ">'+(TYP[g.typ]||"GM")+'</span>'+(h?'<img class="herb" alt="" loading="lazy" src="'+h+'">':'')+'<span class="kres"></span><span class="wojs">'+(WS[g.woj]||"")+'</span></div>'
+    +'<div class="lewa"><span class="ovr">'+(otwarta&&g.ovr?g.ovr:"?")+'</span><span class="typ">'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</span>'+(h?'<img class="herb" alt="" loading="lazy" src="'+h+'">':'')+'<span class="kres"></span><span class="wojs">'+(WS[g.woj]||"")+'</span></div>'
     +'<div class="mapka" data-m="'+g.k+'"></div>'
     +'<div class="nazwa">'+(otwarta?g.n:"???")+'</div>'
-    +'<div class="jedn">'+(otwarta?g.typ+"<br>"+g.powiat+" · woj. "+g.woj:(postep?"zebrane "+postep+"/"+Karty.PROG+" gier":g.typ+"<br>woj. "+g.woj))+'</div>'
+    +'<div class="jedn">'+(otwarta?(mnp(g)?"miasto na prawach powiatu<br>woj. "+g.woj:g.typ+"<br>"+g.powiat+" · woj. "+g.woj):(postep?"zebrane "+postep+"/"+Karty.PROG+" gier":"woj. "+g.woj))+'</div>'
     +'<span class="linia"></span><div class="st">'+st+'</div>'
     +'<div class="rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
 }
@@ -131,19 +144,27 @@ function mapka(el,duza){
     const ox=W/2-(b[0]+b[2])/2*kx*sk,oy=H/2+(b[1]+b[3])/2*sk;
     const X=lo=>(lo*kx*sk+ox).toFixed(1),Y=la=>(oy-la*sk).toFixed(1);
     const sciezka=geo=>{const ps=geo.type==="Polygon"?[geo.coordinates]:geo.coordinates;return ps.map(p=>p.map(r=>"M"+r.map(([x,y])=>X(x)+" "+Y(y)).join("L")+"Z").join("")).join("");};
-    let svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid slice"><rect width="'+W+'" height="'+H+'" fill="#E4DDC5"/>';
-    // sąsiednie gminy
+    let svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid slice"><rect width="'+W+'" height="'+H+'" fill="#DDD6BD"/>';
     const ram=[b[0]-(b[2]-b[0])*.3,b[1]-(b[3]-b[1])*.3,b[2]+(b[2]-b[0])*.3,b[3]+(b[3]-b[1])*.3];
-    Object.values(GEO).forEach(o=>{if(o===f||!o._bb)return;const q=o._bb;if(q[2]<ram[0]||q[0]>ram[2]||q[3]<ram[1]||q[1]>ram[3])return;svg+='<path class="ob" d="'+sciezka(o.geometry)+'" fill="#EAE3CC"/>';});
-    svg+='<path d="'+sciezka(f.geometry)+'" fill="#F8F3E3" stroke="#6B3FA0" stroke-width="1.6" stroke-dasharray="4 2"/>';
-    RZEKI.forEach(l=>{if(l._bb[2]<ram[0]||l._bb[0]>ram[2]||l._bb[3]<ram[1]||l._bb[1]>ram[3])return;svg+='<path d="M'+l.map(([x,y])=>X(x)+" "+Y(y)).join("L")+'" fill="none" stroke="#5AA0CF" stroke-width="1.6"/>';});
+    Object.values(GEO).forEach(o=>{if(o===f||!o._bb)return;const q=o._bb;if(q[2]<ram[0]||q[0]>ram[2]||q[3]<ram[1]||q[1]>ram[3])return;svg+='<path class="ob" d="'+sciezka(o.geometry)+'" fill="#E8E1C8"/>';});
+    svg+='<path d="'+sciezka(f.geometry)+'" fill="#F8F3E3"/>';
+    const linia=pts=>"M"+pts.map(([x,y])=>X(x)+" "+Y(y)).join("L"),wiel=pts=>linia(pts)+"Z";
     if(m){
-      [3,2,1,0].forEach(kl=>m.d.filter(d=>d[0]===kl).forEach(d=>{const p="M"+d[1].map(([x,y])=>X(x)+" "+Y(y)).join("L");
-        svg+='<path d="'+p+'" fill="none" stroke="#6E6040" stroke-width="'+(kl===3?2.6:kl===2?3.2:3.8)+'" stroke-linecap="round" opacity=".55"/><path class="dr'+kl+'" d="'+p+'" fill="none" stroke-linecap="round"/>';}));
-      const ile=duza?12:3;
-      m.m.slice(0,ile).forEach((x,i)=>{const siedz=Karty.dane()&&x[0]===g.n;
-        svg+='<circle cx="'+X(x[1])+'" cy="'+Y(x[2])+'" r="'+(x[3]>=2||siedz?2.6:1.6)+'" fill="#2E2416" stroke="#fff" stroke-width=".8"/>'
-          +'<text x="'+X(x[1])+'" y="'+(Y(x[2])-4)+'" text-anchor="middle" style="font-size:'+(x[3]>=2||siedz?(duza?11:12):(duza?8.5:9))+'px">'+x[0]+'</text>';});
+      if(m.l)svg+='<path d="'+m.l.map(wiel).join("")+'" fill="#B5D69B" fill-rule="evenodd"/>';
+      const WODA="#7DB8E0";
+      if(m.w)svg+='<path d="'+m.w.map(wiel).join("")+'" fill="'+WODA+'"/>';
+      if(m.r)svg+='<path d="'+m.r.map(linia).join("")+'" fill="none" stroke="'+WODA+'" stroke-width="1.5" stroke-linecap="round"/>';
+      // drogi: autostrady, ekspresowe i główne (stary format mapek miał też drugorzędne: pomijamy)
+      const KOL={0:["#B2263A",3.6],1:["#E26B2C",3],2:["#F2C744",2.2]};
+      [2,1,0].forEach(kl=>{const ls=m.d.filter(d=>d[0]===kl);if(!ls.length)return;const p=ls.map(d=>linia(d[1])).join("");
+        svg+='<path d="'+p+'" fill="none" stroke="#5A4A2F" stroke-width="'+(KOL[kl][1]+1.4)+'" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/><path d="'+p+'" fill="none" stroke="'+KOL[kl][0]+'" stroke-width="'+KOL[kl][1]+'" stroke-linecap="round" stroke-linejoin="round"/>';});
+    }
+    svg+='<path d="'+sciezka(f.geometry)+'" fill="none" stroke="#6B3FA0" stroke-width="1.8" stroke-dasharray="5 2.5"/>';
+    if(m&&m.m){
+      const ile=duza?12:4;
+      m.m.slice(0,ile).forEach(x=>{const wazne=x[3]>=2||x[0]===g.n;
+        svg+='<circle cx="'+X(x[1])+'" cy="'+Y(x[2])+'" r="'+(wazne?2.8:1.7)+'" fill="#2E2416" stroke="#fff" stroke-width=".8"/>'
+          +'<text x="'+X(x[1])+'" y="'+(Y(x[2])-4)+'" text-anchor="middle" style="font-size:'+(wazne?(duza?11:12):(duza?8.5:9.5))+'px">'+x[0]+'</text>';});
     }
     el.innerHTML=svg+'</svg>';
   };
@@ -160,7 +181,7 @@ function holo(el){
 function pokazDuza(g,otwarta,opis){
   const d=document.createElement("div");d.className="duza";
   const pp=stan.postep[g.k]?stan.postep[g.k].size:0;
-  d.innerHTML=karta(g,otwarta,false,pp,true)+'<p>'+(opis||(otwarta?g.typ+", "+g.powiat+", woj. "+g.woj+". Dane: GUS BDL, PRG, OpenStreetMap"
+  d.innerHTML=karta(g,otwarta,false,pp,true)+'<p>'+(opis||(otwarta?"Dane: GUS BDL, PRG, mapa © współtwórcy OpenStreetMap"
     :"Zdobędziesz ją, odgadując po konturze (Do sześciu razy sztuka, Kształt gminy) albo trafiając w "+Karty.PROG+" różnych grach. Masz: "+pp+"/"+Karty.PROG+"."))+'</p>';
   d.onclick=()=>d.remove();document.body.appendChild(d);holo(d.querySelector(".k"));podepnijMapki(d);
 }
@@ -199,7 +220,7 @@ Promise.all([Karty.zaladuj(),fetch("gminy.topojson?v=17").then(r=>r.json()),fetc
     const g=D.PO_K[String(f.properties.k)];if(g&&!g.powierzchnia){let a=0;ps.forEach(p=>p.forEach((r,ri)=>{let s=0;for(let i=0,j=r.length-1;i<r.length;j=i++)s+=(r[j][0]-r[i][0])*(r[j][1]+r[i][1]);a+=(ri?-1:1)*Math.abs(s)/2;}));
       g.powierzchnia=Math.round(a*111.32*111.32*Math.cos((b[1]+b[3])/2*Math.PI/180)*10)/10;}});
   Karty.przelicz();
-  fetch("rzeki-geo.json").then(r=>r.json()).then(z=>{Object.values(z).forEach(l=>l.forEach(x=>{let b=[1e9,1e9,-1e9,-1e9];x.forEach(([lo,la])=>{b[0]=Math.min(b[0],lo);b[1]=Math.min(b[1],la);b[2]=Math.max(b[2],lo);b[3]=Math.max(b[3],la);});x._bb=b;RZEKI.push(x);}));}).catch(()=>{}).finally(()=>rysuj());
+  rysuj();
   return;
 }).catch(e=>{$("stan").textContent="nie udało się wczytać kolekcji";});
 ZP.fitViewport();ZP.registerSW();

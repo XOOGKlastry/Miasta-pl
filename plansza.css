@@ -4,12 +4,16 @@
 *{box-sizing:border-box}
 .hidden{display:none!important}
 html,body{margin:0;padding:0;height:100%}
+html,body{overflow-x:hidden;max-width:100%}
 body{background:var(--filc);color:var(--braz);font-family:Rubik,system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden}
 a{color:inherit;text-decoration:none;-webkit-tap-highlight-color:transparent}
 button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .wrap{height:var(--app-h,100dvh);max-width:560px;margin:0 auto;display:flex;flex-direction:column;position:relative}
 .gora{flex:none;display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 8px;background:var(--krem);border-bottom:4px solid var(--braz);position:relative;z-index:5}
-.gora h1{font-family:Bungee,sans-serif;font-weight:400;font-size:20px;margin:0;flex:1;line-height:1}
+.gora h1{font-family:Bungee,sans-serif;font-weight:400;font-size:20px;margin:0;flex:1;line-height:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gora h1 small{overflow:hidden;text-overflow:ellipsis}
+.gora>*{flex-shrink:0}.gora h1{flex-shrink:1}
+@media (max-width:400px){.gora{gap:5px;padding-left:8px;padding-right:8px}.gora h1{font-size:16px}.zeton{padding:2px 6px;font-size:12px}.kolekcja{width:40px;height:40px}}
 .gora h1 small{display:block;font-family:Rubik,sans-serif;font-weight:700;font-size:11px;color:var(--braz-2)}
 .zeton{display:flex;align-items:center;gap:4px;background:#fff;border:3px solid var(--braz);border-radius:12px;padding:3px 8px;font-weight:900;font-size:14px;box-shadow:0 3px 0 var(--braz);white-space:nowrap}
 .zeton .gw{color:#E5A800}
