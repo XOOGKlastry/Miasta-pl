@@ -102,6 +102,21 @@ def bdl(sciezka):
     raise RuntimeError("BDL nie odpowiada")
 
 
+def z_tematu(wzor_id, musi, nie=()):
+    """zmienna z tego samego tematu co znana zmienna (np. wodociąg obok kanalizacji)"""
+    v = bdl("/variables/%s?format=json" % wzor_id)
+    j = bdl("/variables?subject-id=%s&page-size=100&format=json" % v["subjectId"])
+    for x in j.get("results", []):
+        opis = " ".join(str(x.get(k, "")) for k in ("n1", "n2", "n3", "n4", "n5", "measureUnitName")).lower()
+        print("    w temacie", x["id"], opis[:120])
+    for x in j.get("results", []):
+        opis = " ".join(str(x.get(k, "")) for k in ("n1", "n2", "n3", "n4", "n5", "measureUnitName")).lower()
+        if all(m in opis for m in musi) and not any(n in opis for n in nie):
+            print("  WYBRANO z tematu", v["subjectId"], "->", x["id"], opis[:140])
+            return x["id"]
+    return None
+
+
 def znajdz(frazy, musi, nie=()):
     """szuka zmiennej BDL po nazwie; wypisuje kandydatów do logu, żeby dało się sprawdzić wybór"""
     for fr in frazy:
@@ -219,15 +234,18 @@ def main():
     except Exception as e:
         print("GUS niedostępny, zostają dane z Wikidata:", e, file=sys.stderr)
     # dodatkowe statystyki do kart gmin (wskaźniki 1-99 liczone w grze)
+    # zmienne sprawdzone w logu poprzedniego przebiegu: saldo migracji 453193, kanalizacja (% ludności) 79130;
+    # wodociąg bierzemy z tego samego tematu co kanalizacja, bezrobocie szukamy szerzej
     STATY = [
-        ("saldo_migracji", ["saldo migracji na 1000", "saldo migracji"], ["1000"], ["zagranicz"]),
-        ("wodociag_proc", ["korzystający z instalacji w % ogółu ludności", "wodociąg"], ["wodoci", "%"], []),
-        ("kanalizacja_proc", ["korzystający z instalacji w % ogółu ludności", "kanalizac"], ["kanaliz", "%"], []),
-        ("bezrobocie_proc", ["udział bezrobotnych zarejestrowanych w liczbie ludności w wieku produkcyjnym", "udział bezrobotnych"], ["udział bezrobotnych", "ogółem"], []),
+        ("saldo_migracji", 453193, None),
+        ("kanalizacja_proc", 79130, None),
+        ("wodociag_proc", None, lambda: z_tematu(79130, ["wodoci", "ogółem"], ["kanaliz", "gaz"])),
+        ("bezrobocie_proc", None, lambda: znajdz(["udział bezrobotnych zarejestrowanych", "bezrobotni zarejestrowani", "udział bezrobotnych"],
+                                                 ["udział", "produkcyjn"], ["kobiet", "mężczyzn", "do 25", "powyżej", "długotrwale"])),
     ]
-    for pole, frazy, musi, nie in STATY:
+    for pole, stale, szukaj in STATY:
         try:
-            zm = znajdz(frazy, musi, nie)
+            zm = stale or szukaj()
             if not zm:
                 continue
             wart, rok = dane_bdl(zm, 6)
