@@ -5,6 +5,7 @@ on:
   push:
     paths:
       - "narzedzia/pobierz_mapki.py"
+      - "narzedzia/pobierz_mapki_topo.py"
       - ".github/workflows/mapki.yml"
   schedule:
     - cron: "0 5 6 * *"   # raz w miesiącu
@@ -26,7 +27,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Mapki
-        run: pip install shapely >/dev/null && python narzedzia/pobierz_mapki.py 2>&1 | tee narzedzia/mapki.log
+        run: sudo apt-get install -y osmium-tool >/dev/null && pip install shapely >/dev/null && python narzedzia/pobierz_mapki.py 2>&1 | tee narzedzia/mapki.log
       - name: Zapisz zmiany
         if: always()
         run: |

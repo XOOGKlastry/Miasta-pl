@@ -263,8 +263,10 @@ def main():
         ("saldo_migracji", 453193, None),
         ("kanalizacja_proc", 79130, None),
         ("wodociag_proc", 79133, None),
-        ("bezrobocie_proc", None, lambda: z_tematu_nazwy(["udział bezrobotnych zarejestrowanych w liczbie ludności w wieku produkcyjnym", "udział bezrobotnych"],
-                                                         ["ogółem"], ["kobiet", "mężczyzn"], zapas=["P2392"])),
+        ("bezrobocie_proc", 79214, None),
+        ("lesistosc_proc", None, lambda: z_tematu_nazwy(["lesistość"], ["%"], ["publiczn", "prywatn"])),
+        ("dochod_na_mieszk", None, lambda: z_tematu_nazwy(["dochody budżetów gmin na 1 mieszkańca", "dochody budżetu gminy na 1 mieszkańca", "dochody na 1 mieszkańca"],
+                                                          ["ogółem"], ["własne", "podatk", "dotacj", "subwencj", "majątk", "bieżąc"])),
     ]
     for pole, stale, szukaj in STATY:
         try:

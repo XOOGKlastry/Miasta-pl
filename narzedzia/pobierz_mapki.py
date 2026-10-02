@@ -1,126 +1,124 @@
-"""Mapki topograficzne do kart gmin: drogi i miejscowości z OpenStreetMap przycięte do każdej gminy.
+"""Mapki topograficzne do kart gmin z OpenStreetMap (wyciąg Geofabrik dla Polski, przetwarzany osmium).
 
-Wynik: mapki/<TERYT>.json  {"bb":[minlon,minlat,maxlon,maxlat],"d":[[klasa,[[lon,lat],...]],...],"m":[[nazwa,lon,lat,ranga],...]}
-klasa drogi: 0 autostrada/ekspresowa, 1 krajowa (trunk), 2 główna (primary), 3 wojewódzka/powiatowa (secondary)
-ranga miejscowości: 3 miasto, 2 miasteczko, 1 wieś, 0 przysiółek; większa liczba = ważniejsza.
+Na każdą gminę plik mapki/<TERYT>.json:
+  bb  [minlon,minlat,maxlon,maxlat] granicy gminy
+  l   lasy (wielokąty)            w  wody: jeziora, zbiorniki, szerokie rzeki (wielokąty)
+  r   rzeki i kanały (linie)      d  drogi [klasa, linia]: 0 autostrada, 1 ekspresowa, 2 główna (krajowa i wojewódzka główna)
+  m   miejscowości [nazwa, lon, lat, ranga 3 miasto / 2 miasteczko / 1 wieś]
 Dane © współtwórcy OpenStreetMap (ODbL).
 """
-import json, math, os, sys, time, urllib.parse, urllib.request
-from shapely.geometry import shape, box, LineString, Point, mapping
+import json, os, subprocess, sys, time, urllib.request
+from shapely.geometry import shape, box
 from shapely.strtree import STRtree
+from shapely import make_valid
 
-UA = "PolskoZnawca/1.0 (https://github.com/XOOGKlastry/Miasta-pl; gra edukacyjna)"
-SERWERY = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter",
-           "https://maps.mail.ru/osm/tools/overpass/api/interpreter"]
-WOJ = ["02", "04", "06", "08", "10", "12", "14", "16", "18", "20", "22", "24", "26", "28", "30", "32"]
+PBF = "/tmp/polska.osm.pbf"
+URL = "https://download.geofabrik.de/europe/poland-latest.osm.pbf"
 OUT = "mapki"
+sys.path.insert(0, os.path.dirname(__file__))
+from pobierz_mapki_topo import topo_na_geojson  # noqa: E402
 
 
-def overpass(q, minimum=10):
-    for i in range(8):
-        url = SERWERY[i % len(SERWERY)]
-        try:
-            req = urllib.request.Request(url, data=("data=" + urllib.parse.quote(q)).encode(), headers={"User-Agent": UA})
-            with urllib.request.urlopen(req, timeout=600) as r:
-                el = json.loads(r.read())["elements"]
-            if len(el) >= minimum:
-                return el
-            print("  za mało danych", len(el), file=sys.stderr)
-        except Exception as e:
-            print("  ponawiam", url, e, file=sys.stderr)
-        time.sleep(30 * (i + 1))
-    return []
+def sh(cmd):
+    print("$", cmd, flush=True)
+    subprocess.run(cmd, shell=True, check=True)
 
 
-def topo_na_geojson(t):
-    """dekoder TopoJSON (z kwantyzacją) do listy cech GeoJSON"""
-    obj = sorted(t["objects"].values(), key=lambda o: -len(o["geometries"]))[0]
-    tr = t.get("transform")
-    arcs = []
-    for a in t["arcs"]:
-        x = y = 0
-        pts = []
-        for p in a:
-            if tr:
-                x += p[0]; y += p[1]
-                pts.append([x * tr["scale"][0] + tr["translate"][0], y * tr["scale"][1] + tr["translate"][1]])
-            else:
-                pts.append(p)
-        arcs.append(pts)
+def warstwa(nazwa, filtr, typy, tol, min_pole=0.0, prop=None):
+    """filtruje wyciąg, eksportuje do GeoJSONSeq i czyta z uproszczeniem"""
+    sh("osmium tags-filter %s %s -o /tmp/%s.pbf --overwrite" % (PBF, filtr, nazwa))
+    sh("osmium export /tmp/%s.pbf -f geojsonseq --geometry-types=%s -o /tmp/%s.geojsonseq --overwrite" % (nazwa, typy, nazwa))
+    geom, atr = [], []
+    with open("/tmp/%s.geojsonseq" % nazwa, encoding="utf-8") as fh:
+        for linia in fh:
+            linia = linia.strip().lstrip("\x1e")
+            if not linia:
+                continue
+            f = json.loads(linia)
+            try:
+                g = shape(f["geometry"])
+                if g.geom_type in ("Polygon", "MultiPolygon"):
+                    if g.area < min_pole:
+                        continue
+                    g = make_valid(g)
+                g = g.simplify(tol, preserve_topology=False)
+                if g.is_empty:
+                    continue
+            except Exception:
+                continue
+            geom.append(g)
+            atr.append(prop(f["properties"]) if prop else None)
+    os.remove("/tmp/%s.geojsonseq" % nazwa)
+    print("  %s: %d obiektów" % (nazwa, len(geom)), flush=True)
+    return geom, atr
 
-    def luk(i):
-        return arcs[i] if i >= 0 else arcs[~i][::-1]
 
-    def pierscien(ids):
-        pts = []
-        for i in ids:
-            a = luk(i)
-            pts.extend(a if not pts else a[1:])
-        return pts
+def wspolrzedne(g, tol):
+    """lista pierścieni / linii zaokrąglonych do 4 miejsc"""
+    g = g.simplify(tol, preserve_topology=False)
     out = []
-    for g in obj["geometries"]:
-        if g["type"] == "Polygon":
-            geom = {"type": "Polygon", "coordinates": [pierscien(r) for r in g["arcs"]]}
-        elif g["type"] == "MultiPolygon":
-            geom = {"type": "MultiPolygon", "coordinates": [[pierscien(r) for r in p] for p in g["arcs"]]}
-        else:
-            continue
-        out.append({"k": str(g["properties"]["k"]), "n": g["properties"].get("n", ""), "geom": shape(geom).buffer(0)})
+    for cz in getattr(g, "geoms", [g]):
+        if cz.geom_type == "Polygon":
+            r = [[round(x, 4), round(y, 4)] for x, y in cz.exterior.coords]
+            if len(r) >= 4:
+                out.append(r)
+        elif cz.geom_type == "LineString":
+            r = [[round(x, 4), round(y, 4)] for x, y in cz.coords]
+            if len(r) >= 2:
+                out.append(r)
+        elif cz.geom_type in ("MultiPolygon", "MultiLineString", "GeometryCollection"):
+            out.extend(wspolrzedne(cz, tol))
     return out
 
 
 def main():
+    if not os.path.exists(PBF):
+        print("pobieram wyciąg OSM dla Polski…", flush=True)
+        urllib.request.urlretrieve(URL, PBF)
     gminy = topo_na_geojson(json.load(open("gminy.topojson", encoding="utf-8")))
-    print("gmin:", len(gminy))
-    # miejscowości (cała Polska jednym zapytaniem)
-    pl = 'area(id:3600049715)->.pl;'
-    el = overpass('[out:json][timeout:600];' + pl + 'node["place"~"^(city|town|village|hamlet)$"]["name"](area.pl);out;', 5000)
-    RANGA = {"city": 3, "town": 2, "village": 1, "hamlet": 0}
-    miejsca = [(e["tags"]["name"], e["lon"], e["lat"], RANGA[e["tags"]["place"]]) for e in el]
-    print("miejscowości:", len(miejsca))
-    # drogi województwami, żeby zapytania nie były za duże
-    KL = {"motorway": 0, "trunk": 1, "primary": 2, "secondary": 3}
-    drogi = []
-    for w in WOJ:
-        q = ('[out:json][timeout:600];area["teryt:terc"="%s"]["admin_level"="4"]->.w;'
-             'way["highway"~"^(motorway|trunk|primary|secondary)$"](area.w);out geom;' % w)
-        el = overpass(q, 50)
-        for e in el:
-            if "geometry" in e and len(e["geometry"]) >= 2:
-                drogi.append((KL[e["tags"]["highway"]], LineString([(p["lon"], p["lat"]) for p in e["geometry"]])))
-        print("  woj", w, "dróg razem:", len(drogi))
-        time.sleep(5)
-    drz = STRtree([d[1] for d in drogi])
-    mpt = [Point(m[1], m[2]) for m in miejsca]
-    mdrz = STRtree(mpt)
+    print("gmin:", len(gminy), flush=True)
+    KL = {"motorway": 0, "trunk": 1, "primary": 2}
+    lasy, _ = warstwa("lasy", "wr/landuse=forest wr/natural=wood", "polygon", 0.0006, 2e-6)
+    wody, _ = warstwa("wody", "wr/natural=water wr/waterway=riverbank wr/landuse=reservoir", "polygon", 0.0004, 2e-7)
+    rzeki, _ = warstwa("rzeki", "w/waterway=river,canal", "linestring", 0.0005)
+    drogi, kl = warstwa("drogi", "w/highway=motorway,trunk,primary", "linestring", 0.0004, prop=lambda p: KL.get(p.get("highway"), 2))
+    RANGA = {"city": 3, "town": 2, "village": 1}
+    msc, ma = warstwa("miejsca", "n/place=city,town,village", "point", 0,
+                      prop=lambda p: (p.get("name", ""), RANGA.get(p.get("place"), 1)))
+    T = {n: STRtree(g) for n, g in (("l", lasy), ("w", wody), ("r", rzeki), ("d", drogi), ("m", msc))}
     os.makedirs(OUT, exist_ok=True)
-    for i, g in enumerate(gminy):
-        minx, miny, maxx, maxy = g["geom"].bounds
-        dx, dy = (maxx - minx) * .12 + .005, (maxy - miny) * .12 + .005
+    for i, gm in enumerate(gminy):
+        minx, miny, maxx, maxy = gm["geom"].bounds
+        dx, dy = (maxx - minx) * .12 + .004, (maxy - miny) * .12 + .004
         ramka = box(minx - dx, miny - dy, maxx + dx, maxy + dy)
-        tol = max(maxx - minx, maxy - miny) / 400
-        d = []
-        for j in drz.query(ramka):
-            kl, linia = drogi[j]
-            cz = linia.intersection(ramka)
-            if cz.is_empty:
-                continue
-            for seg in getattr(cz, "geoms", [cz]):
-                if seg.geom_type != "LineString":
+        tol = max(maxx - minx, maxy - miny) / 300
+        min_pole = ((maxx - minx) * (maxy - miny)) / 3000
+        wynik = {"bb": [round(minx, 4), round(miny, 4), round(maxx, 4), round(maxy, 4)], "l": [], "w": [], "r": [], "d": [], "m": []}
+        for warstwa_, lista in (("l", lasy), ("w", wody)):
+            for j in T[warstwa_].query(ramka):
+                g = lista[j]
+                if g.area < min_pole:
                     continue
-                s = seg.simplify(tol)
-                d.append([kl, [[round(x, 4), round(y, 4)] for x, y in s.coords]])
-        m = []
-        for j in mdrz.query(g["geom"]):
-            if g["geom"].contains(mpt[j]):
-                n, lo, la, r = miejsca[j]
-                m.append([n, round(lo, 4), round(la, 4), r])
-        m.sort(key=lambda x: -x[3])
-        with open("%s/%s.json" % (OUT, g["k"]), "w", encoding="utf-8") as fh:
-            json.dump({"bb": [round(minx, 4), round(miny, 4), round(maxx, 4), round(maxy, 4)], "d": d, "m": m[:60]},
-                      fh, ensure_ascii=False, separators=(",", ":"))
-        if i % 300 == 0:
-            print("  mapki", i)
+                cz = g.intersection(ramka)
+                if not cz.is_empty:
+                    wynik[warstwa_].extend(wspolrzedne(cz, tol))
+        for j in T["r"].query(ramka):
+            cz = rzeki[j].intersection(ramka)
+            if not cz.is_empty:
+                wynik["r"].extend(wspolrzedne(cz, tol))
+        for j in T["d"].query(ramka):
+            cz = drogi[j].intersection(ramka)
+            if not cz.is_empty:
+                wynik["d"].extend([[kl[j], x] for x in wspolrzedne(cz, tol)])
+        for j in T["m"].query(gm["geom"]):
+            if gm["geom"].contains(msc[j]) and ma[j][0]:
+                wynik["m"].append([ma[j][0], round(msc[j].x, 4), round(msc[j].y, 4), ma[j][1]])
+        wynik["m"].sort(key=lambda x: -x[3])
+        wynik["m"] = wynik["m"][:40]
+        with open("%s/%s.json" % (OUT, gm["k"]), "w", encoding="utf-8") as fh:
+            json.dump(wynik, fh, ensure_ascii=False, separators=(",", ":"))
+        if i % 250 == 0:
+            print("  mapki", i, flush=True)
     print("gotowe:", len(gminy))
 
 
