@@ -159,6 +159,7 @@ function zgadnij(v){
   const traf=m===cel;
   ZP.poswiata(traf||blisko(ZP.km(m,cel))>=85);
   rysuj(true);podpowiedzi();
+  if(traf)ZP.zapisz("kontur",cel.n,true,true);
   if(traf||proby.length>=6){koniec=true;setTimeout(()=>zakoncz(false),700);return;}
   POLE.wyczysc();POLE.wylacz(false);
 }

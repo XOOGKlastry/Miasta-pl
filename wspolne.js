@@ -269,14 +269,20 @@ function fanfary(){
 function obserwujKoniec(){
   const sprawdz=()=>{
     const s=sesja;sesja={ok:0,wszystkie:0};
-    if(POJ){setTimeout(koniecRundyPoj,500);return;}
     if(s.wszystkie>=3&&s.ok/s.wszystkie>=0.8)setTimeout(fanfary,250);
+    kartyPoGrze();
   };
-  ["summary","done"].forEach(id=>{
+  ["summary","done","wynik","koniec"].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;
     let byl=el.classList.contains("hidden");
     new MutationObserver(()=>{const teraz=el.classList.contains("hidden");if(byl&&!teraz)sprawdz();byl=teraz;}).observe(el,{attributes:true,attributeFilter:["class"]});
   });
+}
+// po każdej grze: nowe karty gmin lecą do kolekcji (moduł ładowany dopiero wtedy, gdy jest potrzebny)
+function kartyPoGrze(){
+  const uruchom=()=>window.Karty&&Karty.sprawdzPoGrze();
+  if(window.Karty)return uruchom();
+  const sc=document.createElement("script");sc.src="karty.js?v=1";sc.onload=uruchom;document.head.appendChild(sc);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujKoniec);else obserwujKoniec();
 
@@ -823,5 +829,5 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

@@ -234,7 +234,7 @@ function answer(o,btn){
   if(game.wpis){$("guess").disabled=true;$("passBtn").disabled=true;$("pokazBtn").disabled=true;$("tfill").style.width="0%";}
   [...$("answers").children].forEach((b,i)=>{b.disabled=true;if(q.opts[i]===q.p)b.classList.add("right");else if(b===btn)b.classList.add("wrong");else b.classList.add("fade");});
   game.pts+=got;if(ok)game.hits++;
-  ZP.zapisz(game.rodzaj,q.p.k,ok&&!game.hint);
+  ZP.zapisz(game.rodzaj,q.p.k,ok&&!game.hint);if(ok&&game.rodzaj==="gmina")ZP.zapisz("kontur",q.p.k,true,true);
   if(!ok&&game.wpis&&o===null)game.res;
   $("pts").textContent=game.pts;$("hits").textContent=game.hits;
   $("hintBtn").disabled=true;drawInset(q.p);
