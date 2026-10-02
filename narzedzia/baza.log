@@ -1,9 +1,4 @@
-  BDL ponawiam /variables/search?name=powierzchnia&page-size=100&format=json The read operation timed out
-  BDL ponawiam /variables/search?name=saldo%20migracji%20na%201000&page-size=100&form The read operation timed out
-  BDL ponawiam /variables/search?name=wodoci%C4%85g&page-size=100&format=json The read operation timed out
-  BDL ponawiam /variables/search?name=wodoci%C4%85g&page-size=100&format=json The read operation timed out
-  BDL ponawiam /variables/search?name=wodoci%C4%85g&page-size=100&format=json The read operation timed out
-  BDL ponawiam /variables/search?name=wodoci%C4%85g&page-size=100&format=json The read operation timed out
+  nie znaleziono zmiennej dla ['udział bezrobotnych zarejestrowanych', 'bezrobotni zarejestrowani', 'udział bezrobotnych']
 powiatów 380 gmin 2479
 Wikidata: jednostek z kodem TERYT 2788
   BDL zmienna 72305 poziom 2 rok 2025 jednostek 16
@@ -12,215 +7,32 @@ Wikidata: jednostek z kodem TERYT 2788
   poziom 5 dopasowano z GUS: 380 z 380
   BDL zmienna 72305 poziom 6 rok 2025 jednostek 3934
   poziom 6 dopasowano z GUS: 2473 z 2479
-    kandydat 453193 P1355 saldo migracji na 1000 ludności | ogółem 6
-  WYBRANO saldo migracji na 1000 -> 453193 saldo migracji na 1000 ludności ogółem    osoba
   BDL zmienna 453193 poziom 6 rok 2025 jednostek 3934
    saldo_migracji rok 2025 gmin z danymi: 2473
-    kandydat 5070 P1469 zimna woda z miejskiej sieci wodociągowej - za 1m3 3
-    kandydat 1612162 P1600 długość eksploatowanej sieci wodociągowej (rozdzielczej i przesyłowej) 6
-    kandydat 475705 P1600 awarie sieci wodociągowej 6
-    kandydat 493 P1600 mieszkania w budynkach mieszkalnych nowo dołączonych do sieci wodociągowej 6
-    kandydat 492 P1600 ludność korzystająca z sieci wodociągowej w miastach 6
-    kandydat 9152 P1600 ludność korzystająca z sieci wodociągowej 6
-    kandydat 1621929 P1600 dobowa zdolność produkcyjna czynnych urządzeń całego wodociągu 6
-    kandydat 1621931 P1600 dobowa produkcja wody w relacji do dobowej zdolności produkcyjnej czynnych urządzeń całego wodociągu 6
-    kandydat 1621932 P1600 liczba awarii sieci wodociągowej na 1 km sieci wodociągowej 6
-    kandydat 1641698 P1600 ludność korzystająca z sieci wodociągowej na wsi 6
-    kandydat 2114 P1669 eksploatacja sieci wodociągowej 6
-    kandydat 10086 P1669 eksploatacja sieci wodociągowej - gospodarstwa domowe 6
-    kandydat 2063 P1703 zakup wody z wodociągów komunalnych na cele produkcyjne 6
-    kandydat 60834 P1732 ogółem | wodociąg 6
-    kandydat 60831 P1732 w miastach | wodociąg 6
-    kandydat 60839 P1732 na wsi | wodociąg 6
-    kandydat 59341 P1737 ogółem | wodociąg 5
-    kandydat 59347 P1737 ogółem | wodociąg z sieci 5
-    kandydat 59342 P1737 osoby fizycznej | wodociąg 5
-    kandydat 59390 P1737 osoby fizycznej | wodociąg z sieci 5
-    kandydat 59346 P1737 spółdzielni mieszkaniowej | wodociąg 5
-    kandydat 59356 P1737 spółdzielni mieszkaniowej | wodociąg z sieci 5
-    kandydat 59360 P1737 gmin | wodociąg 5
-    kandydat 59380 P1737 gmin | wodociąg z sieci 5
-    kandydat 59373 P1737 zakładu pracy | wodociąg 5
-    kandydat 59372 P1737 zakładu pracy | wodociąg z sieci 5
-    kandydat 59381 P1737 towarzystw budownictwa społecznego (tbs) | wodociąg 5
-    kandydat 59362 P1737 towarzystw budownictwa społecznego (tbs) | wodociąg z sieci 5
-    kandydat 59389 P1737 innego podmiotu | wodociąg 5
-    kandydat 59349 P1737 innego podmiotu | wodociąg z sieci 5
-    kandydat 448 P1741 budynki | wodociąg 6
-    kandydat 454 P1741 mieszkania, których remont bezpośrednio dotyczył | wodociąg 6
-    kandydat 10343 P1742 mieszkania | wodociąg 6
-    kandydat 10349 P1742 mieszkania, których remont bezpośrednio dotyczył | wodociąg 6
-    kandydat 1458 P1862 sieć wodociągowa 6
-    kandydat 1696 P1886 wodociąg sieciowy publiczny | ogółem 6
-    kandydat 1697 P1886 wodociąg sieciowy publiczny | indywidualne gospodarstwa rolne 6
-    kandydat 1698 P1886 wodociąg zagrodowy | ogółem 6
-    kandydat 1699 P1886 wodociąg zagrodowy | indywidualne gospodarstwa rolne 6
-    kandydat 1700 P1886 wodociąg zagrodowy podłączony do studni głębinowej | ogółem 6
-    kandydat 1701 P1886 wodociąg zagrodowy podłączony do studni głębinowej | indywidualne gospodarstwa rolne 6
-    kandydat 10635 P1989 wodociągi zbiorowe przyłącza do budynków w km 3
-    kandydat 10636 P1989 wodociągi zbiorowe przyłącza do budynków w szt. 3
-    kandydat 10637 P1989 sieć wodociągowa 3
-    kandydat 10647 P1990 wodociągi zbiorowe nakłady inwestycyjne ogółem 3
-    kandydat 10648 P1990 wodociągi zbiorowe efekty rzeczowe inwestycji oddanych do użytku przyłącza do budynków w km 3
-    kandydat 10649 P1990 wodociągi zbiorowe efekty rzeczowe inwestycji oddanych do użytku przyłącza do budynków w szt. 3
-    kandydat 10650 P1990 wodociągi zbiorowe efekty rzeczowe inwestycji oddanych do użytku sieć wodociągowa 3
-    kandydat 10651 P1990 wodociągi zbiorowe efekty rzeczowe inwestycji oddanych do użytku stacje uzdatniania wody 3
-    kandydat 55906 P2196 mieszkania ogółem | wodociąg razem 7
-    kandydat 55903 P2196 mieszkania ogółem | wodociąg z sieci 7
-    kandydat 55909 P2196 mieszkania ogółem | wodociąg lokalny 7
-    kandydat 55901 P2196 mieszkania ogółem | bez wodociągu 7
-    kandydat 55902 P2196 mieszkania zamieszkane stale | wodociąg razem 7
-    kandydat 55911 P2196 mieszkania zamieszkane stale | wodociąg z sieci 7
-    kandydat 55919 P2196 mieszkania zamieszkane stale | wodociąg lokalny 7
-    kandydat 55920 P2196 mieszkania zamieszkane stale | bez wodociągu 7
-    kandydat 55907 P2196 ludność w mieszkaniach zamieszkanych stale | wodociąg razem 7
-    kandydat 55904 P2196 ludność w mieszkaniach zamieszkanych stale | wodociąg z sieci 7
-    kandydat 55918 P2196 ludność w mieszkaniach zamieszkanych stale | wodociąg lokalny 7
-    kandydat 55898 P2196 ludność w mieszkaniach zamieszkanych stale | bez wodociągu 7
-    kandydat 56899 P2197 ogółem | wodociąg 5
-    kandydat 56912 P2197 ogółem | bez wodociągu 5
-    kandydat 56898 P2197 1 izba | wodociąg 5
-    kandydat 56892 P2197 1 izba | bez wodociągu 5
-    kandydat 56891 P2197 2 izby | wodociąg 5
-    kandydat 56907 P2197 2 izby | bez wodociągu 5
-    kandydat 56900 P2197 3 izby | wodociąg 5
-    kandydat 56905 P2197 3 izby | bez wodociągu 5
-    kandydat 56889 P2197 4 izby | wodociąg 5
-    kandydat 56902 P2197 4 izby | bez wodociągu 5
-    kandydat 56895 P2197 5 izb i więcej | wodociąg 5
-    kandydat 56897 P2197 5 izb i więcej | bez wodociągu 5
-    kandydat 55982 P2198 przed 1918 | wodociąg 5
-    kandydat 55990 P2198 przed 1918 | bez wodociągu 5
-    kandydat 55975 P2198 1918-1944 | wodociąg 5
-    kandydat 55984 P2198 1918-1944 | bez wodociągu 5
-    kandydat 55974 P2198 1945-1970 | wodociąg 5
-    kandydat 55993 P2198 1945-1970 | bez wodociągu 5
-    kandydat 55999 P2198 1971-1978 | wodociąg 5
-    kandydat 55989 P2198 1971-1978 | bez wodociągu 5
-    kandydat 55994 P2198 1979-1988 | wodociąg 5
-    kandydat 55997 P2198 1979-1988 | bez wodociągu 5
-    kandydat 55985 P2198 1989-2002 łącznie z będącymi w budowie | wodociąg 5
-    kandydat 55988 P2198 1989-2002 łącznie z będącymi w budowie | bez wodociągu 5
-    kandydat 55998 P2198 2001-2002 łącznie z będącymi w budowie | wodociąg 5
-    kandydat 56000 P2198 2001-2002 łącznie z będącymi w budowie | bez wodociągu 5
-    kandydat 56015 P2199 ogółem | wodociąg razem 5
-    kandydat 56004 P2199 ogółem | wodociąg z sieci 5
-    kandydat 56025 P2199 ogółem | wodociąg lokalny 5
-    kandydat 56010 P2199 ogółem | bez wodociągu 5
-    kandydat 56021 P2199 osób fizycznych | wodociąg razem 5
-    kandydat 56014 P2199 osób fizycznych | wodociąg z sieci 5
-    kandydat 56003 P2199 osób fizycznych | wodociąg lokalny 5
-    kandydat 56006 P2199 osób fizycznych | bez wodociągu 5
-    kandydat 56022 P2199 gminy | wodociąg razem 5
-    kandydat 56007 P2199 gminy | wodociąg z sieci 5
-    kandydat 56013 P2199 gminy | wodociąg lokalny 5
-    kandydat 56008 P2199 gminy | bez wodociągu 5
-    kandydat 56587 P2229 budynki | wodociąg 7
-  WYBRANO wodociąg -> 1621931 dobowa produkcja wody w relacji do dobowej zdolności produkcyjnej czynnych urządzeń całego wodociągu     %
-  BDL zmienna 1621931 poziom 6 rok 2025 jednostek 3934
-   wodociag_proc rok 2025 gmin z danymi: 2473
-    kandydat 494 P1601 długość czynnej sieci kanalizacyjnej 6
-    kandydat 8898 P1601 długość czynnej sieci kanalizacyjnej będącej w zarządzie bądź administracji gminy 6
-    kandydat 8899 P1601 długość czynnej sieci kanalizacyjnej będącej w zarządzie bądź administracji gminy eksploatowanej przez jednostki gospodarki komunalnej 6
-    kandydat 475706 P1601 awarie sieci kanalizacyjnej 6
-    kandydat 475707 P1601 ścieki bytowe odprowadzone siecią kanalizacyjną 6
-    kandydat 498 P1601 mieszkania w budynkach mieszkalnych nowo dołączonych do sieci kanalizacyjnej  nie znaleziono zmiennej dla ['udział bezrobotnych zarejestrowanych w liczbie ludności w wieku produkcyjnym', 'udział bezrobotnych']
- 6
-    kandydat 496 P1601 ludność korzystająca z sieci kanalizacyjnej w miastach 6
-    kandydat 9153 P1601 ludność korzystająca z sieci kanalizacyjnej 6
-    kandydat 1641700 P1601 ludność korzystająca z sieci kanalizacyjnej na wsi 6
-    kandydat 1725251 P1601 liczba awarii sieci kanalizacyjnej na 1 km sieci kanalizacyjnej 6
-    kandydat 2129 P1671 nieoczyszczane odprowadzone siecią kanalizacyjną 6
-    kandydat 300395 P1700 odprowadzane w czasie doby do kanalizacji 6
-    kandydat 2065 P1704 ścieki odprowadzone do sieci kanalizacyjnej 6
-    kandydat 449 P1741 budynki | kanalizacja 6
-    kandydat 455 P1741 mieszkania, których remont bezpośrednio dotyczył | kanalizacja 6
-    kandydat 10344 P1742 mieszkania | kanalizacja 6
-    kandydat 10350 P1742 mieszkania, których remont bezpośrednio dotyczył | kanalizacja 6
-    kandydat 2154 P1837 kanalizacja odprowadzająca ścieki 6
-    kandydat 2155 P1837 kanalizacja odprowadzająca wody opadowe 6
-    kandydat 3596 P1852 sieć kanalizacyjna odprowadzająca ścieki 6
-    kandydat 3597 P1852 sieć kanalizacyjna odprowadzająca wody opadowe 6
-    kandydat 2140 P1861 sieć kanalizacyjna odprowadzająca ścieki 6
-    kandydat 2141 P1861 sieć kanalizacyjna odprowadzająca wody opadowe 6
-    kandydat 35332 P1984 nieoczyszczane odprowadzone siecią kanalizacyjną 6
-    kandydat 10639 P1989 kanalizacja zbiorcza przykanaliki do budynków w km 3
-    kandydat 10640 P1989 kanalizacja zbiorcza przykanaliki do budynków w szt. 3
-    kandydat 10641 P1989 zbiorcza sieć kanalizacyjna 3
-    kandydat 10652 P1990 kanalizacja zbiorcza nakłady inwestycyjne ogółem 3
-    kandydat 10653 P1990 kanalizacja zbiorcza efekty rzeczowe inwestycji oddanych do użytku zbiorcza sieć kanalizacyjna 3
-    kandydat 275460 P1990 kanalizacja zbiorcza efekty rzeczowe inwestycji oddanych do użytku przykanaliki do budynków w szt. 3
-    kandydat 10654 P1990 kanalizacja zbiorcza efekty rzeczowe inwestycji oddanych do użytku przykanaliki do budynków 3
-    kandydat 1708 P2051 do sieci kanalizacyjnej bez oczyszczania | ogółem 6
-    kandydat 1709 P2051 do sieci kanalizacyjnej bez oczyszczania | indywidualne gospodarstwa rolne 6
-    kandydat 1710 P2051 do sieci kanalizacyjnej z oczyszczaniem | ogółem 6
-    kandydat 1711 P2051 do sieci kanalizacyjnej z oczyszczaniem | indywidualne gospodarstwa rolne 6
-    kandydat 1716 P2051 brak kanalizacji | ogółem 6
-    kandydat 1717 P2051 brak kanalizacji | indywidualne gospodarstwa rolne 6
-    kandydat 56582 P2229 budynki | kanalizacja 7
-    kandydat 56575 P2229 mieszkania | kanalizacja 7
-    kandydat 56589 P2229 powierzchnia użytkowa mieszkań | kanalizacja 7
-    kandydat 56579 P2229 ludność w mieszkaniach | kanalizacja 7
-    kandydat 56666 P2230 budynki | ogółem | kanalizacja 5
-    kandydat 56716 P2230 budynki | przed 1918 | kanalizacja 5
-    kandydat 56650 P2230 budynki | 1918-1944 | kanalizacja 5
-    kandydat 56725 P2230 budynki | 1945-1970 | kanalizacja 5
-    kandydat 56674 P2230 budynki | 1971-1978 | kanalizacja 5
-    kandydat 56652 P2230 budynki | 1979-1988 | kanalizacja 5
-    kandydat 56599 P2230 budynki | 1989-2002 łącznie z będącymi w budowie | kanalizacja 5
-    kandydat 56648 P2230 budynki | 2001-2002 łącznie z będącymi w budowie | kanalizacja 5
-    kandydat 56695 P2230 mieszkania | ogółem | kanalizacja 5
-    kandydat 56712 P2230 mieszkania | przed 1918 | kanalizacja 5
-    kandydat 56594 P2230 mieszkania | 1918-1944 | kanalizacja 5
-    kandydat 56694 P2230 mieszkania | 1945-1970 | kanalizacja 5
-    kandydat 56679 P2230 mieszkania | 1971-1978 | kanalizacja 5
-    kandydat 56748 P2230 mieszkania | 1979-1988 | kanalizacja 5
-    kandydat 56681 P2230 mieszkania | 1989-2002 łącznie z będącymi w budowie | kanalizacja 5
-    kandydat 56636 P2230 mieszkania | 2001-2002 łącznie z będącymi w budowie | kanalizacja 5
-    kandydat 56690 P2230 powierzchnia użytkowa mieszkań | ogółem | kanalizacja 5
-    kandydat 56635 P2230 powierzchnia użytkowa mieszkań | przed 1918 | kanalizacja 5
-    kandydat 56676 P2230 powierzchnia użytkowa mieszkań | 1918-1944 | kanalizacja 5
-    kandydat 56747 P2230 powierzchnia użytkowa mieszkań | 1945-1970 | kanalizacja 5
-    kandydat 56704 P2230 powierzchnia użytkowa mieszkań | 1971-1978 | kanalizacja 5
-    kandydat 56595 P2230 powierzchnia użytkowa mieszkań | 1979-1988 | kanalizacja 5
-    kandydat 56643 P2230 powierzchnia użytkowa mieszkań | 1989-2002 łącznie z będącymi w budowie | kanalizacja 5
-    kandydat 56740 P2230 powierzchnia użytkowa mieszkań | 2001-2002 łącznie z będącymi w budowie | kanalizacja 5
-    kandydat 56607 P2230 ludność w mieszkaniach | ogółem | kanalizacja 5
-    kandydat 56667 P2230 ludność w mieszkaniach | przed 1918 | kanalizacja 5
-    kandydat 56730 P2230 ludność w mieszkaniach | 1918-1944 | kanalizacja 5
-    kandydat 56741 P2230 ludność w mieszkaniach | 1945-1970 | kanalizacja 5
-    kandydat 56665 P2230 ludność w mieszkaniach | 1971-1978 | kanalizacja 5
-    kandydat 56649 P2230 ludność w mieszkaniach | 1979-1988 | kanalizacja 5
-    kandydat 56724 P2230 ludność w mieszkaniach | 1989-2002 łącznie z będącymi w budowie | kanalizacja 5
-    kandydat 56732 P2230 ludność w mieszkaniach | 2001-2002 łącznie z będącymi w budowie | kanalizacja 5
-    kandydat 56751 P2231 budynki | ogółem | kanalizacja 5
-    kandydat 56828 P2231 budynki | osób fizycznych | kanalizacja 5
-    kandydat 56848 P2231 budynki | gminy | kanalizacja 5
-    kandydat 56799 P2231 budynki | pozostałych podmiotów | kanalizacja 5
-    kandydat 56810 P2231 budynki | wspólna | kanalizacja 5
-    kandydat 56780 P2231 mieszkania | ogółem | kanalizacja 5
-    kandydat 56791 P2231 mieszkania | osób fizycznych | kanalizacja 5
-    kandydat 56770 P2231 mieszkania | gminy | kanalizacja 5
-    kandydat 56804 P2231 mieszkania | pozostałych podmiotów | kanalizacja 5
-    kandydat 56830 P2231 mieszkania | wspólna | kanalizacja 5
-    kandydat 56812 P2231 powierzchnia użytkowa mieszkań | ogółem | kanalizacja 5
-    kandydat 56763 P2231 powierzchnia użytkowa mieszkań | osób fizycznych | kanalizacja 5
-    kandydat 56834 P2231 powierzchnia użytkowa mieszkań | gminy | kanalizacja 5
-    kandydat 56779 P2231 powierzchnia użytkowa mieszkań | pozostałych podmiotów | kanalizacja 5
-    kandydat 56814 P2231 powierzchnia użytkowa mieszkań | wspólna | kanalizacja 5
-    kandydat 56795 P2231 ludność w mieszkaniach | ogółem | kanalizacja 5
-    kandydat 56801 P2231 ludność w mieszkaniach | osób fizycznych | kanalizacja 5
-    kandydat 56758 P2231 ludność w mieszkaniach | gminy | kanalizacja 5
-    kandydat 56847 P2231 ludność w mieszkaniach | pozostałych podmiotów | kanalizacja 5
-    kandydat 56789 P2231 ludność w mieszkaniach | wspólna | kanalizacja 5
-    kandydat 79130 P2433 ogółem | kanalizacja 6
-    kandydat 79131 P2433 w miastach | kanalizacja 6
-    kandydat 79132 P2433 na wsi | kanalizacja 6
-    kandydat 79139 P2441 ogółem | sieć kanalizacyjna 6
-    kandydat 79140 P2441 w miastach | sieć kanalizacyjna 6
-    kandydat 79141 P2441 na wsi | sieć kanalizacyjna 6
-    kandydat 72982 P2469 zasoby spółdzielni mieszkaniowych | kanalizacja | mieszkania w budynkach remontowanych 5
-  WYBRANO kanalizac -> 79130 ogółem kanalizacja    %
   BDL zmienna 79130 poziom 6 rok 2025 jednostek 3934
    kanalizacja_proc rok 2025 gmin z danymi: 2473
+    w temacie 79133 ogółem wodociąg    %
+    w temacie 79130 ogółem kanalizacja    %
+    w temacie 79127 ogółem gaz    %
+    w temacie 79134 w miastach wodociąg    %
+    w temacie 79131 w miastach kanalizacja    %
+    w temacie 79128 w miastach gaz    %
+    w temacie 79135 na wsi wodociąg    %
+    w temacie 79132 na wsi kanalizacja    %
+    w temacie 79129 na wsi gaz    %
+  WYBRANO z tematu P2433 -> 79133 ogółem wodociąg    %
+  BDL zmienna 79133 poziom 6 rok 2025 jednostek 3934
+   wodociag_proc rok 2025 gmin z danymi: 2473
+    kandydat 217828 P2965 styczeń | bezrobotni zarejestrowani na 1 ofertę pracy 5
+    kandydat 217829 P2965 luty | bezrobotni zarejestrowani na 1 ofertę pracy 5
+    kandydat 217830 P2965 marzec | bezrobotni zarejestrowani na 1 ofertę pracy 5
+    kandydat 217831 P2965 kwiecień | bezrobotni zarejestrowani na 1 ofertę pracy 5
+    kandydat 217832 P2965 maj | bezrobotni zarejestrowani na 1 ofertę pracy 5
+    kandydat 217833 P2965 czerwiec | bezrobotni zarejestrowani na 1 ofertę pracy 5
+    kandydat 217834 P2965 lipiec | bezrobotni zarejestrowani na 1 ofertę pracy 5
+    kandydat 217835 P2965 sierpień | bezrobotni zarejestrowani na 1 ofertę pracy 5
+    kandydat 217836 P2965 wrzesień | bezrobotni zarejestrowani na 1 ofertę pracy 5
+    kandydat 217837 P2965 październik | bezrobotni zarejestrowani na 1 ofertę pracy 5
+    kandydat 217838 P2965 listopad | bezrobotni zarejestrowani na 1 ofertę pracy 5
+    kandydat 217839 P2965 grudzień | bezrobotni zarejestrowani na 1 ofertę pracy 5
 zapisano: województw 16 (wiki 16 ) powiatów 380 (wiki 376 ) gmin 2479 (wiki 2068 )
