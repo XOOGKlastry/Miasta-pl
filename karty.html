@@ -3,228 +3,132 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Karty · PolskoZnawca</title>
-<meta name="theme-color" content="#FFF6E0" />
+<title>Album kart · PolskoZnawca</title>
+<meta name="theme-color" content="#0B1530" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&family=Barlow+Condensed:wght@600;700;800&family=Spectral:ital,wght@1,600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="plansza.css?v=4" />
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-.tresc{flex:1;min-height:0;overflow:auto;padding:10px 12px 20px;display:flex;flex-direction:column;gap:12px}
-.rzadkosci{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-.rzadkosci button{border:3px solid var(--braz);border-radius:12px;padding:5px 2px;font-weight:900;font-size:10px;line-height:1.15;background:#fff}
-.rzadkosci button b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:15px}
-.rzadkosci button.akt{box-shadow:0 0 0 3px var(--zolt)}
-.naglowek{font-family:Bungee,sans-serif;font-size:16px;color:var(--krem);text-shadow:0 2px 0 var(--braz);margin:2px 2px -4px}
-.siatka{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-/* karta w stylu FUT: tarcza, ocena ogólna, mapa w okienku, dziewięć wskaźników z pełnymi nazwami */
-html,body{overflow-x:hidden}
-.tresc{overflow-x:hidden}
-.rzadkosci{grid-template-columns:repeat(5,minmax(0,1fr))!important}
-.rzadkosci button{font-size:9px!important;padding:5px 1px!important;min-width:0;overflow:hidden}
-.siatka{grid-template-columns:minmax(0,1fr)!important;gap:16px!important;justify-items:center}
-@media (min-width:720px){.siatka{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
-.k{--x:50%;--y:50%;position:relative;width:min(100%,380px);aspect-ratio:5/8;container-type:inline-size;clip-path:polygon(50% 0,100% 4%,100% 90%,50% 100%,0 90%,0 4%);
-  background:var(--tlo);color:#14233A;cursor:pointer;transition:transform .15s;filter:drop-shadow(0 4px 0 #3A2A14)}
-.k .ramka{position:absolute;inset:3cqw;clip-path:polygon(50% 0,100% 4%,100% 90%,50% 100%,0 90%,0 4%);border:.7cqw solid var(--ramka);pointer-events:none}
-.k .lewa{position:absolute;left:7cqw;top:9cqw;width:22cqw;display:flex;flex-direction:column;align-items:center;gap:.6cqw}
-.k .ovr{font-family:"Barlow Condensed",Bungee,sans-serif;font-weight:800;font-size:19cqw;line-height:.85}
-.k .typ{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:6cqw;letter-spacing:.3cqw}
-.k .herb{width:13cqw;height:15cqw;object-fit:contain}
-.k .kres{width:10cqw;height:.7cqw;background:var(--ramka)}
-.k .wojs{font-size:4cqw;font-weight:900;letter-spacing:.3cqw}
-.k .mapka{position:absolute;right:6cqw;top:8cqw;width:60cqw;height:52cqw;border-radius:4cqw;overflow:hidden;border:.8cqw solid #14233A;background:#E9E3CF}
-.k .mapka svg{width:100%;height:100%;display:block}
-.k .nazwa{position:absolute;left:4cqw;right:4cqw;top:63cqw;text-align:center;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:10cqw;line-height:1;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.k .jedn{position:absolute;left:6cqw;right:6cqw;top:74.5cqw;text-align:center;font-size:3.8cqw;font-weight:700;line-height:1.25;opacity:.85}
-.k .linia{position:absolute;left:14cqw;right:14cqw;top:85cqw;height:.6cqw;background:var(--ramka);opacity:.7}
-.k .st{position:absolute;left:6cqw;right:6cqw;top:88cqw;display:grid;grid-template-columns:1fr 1fr;column-gap:4cqw;row-gap:1.8cqw}
-.k .st span{display:grid;grid-template-columns:4.6cqw minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:1.6cqw;align-items:center}
-.k .st svg{grid-row:1/3;width:4.6cqw;height:4.6cqw}
-.k .st em{font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:3.6cqw;letter-spacing:0;text-transform:uppercase;white-space:nowrap;line-height:1.05}
-.k .st b{grid-row:1/3;grid-column:3;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:6.8cqw;line-height:1;text-align:right;min-width:7cqw}
-.k .st i{font-style:normal;font-family:Rubik,sans-serif;font-weight:700;font-size:2.8cqw;opacity:.75;white-space:nowrap}
-.k .rz{position:absolute;left:0;right:0;top:143cqw;text-align:center;font-size:3.6cqw;font-weight:900;letter-spacing:.6cqw;color:var(--ramka)}
-.mapka .ob{stroke:#B8AC8A;stroke-width:.5}
-.mapka text{font-family:Spectral,serif;font-style:italic;font-weight:600;fill:#2E2416;paint-order:stroke;stroke:rgba(255,255,255,.85);stroke-width:2.4px}
-.k::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:var(--mieszanie,soft-light);opacity:var(--blask,.6);background:var(--holo)}
-.k.r-zwykla{--tlo:linear-gradient(160deg,#FBF6E8,#E2D6B8);--ramka:#9C8A62;--holo:none;--blask:0}
-.k.r-braz{--tlo:linear-gradient(160deg,#F4DCC4,#C98B5C);--ramka:#7E4620;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,230,200,.8),transparent 45%)}
-.k.r-srebro{--tlo:linear-gradient(160deg,#F7F9FB,#AEB9C4);--ramka:#5F6C78;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.95),transparent 42%),linear-gradient(115deg,transparent 30%,rgba(255,255,255,.6) 48%,transparent 60%)}
-.k.r-zloto{--tlo:linear-gradient(160deg,#FFF3C2,#E0A812);--ramka:#7A5400;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,250,210,1),transparent 40%),repeating-linear-gradient(115deg,transparent 0 12px,rgba(255,255,255,.35) 12px 16px);--blask:.75}
-.k.r-diament{--tlo:linear-gradient(160deg,#F2FBFF 0%,#BFE6FF 38%,#E6D6FF 70%,#BFE6FF 100%);--ramka:#3D6FD1;--mieszanie:color-dodge;--blask:.5;
-  --holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.95),transparent 30%),linear-gradient(calc(var(--kat,115) * 1deg),#ff6b6b33,#ffd93d55,#6bff9a44,#6bd5ff55,#c06bff44,#ff6b6b33)}
-.k.zablokowana{--tlo:#3A2A14!important;color:#C9BFA0;cursor:pointer}
-.k.zablokowana::after{display:none}.k.zablokowana .mapka{background:#2E2210;border-color:#5A4A2F}
-.duza .k{width:min(92vw,400px)}
-.k .nowa{position:absolute;left:50%;top:1.5cqw;transform:translateX(-50%);background:var(--czer);color:#fff;font-size:3.5cqw;font-weight:900;padding:.5cqw 3cqw;border-radius:0 0 2cqw 2cqw;z-index:2}
-.mapka .dr0{stroke:#D9452B;stroke-width:2.6}.mapka .dr1{stroke:#E8913A;stroke-width:2.2}.mapka .dr2{stroke:#F2C744;stroke-width:1.8}.mapka .dr3{stroke:#FFFFFF;stroke-width:1.4}
-.mapka .ob{stroke:#8E8164;stroke-width:.6}
-.mapka text{font-family:Spectral,serif;font-style:italic;font-weight:600;fill:#2E2416;paint-order:stroke;stroke:rgba(255,255,255,.85);stroke-width:2.4px}
-/* powiększenie i odsłanianie */
-.duza{position:fixed;inset:0;z-index:40;background:rgba(20,14,5,.7);display:grid;place-items:center;padding:20px;animation:pojaw .2s both}
-@keyframes pojaw{from{opacity:0}}
-.duza .k{width:min(82vw,340px);cursor:default;animation:wejscie .5s cubic-bezier(.3,1.4,.5,1) both}
-@keyframes wejscie{from{transform:rotateY(180deg) scale(.6)}}
-.duza p{color:#FFF6E0;text-align:center;font-weight:700;margin:12px 0 0;max-width:320px}
-.woj-nag{display:flex;justify-content:space-between;align-items:baseline;background:var(--krem);border:3px solid var(--braz);border-radius:12px;padding:6px 12px;margin:6px 0 8px;box-shadow:0 3px 0 var(--braz)}
-.woj-nag b{font-family:Bungee,sans-serif;font-weight:400;font-size:14px}.woj-nag span{font-weight:900;font-size:13px}
-.puste{background:var(--krem);border:3px dashed var(--braz);border-radius:14px;padding:14px;font-weight:700;text-align:center}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow-x:hidden}
+body{font-family:Rubik,system-ui,sans-serif;color:#EAF0FF;background:#0B1530;
+  background-image:radial-gradient(ellipse at 50% -10%,rgba(90,140,255,.35),transparent 55%),radial-gradient(ellipse at 110% 60%,rgba(140,90,255,.18),transparent 50%),
+  repeating-linear-gradient(60deg,rgba(255,255,255,.025) 0 2px,transparent 2px 22px),repeating-linear-gradient(-60deg,rgba(255,255,255,.025) 0 2px,transparent 2px 22px),linear-gradient(180deg,#0E1C3E,#070D1E);background-attachment:fixed}
+a{color:inherit}
+.wrap{max-width:720px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 10px;background:linear-gradient(180deg,rgba(7,13,30,.95),rgba(7,13,30,.8));backdrop-filter:blur(8px);border-bottom:1px solid rgba(160,190,255,.18)}
+header a.wstecz{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(160,190,255,.3);text-decoration:none;font-size:22px;font-weight:900}
+header h1{flex:1;margin:0;font-family:Bungee,sans-serif;font-weight:400;font-size:20px;letter-spacing:.5px}
+header h1 small{display:block;font-family:Rubik,sans-serif;font-weight:700;font-size:11px;color:#9FB4E6;letter-spacing:0}
+main{flex:1;padding:12px 12px 40px;display:flex;flex-direction:column;gap:12px}
+.postep{background:rgba(255,255,255,.06);border:1px solid rgba(160,190,255,.2);border-radius:16px;padding:12px}
+.postep .pasek{height:10px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden;margin:8px 0 10px}
+.postep .pasek i{display:block;height:100%;background:linear-gradient(90deg,#5BC0FF,#B98CFF,#FFD15C);border-radius:6px}
+.postep .gora{display:flex;justify-content:space-between;align-items:baseline;font-weight:800}
+.postep .gora b{font-family:"Barlow Condensed",sans-serif;font-size:26px}
+.rzadkosci{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.rzadkosci button{min-width:0;border-radius:12px;border:1px solid rgba(255,255,255,.15);padding:6px 2px;font:800 9px Rubik,sans-serif;color:#14233A;cursor:pointer;overflow:hidden}
+.rzadkosci button b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:16px}
+.rzadkosci button.akt{outline:3px solid #fff;outline-offset:-2px}
+.rz-diament{background:linear-gradient(160deg,#F2FBFF,#BFE6FF 50%,#E6D6FF)}.rz-zloto{background:linear-gradient(160deg,#FFF3C2,#E0A812)}.rz-srebro{background:linear-gradient(160deg,#F7F9FB,#AEB9C4)}.rz-braz{background:linear-gradient(160deg,#F4DCC4,#C98B5C)}.rz-zwykla{background:linear-gradient(160deg,#FBF6E8,#E2D6B8)}
+/* sekcje albumu (zwijane) */
+details.sek{background:rgba(255,255,255,.05);border:1px solid rgba(160,190,255,.18);border-radius:16px;overflow:hidden}
+details.sek[open]{background:rgba(255,255,255,.07)}
+details.sek>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;user-select:none}
+details.sek>summary::-webkit-details-marker{display:none}
+summary .ikona{width:40px;height:40px;flex:none;display:grid;place-items:center;border-radius:10px;background:rgba(255,255,255,.08)}
+summary .ikona svg{width:34px;height:34px}summary .ikona svg path{fill:rgba(140,180,255,.35);stroke:#9FC2FF;stroke-width:1.5;vector-effect:non-scaling-stroke}
+summary .tyt{flex:1;min-width:0}
+summary .tyt b{display:block;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:19px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+summary .tyt small{display:block;font-size:11px;color:#9FB4E6;font-weight:700}
+summary .mini-pasek{display:block;height:4px;border-radius:2px;background:rgba(255,255,255,.12);margin-top:4px;overflow:hidden}
+summary .mini-pasek i{display:block;height:100%;background:#7FB6FF}
+summary .licz{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:18px;white-space:nowrap}
+summary .strz{font-size:16px;transition:transform .2s;color:#9FB4E6}
+details[open]>summary .strz{transform:rotate(90deg)}
+.siatka{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px;padding:6px 12px 16px}
+@media (min-width:560px){.siatka{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.slot-reszta{aspect-ratio:5/7;border-radius:14px;border:2px dashed rgba(160,190,255,.35);display:grid;place-items:center;text-align:center;font-weight:800;color:#9FB4E6;padding:10px;font-size:13px}
+.slot-reszta b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:30px;color:#EAF0FF}
+.puste{padding:14px;text-align:center;color:#9FB4E6;font-weight:700}
+/* podgląd karty po stuknięciu */
+.kk-podglad{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;background:rgba(4,8,20,.85);backdrop-filter:blur(6px);animation:wej .2s both}
+@keyframes wej{from{opacity:0}}
+.kk-podglad .kk{width:min(88vw,380px);animation:obrot .5s cubic-bezier(.3,1.3,.5,1) both}
+@keyframes obrot{from{transform:rotateY(160deg) scale(.6)}}
+.kk-podglad p{margin:0;max-width:380px;text-align:center;color:#C8D6F5;font-size:13px;font-weight:700}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="gora"><a href="./" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Karty<small id="stan">wczytywanie kolekcji…</small></h1></header>
-  <main class="tresc" id="tresc">
-    <div class="rzadkosci" id="rzadkosci"></div>
-    <div id="nowe"></div>
-    <div class="naglowek" id="naglKol">Twoja kolekcja</div>
-    <div id="kolekcja"></div>
-    <div id="blisko"></div>
-    <div class="naglowek">Do zdobycia</div>
-    <div class="siatka" id="dozdobycia"></div>
+  <header><a class="wstecz" href="./" aria-label="Wróć">‹</a><h1>Album kart<small id="stan">wczytywanie…</small></h1></header>
+  <main id="main">
+    <section class="postep"><div class="gora"><span>Zebrane karty</span><b id="ile">0 / 2479</b></div><div class="pasek"><i id="pasek" style="width:0"></i></div><div class="rzadkosci" id="rzadkosci"></div></section>
+    <div id="sekcje"></div>
   </main>
 </div>
-<script src="topojson-client.min.js?v=17"></script>
 <script src="wspolne.js?v=17"></script>
-<script src="karty.js?v=2"></script>
+<script src="karty.js?v=3"></script>
 <script>
-const {$,fmt}=ZP;
-const RZ=Karty.RZ,KOL=Karty.KOLEJ;
-const IK={
- ludnosc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="9" cy="8" r="3.5"/><path d="M2 21c0-4 3-6.5 7-6.5s7 2.5 7 6.5"/><circle cx="17.5" cy="9" r="2.6"/><path d="M17 14.6c3 .2 5 2.3 5 6.4"/></svg>',
- powierzchnia:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="3" width="18" height="18" rx="1"/><path d="M3 9h3M3 15h3M9 3v3M15 3v3"/></svg>',
- gestosc:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="6" cy="6" r="2"/><circle cx="12" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="12" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
- saldo_migracji:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 8h14l-4-4M20 16H6l4 4"/></svg>',
- dochod_na_mieszk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M9 8h6l-6 8h6"/></svg>',
- bezrobocie_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4h6v3M3 13h18"/></svg>',
- wodociag_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/></svg>',
- kanalizacja_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M7 9h10M6 12h12M7 15h10"/></svg>',
- lesistosc_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M12 2l6 9h-3l4 6H5l4-6H6z"/><path d="M12 17v5"/></svg>'};
-const TYP={"gmina miejska":"MIA","gmina wiejska":"WIE","gmina miejsko-wiejska":"M-W"};
-const WS={"dolnośląskie":"DLŚ","kujawsko-pomorskie":"K-P","lubelskie":"LUB","lubuskie":"LBU","łódzkie":"ŁDZ","małopolskie":"MAŁ","mazowieckie":"MAZ","opolskie":"OPO","podkarpackie":"PKR","podlaskie":"PDL","pomorskie":"POM","śląskie":"ŚLĄ","świętokrzyskie":"ŚWK","warmińsko-mazurskie":"W-M","wielkopolskie":"WLK","zachodniopomorskie":"ZPM"};
-let D=null,GEO={},HERBY={},RZEKI=[],filtr="",stan=null;
-const liczba=(v,d)=>v==null?"–":Number(v).toLocaleString("pl-PL",{maximumFractionDigits:d==null?1:d});
-function wartosc(g,k){
-  const v=g[k];if(v==null)return "brak danych";
-  if(k==="ludnosc")return liczba(v,0)+" mieszk.";
-  if(k==="powierzchnia")return liczba(v,1)+" km²";
-  if(k==="gestosc")return liczba(v,0)+" os./km²";
-  if(k==="saldo_migracji")return (v>0?"+":"")+liczba(v)+"‰";
-  if(k==="dochod_na_mieszk")return liczba(v,0)+" zł/os.";
-  return liczba(v)+"%";
-}
-const mnp=g=>+g.k.slice(2,4)>=61;
-function herbSrc(g){
-  if(HERBY[g.n]&&g.typ!=="gmina wiejska")return HERBY[g.n];
-  return g.herb?"https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(g.herb)+"?width=60":"";
-}
-function karta(g,otwarta,nowa,postep,duza){
-  const oc=g.oc||{};
-  const st=Karty.STATY.map(s=>'<span>'+IK[s.k]+'<em>'+s.n+'</em><b>'+(otwarta&&oc[s.k]!=null?oc[s.k]:"?")+'</b><i>'+(otwarta?wartosc(g,s.k):"")+'</i></span>').join("");
-  const h=otwarta?herbSrc(g):"";
-  return '<div class="k r-'+g.rz+(otwarta?"":" zablokowana")+'" data-k="'+g.k+'">'+(nowa?'<span class="nowa">NOWA</span>':'')+'<span class="ramka"></span>'
-    +'<div class="lewa"><span class="ovr">'+(otwarta&&g.ovr?g.ovr:"?")+'</span><span class="typ">'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</span>'+(h?'<img class="herb" alt="" loading="lazy" src="'+h+'">':'')+'<span class="kres"></span><span class="wojs">'+(WS[g.woj]||"")+'</span></div>'
-    +'<div class="mapka" data-m="'+g.k+'"></div>'
-    +'<div class="nazwa">'+(otwarta?g.n:"???")+'</div>'
-    +'<div class="jedn">'+(otwarta?(mnp(g)?"miasto na prawach powiatu<br>woj. "+g.woj:g.typ+"<br>"+g.powiat+" · woj. "+g.woj):(postep?"zebrane "+postep+"/"+Karty.PROG+" gier":"woj. "+g.woj))+'</div>'
-    +'<span class="linia"></span><div class="st">'+st+'</div>'
-    +'<div class="rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
-}
-/* mapka topograficzna z prawdziwych danych: granica gminy (PRG), drogi i miejscowości (OpenStreetMap), rzeki */
-const MAPKI={};
-function mapka(el,duza){
-  const k=el.dataset.m,g=D.PO_K[k],f=GEO[k];if(!f||el.dataset.zrob)return;el.dataset.zrob=1;
-  const W=200,H=180;
-  const rysuj=m=>{
-    let b=m&&m.bb;if(!b){b=[1e9,1e9,-1e9,-1e9];const ps=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;ps.forEach(p=>p[0].forEach(([x,y])=>{b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);}));}
-    const kx=Math.cos((b[1]+b[3])/2*Math.PI/180),pad=.1,sx=(b[2]-b[0])*kx,sy=b[3]-b[1],sk=Math.min(W/(sx*(1+2*pad)),H/(sy*(1+2*pad)));
-    const ox=W/2-(b[0]+b[2])/2*kx*sk,oy=H/2+(b[1]+b[3])/2*sk;
-    const X=lo=>(lo*kx*sk+ox).toFixed(1),Y=la=>(oy-la*sk).toFixed(1);
-    const sciezka=geo=>{const ps=geo.type==="Polygon"?[geo.coordinates]:geo.coordinates;return ps.map(p=>p.map(r=>"M"+r.map(([x,y])=>X(x)+" "+Y(y)).join("L")+"Z").join("")).join("");};
-    let svg='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="xMidYMid slice"><rect width="'+W+'" height="'+H+'" fill="#DDD6BD"/>';
-    const ram=[b[0]-(b[2]-b[0])*.3,b[1]-(b[3]-b[1])*.3,b[2]+(b[2]-b[0])*.3,b[3]+(b[3]-b[1])*.3];
-    Object.values(GEO).forEach(o=>{if(o===f||!o._bb)return;const q=o._bb;if(q[2]<ram[0]||q[0]>ram[2]||q[3]<ram[1]||q[1]>ram[3])return;svg+='<path class="ob" d="'+sciezka(o.geometry)+'" fill="#E8E1C8"/>';});
-    svg+='<path d="'+sciezka(f.geometry)+'" fill="#F8F3E3"/>';
-    const linia=pts=>"M"+pts.map(([x,y])=>X(x)+" "+Y(y)).join("L"),wiel=pts=>linia(pts)+"Z";
-    if(m){
-      if(m.l)svg+='<path d="'+m.l.map(wiel).join("")+'" fill="#B5D69B" fill-rule="evenodd"/>';
-      const WODA="#7DB8E0";
-      if(m.w)svg+='<path d="'+m.w.map(wiel).join("")+'" fill="'+WODA+'"/>';
-      if(m.r)svg+='<path d="'+m.r.map(linia).join("")+'" fill="none" stroke="'+WODA+'" stroke-width="1.5" stroke-linecap="round"/>';
-      // drogi: autostrady, ekspresowe i główne (stary format mapek miał też drugorzędne: pomijamy)
-      const KOL={0:["#B2263A",3.6],1:["#E26B2C",3],2:["#F2C744",2.2]};
-      [2,1,0].forEach(kl=>{const ls=m.d.filter(d=>d[0]===kl);if(!ls.length)return;const p=ls.map(d=>linia(d[1])).join("");
-        svg+='<path d="'+p+'" fill="none" stroke="#5A4A2F" stroke-width="'+(KOL[kl][1]+1.4)+'" stroke-linecap="round" stroke-linejoin="round" opacity=".55"/><path d="'+p+'" fill="none" stroke="'+KOL[kl][0]+'" stroke-width="'+KOL[kl][1]+'" stroke-linecap="round" stroke-linejoin="round"/>';});
-    }
-    svg+='<path d="'+sciezka(f.geometry)+'" fill="none" stroke="#6B3FA0" stroke-width="1.8" stroke-dasharray="5 2.5"/>';
-    if(m&&m.m){
-      const ile=duza?12:4;
-      m.m.slice(0,ile).forEach(x=>{const wazne=x[3]>=2||x[0]===g.n;
-        svg+='<circle cx="'+X(x[1])+'" cy="'+Y(x[2])+'" r="'+(wazne?2.8:1.7)+'" fill="#2E2416" stroke="#fff" stroke-width=".8"/>'
-          +'<text x="'+X(x[1])+'" y="'+(Y(x[2])-4)+'" text-anchor="middle" style="font-size:'+(wazne?(duza?11:12):(duza?8.5:9.5))+'px">'+x[0]+'</text>';});
-    }
-    el.innerHTML=svg+'</svg>';
-  };
-  if(MAPKI[k])return rysuj(MAPKI[k]);
-  fetch("mapki/"+k+".json").then(r=>r.ok?r.json():null).catch(()=>null).then(m=>{MAPKI[k]=m;rysuj(m);});
-}
-const widok=new IntersectionObserver(w=>w.forEach(e=>{if(e.isIntersecting){mapka(e.target,false);widok.unobserve(e.target);}}),{rootMargin:"200px"});
-function podepnijMapki(root){root.querySelectorAll(".mapka").forEach(el=>{if(el.closest(".duza"))mapka(el,true);else widok.observe(el);});}
-function holo(el){
-  const ruch=(x,y)=>{el.style.setProperty("--x",x+"%");el.style.setProperty("--y",y+"%");el.style.setProperty("--kat",90+x);el.style.transform="perspective(600px) rotateY("+((x-50)/6)+"deg) rotateX("+((50-y)/6)+"deg)";};
-  el.addEventListener("pointermove",e=>{const r=el.getBoundingClientRect();ruch(100*(e.clientX-r.left)/r.width,100*(e.clientY-r.top)/r.height);});
-  el.addEventListener("pointerleave",()=>{el.style.transform="";});
-}
-function pokazDuza(g,otwarta,opis){
-  const d=document.createElement("div");d.className="duza";
-  const pp=stan.postep[g.k]?stan.postep[g.k].size:0;
-  d.innerHTML=karta(g,otwarta,false,pp,true)+'<p>'+(opis||(otwarta?"Dane: GUS BDL, PRG, mapa © współtwórcy OpenStreetMap"
-    :"Zdobędziesz ją, odgadując po konturze (Do sześciu razy sztuka, Kształt gminy) albo trafiając w "+Karty.PROG+" różnych grach. Masz: "+pp+"/"+Karty.PROG+"."))+'</p>';
-  d.onclick=()=>d.remove();document.body.appendChild(d);holo(d.querySelector(".k"));podepnijMapki(d);
+const {$}=ZP;
+let D=null,filtr="",WOJ_SVG={};
+const otwarte=new Set(JSON.parse(localStorage.getItem("album-otwarte")||"[]"));
+const zapiszOtwarte=()=>localStorage.setItem("album-otwarte",JSON.stringify([...otwarte]));
+function sekcja(id,ikona,tytul,opis,ile,z,tresc,domyslnie){
+  const otw=otwarte.has(id)||(domyslnie&&!otwarte.has("!"+id));
+  return '<details class="sek" data-id="'+id+'"'+(otw?" open":"")+'><summary><span class="ikona">'+ikona+'</span><span class="tyt"><b>'+tytul+'</b><small>'+opis+'</small>'
+    +(z?'<span class="mini-pasek"><i style="width:'+(100*ile/z).toFixed(1)+'%"></i></span>':'')+'</span><span class="licz">'+(z?ile+'/'+z:ile)+'</span><span class="strz">›</span></summary><div class="siatka">'+tresc+'</div></details>';
 }
 function rysuj(){
-  stan=Karty.zdobyte();const mam=stan.mam,w=Karty.widziane(),nowe=[...mam].filter(k=>w.indexOf(k)<0);
+  const st=Karty.zdobyte(),mam=st.mam,w=Karty.widziane(),nowe=[...mam].filter(k=>w.indexOf(k)<0);
+  const KOL=Karty.KOLEJ,RZ=Karty.RZ;
   const licz={};KOL.forEach(r=>licz[r]=[0,0]);D.g.forEach(g=>{licz[g.rz][1]++;if(mam.has(g.k))licz[g.rz][0]++;});
-  $("stan").textContent="zebrane "+mam.size+" z "+D.g.length;
-  $("rzadkosci").innerHTML=KOL.map(r=>'<button data-r="'+r+'" class="'+(filtr===r?"akt":"")+'" style="background:'+({diament:"#D9EFFF",zloto:"#FFE27A",srebro:"#E3E8EC",braz:"#EBC09B",zwykla:"#FFF6E0"})[r]+'">'+RZ[r]+'<b>'+licz[r][0]+'/'+licz[r][1]+'</b></button>').join("");
+  $("ile").textContent=mam.size+" / "+D.g.length;$("pasek").style.width=(100*mam.size/D.g.length).toFixed(2)+"%";
+  $("stan").textContent=mam.size?"stuknij kartę, żeby ją obejrzeć":"zbieraj karty, grając";
+  $("rzadkosci").innerHTML=KOL.map(r=>'<button class="rz-'+r+(filtr===r?" akt":"")+'" data-r="'+r+'">'+RZ[r]+'<b>'+licz[r][0]+'/'+licz[r][1]+'</b></button>').join("");
   $("rzadkosci").querySelectorAll("button").forEach(b=>b.onclick=()=>{filtr=filtr===b.dataset.r?"":b.dataset.r;rysuj();});
-  // kolekcja pogrupowana województwami
-  const wg={};[...mam].map(k=>D.PO_K[k]).filter(g=>g&&(!filtr||g.rz===filtr)).forEach(g=>(wg[g.woj]=wg[g.woj]||[]).push(g));
-  const wszystkieWoj={};D.g.forEach(g=>wszystkieWoj[g.woj]=(wszystkieWoj[g.woj]||0)+1);
+  const pasuje=g=>!filtr||g.rz===filtr,sort=(a,b)=>KOL.indexOf(a.rz)-KOL.indexOf(b.rz)||a.ludnosc-b.ludnosc;
   let h="";
-  Object.keys(wg).sort((a,b)=>a.localeCompare(b,"pl")).forEach(woj=>{
-    const l=wg[woj].sort((a,b)=>KOL.indexOf(a.rz)-KOL.indexOf(b.rz)||a.ludnosc-b.ludnosc);
-    h+='<div class="woj-nag"><b>'+woj+'</b><span>'+l.length+'/'+wszystkieWoj[woj]+'</span></div><div class="siatka">'+l.map(g=>karta(g,true,nowe.indexOf(g.k)>=0)).join("")+'</div>';
+  const ikNowe='<svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21.1l1.4-7L2 9.3l7-.8z"/></svg>';
+  if(nowe.length){const l=nowe.map(k=>D.PO_K[k]).filter(Boolean).sort(sort);
+    h+=sekcja("nowe",ikNowe,"Nowe karty","od ostatniej wizyty",l.length,0,l.map(g=>Karty.karta(g,{nowa:true})).join(""),true);}
+  // województwa: najpierw te, w których masz najwięcej kart
+  const woj={};D.g.forEach(g=>{(woj[g.woj]=woj[g.woj]||{wsz:[],mam:[]}).wsz.push(g);if(mam.has(g.k))woj[g.woj].mam.push(g);});
+  Object.keys(woj).sort((a,b)=>woj[b].mam.length-woj[a].mam.length||a.localeCompare(b,"pl")).forEach(n=>{
+    const x=woj[n],l=x.mam.filter(pasuje).sort(sort);
+    const blisko=x.wsz.filter(g=>!mam.has(g.k)&&st.postep[g.k]&&st.postep[g.k].size>=Karty.PROG-1&&pasuje(g)).slice(0,4);
+    const reszta=x.wsz.filter(g=>!mam.has(g.k)&&pasuje(g)).length-blisko.length;
+    const tresc=l.map(g=>Karty.karta(g,{nowa:nowe.indexOf(g.k)>=0})).join("")
+      +blisko.map(g=>Karty.karta(g,{otwarta:false,postep:st.postep[g.k].size})).join("")
+      +(reszta>0?'<div class="slot-reszta"><span><b>'+reszta+'</b>kart do zdobycia</span></div>':'');
+    h+=sekcja("w-"+n,WOJ_SVG[n]||"",n,x.mam.length?"zebrane karty: "+x.mam.length:"jeszcze żadnej karty",x.mam.length,x.wsz.length,tresc||'<div class="puste">Brak kart w tym filtrze.</div>',false);
   });
-  $("kolekcja").innerHTML=h||'<div class="puste">Jeszcze pusto. Kartę dostajesz, gdy odgadniesz gminę po konturze albo trafisz ją w '+Karty.PROG+' różnych grach.</div>';
-  // prawie zdobyte: brakuje jednej gry
-  const blisko=Object.entries(stan.postep).filter(([k,s])=>!mam.has(k)&&s.size>=Karty.PROG-1).map(([k])=>D.PO_K[k]).filter(Boolean).slice(0,9);
-  $("blisko").innerHTML=blisko.length?'<div class="naglowek">Prawie twoje</div><div class="siatka">'+blisko.map(g=>karta(g,false,false,stan.postep[g.k].size)).join("")+'</div>':"";
-  const brak=D.g.filter(g=>!mam.has(g.k)&&(filtr?g.rz===filtr:(g.rz==="diament"||g.rz==="zloto"))).sort((a,b)=>KOL.indexOf(a.rz)-KOL.indexOf(b.rz)||a.ludnosc-b.ludnosc).slice(0,24);
-  $("dozdobycia").innerHTML=brak.map(g=>karta(g,false,false,stan.postep[g.k]?stan.postep[g.k].size:0)).join("");
-  podepnijMapki(document);
-  document.querySelectorAll("#kolekcja .k").forEach(el=>{holo(el);el.onclick=()=>pokazDuza(D.PO_K[el.dataset.k],true);});
-  document.querySelectorAll("#blisko .k,#dozdobycia .k").forEach(el=>el.onclick=()=>pokazDuza(D.PO_K[el.dataset.k],false));
+  const rzadkie=D.g.filter(g=>!mam.has(g.k)&&(g.rz==="diament"||g.rz==="zloto")&&pasuje(g)).sort(sort).slice(0,12);
+  const ikDiam='<svg viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z"/></svg>';
+  if(rzadkie.length)h+=sekcja("rzadkie",ikDiam,"Najrzadsze do zdobycia","diamentowe i złote karty",rzadkie.length,0,rzadkie.map(g=>Karty.karta(g,{otwarta:false,postep:st.postep[g.k]?st.postep[g.k].size:0})).join(""),false);
+  $("sekcje").innerHTML=h;
+  // zwijanie i rozwijanie sekcji z pamięcią stanu
+  document.querySelectorAll("details.sek").forEach(d=>d.addEventListener("toggle",()=>{const id=d.dataset.id;if(d.open){otwarte.add(id);otwarte.delete("!"+id);Karty.podepnijMapy(d);}else{otwarte.delete(id);otwarte.add("!"+id);}zapiszOtwarte();}));
+  document.querySelectorAll("details.sek[open]").forEach(d=>Karty.podepnijMapy(d));
+  document.querySelectorAll("#sekcje .kk").forEach(el=>{Karty.holo(el);el.onclick=()=>podglad(D.PO_K[el.dataset.k],mam.has(el.dataset.k),st);});
   if(nowe.length)localStorage.setItem("karty-widziane",JSON.stringify([...new Set(w.concat(nowe))]));
 }
-Promise.all([Karty.zaladuj(),fetch("gminy.topojson?v=17").then(r=>r.json()),fetch("herby.json").then(r=>r.json()).catch(()=>({miasta:[]}))]).then(([d,t,h])=>{
+function podglad(g,otwarta,st){
+  const pp=st.postep[g.k]?st.postep[g.k].size:0;
+  const d=document.createElement("div");d.className="kk-podglad";
+  d.innerHTML=Karty.karta(g,{tryb:"pelna",otwarta})+'<p>'+(otwarta?"Dane: GUS BDL, PRG · mapa © współtwórcy OpenStreetMap, OpenTopoMap · stuknij, by zamknąć"
+    :"Zdobędziesz ją, odgadując po konturze (Do sześciu razy sztuka, Kształt gminy) albo trafiając w "+Karty.PROG+" różnych grach. Masz: "+pp+"/"+Karty.PROG+".")+'</p>';
+  d.onclick=()=>d.remove();document.body.appendChild(d);Karty.holo(d.querySelector(".kk"));Karty.podepnijMapy(d);
+}
+Karty.styl();
+Promise.all([Karty.zaladuj(),Karty.geometrie(),fetch("woj.geojson?v=17").then(r=>r.json())]).then(([d,_,gj])=>{
   D=d;
-  (h.miasta||[]).forEach(c=>HERBY[c.n]=c.img);
-  const obj=Object.values(t.objects).sort((a,c)=>c.geometries.length-a.geometries.length)[0];
-  topojson.feature(t,obj).features.forEach(f=>{if(!f.geometry)return;const ps=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;let b=[1e9,1e9,-1e9,-1e9];
-    ps.forEach(p=>p[0].forEach(([x,y])=>{b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);}));f._bb=b;GEO[String(f.properties.k)]=f;
-    // powierzchnia z granic PRG, gdy brak jej w danych
-    // powierzchnia zawsze z urzędowych granic PRG (w Wikidata zdarzają się błędy, np. Kutno 3359 km²)
-    const g=D.PO_K[String(f.properties.k)];if(g){let a=0;ps.forEach(p=>p.forEach((r,ri)=>{let s=0;for(let i=0,j=r.length-1;i<r.length;j=i++)s+=(r[j][0]-r[i][0])*(r[j][1]+r[i][1]);a+=(ri?-1:1)*Math.abs(s)/2;}));
-      g.powierzchnia=Math.round(a*111.32*111.32*Math.cos((b[1]+b[3])/2*Math.PI/180)*10)/10;}});
-  Karty.przelicz();
+  gj.features.forEach(f=>{const P=ZP.projection([f],100,4);WOJ_SVG[f.properties.nazwa]='<svg viewBox="0 0 100 '+P.H.toFixed(0)+'"><path d="'+P.path(f.geometry,0.6)+'"/></svg>';});
   rysuj();
-  return;
-}).catch(e=>{$("stan").textContent="nie udało się wczytać kolekcji";});
-ZP.fitViewport();ZP.registerSW();
+}).catch(e=>{$("stan").textContent="nie udało się wczytać albumu";console.error(e);});
+ZP.fitViewport&&ZP.fitViewport();ZP.registerSW();
 </script>
 </body>
 </html>

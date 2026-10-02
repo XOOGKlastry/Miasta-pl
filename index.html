@@ -241,7 +241,7 @@ fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
 window.addEventListener("resize",()=>{clearTimeout(window._r);window._r=setTimeout(start,200);});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
-<script src="karty.js?v=2"></script>
+<script src="karty.js?v=3"></script>
 <script>setTimeout(()=>{Karty.liczbaNowych().then(n=>{const e=document.getElementById("kolNowe");if(e&&n>0){e.textContent=n>99?"99+":n;e.classList.remove("hidden");}}).catch(()=>{});},1500);</script>
 </body>
 </html>
