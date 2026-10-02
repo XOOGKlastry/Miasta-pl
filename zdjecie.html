@@ -279,6 +279,7 @@ function startZoom(){
     $("roundTag").textContent="Runda "+(game.i+1)+" · "+PKT[Math.min(krok,PKT.length-1)]+" pkt";
   },100);
 }
+ZP.jokerCel(()=>game&&game.cur?[game.cur.name]:[]);
 function pokazOpcje(){
   const c=game.cur;
   {

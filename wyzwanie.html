@@ -432,6 +432,7 @@ function wpisz(nazwy,poprawne,opcje){
   $("wpis").classList.remove("hidden");POLE.wyczysc();POLE.wylacz(false);
   if(TRYB==="saga"){pokazOpcje();$("wpis").classList.add("bez-podp");}else POLE.focus();
 }
+ZP.jokerCel(()=>{const q=Q[st.i];if(!q)return [];if(q.t==="v")return [q.woj];if(q.t==="p")return [q.pw.label];return st.poprawne||[];});
 function pokazOpcje(){
   const box=$("answers");box.innerHTML="";box.classList.remove("hidden");
   st.opcje.forEach(o=>{const b=document.createElement("button");b.textContent=o;b.onclick=()=>odpWpis(o,b);box.appendChild(b);});

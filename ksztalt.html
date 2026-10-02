@@ -208,6 +208,7 @@ function next(){
   const nr=game.i;
   drawShape(q.p).then(()=>{if(game&&game.i===nr&&!game.answered)startRundy(q);});
 }
+ZP.jokerCel(()=>{const q=game&&game.qs[game.i];if(!q)return [];const p=q.p;return [p.label,p.full,p.n,p.short].filter(Boolean);});
 function startRundy(q){
   ["answers","inputrow"].forEach(id=>$(id).classList.remove("czeka"));
   if(game.wpis){

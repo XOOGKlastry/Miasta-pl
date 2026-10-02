@@ -44,6 +44,7 @@
 .koniec .pole{padding:18px;text-align:center;width:100%;max-width:360px;display:flex;flex-direction:column;gap:10px}
 .koniec h2{font-family:Bungee,sans-serif;font-weight:400;font-size:26px;margin:0}
 .koniec .gw{font-size:52px;letter-spacing:4px;color:#C9BFA0}.koniec .gw .z{color:#FFC93C;text-shadow:0 3px 0 var(--braz)}
+.nagroda{display:block;background:var(--zolt);border:3px solid var(--braz);border-radius:12px;padding:6px 10px;font-weight:900;animation:nagr .5s cubic-bezier(.3,1.6,.5,1)}@keyframes nagr{from{transform:scale(.5);opacity:0}}
 </style>
 </head>
 <body>
@@ -115,8 +116,12 @@ function koniec(){
   const gw=nadmiar<=Math.ceil(gra.n*.5)?3:nadmiar<=gra.n?2:1;
   const k="memory2-"+TRYB,rek=+(localStorage.getItem(k)||0),nowy=!rek||gra.ruchy<rek;
   if(nowy)localStorage.setItem(k,gra.ruchy);
+  // losowa nagroda: podpowiedź 50/50 (częściej za 3 gwiazdki)
+  const joker=Math.random()<(gw===3?.5:.25);
+  if(joker)try{localStorage.setItem("jokery",String((+localStorage.getItem("jokery")||0)+1));}catch(e){}
   $("warstwa").innerHTML='<div class="koniec"><div class="pole"><h2>Wszystkie pary!</h2><div class="gw">'+[1,2,3].map(i=>'<span class="'+(i<=gw?"z":"")+'">★</span>').join("")+'</div>'
     +'<b>'+gra.ruchy+' ruchów · '+Math.floor(sek/60)+':'+String(sek%60).padStart(2,"0")+'</b><span style="font-weight:700">'+(nowy?"Nowy rekord!":"Rekord: "+rek+" ruchów")+'</span>'
+    +(joker?'<span class="nagroda">Nagroda: +1 podpowiedź 50/50</span>':'')
     +'<button class="klocek" id="znowu">Jeszcze raz</button><a class="klocek jasny" href="gry.html">Inne gry</a></div></div>';
   $("znowu").onclick=nowa;
   if(gw===3)setTimeout(ZP.fanfary,200);

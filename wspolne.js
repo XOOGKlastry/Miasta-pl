@@ -124,6 +124,7 @@ function fokus(el){if(el&&!DOTYK)try{el.focus({preventScroll:true});}catch(e){}}
 /* ---- pole do wpisywania odpowiedzi (tryb ekspert) z podpowiedziami nad polem ---- */
 function poleWpisu(el,nazwy,onOdp,opts){
   opts=opts||{};
+  if(opts.poprawne&&!JOKER_RECZNY)JOKER_CEL=opts.poprawne;
   el.classList.add("wpis");
   el.innerHTML='<div class="acbox"><input type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="go"><div class="ac"></div></div>'
     +(opts.pokaz?'<button class="pokaz"></button>':'');
@@ -291,7 +292,7 @@ function przyciskKolekcji(){
   h.appendChild(a);
   // liczba nowych kart dopiero, gdy przeglądarka ma wolną chwilę
   const licz=()=>{const go=()=>Karty.liczbaNowych().then(n=>{if(n>0){const i=document.createElement("i");i.textContent=n>99?"99+":n;a.appendChild(i);}}).catch(()=>{});
-    if(window.Karty)return go();const sc=document.createElement("script");sc.src="karty.js?v=5";sc.onload=go;document.head.appendChild(sc);};
+    if(window.Karty)return go();const sc=document.createElement("script");sc.src="karty.js?v=6";sc.onload=go;document.head.appendChild(sc);};
   setTimeout(()=>{if(window.requestIdleCallback)requestIdleCallback(licz);else licz();},3000);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",przyciskKolekcji);else setTimeout(przyciskKolekcji,0);
@@ -299,7 +300,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 function kartyPoGrze(){
   const uruchom=()=>window.Karty&&Karty.sprawdzPoGrze();
   if(window.Karty)return uruchom();
-  const sc=document.createElement("script");sc.src="karty.js?v=5";sc.onload=uruchom;document.head.appendChild(sc);
+  const sc=document.createElement("script");sc.src="karty.js?v=6";sc.onload=uruchom;document.head.appendChild(sc);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujKoniec);else obserwujKoniec();
 
@@ -774,8 +775,58 @@ function nauka(){
 // gry gminne (herby, gminy, kształt gminy) dają postęp konkretnej karcie; wszystkie inne dają żetony na paczki
 const GMINNE=["gmina","herb","kontur"];
 function zeton(n){try{localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)+(n||1)));}catch(e){}}
+/* ---- podpowiedzi 50/50: +1 za każde 5 dobrych odpowiedzi z rzędu (5, 10, 15…), zbierają się na zapas.
+   Użycie podpowiedzi zeruje serię. Gra podaje poprawną odpowiedź przez jokerCel albo opcję „poprawne” pola wpisu. ---- */
+let JOKER_CEL=null,JOKER_RECZNY=false;
+function jokery(){return +localStorage.getItem("jokery")||0;}
+function seria(){return +localStorage.getItem("seria-globalna")||0;}
+function dodajJoker(n,powod){
+  try{localStorage.setItem("jokery",String(jokery()+(n||1)));}catch(e){}
+  komunikat("+"+(n||1)+" podpowiedź 50/50"+(powod?" · "+powod:""),2600);odswiezJoker();
+}
+function seriaOdp(ok){
+  let s=seria();
+  if(ok){s++;if(s%5===0)setTimeout(()=>dodajJoker(1,"seria "+s+" z rzędu!"),500);}else s=0;
+  try{localStorage.setItem("seria-globalna",String(s));}catch(e){}
+}
+function jokerCel(fn){JOKER_CEL=fn;JOKER_RECZNY=true;}
+function jokerBox(){const b=document.getElementById("answers");return b&&!b.classList.contains("hidden")?b:null;}
+function odswiezJoker(){
+  const box=jokerBox();let j=document.getElementById("zp-joker");
+  const aktywne=box?[...box.querySelectorAll("button")].filter(b=>!b.disabled&&!b.classList.contains("fade")):[];
+  const widac=box&&JOKER_CEL&&jokery()>0&&aktywne.length>=3&&!box.dataset.joker;
+  if(!widac){if(j)j.remove();return;}
+  if(!j){
+    if(!document.getElementById("zp-joker-styl")){const s=document.createElement("style");s.id="zp-joker-styl";
+      s.textContent="#zp-joker{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:0 0 8px;min-height:40px;border-radius:12px;border:3px solid #3A2A14;box-shadow:0 3px 0 #3A2A14;background:#F5B82E;color:#3A2A14;font:900 14px Rubik,sans-serif;cursor:pointer;animation:zpJok .4s cubic-bezier(.3,1.6,.5,1)}"
+        +"#zp-joker b{font-family:Bungee,sans-serif;font-weight:400}#zp-joker:active{transform:translateY(3px);box-shadow:none}@keyframes zpJok{from{transform:scale(.6);opacity:0}}";
+      document.head.appendChild(s);}
+    j=document.createElement("button");j.id="zp-joker";j.type="button";
+    j.onclick=()=>{
+      const box=jokerBox();if(!box||!JOKER_CEL)return;
+      const cel=[].concat(JOKER_CEL()||[]);
+      const zle=[...box.querySelectorAll("button")].filter(b=>!b.disabled&&!b.classList.contains("fade")&&!cel.some(c=>pasuje(b.textContent,[c])));
+      if(zle.length<2)return;
+      shuffle(zle).slice(0,2).forEach(b=>{b.disabled=true;b.classList.add("fade");b.style.opacity=".25";});
+      box.dataset.joker="1";
+      try{localStorage.setItem("jokery",String(Math.max(0,jokery()-1)));localStorage.setItem("seria-globalna","0");}catch(e){}
+      komunikat("Podpowiedź 50/50 użyta, seria wyzerowana");odswiezJoker();
+    };
+    box.parentNode.insertBefore(j,box);
+  }
+  j.innerHTML='<span>Podpowiedź <b>50/50</b></span><span>× '+jokery()+'</span>';
+}
+// nowe pytanie (nowe przyciski w #answers) = podpowiedź znów dostępna
+let jokerKolejka=0;
+function obserwujJoker(){
+  new MutationObserver(m=>{
+    if(m.some(x=>x.target&&x.target.id==="answers"&&x.type==="childList"&&x.addedNodes.length)){const b=document.getElementById("answers");if(b)delete b.dataset.joker;}
+    cancelAnimationFrame(jokerKolejka);jokerKolejka=requestAnimationFrame(odswiezJoker);
+  }).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["class","disabled"]});
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujJoker);else setTimeout(obserwujJoker,0);
 function zapisz(kind,id,ok,cicho){
-  if(!cicho){poswiata(ok);sesja.wszystkie++;if(ok)sesja.ok++;}
+  if(!cicho){poswiata(ok);sesja.wszystkie++;if(ok)sesja.ok++;seriaOdp(ok);}
   if(ok&&GMINNE.indexOf(kind)<0)zeton(1);
   const s=nauka(),k=kind+":"+id,r=s[k]||{ok:0,no:0};
   if(ok)r.ok++;else r.no++;
@@ -852,5 +903,5 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,zeton,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,jokery,dodajJoker,jokerCel,seria,zeton,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

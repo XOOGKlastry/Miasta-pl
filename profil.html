@@ -79,7 +79,15 @@
         </ul>
         <p><b>Wszystkie pozostałe gry</b> (miasta, powiaty, rzeki, kluby, tablice, plansza przygód, wyzwania, Do sześciu razy sztuka, Memory, Szybki strzał) dają <b>żetony</b>: 1 żeton za każde trafienie. <b>25 żetonów to paczka</b> z jedną nową, losową kartą.</p>
         <p>Szanse w paczce: zwykła 62%, brązowa 25%, srebrna 9%, złota 3,5%, diamentowa 0,5%.</p>
-        <p>Nowe karty i paczki otwierają się po zakończeniu gry.</p>
+        <p>Nowe karty z gier gminnych pokazują się po zakończeniu gry. <b>Paczki otwierasz sam</b> w albumie kart, po jednej, kiedy chcesz.</p>
+      </details>
+      <details><summary>Podpowiedzi 50/50</summary>
+        <p>Za <b>każde 5 dobrych odpowiedzi z rzędu</b> dostajesz 1 podpowiedź 50/50: przy serii 5 pierwszą, przy 10 drugą, przy 15 trzecią i tak dalej. Podpowiedzi zbierają się na zapas (<b id="kiJok">0</b> teraz).</p>
+        <p>Podpowiedź usuwa 2 błędne odpowiedzi w pytaniu z wyborem. Przycisk „Podpowiedź 50/50” pojawia się nad odpowiedziami. <b>Użycie podpowiedzi zeruje serię.</b></p>
+        <p>Podpowiedź może też losowo wypaść z paczki z kartą albo jako nagroda w Memory.</p>
+      </details>
+      <details><summary>Ciekawostki</summary>
+        <p>Niektóre karty mają na sobie mieniącego się PolandBalla. Stuknij go, a zobaczysz ciekawostki o tej gminie, czasem z linkiem.</p>
       </details>
       <details><summary>Rzadkość karty</summary>
         <p>Im mniej mieszkańców ma gmina, tym rzadsza karta (dane GUS):</p>
@@ -148,6 +156,8 @@ $("instaluj").onclick=()=>Instaluj.zainstaluj();
 const mot=()=>localStorage.getItem("motyw")||"plansza";$("motywNazwa").textContent=mot()==="plansza"?"plansza (jasny)":"ciemny";
 $("motyw").onclick=()=>{localStorage.setItem("motyw",mot()==="plansza"?"ciemny":"plansza");location.reload();};
 rysuj();ZP.fitViewport();ZP.registerSW();
+
+try{const e=document.getElementById("kiJok");if(e)e.textContent=localStorage.getItem("jokery")||0;}catch(e){}
 </script>
 </body>
 </html>

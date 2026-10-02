@@ -15,8 +15,10 @@ window.Karty=(function(){
     const z=lista.filter(g=>g[pole]!=null).sort((a,b)=>odwrotnie?b[pole]-a[pole]:a[pole]-b[pole]),n=z.length;
     z.forEach((g,i)=>{g.oc=g.oc||{};g.oc[pole]=Math.max(1,Math.min(99,Math.round(1+98*i/Math.max(1,n-1))));});
   }
+  let CIEK={};
   async function zaladuj(){
     if(DANE)return DANE;
+    fetch("ciekawostki.json").then(r=>r.ok?r.json():{}).then(c=>{CIEK=c||{};}).catch(()=>{});
     const b=await fetch("baza.json").then(r=>r.json());
     const g=b.gminy.filter(x=>/[123]$/.test(x.k));
     // rzadkość: im mniej mieszkańców, tym rzadsza; 3 najmniejsze miasta i 3 najmniejsze gminy są diamentowe
@@ -85,10 +87,30 @@ window.Karty=(function(){
     }catch(e){}
     localStorage.setItem("karty-zasady","2");
   }
-  // otwieranie paczek za żetony: losowa karta, której jeszcze nie masz
+  // paczki czekają na otwarcie; gracz otwiera je sam, po jednej
+  function liczbaPaczek(){return Math.floor(zetony()/PACZKA);}
+  async function otworzPaczke(){
+    await zaladuj();migracja();
+    let z=zetony();if(z<PACZKA)return null;
+    const mam=zdobyte().mam;let r=Math.random(),rz="zwykla";
+    for(const [k,p] of SZANSE){if(r<p){rz=k;break;}r-=p;}
+    let pula=DANE.g.filter(g=>g.rz===rz&&!mam.has(g.k));
+    if(!pula.length)pula=DANE.g.filter(g=>!mam.has(g.k));
+    if(!pula.length)return null;
+    const g=pula[Math.floor(Math.random()*pula.length)];
+    localStorage.setItem("karty-paczki",JSON.stringify(paczki().concat([g.k])));
+    localStorage.setItem("karty-zetony",String(z-PACZKA));
+    // ogłoszona od razu, żeby nie wyskoczyła drugi raz po grze
+    const og=ogloszone()||[];localStorage.setItem("karty-ogloszone",JSON.stringify(og.concat([g.k])));
+    g._paczka=true;
+    // w paczce czasem jest też podpowiedź 50/50
+    g._joker=Math.random()<.3;
+    if(g._joker&&window.ZP&&ZP.dodajJoker)ZP.dodajJoker(1,"z paczki");
+    return g;
+  }
   function otworzPaczki(){
     const nowe=[];let z=zetony();
-    while(z>=PACZKA){
+    while(false&&z>=PACZKA){
       const mam=zdobyte().mam;let r=Math.random(),rz="zwykla";
       for(const [k,p] of SZANSE){if(r<p){rz=k;break;}r-=p;}
       let pula=DANE.g.filter(g=>g.rz===rz&&!mam.has(g.k));
@@ -104,7 +126,7 @@ window.Karty=(function(){
   function widziane(){try{return JSON.parse(localStorage.getItem("karty-widziane")||"[]");}catch(e){return [];}}
   function ogloszone(){try{return JSON.parse(localStorage.getItem("karty-ogloszone")||"null");}catch(e){return null;}}
   async function nowe(){
-    await zaladuj();migracja();const zPaczek=otworzPaczki();const {mam}=zdobyte();
+    await zaladuj();migracja();const zPaczek=[];const {mam}=zdobyte();
     let og=ogloszone();
     if(og===null){og=[...mam];localStorage.setItem("karty-ogloszone",JSON.stringify(og));return [];}   // pierwszy raz: bez zalewu kart
     const n=[...mam].filter(k=>og.indexOf(k)<0);
@@ -124,7 +146,7 @@ window.Karty=(function(){
    wodociag_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/></svg>',
    kanalizacja_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M7 9h10M6 12h12M7 15h10"/></svg>',
    lesistosc_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M12 2l6 9h-3l4 6H5l4-6H6z"/><path d="M12 17v5"/></svg>'};
-  const TYP={"gmina miejska":"MIA","gmina wiejska":"WIE","gmina miejsko-wiejska":"M-W"};
+  const TYP={"gmina miejska":"MIASTO","gmina wiejska":"WIEŚ","gmina miejsko-wiejska":"M-W"};
   const WS={"dolnośląskie":"DLŚ","kujawsko-pomorskie":"K-P","lubelskie":"LUB","lubuskie":"LBU","łódzkie":"ŁDZ","małopolskie":"MAŁ","mazowieckie":"MAZ","opolskie":"OPO","podkarpackie":"PKR","podlaskie":"PDL","pomorskie":"POM","śląskie":"ŚLĄ","świętokrzyskie":"ŚWK","warmińsko-mazurskie":"W-M","wielkopolskie":"WLK","zachodniopomorskie":"ZPM"};
   const mnp=g=>+g.k.slice(2,4)>=61;
   const liczba=(v,d)=>Number(v).toLocaleString("pl-PL",{maximumFractionDigits:d==null?1:d});
@@ -150,10 +172,24 @@ window.Karty=(function(){
     return '<div class="kk kk-'+(pelna?"pelna":"mini")+' r-'+g.rz+(ot?"":" zablokowana")+'" data-k="'+g.k+'">'+(o.nowa?'<span class="kk-nowa">NOWA</span>':'')+'<span class="kk-ramka"></span>'
       +'<div class="kk-lewa"><span class="kk-ovr">'+(ot&&g.ovr?g.ovr:"?")+'</span><span class="kk-typ">'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</span>'+(h?'<img class="kk-herb" alt="" loading="lazy" src="'+h+'">':'')+'<span class="kk-kres"></span><span class="kk-wojs">'+(WS[g.woj]||"")+'</span></div>'
       +'<div class="kk-mapka" data-m="'+g.k+'"></div>'
+      +(ot&&CIEK[g.k]?'<button type="button" class="kk-pb" data-c="'+g.k+'" aria-label="Ciekawostki">'+KULA+'</button>':'')
       +'<div class="kk-nazwa">'+(ot?esc(g.n):"???")+'</div>'
       +'<div class="kk-jedn">'+(ot?(mnp(g)?"miasto na prawach powiatu<br>woj. "+g.woj:g.typ+(pelna?"<br>"+esc(g.powiat)+" · woj. "+g.woj:"")):(o.postep?"postęp "+o.postep+"/"+PROG+" trafień":"woj. "+g.woj))+'</div>'
       +st+'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
   }
+  const KULA='<svg viewBox="0 0 40 40" aria-hidden="true"><defs><clipPath id="kkKl"><circle cx="20" cy="20" r="17"/></clipPath></defs><g clip-path="url(#kkKl)"><rect width="40" height="20" fill="#F4F4F2"/><rect y="20" width="40" height="20" fill="#DC1E35"/></g><circle cx="20" cy="20" r="17" fill="none" stroke="#3A2A14" stroke-width="2.4"/><ellipse cx="14" cy="17" rx="3.4" ry="4.2" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/><ellipse cx="26" cy="17" rx="3.4" ry="4.2" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/></svg>';
+  function linki(g){
+    return '<div class="kk-linki"><a href="encyklopedia.html#g'+g.k+'">🗺️ Na mapie</a>'+(g.wiki?'<a href="'+g.wiki+'" target="_blank" rel="noopener">📖 Wikipedia</a>':'')+'</div>';
+  }
+  function ciekawostki(k){
+    const g=DANE.PO_K[k],l=CIEK[k];if(!g||!l)return;
+    const d=document.createElement("div");d.className="kk-ciek";
+    d.innerHTML='<div class="kk-ciek-pole"><div class="kk-ciek-gora"><span class="kk-ciek-kula">'+KULA+'</span><div><b>CIEKAWOSTKI</b><small>'+esc(g.n)+'</small></div><button type="button" aria-label="Zamknij">✕</button></div><ol>'
+      +l.map(x=>'<li><p>'+esc(x.t)+'</p>'+(x.link?'<a href="'+esc(x.link)+'" target="_blank" rel="noopener">'+esc(x.etykieta||"Zobacz")+' ›</a>':'')+'</li>').join("")+'</ol></div>';
+    d.onclick=e=>{if(e.target===d||e.target.closest(".kk-ciek-gora button"))d.remove();};
+    document.body.appendChild(d);
+  }
+  document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest(".kk-pb");if(b){e.stopPropagation();e.preventDefault();ciekawostki(b.dataset.c);}},true);
   function styl(){
     if(document.getElementById("kk-styl"))return;
     if(!document.querySelector('link[href*="Barlow+Condensed"]')){const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Bungee&display=swap";document.head.appendChild(l);}
@@ -164,7 +200,7 @@ window.Karty=(function(){
 .kk .kk-ramka{position:absolute;inset:3cqw;clip-path:inherit;border:.8cqw solid var(--ramka);pointer-events:none;z-index:3}
 .kk .kk-lewa{position:absolute;left:7cqw;top:9cqw;width:22cqw;display:flex;flex-direction:column;align-items:center;gap:.6cqw;z-index:2}
 .kk .kk-ovr{font-family:"Barlow Condensed",Bungee,sans-serif;font-weight:800;font-size:19cqw;line-height:.85}
-.kk .kk-typ{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:6cqw;letter-spacing:.3cqw}
+.kk .kk-typ{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:5.4cqw;letter-spacing:.1cqw;white-space:nowrap}
 .kk .kk-herb{width:13cqw;height:15cqw;object-fit:contain}
 .kk .kk-kres{width:10cqw;height:.7cqw;background:var(--ramka)}
 .kk .kk-wojs{font-size:4cqw;font-weight:900;letter-spacing:.3cqw}
@@ -193,6 +229,27 @@ window.Karty=(function(){
 .kk.r-zloto{--tlo:linear-gradient(160deg,#FFF3C2,#E0A812);--ramka:#7A5400;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,250,210,1),transparent 40%),repeating-linear-gradient(115deg,transparent 0 12px,rgba(255,255,255,.35) 12px 16px);--blask:.75}
 .kk.r-diament{--tlo:linear-gradient(160deg,#F2FBFF 0%,#BFE6FF 38%,#E6D6FF 70%,#BFE6FF 100%);--ramka:#3D6FD1;--mieszanie:color-dodge;--blask:.5;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.95),transparent 30%),linear-gradient(calc(var(--kat,115) * 1deg),#ff6b6b33,#ffd93d55,#6bff9a44,#6bd5ff55,#c06bff44,#ff6b6b33)}
 .kk.zablokowana{--tlo:#2A2F3A!important;color:#8B93A6}.kk.zablokowana::after{display:none}.kk.zablokowana .kk-mapka{filter:grayscale(1) brightness(.35);border-color:#454C5C}.kk.zablokowana .kk-ramka{border-color:#454C5C}
+.kk .kk-pb{position:absolute;right:4cqw;top:56cqw;z-index:6;width:14cqw;height:14cqw;padding:0;border:none;background:none;cursor:pointer;animation:kkPbSkok 2.4s ease-in-out infinite;filter:drop-shadow(0 0 1.5cqw rgba(255,215,90,.9))}
+.kk .kk-pb svg{width:100%;height:100%;display:block}
+.kk .kk-pb::after{content:"";position:absolute;inset:-10%;border-radius:50%;background:conic-gradient(from 0deg,transparent,rgba(255,255,255,.85),transparent 30%);animation:kkPbBlysk 2s linear infinite;mix-blend-mode:overlay;pointer-events:none}
+@keyframes kkPbSkok{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-1.5cqw) rotate(4deg);filter:drop-shadow(0 0 2.5cqw rgba(255,235,140,1))}}
+@keyframes kkPbBlysk{to{transform:rotate(360deg)}}
+.kk.kk-mini .kk-pb{top:60cqw;width:16cqw;height:16cqw}
+.kk-linki{display:flex;gap:10px;justify-content:center}
+.kk-linki a{min-height:44px;padding:0 16px;border-radius:12px;border:3px solid #3A2A14;box-shadow:0 4px 0 #3A2A14;background:#FFF6E0;color:#3A2A14;font:800 14px Rubik,sans-serif;display:flex;align-items:center;gap:6px;text-decoration:none}
+.kk-ciek{position:fixed;inset:0;z-index:7000;background:rgba(40,28,10,.7);display:grid;place-items:center;padding:16px;animation:pkWej .25s both}
+.kk-ciek-pole{width:100%;max-width:420px;max-height:90vh;overflow:auto;background:#FFF6E0;color:#3A2A14;border:4px solid #3A2A14;border-radius:20px;box-shadow:0 7px 0 #3A2A14;padding:16px;font-family:Rubik,system-ui,sans-serif;animation:kkCiek .45s cubic-bezier(.3,1.5,.5,1) both}
+@keyframes kkCiek{from{transform:scale(.7) rotate(-3deg);opacity:0}}
+.kk-ciek-gora{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:3px dashed rgba(58,42,20,.35)}
+.kk-ciek-gora b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:22px;letter-spacing:.5px}
+.kk-ciek-gora small{display:block;font-weight:800;font-size:13px;color:#7A6440}
+.kk-ciek-gora div{flex:1}
+.kk-ciek-gora button{width:40px;height:40px;border-radius:12px;border:3px solid #3A2A14;background:#fff;font-weight:900;font-size:16px;cursor:pointer}
+.kk-ciek-kula{width:52px;height:52px;flex:none;animation:kkPbSkok 2.4s ease-in-out infinite}.kk-ciek-kula svg{width:100%;height:100%}
+.kk-ciek ol{margin:12px 0 0;padding-left:22px;display:flex;flex-direction:column;gap:12px}
+.kk-ciek li{font-weight:700;line-height:1.4}.kk-ciek li::marker{font-family:Bungee,sans-serif;color:#E84A3C}
+.kk-ciek li p{margin:0}
+.kk-ciek li a{display:inline-flex;margin-top:6px;min-height:38px;align-items:center;padding:0 14px;border-radius:10px;border:3px solid #3A2A14;box-shadow:0 3px 0 #3A2A14;background:#F5B82E;color:#3A2A14;text-decoration:none;font-weight:900}
 .kk .kk-nowa{position:absolute;left:50%;top:1.5cqw;transform:translateX(-50%);background:#E84A3C;color:#fff;font-size:4.5cqw;font-weight:900;padding:.5cqw 3cqw;border-radius:0 0 2cqw 2cqw;z-index:5}
 /* prezentacja nowej karty, jak po otwarciu paczki */
 .pk{position:fixed;inset:0;z-index:6000;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Rubik,system-ui,sans-serif;color:#FFF6E0;animation:pkWej .35s both;
@@ -309,7 +366,7 @@ window.Karty=(function(){
       const wo=WOJ&&WOJ[g.woj]?WOJ[g.woj]:"";
       let iskry="";for(let n=0;n<(pelne?40:18);n++)iskry+='<i style="left:'+(Math.random()*100).toFixed(1)+'%;animation-duration:'+(3+Math.random()*4).toFixed(1)+'s;animation-delay:'+(-Math.random()*6).toFixed(1)+'s"></i>';
       w.innerHTML='<div class="pk-iskry">'+iskry+'</div><div class="pk-kula"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="pkK"><circle cx="50" cy="50" r="44"/></clipPath></defs><g clip-path="url(#pkK)" transform="rotate(-8 50 50)"><rect width="100" height="50" fill="#F4F4F2"/><rect y="50" width="100" height="50" fill="#DC1E35"/><ellipse cx="36" cy="27" rx="14" ry="6" fill="#fff" opacity=".7"/></g><circle cx="50" cy="50" r="44" fill="none" stroke="#3A2A14" stroke-width="4"/><ellipse cx="38" cy="40" rx="8" ry="10" fill="#fff" stroke="#3A2A14" stroke-width="3"/><ellipse cx="64" cy="40" rx="8" ry="10" fill="#fff" stroke="#3A2A14" stroke-width="3"/></svg></div><div class="pk-blysk"></div>'
-        +'<span class="pk-licznik">'+(g._paczka?"KARTA Z PACZKI":"NOWA KARTA")+(karty.length>1?" "+(i+1)+" / "+karty.length:"")+'</span>'+'<button class="pk-pomin">Pomiń ›</button>'
+        +'<span class="pk-licznik">'+(g._paczka?"KARTA Z PACZKI":"NOWA KARTA")+(karty.length>1?" "+(i+1)+" / "+karty.length:"")+(g._joker?" · +1 PODPOWIEDŹ 50/50":"")+'</span>'+'<button class="pk-pomin">Pomiń ›</button>'
         +'<div class="pk-krok k1"><small>WOJEWÓDZTWO</small>'+wo+'<b>'+esc(g.woj)+'</b></div>'
         +'<div class="pk-krok k2"><small>'+(mnp(g)?"MIASTO NA PRAWACH POWIATU":esc(g.typ.toUpperCase()))+'</small><b>'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</b><small style="letter-spacing:2px">'+esc(g.powiat)+'</small></div>'
         +'<div class="pk-krok k3"><small>'+RZ[g.rz].toUpperCase()+' KARTA</small><span class="pk-ovr">'+(g.ovr||"?")+'</span></div>'
@@ -337,6 +394,12 @@ window.Karty=(function(){
   }
   function doInwentarza(karty){prezentacja(karty);}
 
-  async function sprawdzPoGrze(){try{const n=await nowe();if(n.length)setTimeout(()=>doInwentarza(n),1200);}catch(e){}}
-  return {PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
+  async function sprawdzPoGrze(){
+    try{
+      const n=await nowe(),p=liczbaPaczek();
+      const info=()=>{if(p>0&&window.ZP&&ZP.komunikat)ZP.komunikat(p===1?"Masz paczkę do otwarcia w albumie kart":"Masz "+p+" paczki do otwarcia w albumie kart",4000);};
+      if(n.length)setTimeout(()=>prezentacja(n,info),1200);else setTimeout(info,1200);
+    }catch(e){}
+  }
+  return {linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
 })();
