@@ -10,7 +10,7 @@ Dane © współtwórcy OpenStreetMap (ODbL).
 import json, os, subprocess, sys, time, urllib.request
 from shapely.geometry import shape, box
 from shapely.strtree import STRtree
-from shapely import make_valid
+from shapely import make_valid, unary_union
 
 PBF = "/tmp/polska.osm.pbf"
 URL = "https://download.geofabrik.de/europe/poland-latest.osm.pbf"
@@ -54,7 +54,7 @@ def warstwa(nazwa, filtr, typy, tol, min_pole=0.0, prop=None):
 
 
 def wspolrzedne(g, tol):
-    """lista pierścieni / linii zaokrąglonych do 4 miejsc"""
+    """lista pierścieni / linii zaokrąglonych do 4 miejsc (ok. 10 m)"""
     g = g.simplify(tol, preserve_topology=False)
     out = []
     for cz in getattr(g, "geoms", [g]):
@@ -87,21 +87,30 @@ def main():
                       prop=lambda p: (p.get("name", ""), RANGA.get(p.get("place"), 1)))
     T = {n: STRtree(g) for n, g in (("l", lasy), ("w", wody), ("r", rzeki), ("d", drogi), ("m", msc))}
     os.makedirs(OUT, exist_ok=True)
+    rozm = []
     for i, gm in enumerate(gminy):
         minx, miny, maxx, maxy = gm["geom"].bounds
         dx, dy = (maxx - minx) * .12 + .004, (maxy - miny) * .12 + .004
         ramka = box(minx - dx, miny - dy, maxx + dx, maxy + dy)
-        tol = max(maxx - minx, maxy - miny) / 300
-        min_pole = ((maxx - minx) * (maxy - miny)) / 3000
+        # mapka ma ok. 200 px szerokości, więc szczegóły mniejsze niż ~1 px nie mają sensu
+        tol = max(maxx - minx, maxy - miny) / 160
+        min_pole = ((maxx - minx) * (maxy - miny)) / 1500
         wynik = {"bb": [round(minx, 4), round(miny, 4), round(maxx, 4), round(maxy, 4)], "l": [], "w": [], "r": [], "d": [], "m": []}
         for warstwa_, lista in (("l", lasy), ("w", wody)):
+            czesci = []
             for j in T[warstwa_].query(ramka):
                 g = lista[j]
-                if g.area < min_pole:
+                if g.area < min_pole / 4:
                     continue
                 cz = g.intersection(ramka)
                 if not cz.is_empty:
-                    wynik[warstwa_].extend(wspolrzedne(cz, tol))
+                    czesci.append(cz)
+            if czesci:
+                # sąsiadujące płaty lasu i wody łączymy w jeden kształt: mniej punktów, czystszy rysunek
+                suma = unary_union(czesci).buffer(tol / 2).buffer(-tol / 2).simplify(tol, preserve_topology=False)
+                for cz in getattr(suma, "geoms", [suma]):
+                    if cz.geom_type == "Polygon" and cz.area >= min_pole:
+                        wynik[warstwa_].extend(wspolrzedne(cz, tol))
         for j in T["r"].query(ramka):
             cz = rzeki[j].intersection(ramka)
             if not cz.is_empty:
@@ -115,11 +124,14 @@ def main():
                 wynik["m"].append([ma[j][0], round(msc[j].x, 4), round(msc[j].y, 4), ma[j][1]])
         wynik["m"].sort(key=lambda x: -x[3])
         wynik["m"] = wynik["m"][:40]
+        tekst = json.dumps(wynik, ensure_ascii=False, separators=(",", ":"))
         with open("%s/%s.json" % (OUT, gm["k"]), "w", encoding="utf-8") as fh:
-            json.dump(wynik, fh, ensure_ascii=False, separators=(",", ":"))
+            fh.write(tekst)
+        rozm.append((len(tekst), gm["k"], gm["n"]))
         if i % 250 == 0:
             print("  mapki", i, flush=True)
-    print("gotowe:", len(gminy))
+    rozm.sort(reverse=True)
+    print("gotowe:", len(gminy), "razem MB:", round(sum(r[0] for r in rozm) / 1e6, 1), "największe:", rozm[:5])
 
 
 if __name__ == "__main__":
