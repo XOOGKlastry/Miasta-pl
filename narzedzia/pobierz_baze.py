@@ -80,17 +80,42 @@ def dane(b):
 BDL = "https://bdl.stat.gov.pl/api/v1"
 
 
+LICZNIK = [0]
+
+
 def bdl(sciezka):
-    for i in range(5):
+    # limit anonimowy BDL: 100 zapytań na 15 minut; po przekroczeniu serwer zwraca 429, wtedy czekamy
+    for i in range(12):
         try:
             req = urllib.request.Request(BDL + sciezka, headers={"User-Agent": UA, "Accept": "application/json"})
             with urllib.request.urlopen(req, timeout=120) as r:
-                time.sleep(0.4)   # limit anonimowy: 5 zapytań na sekundę, 100 na 15 minut
+                LICZNIK[0] += 1
+                time.sleep(0.5)
                 return json.loads(r.read())
+        except urllib.error.HTTPError as e:
+            czekaj = 150 if e.code == 429 else 20 * (i + 1)
+            print("  BDL", e.code, "czekam", czekaj, "s (zapytań:", LICZNIK[0], ")", file=sys.stderr)
+            time.sleep(czekaj)
         except Exception as e:
             print("  BDL ponawiam", sciezka[:70], e, file=sys.stderr)
             time.sleep(20 * (i + 1))
     raise RuntimeError("BDL nie odpowiada")
+
+
+def znajdz(frazy, musi, nie=()):
+    """szuka zmiennej BDL po nazwie; wypisuje kandydatów do logu, żeby dało się sprawdzić wybór"""
+    for fr in frazy:
+        j = bdl("/variables/search?name=" + urllib.parse.quote(fr) + "&page-size=100&format=json")
+        for v in j.get("results", []):
+            opis = " | ".join(str(v.get(k, "")) for k in ("n1", "n2", "n3", "n4", "n5") if v.get(k)).lower()
+            print("    kandydat", v["id"], v.get("subjectId"), opis[:140], v.get("level"))
+        for v in j.get("results", []):
+            opis = " ".join(str(v.get(k, "")) for k in ("n1", "n2", "n3", "n4", "n5", "measureUnitName")).lower()
+            if all(m in opis for m in musi) and not any(n in opis for n in nie):
+                print("  WYBRANO", fr, "->", v["id"], opis[:140])
+                return v["id"]
+    print("  nie znaleziono zmiennej dla", frazy, file=sys.stderr)
+    return None
 
 
 def teryt_z_bdl(uid, poziom):
@@ -193,6 +218,28 @@ def main():
             zrodla[poziom] = rok_l
     except Exception as e:
         print("GUS niedostępny, zostają dane z Wikidata:", e, file=sys.stderr)
+    # dodatkowe statystyki do kart gmin (wskaźniki 1-99 liczone w grze)
+    STATY = [
+        ("saldo_migracji", ["saldo migracji na 1000", "saldo migracji"], ["1000"], ["zagranicz"]),
+        ("wodociag_proc", ["korzystający z instalacji w % ogółu ludności", "wodociąg"], ["wodoci", "%"], []),
+        ("kanalizacja_proc", ["korzystający z instalacji w % ogółu ludności", "kanalizac"], ["kanaliz", "%"], []),
+        ("bezrobocie_proc", ["udział bezrobotnych zarejestrowanych w liczbie ludności w wieku produkcyjnym", "udział bezrobotnych"], ["udział bezrobotnych", "ogółem"], []),
+    ]
+    for pole, frazy, musi, nie in STATY:
+        try:
+            zm = znajdz(frazy, musi, nie)
+            if not zm:
+                continue
+            dane, rok = dane_bdl(zm, 6)
+            n = 0
+            for x in gm_:
+                v = dane.get(x["k"][:7])
+                if v is not None:
+                    x[pole] = round(float(v[0]), 2)
+                    n += 1
+            print("  ", pole, "rok", rok, "gmin z danymi:", n)
+        except Exception as e:
+            print("pomijam", pole, e, file=sys.stderr)
     for x in woj:   # zawsze aktualne hasła województw (Wikidata myli je czasem z historycznymi)
         x["wiki"] = "https://pl.wikipedia.org/wiki/Wojew%C3%B3dztwo_" + urllib.parse.quote(x["n"])
     baza = {"zbudowano": time.strftime("%Y-%m-%d"), "zrodla": "GUS BDL (ludność, powierzchnia), Wikidata (herby, Wikipedia), PRG (granice)",
