@@ -117,6 +117,29 @@ def z_tematu(wzor_id, musi, nie=()):
     return None
 
 
+def z_tematu_nazwy(frazy, musi, nie=(), zapas=()):
+    """zmienna z tematu BDL znalezionego po nazwie tematu (np. „udział bezrobotnych…”)"""
+    tematy = list(zapas)
+    for fr in frazy:
+        try:
+            j = bdl("/subjects/search?name=" + urllib.parse.quote(fr) + "&page-size=50&format=json")
+            for t in j.get("results", []):
+                print("    temat", t.get("id"), t.get("name", "")[:120])
+                if t.get("hasVariables"):
+                    tematy.insert(0, t["id"])
+        except Exception as e:
+            print("  szukanie tematu", fr, e, file=sys.stderr)
+    for tid in tematy:
+        j = bdl("/variables?subject-id=%s&page-size=100&format=json" % tid)
+        for x in j.get("results", []):
+            opis = " ".join(str(x.get(k, "")) for k in ("n1", "n2", "n3", "n4", "n5", "measureUnitName")).lower()
+            print("    w temacie", tid, x["id"], opis[:100], x.get("level"))
+            if all(m in opis for m in musi) and not any(n in opis for n in nie) and x.get("level", 6) >= 6:
+                print("  WYBRANO z tematu", tid, "->", x["id"])
+                return x["id"]
+    return None
+
+
 def znajdz(frazy, musi, nie=()):
     """szuka zmiennej BDL po nazwie; wypisuje kandydatów do logu, żeby dało się sprawdzić wybór"""
     for fr in frazy:
@@ -239,9 +262,9 @@ def main():
     STATY = [
         ("saldo_migracji", 453193, None),
         ("kanalizacja_proc", 79130, None),
-        ("wodociag_proc", None, lambda: z_tematu(79130, ["wodoci", "ogółem"], ["kanaliz", "gaz"])),
-        ("bezrobocie_proc", None, lambda: znajdz(["udział bezrobotnych zarejestrowanych", "bezrobotni zarejestrowani", "udział bezrobotnych"],
-                                                 ["udział", "produkcyjn"], ["kobiet", "mężczyzn", "do 25", "powyżej", "długotrwale"])),
+        ("wodociag_proc", 79133, None),
+        ("bezrobocie_proc", None, lambda: z_tematu_nazwy(["udział bezrobotnych zarejestrowanych w liczbie ludności w wieku produkcyjnym", "udział bezrobotnych"],
+                                                         ["ogółem"], ["kobiet", "mężczyzn"], zapas=["P2392"])),
     ]
     for pole, stale, szukaj in STATY:
         try:
