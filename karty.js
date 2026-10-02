@@ -36,7 +36,7 @@ window.Karty=(function(){
   // w: waga w ocenie ogólnej (OVR); wskaźniki z wagą 0 są na karcie, ale nie wchodzą do OVR
   const STATY=[
     {k:"ludnosc",n:"Ludność",t:"r",w:0},{k:"powierzchnia",n:"Powierzchnia",t:"r",w:0},{k:"gestosc",n:"Gęstość",t:"o",w:2},
-    {k:"saldo_migracji",n:"Migracja",t:"r",w:1},{k:"dochod_na_mieszk",n:"Dochód",t:"r",w:0},{k:"bezrobocie_proc",n:"Bezrobocie",t:"r",w:1},
+    {k:"saldo_migracji",n:"Migracja",t:"r",w:1},{k:"dochod_na_mieszk",n:"Dochód",t:"r",w:0},{k:"bezrobocie_proc",n:"Bezrobocie",t:"o",w:1},
     {k:"wodociag_proc",n:"Wodociągi",t:"p",w:0},{k:"kanalizacja_proc",n:"Kanalizacja",t:"p",w:0},{k:"lesistosc_proc",n:"Lesistość",t:"p",w:0}];
   function przelicz(){
     const g=DANE.g;
@@ -45,42 +45,73 @@ window.Karty=(function(){
       if(s.t==="p")g.forEach(x=>{if(x[s.k]!=null)x.oc[s.k]=Math.max(0,Math.min(100,Math.round(x[s.k])));});
       else ocena(g,s.k,s.t==="o");
     });
-    // OVR: średnia ważona: gęstość ×2 (im rzadziej zaludniona, tym lepiej), bezrobocie ×1, migracja ×1
+    // OVR: średnia ważona: gęstość ×2 (im rzadziej zaludniona, tym lepiej), bezrobocie ×1 (im niższe, tym lepiej), migracja ×1 (im większy napływ, tym lepiej)
     g.forEach(x=>{let s=0,wg=0;STATY.forEach(t=>{if(t.w&&x.oc[t.k]!=null){s+=t.w*x.oc[t.k];wg+=t.w;}});x.ovr=wg?Math.round(s/wg):0;});
   }
   function gminaPoNazwie(n){
     const l=DANE.PO_N[norm(n)];if(!l)return null;
     return l.find(x=>x.typ==="gmina miejska")||l.find(x=>x.typ==="gmina miejsko-wiejska")||l[0];
   }
-  /* zdobyte karty według zasad */
+  /* zdobyte karty:
+     1. Kształt gminy: trafiona gmina to od razu karta,
+     2. gry gminne (herby, Gdzie ta gmina, Ciepło-zimno, Kształt gminy): 3 trafienia tej samej gminy to karta,
+     3. wszystkie inne gry dają żetony; 25 żetonów to paczka z jedną losową nową kartą. */
+  const PACZKA=25;
+  const SZANSE=[["diament",.005],["zloto",.035],["srebro",.09],["braz",.25],["zwykla",.62]];
+  function paczki(){try{return JSON.parse(localStorage.getItem("karty-paczki")||"[]");}catch(e){return [];}}
+  function zetony(){return +localStorage.getItem("karty-zetony")||0;}
   function zdobyte(){
     let n={};try{n=JSON.parse(localStorage.getItem("nauka-v1")||"{}");}catch(e){}
-    const rodzaje={},od=new Set();
+    const pkt={},od=new Set(paczki());
     Object.entries(n).forEach(([klucz,r])=>{
       if(!(r.ok>0))return;
       const i=klucz.indexOf(":"),rodz=klucz.slice(0,i),id=klucz.slice(i+1);
       let g=null;
       if(rodz==="kontur"){g=DANE.PO_K[id]||gminaPoNazwie(id);if(g)od.add(g.k);return;}
-      if(RODZAJE.indexOf(rodz)<0)return;
       if(rodz==="gmina")g=DANE.PO_K[id];
-      else if(rodz==="powiat"){if(+id.slice(2,4)>=60)g=DANE.g.find(x=>x.k.startsWith(id));}
-      else g=gminaPoNazwie(id);
-      if(g)(rodzaje[g.k]=rodzaje[g.k]||new Set()).add(rodz);
+      else if(rodz==="herb")g=gminaPoNazwie(id);
+      if(g)pkt[g.k]=(pkt[g.k]||0)+r.ok;
     });
-    Object.entries(rodzaje).forEach(([k,s])=>{if(s.size>=PROG)od.add(k);});
-    return {mam:od,postep:rodzaje};
+    const postep={};
+    Object.entries(pkt).forEach(([k,v])=>{if(v>=PROG)od.add(k);postep[k]={size:Math.min(v,PROG)};});
+    return {mam:od,postep};
+  }
+  // jednorazowo przy zmianie zasad: karty zdobyte po staremu zostają w kolekcji
+  function migracja(){
+    if(localStorage.getItem("karty-zasady")==="2")return;
+    try{
+      const stare=JSON.parse(localStorage.getItem("karty-ogloszone")||"[]");
+      localStorage.setItem("karty-paczki",JSON.stringify([...new Set(paczki().concat(stare))]));
+    }catch(e){}
+    localStorage.setItem("karty-zasady","2");
+  }
+  // otwieranie paczek za żetony: losowa karta, której jeszcze nie masz
+  function otworzPaczki(){
+    const nowe=[];let z=zetony();
+    while(z>=PACZKA){
+      const mam=zdobyte().mam;let r=Math.random(),rz="zwykla";
+      for(const [k,p] of SZANSE){if(r<p){rz=k;break;}r-=p;}
+      let pula=DANE.g.filter(g=>g.rz===rz&&!mam.has(g.k));
+      if(!pula.length)pula=DANE.g.filter(g=>!mam.has(g.k));
+      if(!pula.length)break;
+      const g=pula[Math.floor(Math.random()*pula.length)];
+      localStorage.setItem("karty-paczki",JSON.stringify(paczki().concat([g.k])));
+      z-=PACZKA;localStorage.setItem("karty-zetony",String(z));
+      nowe.push(g.k);
+    }
+    return nowe;
   }
   function widziane(){try{return JSON.parse(localStorage.getItem("karty-widziane")||"[]");}catch(e){return [];}}
   function ogloszone(){try{return JSON.parse(localStorage.getItem("karty-ogloszone")||"null");}catch(e){return null;}}
   async function nowe(){
-    await zaladuj();const {mam}=zdobyte();
+    await zaladuj();migracja();const zPaczek=otworzPaczki();const {mam}=zdobyte();
     let og=ogloszone();
     if(og===null){og=[...mam];localStorage.setItem("karty-ogloszone",JSON.stringify(og));return [];}   // pierwszy raz: bez zalewu kart
     const n=[...mam].filter(k=>og.indexOf(k)<0);
     if(n.length)localStorage.setItem("karty-ogloszone",JSON.stringify(og.concat(n)));
-    return n.map(k=>DANE.PO_K[k]).sort((a,b)=>KOLEJ.indexOf(a.rz)-KOLEJ.indexOf(b.rz));
+    return n.map(k=>{const g=DANE.PO_K[k];g._paczka=zPaczek.indexOf(k)>=0;return g;}).sort((a,b)=>KOLEJ.indexOf(a.rz)-KOLEJ.indexOf(b.rz));
   }
-  async function liczbaNowych(){await zaladuj();const {mam}=zdobyte(),w=widziane();return [...mam].filter(k=>w.indexOf(k)<0).length;}
+  async function liczbaNowych(){await zaladuj();migracja();const {mam}=zdobyte(),w=widziane();return [...mam].filter(k=>w.indexOf(k)<0).length;}
 
   /* ================== WYGLĄD KARTY (wspólny dla albumu i prezentacji) ================== */
   const IK={
@@ -120,7 +151,7 @@ window.Karty=(function(){
       +'<div class="kk-lewa"><span class="kk-ovr">'+(ot&&g.ovr?g.ovr:"?")+'</span><span class="kk-typ">'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</span>'+(h?'<img class="kk-herb" alt="" loading="lazy" src="'+h+'">':'')+'<span class="kk-kres"></span><span class="kk-wojs">'+(WS[g.woj]||"")+'</span></div>'
       +'<div class="kk-mapka" data-m="'+g.k+'"></div>'
       +'<div class="kk-nazwa">'+(ot?esc(g.n):"???")+'</div>'
-      +'<div class="kk-jedn">'+(ot?(mnp(g)?"miasto na prawach powiatu<br>woj. "+g.woj:g.typ+(pelna?"<br>"+esc(g.powiat)+" · woj. "+g.woj:"")):(o.postep?"zebrane "+o.postep+"/"+PROG+" gier":"woj. "+g.woj))+'</div>'
+      +'<div class="kk-jedn">'+(ot?(mnp(g)?"miasto na prawach powiatu<br>woj. "+g.woj:g.typ+(pelna?"<br>"+esc(g.powiat)+" · woj. "+g.woj:"")):(o.postep?"postęp "+o.postep+"/"+PROG+" trafień":"woj. "+g.woj))+'</div>'
       +st+'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
   }
   function styl(){
@@ -164,37 +195,41 @@ window.Karty=(function(){
 .kk.zablokowana{--tlo:#2A2F3A!important;color:#8B93A6}.kk.zablokowana::after{display:none}.kk.zablokowana .kk-mapka{filter:grayscale(1) brightness(.35);border-color:#454C5C}.kk.zablokowana .kk-ramka{border-color:#454C5C}
 .kk .kk-nowa{position:absolute;left:50%;top:1.5cqw;transform:translateX(-50%);background:#E84A3C;color:#fff;font-size:4.5cqw;font-weight:900;padding:.5cqw 3cqw;border-radius:0 0 2cqw 2cqw;z-index:5}
 /* prezentacja nowej karty, jak po otwarciu paczki */
-.pk{position:fixed;inset:0;z-index:6000;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(ellipse at 50% 40%,var(--pk1),#140D04 72%);font-family:Rubik,system-ui,sans-serif;color:#fff;animation:pkWej .35s both}
+.pk{position:fixed;inset:0;z-index:6000;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Rubik,system-ui,sans-serif;color:#FFF6E0;animation:pkWej .35s both;
+  background:radial-gradient(ellipse at 50% 38%,rgba(255,246,224,.16),transparent 60%),repeating-linear-gradient(45deg,rgba(255,255,255,.025) 0 3px,transparent 3px 9px),radial-gradient(ellipse at 50% 45%,#4E7A43,#2C4A26 75%)}
 @keyframes pkWej{from{opacity:0}}
 .pk.r-zwykla{--pk1:#4A3A1E;--pk2:#FFF6E0}.pk.r-braz{--pk1:#5A3216;--pk2:#E7A06B}.pk.r-srebro{--pk1:#3E4248;--pk2:#E6EEF6}.pk.r-zloto{--pk1:#6A4A00;--pk2:#F5B82E}.pk.r-diament{--pk1:#24406A;--pk2:#9FD8FF}
-.pk-promienie{position:absolute;left:50%;top:42%;width:240vmax;height:240vmax;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--pk2) 22%,transparent) 0 6deg,transparent 6deg 18deg);animation:pkObrot 18s linear infinite;opacity:0;transition:opacity .8s;mask:radial-gradient(circle,#000 0,transparent 55%);-webkit-mask:radial-gradient(circle,#000 0,transparent 55%)}
-.pk.faza2 .pk-promienie{opacity:1}
-@keyframes pkObrot{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.pk-kula{position:absolute;left:50%;top:64%;width:86px;height:86px;margin-left:-43px;z-index:2;transition:transform .6s cubic-bezier(.5,-0.4,.5,1.4),opacity .5s}
+.pk-kula svg{width:100%;height:100%;display:block;overflow:visible;animation:pkSkok .62s cubic-bezier(.3,0,.7,1) infinite alternate;transform-origin:50% 100%}
+.pk-kula::after{content:"";position:absolute;left:12%;right:12%;bottom:-10px;height:12px;border-radius:50%;background:rgba(0,0,0,.28);animation:pkCien .62s cubic-bezier(.3,0,.7,1) infinite alternate}
+@keyframes pkSkok{0%{transform:translateY(0) scale(1.12,.86)}18%{transform:translateY(-6px) scale(.95,1.06)}100%{transform:translateY(-70px) scale(1,1)}}
+@keyframes pkCien{0%{transform:scale(1);opacity:.9}100%{transform:scale(.55);opacity:.4}}
+.pk.faza4 .pk-kula{transform:translate(38vw,-30vh) scale(.45) rotate(360deg);opacity:0}
 .pk-iskry{position:absolute;inset:0;pointer-events:none}
-.pk-iskry i{position:absolute;bottom:-10px;width:4px;height:4px;border-radius:50%;background:var(--pk2);box-shadow:0 0 8px var(--pk2);animation:pkIskra linear infinite}
+.pk-iskry i{position:absolute;bottom:-10px;width:5px;height:5px;border-radius:50%;background:var(--pk2);opacity:.55;animation:pkIskra linear infinite}
 @keyframes pkIskra{to{transform:translateY(-110vh);opacity:0}}
-.pk-krok{position:absolute;top:38%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;opacity:0}
+.pk-krok{position:absolute;top:32%;left:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;opacity:0}
 .pk-krok.widac{animation:pkKrok 1.1s cubic-bezier(.2,1.2,.3,1) both}
 @keyframes pkKrok{0%{opacity:0;transform:translate(-50%,-30%) scale(1.6)}25%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-60%) scale(.9)}}
-.pk-krok small{font-size:13px;letter-spacing:4px;color:var(--pk2);font-weight:800}
-.pk-krok b{font-family:Bungee,"Barlow Condensed",sans-serif;font-weight:400;font-size:clamp(30px,10vw,52px);line-height:1;text-shadow:0 0 20px var(--pk2)}
-.pk-krok svg{width:110px;height:110px}.pk-krok svg path{fill:color-mix(in srgb,var(--pk2) 40%,transparent);stroke:var(--pk2);stroke-width:2;vector-effect:non-scaling-stroke}
-.pk-krok .pk-ovr{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:clamp(96px,32vw,160px);line-height:.9;color:#fff;text-shadow:0 0 30px var(--pk2),0 0 60px var(--pk2)}
+.pk-krok small{font-size:13px;letter-spacing:4px;color:#FFE7A3;font-weight:900;text-shadow:0 2px 0 #3A2A14}
+.pk-krok b{font-family:Bungee,"Barlow Condensed",sans-serif;font-weight:400;font-size:clamp(30px,10vw,52px);line-height:1;color:#FFF6E0;text-shadow:0 4px 0 #3A2A14}
+.pk-krok svg{width:110px;height:110px}.pk-krok svg path{fill:#F5B82E;stroke:#3A2A14;stroke-width:3;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.pk-krok .pk-ovr{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:clamp(96px,32vw,160px);line-height:.9;color:var(--pk2);-webkit-text-stroke:3px #3A2A14;text-shadow:0 6px 0 #3A2A14}
 .pk-karta{width:min(80vw,340px);position:relative;z-index:2;opacity:0}
 .pk.faza4 .pk-karta{animation:pkKarta .9s cubic-bezier(.2,1.3,.3,1) both}
 @keyframes pkKarta{0%{opacity:0;transform:translateY(60px) rotateY(540deg) scale(.4)}100%{opacity:1;transform:none}}
-.pk-blysk{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:3}
+.pk-blysk{position:absolute;inset:0;background:#FFF6E0;opacity:0;pointer-events:none;z-index:3}
 .pk.faza4 .pk-blysk{animation:pkBlysk .7s both}
 @keyframes pkBlysk{0%{opacity:.9}100%{opacity:0}}
 .pk-dol{position:relative;z-index:2;display:flex;gap:10px;opacity:0;transition:opacity .4s}
 .pk.faza5 .pk-dol{opacity:1}
 .pk-dol button,.pk-dol a{min-height:50px;padding:0 18px;border-radius:14px;border:4px solid #3A2A14;box-shadow:0 5px 0 #3A2A14;background:#FFF6E0;color:#3A2A14;font:800 15px Rubik,sans-serif;display:grid;place-items:center;text-decoration:none}
 .pk-dol .glowny{background:#F5B82E}
-.pk-pomin{position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:5;background:none;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:999px;padding:6px 12px;font:700 12px Rubik,sans-serif}
-.pk-licznik{position:absolute;left:14px;top:calc(env(safe-area-inset-top,0px) + 16px);z-index:5;font:800 12px Rubik,sans-serif;letter-spacing:2px;color:var(--pk2)}
+.pk-pomin{position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:5;background:#FFF6E0;border:3px solid #3A2A14;color:#3A2A14;border-radius:10px;padding:5px 12px;font:900 12px Rubik,sans-serif;box-shadow:0 3px 0 #3A2A14}
+.pk-licznik{position:absolute;left:14px;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:5;font:900 12px Rubik,sans-serif;letter-spacing:2px;color:#3A2A14;background:#F5B82E;border:3px solid #3A2A14;border-radius:10px;padding:4px 10px}
 .kd-plecak{position:fixed;right:14px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:6100;width:52px;height:52px;border-radius:14px;background:#F5B82E;border:3px solid #3A2A14;box-shadow:0 4px 0 #3A2A14;display:grid;place-items:center}
 .kd-plecak.bum{animation:kdBum .35s}@keyframes kdBum{50%{transform:scale(1.3)}}
-@media (prefers-reduced-motion:reduce){.pk *,.pk{animation:none!important}.pk-karta,.pk-dol{opacity:1!important}}
+@media (prefers-reduced-motion:reduce){.pk *,.pk,.pk-kula svg{animation:none!important}.pk-karta,.pk-dol{opacity:1!important}}
 `;
     document.head.appendChild(s);
   }
@@ -273,8 +308,8 @@ window.Karty=(function(){
       w.className="pk r-"+g.rz;
       const wo=WOJ&&WOJ[g.woj]?WOJ[g.woj]:"";
       let iskry="";for(let n=0;n<(pelne?40:18);n++)iskry+='<i style="left:'+(Math.random()*100).toFixed(1)+'%;animation-duration:'+(3+Math.random()*4).toFixed(1)+'s;animation-delay:'+(-Math.random()*6).toFixed(1)+'s"></i>';
-      w.innerHTML='<div class="pk-promienie"></div><div class="pk-iskry">'+iskry+'</div><div class="pk-blysk"></div>'
-        +(karty.length>1?'<span class="pk-licznik">NOWA KARTA '+(i+1)+' / '+karty.length+'</span>':'<span class="pk-licznik">NOWA KARTA</span>')+'<button class="pk-pomin">Pomiń ›</button>'
+      w.innerHTML='<div class="pk-iskry">'+iskry+'</div><div class="pk-kula"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="pkK"><circle cx="50" cy="50" r="44"/></clipPath></defs><g clip-path="url(#pkK)" transform="rotate(-8 50 50)"><rect width="100" height="50" fill="#F4F4F2"/><rect y="50" width="100" height="50" fill="#DC1E35"/><ellipse cx="36" cy="27" rx="14" ry="6" fill="#fff" opacity=".7"/></g><circle cx="50" cy="50" r="44" fill="none" stroke="#3A2A14" stroke-width="4"/><ellipse cx="38" cy="40" rx="8" ry="10" fill="#fff" stroke="#3A2A14" stroke-width="3"/><ellipse cx="64" cy="40" rx="8" ry="10" fill="#fff" stroke="#3A2A14" stroke-width="3"/></svg></div><div class="pk-blysk"></div>'
+        +'<span class="pk-licznik">'+(g._paczka?"KARTA Z PACZKI":"NOWA KARTA")+(karty.length>1?" "+(i+1)+" / "+karty.length:"")+'</span>'+'<button class="pk-pomin">Pomiń ›</button>'
         +'<div class="pk-krok k1"><small>WOJEWÓDZTWO</small>'+wo+'<b>'+esc(g.woj)+'</b></div>'
         +'<div class="pk-krok k2"><small>'+(mnp(g)?"MIASTO NA PRAWACH POWIATU":esc(g.typ.toUpperCase()))+'</small><b>'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</b><small style="letter-spacing:2px">'+esc(g.powiat)+'</small></div>'
         +'<div class="pk-krok k3"><small>'+RZ[g.rz].toUpperCase()+' KARTA</small><span class="pk-ovr">'+(g.ovr||"?")+'</span></div>'
@@ -303,5 +338,5 @@ window.Karty=(function(){
   function doInwentarza(karty){prezentacja(karty);}
 
   async function sprawdzPoGrze(){try{const n=await nowe();if(n.length)setTimeout(()=>doInwentarza(n),1200);}catch(e){}}
-  return {STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
+  return {PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
 })();

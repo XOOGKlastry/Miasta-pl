@@ -63,7 +63,7 @@
 <script src="tablice-powiaty.js"></script>
 <script src="efekty.js?v=17"></script>
 <script src="topojson-client.min.js?v=17"></script>
-<script src="wspolne.js?v=18"></script>
+<script src="wspolne.js?v=19"></script>
 <script>
 const {$,shuffle,pick,fmt}=ZP;
 const CZAS=60;
@@ -120,7 +120,7 @@ function odpowiedz(wybor){
   gra.blok=true;k.classList.add(ok?"dobrze":"zle");k.style.transform="";
   k.querySelector(".stempel."+(wybor?"p":"f")).style.opacity=1;
   k.insertAdjacentHTML("beforeend",'<span class="werdykt">'+(ok?"Dobrze!":"Źle")+(ok?"":'<small>'+z.wyjasn+'</small>')+'</span>');
-  if(ok)gra.dobre++;else gra.zle++;
+  if(ok){gra.dobre++;ZP.zeton(1);}else gra.zle++;
   $("dobre").textContent=gra.dobre;$("zle").textContent=gra.zle;
   setTimeout(()=>{k.style.transform="translateX("+(wybor?520:-520)+"px) rotate("+(wybor?30:-30)+"deg)";k.style.opacity="0";setTimeout(()=>k.remove(),260);gra.blok=false;dobierz();},ok?280:900);
   if(ok){gra.seria++;const mn=1+Math.floor(gra.seria/5);gra.pkt+=100*mn;
@@ -149,6 +149,7 @@ function koniec(){
     +'<button class="klocek" id="znowu">Jeszcze raz</button><a class="klocek jasny" href="gry.html">Inne gry</a></div>';
   document.querySelector(".tresc").appendChild(d);$("znowu").onclick=start;
   if(nowy&&gra.pkt>0)setTimeout(ZP.fanfary,200);
+  ZP.kartyPoGrze();
 }
 $("bP").onclick=()=>odpowiedz(true);$("bF").onclick=()=>odpowiedz(false);
 document.addEventListener("keydown",e=>{if(e.key==="ArrowRight")odpowiedz(true);if(e.key==="ArrowLeft")odpowiedz(false);});

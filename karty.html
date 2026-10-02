@@ -20,6 +20,9 @@
 .postep .gora2 b{font-family:Bungee,sans-serif;font-weight:400;font-size:20px}
 .postep .pasek{height:14px;border-radius:8px;background:#fff;border:3px solid var(--braz);overflow:hidden;margin:8px 0 12px}
 .postep .pasek i{display:block;height:100%;background:var(--ziel)}
+.zetony{display:flex;justify-content:space-between;margin-top:12px;font-weight:900;font-size:13px}.zetony b{font-family:Bungee,sans-serif;font-weight:400}
+.pasek.zet{height:10px;margin:5px 0 8px}.pasek.zet i{background:var(--zolt)}
+.zasady{display:block;font-weight:800;font-size:12.5px;color:var(--braz-2)}
 .rzadkosci{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
 .rzadkosci button{min-width:0;border-radius:12px;border:3px solid var(--braz);box-shadow:0 3px 0 var(--braz);padding:5px 1px;font:900 9px Rubik,sans-serif;color:var(--braz);overflow:hidden;cursor:pointer}
 .rzadkosci button b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:13px}
@@ -55,12 +58,12 @@ details[open]>summary .strz{transform:rotate(90deg)}
 <div class="wrap">
   <header class="gora"><a href="./" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Album kart<small id="stan">wczytywanie…</small></h1></header>
   <main class="tresc" id="main">
-    <section class="pole postep"><div class="gora2"><span>Zebrane karty</span><b id="ile">0 / 2479</b></div><div class="pasek"><i id="pasek" style="width:0"></i></div><div class="rzadkosci" id="rzadkosci"></div></section>
+    <section class="pole postep"><div class="gora2"><span>Zebrane karty</span><b id="ile">0 / 2479</b></div><div class="pasek"><i id="pasek" style="width:0"></i></div><div class="rzadkosci" id="rzadkosci"></div><div class="zetony"><span>🪙 Żetony do paczki</span><b id="zet">0 / 25</b></div><div class="pasek zet"><i id="zetPasek" style="width:0"></i></div><a class="zasady" href="profil.html#kartyInfo">Jak zdobywać karty i jak liczy się OVR ›</a></section>
     <div id="sekcje" style="display:flex;flex-direction:column;gap:12px"></div>
   </main>
 </div>
-<script src="wspolne.js?v=18"></script>
-<script src="karty.js?v=4"></script>
+<script src="wspolne.js?v=19"></script>
+<script src="karty.js?v=5"></script>
 <script>
 const {$}=ZP;
 let D=null,filtr="",WOJ_SVG={};
@@ -75,7 +78,8 @@ function rysuj(){
   const st=Karty.zdobyte(),mam=st.mam,w=Karty.widziane(),nowe=[...mam].filter(k=>w.indexOf(k)<0);
   const KOL=Karty.KOLEJ,RZ=Karty.RZ;
   const licz={};KOL.forEach(r=>licz[r]=[0,0]);D.g.forEach(g=>{licz[g.rz][1]++;if(mam.has(g.k))licz[g.rz][0]++;});
-  $("ile").textContent=mam.size+" / "+D.g.length;$("pasek").style.width=(100*mam.size/D.g.length).toFixed(2)+"%";
+  $("ile").textContent=mam.size+" / "+D.g.length;
+  {const z=Karty.zetony()%Karty.PACZKA;$("zet").textContent=z+" / "+Karty.PACZKA;$("zetPasek").style.width=(100*z/Karty.PACZKA)+"%";}$("pasek").style.width=(100*mam.size/D.g.length).toFixed(2)+"%";
   $("stan").textContent=mam.size?"stuknij kartę, żeby ją obejrzeć":"zbieraj karty, grając";
   $("rzadkosci").innerHTML=KOL.map(r=>'<button class="rz-'+r+(filtr===r?" akt":"")+'" data-r="'+r+'">'+RZ[r]+'<b>'+licz[r][0]+'/'+licz[r][1]+'</b></button>').join("");
   $("rzadkosci").querySelectorAll("button").forEach(b=>b.onclick=()=>{filtr=filtr===b.dataset.r?"":b.dataset.r;rysuj();});
@@ -109,7 +113,7 @@ function podglad(g,otwarta,st){
   const pp=st.postep[g.k]?st.postep[g.k].size:0;
   const d=document.createElement("div");d.className="kk-podglad";
   d.innerHTML=Karty.karta(g,{tryb:"pelna",otwarta})+'<p>'+(otwarta?"Dane: GUS BDL, PRG · mapa © współtwórcy OpenStreetMap, OpenTopoMap · stuknij, by zamknąć"
-    :"Zdobędziesz ją, odgadując po konturze (Do sześciu razy sztuka, Kształt gminy) albo trafiając w "+Karty.PROG+" różnych grach. Masz: "+pp+"/"+Karty.PROG+".")+'</p>';
+    :"Zdobędziesz ją od razu w grze Kształt gminy albo trafiając ją "+Karty.PROG+" razy w grach gminnych (herby, Gdzie ta gmina?, Ciepło-zimno). Masz: "+pp+"/"+Karty.PROG+". Może też wypaść z paczki za żetony.")+'</p>';
   d.onclick=()=>d.remove();document.body.appendChild(d);Karty.holo(d.querySelector(".kk"));Karty.podepnijMapy(d);
 }
 Karty.styl();

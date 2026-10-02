@@ -62,7 +62,7 @@
 </div>
 <script src="tablice-powiaty.js"></script>
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=18"></script>
+<script src="wspolne.js?v=19"></script>
 <script>
 const {$}=ZP;
 let TRYB="herby",ILE=10,HERBY=[],WOJ=[],gra=null,zegar=null;
@@ -101,7 +101,7 @@ function odkryj(i){
   if(gra.karty[a].id===gra.karty[b].id){
     setTimeout(()=>{[ea,eb].forEach(e=>{e.classList.remove("odkryta");e.classList.add("para");});
       const r=eb.getBoundingClientRect();if(window.Efekty)Efekty.fala(r.left+r.width/2,r.top+r.height/2,"#27AE60");},250);
-    gra.pary++;$("pary").textContent=gra.pary+"/"+gra.n;
+    gra.pary++;$("pary").textContent=gra.pary+"/"+gra.n;ZP.zeton(1);
     if(gra.pary===gra.n)setTimeout(koniec,700);
   }else{
     gra.blok=true;
@@ -120,6 +120,7 @@ function koniec(){
     +'<button class="klocek" id="znowu">Jeszcze raz</button><a class="klocek jasny" href="gry.html">Inne gry</a></div></div>';
   $("znowu").onclick=nowa;
   if(gw===3)setTimeout(ZP.fanfary,200);
+  ZP.kartyPoGrze();
 }
 document.querySelectorAll("#tryby button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#tryby button").forEach(x=>x.classList.toggle("akt",x===b));TRYB=b.dataset.t;nowa();});
 document.querySelectorAll("#rozmiary button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#rozmiary button").forEach(x=>x.classList.toggle("akt",x===b));ILE=+b.dataset.n;nowa();});

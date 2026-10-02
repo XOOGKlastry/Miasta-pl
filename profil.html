@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=18" />
+<link rel="stylesheet" href="wspolne.css?v=19" />
 <style>
 .przewijana{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:10px}
 .karta-gracza{display:flex;align-items:center;gap:14px;background:var(--ink-2);border:3px solid var(--line-2);border-radius:20px;padding:14px;box-shadow:var(--cien)}
@@ -37,6 +37,17 @@
 .linki{display:flex;flex-direction:column;gap:6px}
 .linki a,.linki button{display:flex;justify-content:space-between;align-items:center;min-height:48px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--ink-2);text-decoration:none;color:inherit;font-size:14.5px;text-align:left}
 .linki .grozne{color:var(--red)}
+.ki{display:flex;flex-direction:column;gap:8px}
+.ki-zet{border:var(--ramka-k,1px solid var(--line));border-radius:14px;padding:10px 12px;background:var(--ink-2)}
+.ki-zet span{font-size:12px;font-weight:700;color:var(--dim)}.ki-zet b{float:right;font-size:16px}
+.ki-pasek{clear:both;height:10px;border-radius:6px;background:rgba(0,0,0,.12);overflow:hidden;margin:6px 0}
+.ki-pasek i{display:block;height:100%;width:0;background:#4FB04A;transition:width .4s}
+.ki-album{font-weight:800;font-size:13px}
+.ki details{border:1px solid var(--line);border-radius:14px;background:var(--ink-2);padding:0 12px}
+.ki summary{cursor:pointer;font-weight:800;padding:10px 0}
+.ki p,.ki li{font-size:13.5px;line-height:1.45;margin:0 0 8px}
+.ki ul{margin:0 0 8px;padding-left:18px}
+.ki-wzor{font-weight:900;text-align:center;padding:6px;border-radius:10px;background:rgba(245,184,46,.25)}
 </style>
 </head>
 <body>
@@ -57,6 +68,39 @@
   </section>
   <section class="sekcja"><h3>Awatar</h3><div class="awatary" id="awatary"></div></section>
   <section class="sekcja"><h3>Twoje wyniki</h3><div class="kafle" id="kafle"></div></section>
+  <section class="sekcja" id="kartyInfo"><h3>Karty gmin: jak to działa</h3>
+    <div class="ki">
+      <div class="ki-zet"><span>Żetony do następnej paczki</span><b id="kiZet">0 / 25</b><div class="ki-pasek"><i id="kiPasek"></i></div><a href="karty.html" class="ki-album">Otwórz album ›</a></div>
+      <details open><summary>Jak zdobywać karty</summary>
+        <p><b>Gry gminne</b> dają postęp konkretnej gminie:</p>
+        <ul>
+          <li><b>Kształt gminy:</b> trafiona gmina to od razu karta, także po podpowiedzi.</li>
+          <li><b>Jaki to herb?, Gdzie ta gmina?, Ciepło-zimno:</b> każde trafienie danej gminy to 1 punkt postępu; 3 punkty to karta tej gminy.</li>
+        </ul>
+        <p><b>Wszystkie pozostałe gry</b> (miasta, powiaty, rzeki, kluby, tablice, plansza przygód, wyzwania, Do sześciu razy sztuka, Memory, Szybki strzał) dają <b>żetony</b>: 1 żeton za każde trafienie. <b>25 żetonów to paczka</b> z jedną nową, losową kartą.</p>
+        <p>Szanse w paczce: zwykła 62%, brązowa 25%, srebrna 9%, złota 3,5%, diamentowa 0,5%.</p>
+        <p>Nowe karty i paczki otwierają się po zakończeniu gry.</p>
+      </details>
+      <details><summary>Rzadkość karty</summary>
+        <p>Im mniej mieszkańców ma gmina, tym rzadsza karta (dane GUS):</p>
+        <ul>
+          <li><b>Diamentowe (6):</b> 3 najmniejsze miasta i 3 najmniejsze gminy wiejskie lub miejsko-wiejskie.</li>
+          <li><b>Złote:</b> 3% najmniejszych gmin.</li><li><b>Srebrne:</b> do 15% najmniejszych.</li><li><b>Brązowe:</b> do 45% najmniejszych.</li><li><b>Zwykłe:</b> pozostałe, największe gminy i miasta.</li>
+        </ul>
+      </details>
+      <details><summary>Jak liczona jest ocena OVR</summary>
+        <p>Każdy wskaźnik dostaje od 1 do 99 punktów według miejsca gminy w rankingu wszystkich 2473 gmin w Polsce. OVR to średnia ważona trzech wskaźników:</p>
+        <ul>
+          <li><b>Gęstość zaludnienia, waga 2:</b> im mniejsza, tym więcej punktów.</li>
+          <li><b>Bezrobocie, waga 1:</b> im niższe, tym więcej punktów.</li>
+          <li><b>Migracja (saldo na 1000 osób), waga 1:</b> im większy napływ mieszkańców, tym więcej punktów.</li>
+        </ul>
+        <p class="ki-wzor">OVR = (2 × gęstość + bezrobocie + migracja) / 4</p>
+        <p>Pozostałe wskaźniki są na karcie tylko informacyjnie i nie zmieniają OVR: ludność, powierzchnia i dochód (miejsce w rankingu) oraz wodociągi, kanalizacja i lesistość (procent wprost, więc 100% to 100 punktów).</p>
+        <p>Źródła: GUS Bank Danych Lokalnych, granice PRG.</p>
+      </details>
+    </div>
+  </section>
   <section class="sekcja"><h3>Konto</h3>
     <div class="metody" id="metody"></div>
     <p class="datastate" style="margin-top:8px">Na razie grasz jako gość: postęp jest zapisany na tym urządzeniu. Logowanie przez Google i e-mail pozwoli przenieść go na inne urządzenia i grać w rankingach.</p>
@@ -75,7 +119,7 @@
 </div>
 <script src="instaluj.js"></script>
 <script src="konto.js"></script>
-<script src="wspolne.js?v=18"></script>
+<script src="wspolne.js?v=19"></script>
 <script>
 const {$,fmt}=ZP;
 const p=Konto.profil();
@@ -98,6 +142,7 @@ function rysuj(){
 $("nick").onchange=()=>{Konto.ustaw({nick:$("nick").value.trim().slice(0,14)});ZP.komunikat("Zapisano nick.");};
 $("usun").onclick=()=>{if(confirm("Usunąć profil, postęp i rekordy z tego urządzenia? Tego nie da się cofnąć.")){Konto.usunDane();location.href="./";}};
 $("wersja").textContent="wersja testowa";
+{const z=+localStorage.getItem("karty-zetony")||0;$("kiZet").textContent=(z%25)+" / 25";$("kiPasek").style.width=(100*(z%25)/25)+"%";}
 const odsw=()=>{const b=$("instaluj");if(Instaluj.zainstalowana()){b.innerHTML="✅ Aplikacja jest zainstalowana";b.disabled=true;}};odsw();Instaluj.naZmiane(odsw);
 $("instaluj").onclick=()=>Instaluj.zainstaluj();
 const mot=()=>localStorage.getItem("motyw")||"plansza";$("motywNazwa").textContent=mot()==="plansza"?"plansza (jasny)":"ciemny";

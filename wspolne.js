@@ -291,7 +291,7 @@ function przyciskKolekcji(){
   h.appendChild(a);
   // liczba nowych kart dopiero, gdy przeglądarka ma wolną chwilę
   const licz=()=>{const go=()=>Karty.liczbaNowych().then(n=>{if(n>0){const i=document.createElement("i");i.textContent=n>99?"99+":n;a.appendChild(i);}}).catch(()=>{});
-    if(window.Karty)return go();const sc=document.createElement("script");sc.src="karty.js?v=4";sc.onload=go;document.head.appendChild(sc);};
+    if(window.Karty)return go();const sc=document.createElement("script");sc.src="karty.js?v=5";sc.onload=go;document.head.appendChild(sc);};
   setTimeout(()=>{if(window.requestIdleCallback)requestIdleCallback(licz);else licz();},3000);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",przyciskKolekcji);else setTimeout(przyciskKolekcji,0);
@@ -299,7 +299,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 function kartyPoGrze(){
   const uruchom=()=>window.Karty&&Karty.sprawdzPoGrze();
   if(window.Karty)return uruchom();
-  const sc=document.createElement("script");sc.src="karty.js?v=4";sc.onload=uruchom;document.head.appendChild(sc);
+  const sc=document.createElement("script");sc.src="karty.js?v=5";sc.onload=uruchom;document.head.appendChild(sc);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujKoniec);else obserwujKoniec();
 
@@ -771,8 +771,12 @@ function nauka(){
   if(!NAU){try{NAU=JSON.parse(localStorage.getItem(NAUKA)||"{}");}catch(e){NAU={};}}
   return NAU;
 }
+// gry gminne (herby, gminy, kształt gminy) dają postęp konkretnej karcie; wszystkie inne dają żetony na paczki
+const GMINNE=["gmina","herb","kontur"];
+function zeton(n){try{localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)+(n||1)));}catch(e){}}
 function zapisz(kind,id,ok,cicho){
   if(!cicho){poswiata(ok);sesja.wszystkie++;if(ok)sesja.ok++;}
+  if(ok&&GMINNE.indexOf(kind)<0)zeton(1);
   const s=nauka(),k=kind+":"+id,r=s[k]||{ok:0,no:0};
   if(ok)r.ok++;else r.no++;
   r.t=Date.now();s[k]=r;
@@ -848,5 +852,5 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,zeton,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();
