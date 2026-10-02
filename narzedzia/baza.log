@@ -1,3 +1,16 @@
+  BDL 429 czekam 150 s (zapytań: 219 )
+  BDL 429 czekam 150 s (zapytań: 219 )
+  BDL 429 czekam 150 s (zapytań: 219 )
+  BDL 429 czekam 150 s (zapytań: 219 )
+  BDL 429 czekam 150 s (zapytań: 219 )
+  BDL 429 czekam 150 s (zapytań: 219 )
+  BDL 429 czekam 150 s (zapytań: 219 )
+  BDL 429 czekam 150 s (zapytań: 219 )
+  BDL 429 czekam 150 s (zapytań: 219 )
+  BDL 429 czekam 150 s (zapytań: 219 )
+  BDL 429 czekam 150 s (zapytań: 219 )
+  BDL 429 czekam 150 s (zapytań: 219 )
+pomijam dochod_na_mieszk BDL nie odpowiada
 powiatów 380 gmin 2479
 Wikidata: jednostek z kodem TERYT 2788
   BDL zmienna 72305 poziom 2 rok 2025 jednostek 16
@@ -12,21 +25,19 @@ Wikidata: jednostek z kodem TERYT 2788
    kanalizacja_proc rok 2025 gmin z danymi: 2473
   BDL zmienna 79133 poziom 6 rok 2025 jednostek 3934
    wodociag_proc rok 2025 gmin z danymi: 2473
-    temat P2670 Udział bezrobotnych zarejestrowanych w liczbie ludności w wieku produkcyjnym wg płci
-    temat P2670 Udział bezrobotnych zarejestrowanych w liczbie ludności w wieku produkcyjnym wg płci
-    temat P3615 Udział bezrobotnych zarejestrowanych wg grup wieku w liczbie ludności w tym wieku
-    temat P3299 Udział bezrobotnych zarejestrowanych wg wykształcenia w liczbie ludności w wieku produkcyjnym
-    w temacie P3299 395407 ogółem     % 5
-    w temacie P3299 395408 wyższe     % 5
-    w temacie P3299 395405 średnie ogólnokształcące     % 5
-    w temacie P3299 395406 zasadnicze zawodowe     % 5
-    w temacie P3615 1365674 18-24 lata w liczbie ludności w tym wieku     % 5
-    w temacie P3615 536756 25-34 lata w liczbie ludności w tym wieku     % 5
-    w temacie P3615 1365675 35-44 lata w liczbie ludności w tym wieku     % 5
-    w temacie P3615 1365676 45-54 lata w liczbie ludności w tym wieku     % 5
-    w temacie P3615 536755 55-59/64 lata w liczbie ludności w tym wieku     % 5
-    w temacie P2670 79214 ogółem     % 6
-  WYBRANO z tematu P2670 -> 79214
   BDL zmienna 79214 poziom 6 rok 2025 jednostek 3934
    bezrobocie_proc rok 2025 gmin z danymi: 2473
+    temat P2627 Dochody na 1 mieszkańca
+    temat P2410 Dochody na 1 mieszkańca
+    temat P2412 Dochody na 1 mieszkańca
+    w temacie P2412 60508 ogółem     zł 3
+    w temacie P2412 60509 dochody własne     zł 3
+    w temacie P2412 149138 dochody własne - udziały w podatkach stanowiących dochody budżetu państwa podatek dochodowy od osób  3
+    w temacie P2412 149137 dochody własne - udziały w podatkach stanowiących dochody budżetu państwa podatek dochodowy od osób  3
+    w temacie P2410 60505 ogółem     zł 5
+    w temacie P2410 60504 dochody własne     zł 5
+    w temacie P2410 149135 dochody własne - udziały w podatkach stanowiących dochody budżetu państwa podatek dochodowy od osób  5
+    w temacie P2410 149134 dochody własne - udziały w podatkach stanowiących dochody budżetu państwa podatek dochodowy od osób  5
+    w temacie P2627 76973 gminy łącznie z miastami na prawach powiatu ogółem    zł 6
+  WYBRANO z tematu P2627 -> 76973
 zapisano: województw 16 (wiki 16 ) powiatów 380 (wiki 376 ) gmin 2479 (wiki 2068 )
