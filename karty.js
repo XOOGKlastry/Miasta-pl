@@ -4,7 +4,7 @@
    - odpowiesz o niej poprawnie w co najmniej 3 różnych rodzajach gier (mapa, z lotu ptaka, herb, zdjęcie, rzeka, kluby, gminy). */
 window.Karty=(function(){
   const RZ={diament:"Diamentowa",zloto:"Złota",srebro:"Srebrna",braz:"Brązowa",zwykla:"Zwykła"},KOLEJ=["diament","zloto","srebro","braz","zwykla"];
-  const RODZAJE=["miasto","herb","miejsce","rzeka","klub","gmina","powiat"];
+  const RODZAJE=["miasto","herb","miejsce","rzeka","klub","gmina"];
   const PROG=3;
   let DANE=null;
   const norm=s=>String(s||"").toLowerCase().replace(/ł/g,"l").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
@@ -32,10 +32,12 @@ window.Karty=(function(){
   }
   // wskaźniki 1-99; bezrobocie odwrotnie (mniej bezrobotnych, wyższa ocena)
   // wskaźniki karty: miejsce w rankingu gmin (1-99) albo wprost procent (100% = 100 punktów)
+  // t: "r" ranking (więcej = lepiej), "o" ranking odwrotny (mniej = lepiej), "p" procent wprost
+  // w: waga w ocenie ogólnej (OVR); wskaźniki z wagą 0 są na karcie, ale nie wchodzą do OVR
   const STATY=[
-    {k:"ludnosc",n:"Ludność",t:"r"},{k:"powierzchnia",n:"Powierzchnia",t:"r"},{k:"gestosc",n:"Gęstość",t:"r"},
-    {k:"saldo_migracji",n:"Migracja",t:"r"},{k:"dochod_na_mieszk",n:"Dochód",t:"r"},{k:"bezrobocie_proc",n:"Bezrobocie",t:"o"},
-    {k:"wodociag_proc",n:"Wodociągi",t:"p"},{k:"kanalizacja_proc",n:"Kanalizacja",t:"p"},{k:"lesistosc_proc",n:"Lesistość",t:"p"}];
+    {k:"ludnosc",n:"Ludność",t:"r",w:0},{k:"powierzchnia",n:"Powierzchnia",t:"r",w:0},{k:"gestosc",n:"Gęstość",t:"o",w:2},
+    {k:"saldo_migracji",n:"Migracja",t:"r",w:1},{k:"dochod_na_mieszk",n:"Dochód",t:"r",w:0},{k:"bezrobocie_proc",n:"Bezrobocie",t:"r",w:1},
+    {k:"wodociag_proc",n:"Wodociągi",t:"p",w:0},{k:"kanalizacja_proc",n:"Kanalizacja",t:"p",w:0},{k:"lesistosc_proc",n:"Lesistość",t:"p",w:0}];
   function przelicz(){
     const g=DANE.g;
     g.forEach(x=>{x.oc={};if(x.ludnosc&&x.powierzchnia)x.gestosc=Math.round(x.ludnosc/x.powierzchnia*10)/10;});
@@ -43,7 +45,8 @@ window.Karty=(function(){
       if(s.t==="p")g.forEach(x=>{if(x[s.k]!=null)x.oc[s.k]=Math.max(0,Math.min(100,Math.round(x[s.k])));});
       else ocena(g,s.k,s.t==="o");
     });
-    g.forEach(x=>{const w=Object.values(x.oc);x.ovr=w.length?Math.round(w.reduce((a,c)=>a+c,0)/w.length):0;});
+    // OVR: średnia ważona: gęstość ×2 (im rzadziej zaludniona, tym lepiej), bezrobocie ×1, migracja ×1
+    g.forEach(x=>{let s=0,wg=0;STATY.forEach(t=>{if(t.w&&x.oc[t.k]!=null){s+=t.w*x.oc[t.k];wg+=t.w;}});x.ovr=wg?Math.round(s/wg):0;});
   }
   function gminaPoNazwie(n){
     const l=DANE.PO_N[norm(n)];if(!l)return null;
@@ -161,9 +164,9 @@ window.Karty=(function(){
 .kk.zablokowana{--tlo:#2A2F3A!important;color:#8B93A6}.kk.zablokowana::after{display:none}.kk.zablokowana .kk-mapka{filter:grayscale(1) brightness(.35);border-color:#454C5C}.kk.zablokowana .kk-ramka{border-color:#454C5C}
 .kk .kk-nowa{position:absolute;left:50%;top:1.5cqw;transform:translateX(-50%);background:#E84A3C;color:#fff;font-size:4.5cqw;font-weight:900;padding:.5cqw 3cqw;border-radius:0 0 2cqw 2cqw;z-index:5}
 /* prezentacja nowej karty, jak po otwarciu paczki */
-.pk{position:fixed;inset:0;z-index:6000;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(ellipse at 50% 40%,var(--pk1),#05070D 70%);font-family:Rubik,system-ui,sans-serif;color:#fff;animation:pkWej .35s both}
+.pk{position:fixed;inset:0;z-index:6000;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:radial-gradient(ellipse at 50% 40%,var(--pk1),#140D04 72%);font-family:Rubik,system-ui,sans-serif;color:#fff;animation:pkWej .35s both}
 @keyframes pkWej{from{opacity:0}}
-.pk.r-zwykla{--pk1:#3B3324;--pk2:#E2D6B8}.pk.r-braz{--pk1:#4A2A14;--pk2:#E7A06B}.pk.r-srebro{--pk1:#2E3640;--pk2:#E6EEF6}.pk.r-zloto{--pk1:#4A3500;--pk2:#FFD15C}.pk.r-diament{--pk1:#1A2A66;--pk2:#9FD8FF}
+.pk.r-zwykla{--pk1:#4A3A1E;--pk2:#FFF6E0}.pk.r-braz{--pk1:#5A3216;--pk2:#E7A06B}.pk.r-srebro{--pk1:#3E4248;--pk2:#E6EEF6}.pk.r-zloto{--pk1:#6A4A00;--pk2:#F5B82E}.pk.r-diament{--pk1:#24406A;--pk2:#9FD8FF}
 .pk-promienie{position:absolute;left:50%;top:42%;width:240vmax;height:240vmax;transform:translate(-50%,-50%);background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--pk2) 22%,transparent) 0 6deg,transparent 6deg 18deg);animation:pkObrot 18s linear infinite;opacity:0;transition:opacity .8s;mask:radial-gradient(circle,#000 0,transparent 55%);-webkit-mask:radial-gradient(circle,#000 0,transparent 55%)}
 .pk.faza2 .pk-promienie{opacity:1}
 @keyframes pkObrot{to{transform:translate(-50%,-50%) rotate(360deg)}}
@@ -185,8 +188,8 @@ window.Karty=(function(){
 @keyframes pkBlysk{0%{opacity:.9}100%{opacity:0}}
 .pk-dol{position:relative;z-index:2;display:flex;gap:10px;opacity:0;transition:opacity .4s}
 .pk.faza5 .pk-dol{opacity:1}
-.pk-dol button,.pk-dol a{min-height:48px;padding:0 18px;border-radius:14px;border:2px solid var(--pk2);background:rgba(255,255,255,.08);color:#fff;font:800 15px Rubik,sans-serif;display:grid;place-items:center;text-decoration:none;backdrop-filter:blur(4px)}
-.pk-dol .glowny{background:var(--pk2);color:#14233A}
+.pk-dol button,.pk-dol a{min-height:50px;padding:0 18px;border-radius:14px;border:4px solid #3A2A14;box-shadow:0 5px 0 #3A2A14;background:#FFF6E0;color:#3A2A14;font:800 15px Rubik,sans-serif;display:grid;place-items:center;text-decoration:none}
+.pk-dol .glowny{background:#F5B82E}
 .pk-pomin{position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:5;background:none;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:999px;padding:6px 12px;font:700 12px Rubik,sans-serif}
 .pk-licznik{position:absolute;left:14px;top:calc(env(safe-area-inset-top,0px) + 16px);z-index:5;font:800 12px Rubik,sans-serif;letter-spacing:2px;color:var(--pk2)}
 .kd-plecak{position:fixed;right:14px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:6100;width:52px;height:52px;border-radius:14px;background:#F5B82E;border:3px solid #3A2A14;box-shadow:0 4px 0 #3A2A14;display:grid;place-items:center}

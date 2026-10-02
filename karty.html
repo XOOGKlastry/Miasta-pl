@@ -4,73 +4,63 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Album kart · PolskoZnawca</title>
-<meta name="theme-color" content="#0B1530" />
+<meta name="theme-color" content="#FFF6E0" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="plansza.css?v=4" />
 <style>
-*{box-sizing:border-box}
-html,body{margin:0;height:100%;overflow-x:hidden}
-body{font-family:Rubik,system-ui,sans-serif;color:#EAF0FF;background:#0B1530;
-  background-image:radial-gradient(ellipse at 50% -10%,rgba(90,140,255,.35),transparent 55%),radial-gradient(ellipse at 110% 60%,rgba(140,90,255,.18),transparent 50%),
-  repeating-linear-gradient(60deg,rgba(255,255,255,.025) 0 2px,transparent 2px 22px),repeating-linear-gradient(-60deg,rgba(255,255,255,.025) 0 2px,transparent 2px 22px),linear-gradient(180deg,#0E1C3E,#070D1E);background-attachment:fixed}
-a{color:inherit}
-.wrap{max-width:720px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
-header{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:10px;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 10px;background:linear-gradient(180deg,rgba(7,13,30,.95),rgba(7,13,30,.8));backdrop-filter:blur(8px);border-bottom:1px solid rgba(160,190,255,.18)}
-header a.wstecz{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(160,190,255,.3);text-decoration:none;font-size:22px;font-weight:900}
-header h1{flex:1;margin:0;font-family:Bungee,sans-serif;font-weight:400;font-size:20px;letter-spacing:.5px}
-header h1 small{display:block;font-family:Rubik,sans-serif;font-weight:700;font-size:11px;color:#9FB4E6;letter-spacing:0}
-main{flex:1;padding:12px 12px 40px;display:flex;flex-direction:column;gap:12px}
-.postep{background:rgba(255,255,255,.06);border:1px solid rgba(160,190,255,.2);border-radius:16px;padding:12px}
-.postep .pasek{height:10px;border-radius:6px;background:rgba(255,255,255,.1);overflow:hidden;margin:8px 0 10px}
-.postep .pasek i{display:block;height:100%;background:linear-gradient(90deg,#5BC0FF,#B98CFF,#FFD15C);border-radius:6px}
-.postep .gora{display:flex;justify-content:space-between;align-items:baseline;font-weight:800}
-.postep .gora b{font-family:"Barlow Condensed",sans-serif;font-size:26px}
+/* album w stylu planszy: zielone sukno, kremowe pola, brązowe obrysy, żółte akcenty */
+.tresc{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:12px 12px 28px;display:flex;flex-direction:column;gap:12px}
+.postep{padding:12px 14px}
+.postep .gora2{display:flex;justify-content:space-between;align-items:baseline}
+.postep .gora2 span{font-weight:900;font-size:14px}
+.postep .gora2 b{font-family:Bungee,sans-serif;font-weight:400;font-size:20px}
+.postep .pasek{height:14px;border-radius:8px;background:#fff;border:3px solid var(--braz);overflow:hidden;margin:8px 0 12px}
+.postep .pasek i{display:block;height:100%;background:var(--ziel)}
 .rzadkosci{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
-.rzadkosci button{min-width:0;border-radius:12px;border:1px solid rgba(255,255,255,.15);padding:6px 2px;font:800 9px Rubik,sans-serif;color:#14233A;cursor:pointer;overflow:hidden}
-.rzadkosci button b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:16px}
-.rzadkosci button.akt{outline:3px solid #fff;outline-offset:-2px}
-.rz-diament{background:linear-gradient(160deg,#F2FBFF,#BFE6FF 50%,#E6D6FF)}.rz-zloto{background:linear-gradient(160deg,#FFF3C2,#E0A812)}.rz-srebro{background:linear-gradient(160deg,#F7F9FB,#AEB9C4)}.rz-braz{background:linear-gradient(160deg,#F4DCC4,#C98B5C)}.rz-zwykla{background:linear-gradient(160deg,#FBF6E8,#E2D6B8)}
-/* sekcje albumu (zwijane) */
-details.sek{background:rgba(255,255,255,.05);border:1px solid rgba(160,190,255,.18);border-radius:16px;overflow:hidden}
-details.sek[open]{background:rgba(255,255,255,.07)}
-details.sek>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;user-select:none}
+.rzadkosci button{min-width:0;border-radius:12px;border:3px solid var(--braz);box-shadow:0 3px 0 var(--braz);padding:5px 1px;font:900 9px Rubik,sans-serif;color:var(--braz);overflow:hidden;cursor:pointer}
+.rzadkosci button b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:13px}
+.rzadkosci button.akt{transform:translateY(3px);box-shadow:0 0 0 var(--braz);outline:3px solid var(--zolt);outline-offset:1px}
+.rz-diament{background:linear-gradient(160deg,#F2FBFF,#BFE6FF 50%,#E6D6FF)}.rz-zloto{background:linear-gradient(160deg,#FFF3C2,#F5B82E)}.rz-srebro{background:linear-gradient(160deg,#F7F9FB,#C3CCD5)}.rz-braz{background:linear-gradient(160deg,#F4DCC4,#D69A6B)}.rz-zwykla{background:var(--krem)}
+details.sek{background:var(--krem);border:4px solid var(--braz);border-radius:18px;box-shadow:0 5px 0 var(--braz);overflow:hidden}
+details.sek>summary{list-style:none;display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;user-select:none}
 details.sek>summary::-webkit-details-marker{display:none}
-summary .ikona{width:40px;height:40px;flex:none;display:grid;place-items:center;border-radius:10px;background:rgba(255,255,255,.08)}
-summary .ikona svg{width:34px;height:34px}summary .ikona svg path{fill:rgba(140,180,255,.35);stroke:#9FC2FF;stroke-width:1.5;vector-effect:non-scaling-stroke}
+details.sek[open]>summary{border-bottom:3px dashed rgba(58,42,20,.35)}
+summary .ikona{width:42px;height:42px;flex:none;display:grid;place-items:center;border-radius:12px;background:#fff;border:3px solid var(--braz)}
+summary .ikona svg{width:32px;height:32px}summary .ikona svg path{fill:var(--zolt);stroke:var(--braz);stroke-width:1.4;vector-effect:non-scaling-stroke;stroke-linejoin:round}
 summary .tyt{flex:1;min-width:0}
-summary .tyt b{display:block;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:19px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-summary .tyt small{display:block;font-size:11px;color:#9FB4E6;font-weight:700}
-summary .mini-pasek{display:block;height:4px;border-radius:2px;background:rgba(255,255,255,.12);margin-top:4px;overflow:hidden}
-summary .mini-pasek i{display:block;height:100%;background:#7FB6FF}
-summary .licz{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:18px;white-space:nowrap}
-summary .strz{font-size:16px;transition:transform .2s;color:#9FB4E6}
+summary .tyt b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+summary .tyt small{display:block;font-size:11.5px;font-weight:700;color:var(--braz-2)}
+summary .mini-pasek{display:block;height:7px;border-radius:4px;background:#fff;border:2px solid var(--braz);margin-top:4px;overflow:hidden}
+summary .mini-pasek i{display:block;height:100%;background:var(--ziel)}
+summary .licz{font-family:Bungee,sans-serif;font-size:13px;white-space:nowrap}
+summary .strz{width:28px;height:28px;flex:none;display:grid;place-items:center;border-radius:8px;background:var(--zolt);border:2px solid var(--braz);font-weight:900;transition:transform .2s}
 details[open]>summary .strz{transform:rotate(90deg)}
-.siatka{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 12px;padding:6px 12px 16px}
+.siatka{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px;padding:12px;background:repeating-linear-gradient(45deg,rgba(58,42,20,.04) 0 6px,transparent 6px 12px)}
 @media (min-width:560px){.siatka{grid-template-columns:repeat(3,minmax(0,1fr))}}
-.slot-reszta{aspect-ratio:5/7;border-radius:14px;border:2px dashed rgba(160,190,255,.35);display:grid;place-items:center;text-align:center;font-weight:800;color:#9FB4E6;padding:10px;font-size:13px}
-.slot-reszta b{display:block;font-family:"Barlow Condensed",sans-serif;font-size:30px;color:#EAF0FF}
-.puste{padding:14px;text-align:center;color:#9FB4E6;font-weight:700}
-/* podgląd karty po stuknięciu */
-.kk-podglad{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;background:rgba(4,8,20,.85);backdrop-filter:blur(6px);animation:wej .2s both}
+.slot-reszta{aspect-ratio:5/7;border-radius:14px;border:3px dashed var(--braz-2);display:grid;place-items:center;text-align:center;font-weight:800;color:var(--braz-2);padding:10px;font-size:12.5px;background:rgba(255,255,255,.5)}
+.slot-reszta b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:26px;color:var(--braz)}
+.puste{grid-column:1/-1;padding:12px;text-align:center;color:var(--braz-2);font-weight:700}
+.kk-podglad{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;background:rgba(40,28,10,.72);animation:wej .2s both}
 @keyframes wej{from{opacity:0}}
 .kk-podglad .kk{width:min(88vw,380px);animation:obrot .5s cubic-bezier(.3,1.3,.5,1) both}
 @keyframes obrot{from{transform:rotateY(160deg) scale(.6)}}
-.kk-podglad p{margin:0;max-width:380px;text-align:center;color:#C8D6F5;font-size:13px;font-weight:700}
+.kk-podglad p{margin:0;max-width:380px;text-align:center;color:var(--krem);font-size:13px;font-weight:700;text-shadow:0 1px 0 var(--braz)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header><a class="wstecz" href="./" aria-label="Wróć">‹</a><h1>Album kart<small id="stan">wczytywanie…</small></h1></header>
-  <main id="main">
-    <section class="postep"><div class="gora"><span>Zebrane karty</span><b id="ile">0 / 2479</b></div><div class="pasek"><i id="pasek" style="width:0"></i></div><div class="rzadkosci" id="rzadkosci"></div></section>
-    <div id="sekcje"></div>
+  <header class="gora"><a href="./" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Album kart<small id="stan">wczytywanie…</small></h1></header>
+  <main class="tresc" id="main">
+    <section class="pole postep"><div class="gora2"><span>Zebrane karty</span><b id="ile">0 / 2479</b></div><div class="pasek"><i id="pasek" style="width:0"></i></div><div class="rzadkosci" id="rzadkosci"></div></section>
+    <div id="sekcje" style="display:flex;flex-direction:column;gap:12px"></div>
   </main>
 </div>
-<script src="wspolne.js?v=17"></script>
-<script src="karty.js?v=3"></script>
+<script src="wspolne.js?v=18"></script>
+<script src="karty.js?v=4"></script>
 <script>
 const {$}=ZP;
 let D=null,filtr="",WOJ_SVG={};

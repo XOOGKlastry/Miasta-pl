@@ -278,11 +278,28 @@ function obserwujKoniec(){
     new MutationObserver(()=>{const teraz=el.classList.contains("hidden");if(byl&&!teraz)sprawdz();byl=teraz;}).observe(el,{attributes:true,attributeFilter:["class"]});
   });
 }
+// przycisk kolekcji kart w prawym górnym rogu każdej gry (z liczbą nowych kart)
+function przyciskKolekcji(){
+  if(/karty\.html/.test(location.pathname))return;
+  const h=document.querySelector("body header");if(!h||h.querySelector(".zp-kol"))return;
+  if(!document.getElementById("zp-kol-styl")){const s=document.createElement("style");s.id="zp-kol-styl";
+    s.textContent=".zp-kol{position:relative;flex:none;margin-left:6px;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#F5B82E;border:3px solid #3A2A14;box-shadow:0 3px 0 #3A2A14;text-decoration:none}"
+      +".zp-kol:active{transform:translateY(3px);box-shadow:0 0 0 #3A2A14}.zp-kol i{position:absolute;right:-8px;top:-8px;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#E84A3C;color:#fff;border:2px solid #3A2A14;font:900 11px/16px Rubik,sans-serif;font-style:normal;text-align:center}";
+    document.head.appendChild(s);}
+  const a=document.createElement("a");a.className="zp-kol";a.href="karty.html";a.setAttribute("aria-label","Kolekcja kart");a.title="Kolekcja kart";
+  a.innerHTML='<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3A2A14" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="11" height="16" rx="2" fill="#B9E3FF" transform="rotate(-10 8 12)"/><rect x="10" y="4" width="11" height="16" rx="2" fill="#FFF6E0" transform="rotate(8 15 12)"/></svg>';
+  h.appendChild(a);
+  // liczba nowych kart dopiero, gdy przeglądarka ma wolną chwilę
+  const licz=()=>{const go=()=>Karty.liczbaNowych().then(n=>{if(n>0){const i=document.createElement("i");i.textContent=n>99?"99+":n;a.appendChild(i);}}).catch(()=>{});
+    if(window.Karty)return go();const sc=document.createElement("script");sc.src="karty.js?v=4";sc.onload=go;document.head.appendChild(sc);};
+  setTimeout(()=>{if(window.requestIdleCallback)requestIdleCallback(licz);else licz();},3000);
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",przyciskKolekcji);else setTimeout(przyciskKolekcji,0);
 // po każdej grze: nowe karty gmin lecą do kolekcji (moduł ładowany dopiero wtedy, gdy jest potrzebny)
 function kartyPoGrze(){
   const uruchom=()=>window.Karty&&Karty.sprawdzPoGrze();
   if(window.Karty)return uruchom();
-  const sc=document.createElement("script");sc.src="karty.js?v=3";sc.onload=uruchom;document.head.appendChild(sc);
+  const sc=document.createElement("script");sc.src="karty.js?v=4";sc.onload=uruchom;document.head.appendChild(sc);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujKoniec);else obserwujKoniec();
 

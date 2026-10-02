@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=17" />
+<link rel="stylesheet" href="wspolne.css?v=18" />
 <style>
 svg path{fill-rule:evenodd}
 .stage{flex:1;min-height:150px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden}
@@ -58,7 +58,8 @@ svg path{fill-rule:evenodd}
     <label class="field"><span>Obszar</span>
       <select id="area"><option value="">cała Polska</option></select>
     </label>
-    <label class="field"><span>Co zgadujesz</span>
+    <div id="scope" data-klucz="ksztalt"></div>
+    <label class="field hidden"><span>Co zgadujesz</span>
       <select id="jedn"><option value="p" selected>powiaty</option><option value="g">gminy</option></select>
     </label>
     <label class="field" id="kindField"><span>Jakie powiaty</span>
@@ -104,7 +105,7 @@ svg path{fill-rule:evenodd}
 </div>
 
 <script src="topojson-client.min.js?v=17"></script>
-<script src="wspolne.js?v=17"></script>
+<script src="wspolne.js?v=18"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -112,7 +113,17 @@ let POW=[],WOJF=[],PL=null,game=null;
 
 Object.entries(WOJ_KOD).sort((a,b)=>a[1].localeCompare(b[1],"pl")).forEach(([k,n])=>{const o=document.createElement("option");o.value=k;o.textContent=n;$("area").appendChild(o);});
 
-let POWIATY=[],GMINY=null;
+let POWIATY=[],GMINY=null,LUD={};
+const RODZAJ=new URLSearchParams(location.search).get("rodzaj")==="g"?"g":"p";
+$("jedn").value=RODZAJ;
+document.title=(RODZAJ==="g"?"Kształt gminy":"Kształt powiatu")+" · PolskoZnawca";
+// liczba mieszkańców do wyboru wielkości: gminy wprost, powiaty w progach dopasowanych do powiatów
+fetch("baza.json").then(r=>r.json()).then(b=>{b.gminy.forEach(g=>{if(g.ludnosc)LUD[g.k]=g.ludnosc;});b.powiaty.forEach(p=>{if(p.ludnosc)LUD[p.k]=p.ludnosc;});}).catch(()=>{});
+function popDo(p){
+  const l=LUD[p.k]||0;
+  if(RODZAJ==="g")return l;
+  return l>150000?150001:l>60000?50000:10000;   // powiat: duży ponad 150 tys., średni 60-150 tys., mały poniżej 60 tys.
+}
 const TYP_GMINY={"1":"gmina miejska","2":"gmina wiejska","3":"gmina miejsko-wiejska","4":"miasto w gminie","5":"obszar wiejski"};
 async function ladujGminy(){
   if(GMINY)return GMINY;
@@ -135,7 +146,8 @@ Promise.all([ZP.loadPowiaty(),ZP.loadWoj()]).then(([pw,woj])=>{
   $("startBtn").disabled=false;refreshBest();
 }).catch(()=>{$("datastate").textContent="Nie udało się wczytać granic. Sprawdź połączenie i odśwież stronę.";});
 
-const bestKey=()=>"ksztalt-best-"+($("jedn").value==="g"?"g-":"")+($("area").value||"pl")+"-"+$("kind").value+"-"+$("odp").value+"-"+$("rounds").value;
+ZP.zakresy($("scope"));
+const bestKey=()=>"ksztalt-best-"+($("jedn").value==="g"?"g-":"")+($("area").value||"pl")+"-"+ZP.zakresStan($("scope"))+"-"+$("kind").value+"-"+$("odp").value+"-"+$("rounds").value;
 function refreshBest(){$("best").textContent=localStorage.getItem(bestKey())||0;}
 $("area").onchange=$("kind").onchange=$("rounds").onchange=$("odp").onchange=refreshBest;
 
@@ -153,7 +165,10 @@ async function startGame(){
     $("startBtn").disabled=false;$("datastate").textContent=POW.length+" gmin";
   }else POW=POWIATY;
   const area=$("area").value,kind=$("kind").value;
-  const pool=POW.filter(p=>(!area||p.k.startsWith(area))&&ZP.wObszarze(p)&&(gminy||kind==="a"||!p.city));
+  const zakres=ZP.zakresStan($("scope"));
+  POW.forEach(p=>{p.pop=popDo(p);});
+  let pool=POW.filter(p=>(!area||p.k.startsWith(area))&&ZP.wObszarze(p)&&(gminy||kind==="a"||!p.city)&&ZP.wZakresie(p,zakres));
+  if(pool.length<4)pool=POW.filter(p=>(!area||p.k.startsWith(area))&&ZP.wObszarze(p)&&(gminy||kind==="a"||!p.city));
   const n=Math.min(+$("rounds").value,pool.length);
   const rodzaj=gminy?"gmina":"powiat";
   $("pytanie").textContent=gminy?"Która to gmina?":"Który to powiat?";
@@ -286,7 +301,8 @@ document.addEventListener("keydown",e=>{
   if(/^[1-4]$/.test(e.key)&&!game.answered){const b=$("answers").children[+e.key-1];if(b)b.click();}
   if(e.key==="Enter"&&game.answered&&$("nextBtn"))$("nextBtn").click();
 });
-ZP.kreatorGry({klucz:"ksztalt",kroki:["pojedynek",{pole:"jedn",tytul:"Co zgadujesz?",domyslny:"p",opcje:[{v:"p",t:"Powiaty",opis:"380 kształtów",ilu:'<svg viewBox="0 0 100 92" class="kr-pl"><path d="M22 18 L48 10 L70 20 L84 44 L72 74 L42 82 L18 62 L12 38 Z"/></svg>'},{v:"g",t:"Gminy",opis:"2477 kształtów, dla wytrwałych",ilu:'<svg viewBox="0 0 100 92" class="kr-pl"><path d="M30 20 L52 14 L66 30 L62 52 L70 70 L48 78 L30 64 L22 40 Z"/></svg>'}]},"obszar","rundy"]});
+ZP.kreatorGry({klucz:"ksztalt-"+RODZAJ,kroki:["pojedynek","obszar","wielkosc","rundy"]});
+ustawJedn();
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>
