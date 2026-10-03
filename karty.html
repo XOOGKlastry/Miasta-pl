@@ -77,6 +77,10 @@ details[open]>summary .strz{transform:rotate(90deg)}
 .kk-podglad .kk{width:min(88vw,380px);animation:obrot .5s cubic-bezier(.3,1.3,.5,1) both}
 @keyframes obrot{from{transform:rotateY(160deg) scale(.6)}}
 .kk-podglad p{margin:0;max-width:380px;text-align:center;color:var(--krem);font-size:13px;font-weight:700;text-shadow:0 1px 0 var(--braz)}
+.pak-srebro{background:linear-gradient(135deg,#eef6f9,#8fa5b4)!important}.pak-zloto{background:linear-gradient(135deg,#fff2a3,#dda130)!important}.pak-diament{background:linear-gradient(135deg,#e4ffff,#9db3f4,#d9a5ef)!important}
+.otwieranie .paczka{box-shadow:0 12px 50px #223d3940;border:2px solid #48665b}.otwieranie .paczka::before{background:linear-gradient(115deg,transparent 30%,#fff9 50%,transparent 70%);animation:pakBlask 1.5s ease infinite}
+@keyframes pakBlask{from{transform:translateX(-150%)}to{transform:translateX(150%)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 </head>
 <body>
@@ -85,13 +89,13 @@ details[open]>summary .strz{transform:rotate(90deg)}
   <main class="tresc" id="main">
     <section class="pole postep"><div class="gora2"><span>Zebrane karty</span><b id="ile">0 / 2479</b></div><div class="pasek"><i id="pasek" style="width:0"></i></div><div class="rzadkosci" id="rzadkosci"></div><div class="zetony"><span>🪙 Żetony do paczki</span><b id="zet">0 / 25</b></div><div class="pasek zet"><i id="zetPasek" style="width:0"></i></div><a class="zasady" href="profil.html#kartyInfo">Jak zdobywać karty i jak liczy się OVR ›</a></section>
     <div data-pb="Oto Twoja kolekcja! Zbieraj wszystkie gminy."></div>
-    <section class="pole paczki" id="paczki"></section>
+    <details class="pole" style="padding:12px"><summary>Szanse paczek i kart</summary><div id="szanse"></div></details><section class="pole paczki" id="paczki"></section>
     <div id="sekcje" style="display:flex;flex-direction:column;gap:12px"></div>
   </main>
 </div>
-<script src="wspolne.js?v=22"></script>
+<script src="wspolne.js?v=23"></script>
 <script src="polandball.js?v=3"></script>
-<script src="karty.js?v=8"></script>
+<script src="karty.js?v=9"></script>
 <script>
 const {$}=ZP;
 let D=null,filtr="",WOJ_SVG={};
@@ -120,7 +124,7 @@ function rysuj(){
   const woj={};D.g.forEach(g=>{(woj[g.woj]=woj[g.woj]||{wsz:[],mam:[]}).wsz.push(g);if(mam.has(g.k))woj[g.woj].mam.push(g);});
   Object.keys(woj).sort((a,b)=>woj[b].mam.length-woj[a].mam.length||a.localeCompare(b,"pl")).forEach(n=>{
     const x=woj[n],l=x.mam.filter(pasuje).sort(sort);
-    const blisko=x.wsz.filter(g=>!mam.has(g.k)&&st.postep[g.k]&&st.postep[g.k].size>=Karty.PROG-1&&pasuje(g)).slice(0,4);
+    const blisko=x.wsz.filter(g=>!mam.has(g.k)&&st.postep[g.k]&&st.postep[g.k].size>=Karty.prog(g)-1&&pasuje(g)).slice(0,4);
     const reszta=x.wsz.filter(g=>!mam.has(g.k)&&pasuje(g)).length-blisko.length;
     const tresc=l.map(g=>Karty.karta(g,{nowa:nowe.indexOf(g.k)>=0})).join("")
       +blisko.map(g=>Karty.karta(g,{otwarta:false,postep:st.postep[g.k].size})).join("")
@@ -140,9 +144,10 @@ function rysuj(){
 }
 const KULA_P='<svg viewBox="0 0 40 40"><defs><clipPath id="pkl"><circle cx="20" cy="20" r="17"/></clipPath></defs><g clip-path="url(#pkl)"><rect width="40" height="20" fill="#F4F4F2"/><rect y="20" width="40" height="20" fill="#DC1E35"/></g><circle cx="20" cy="20" r="17" fill="none" stroke="#3A2A14" stroke-width="2.4"/><ellipse cx="14" cy="17" rx="3.4" ry="4.2" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/><ellipse cx="26" cy="17" rx="3.4" ry="4.2" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/></svg>';
 function rysujPaczki(){
+  $("szanse").textContent=Karty.PACZKI.map(([k,p])=>Karty.RZ[k]+" paczka: "+(p*100)+"%. Karty: "+Karty.DROP[k].map(([r,s])=>Karty.RZ[r]+" "+(s*100).toFixed(1)+"%").join(", ")).join(" • ");
   const n=Karty.liczbaPaczek(),z=Karty.zetony()%Karty.PACZKA;
   $("paczki").innerHTML='<div class="paczka'+(n?" gotowa":" pusta")+'">'+KULA_P+(n?'<span class="ile">'+n+'</span>':'')+'</div><div class="opis"><b>'+(n?(n===1?"1 paczka do otwarcia":n+" paczki do otwarcia"):"Brak paczek")+'</b><small>'
-    +(n?"W każdej jedna nowa karta, czasem też podpowiedź 50/50.":"Jeszcze "+(Karty.PACZKA-z)+" żetonów do następnej paczki.")+'</small>'
+    +(n?"Jedna pełna karta. Kolor paczki określa szanse jej rzadkości.":"Jeszcze "+(Karty.PACZKA-z)+" żetonów do następnej paczki.")+'</small>'
     +(n?'<button class="klocek" id="otworz">Otwórz paczkę</button>':'')+'</div>';
   if(n)$("otworz").onclick=otworzPaczke;
 }
@@ -155,7 +160,8 @@ function otworzPaczke(){
   pk.onclick=async()=>{
     if(raz)return;raz=true;pk.classList.remove("gotowa");pk.classList.add("trzes");o.querySelector("p").textContent="Otwieranie…";
     if(navigator.vibrate)try{navigator.vibrate([20,30,20,30,60]);}catch(e){}
-    const g=await Karty.otworzPaczke();
+    let g;try{g=await Karty.otworzPaczke();}catch(e){o.remove();ZP.komunikat("Nie udało się otworzyć paczki");return;}
+    if(g){pk.classList.add("pak-"+g._kolorPaczki);o.querySelector("p").textContent=Karty.RZ[g._kolorPaczki]+" paczka!";}
     setTimeout(()=>{pk.classList.remove("trzes");pk.classList.add("peka");},900);
     setTimeout(()=>{o.remove();if(g)Karty.prezentacja([g],()=>rysuj());else rysuj();},1400);
   };
@@ -164,7 +170,7 @@ function podglad(g,otwarta,st){
   const pp=st.postep[g.k]?st.postep[g.k].size:0;
   const d=document.createElement("div");d.className="kk-podglad";
   d.innerHTML=Karty.karta(g,{tryb:"pelna",otwarta})+(otwarta?Karty.linki(g):"")+'<p>'+(otwarta?"Dane: GUS BDL, PRG · mapa © współtwórcy OpenStreetMap, OpenTopoMap · stuknij, by zamknąć"
-    :"Zdobędziesz ją od razu w grze Kształt gminy albo trafiając ją "+Karty.PROG+" razy w grach gminnych (herby, Gdzie ta gmina?, Ciepło-zimno). Masz: "+pp+"/"+Karty.PROG+". Może też wypaść z paczki za żetony.")+'</p>';
+    :"Zdobędziesz ją od razu w grze Kształt gminy albo trafiając ją "+Karty.prog(g)+" razy w grach gminnych (herby, Gdzie ta gmina?, Ciepło-zimno). Masz: "+pp+"/"+Karty.prog(g)+". Może też wypaść z paczki za żetony.")+'</p>';
   d.onclick=e=>{if(!e.target.closest(".kk-linki"))d.remove();};document.body.appendChild(d);Karty.holo(d.querySelector(".kk"));Karty.podepnijMapy(d);
 }
 Karty.styl();

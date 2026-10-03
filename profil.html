@@ -75,10 +75,10 @@
         <p><b>Gry gminne</b> dają postęp konkretnej gminie:</p>
         <ul>
           <li><b>Kształt gminy:</b> trafiona gmina to od razu karta, także po podpowiedzi.</li>
-          <li><b>Jaki to herb?, Gdzie ta gmina?, Ciepło-zimno:</b> każde trafienie danej gminy to 1 punkt postępu; 3 punkty to karta tej gminy.</li>
+          <li><b>Jaki to herb?, Gdzie ta gmina?, Ciepło-zimno:</b> każde trafienie danej gminy to 1 fragment; zwykła karta wymaga 3, brązowa 4, srebrna 5, złota 6, diamentowa 7 fragmentów.</li>
         </ul>
-        <p><b>Wszystkie pozostałe gry</b> (miasta, powiaty, rzeki, kluby, tablice, plansza przygód, wyzwania, Do sześciu razy sztuka, Memory, Szybki strzał) dają <b>żetony</b>: 1 żeton za każde trafienie. <b>25 żetonów to paczka</b> z jedną nową, losową kartą.</p>
-        <p>Szanse w paczce: zwykła 62%, brązowa 25%, srebrna 9%, złota 3,5%, diamentowa 0,5%.</p>
+        <p><b>Wszystkie pozostałe gry</b> (miasta, powiaty, rzeki, kluby, tablice, plansza przygód, wyzwania, Do sześciu razy sztuka, Memory, Szybki strzał) dają <b>żetony</b>: 1 żeton za każde trafienie; w wymienianiu miast 1 żeton za 10 miast. <b>25 żetonów to paczka</b> z jedną losową kartą.</p>
+        <p>Kolor paczki: zwykła 80%, srebrna 16%, złota 3,5%, diamentowa 0,5%. Lepsze paczki częściej zawierają rzadkie karty. Szczegółowe szanse znajdziesz w albumie.</p>
         <p>Nowe karty z gier gminnych pokazują się po zakończeniu gry. <b>Paczki otwierasz sam</b> w albumie kart, po jednej, kiedy chcesz.</p>
       </details>
       <details><summary>Podpowiedzi 50/50</summary>
@@ -126,8 +126,8 @@
 </main>
 </div>
 <script src="instaluj.js"></script>
-<script src="konto.js"></script>
-<script src="wspolne.js?v=22"></script>
+<script src="online-config.js"></script><script src="online.js"></script><script src="konto.js"></script>
+<script src="wspolne.js?v=23"></script>
 <script>
 const {$,fmt}=ZP;
 const p=Konto.profil();
@@ -144,7 +144,7 @@ function rysuj(){
     ["Wyzwanie: rekord",fmt(+(localStorage.getItem("dzis-best")||0))],["Sześć prób: wygrane",sz.gry?Math.round(100*sz.wygrane/sz.gry)+"%":"–"],["Ciepło-zimno: średnio",ci.gry?(ci.suma/ci.gry).toFixed(1)+" prób":"–"]];
   $("kafle").innerHTML=kafle.map(([a,b])=>'<div>'+a+'<b>'+b+'</b></div>').join("");
   const IK={gosc:"👤",google:"G",email:"✉️",apple:""};
-  $("metody").innerHTML=Konto.METODY.map(m=>'<div class="metoda'+(m.id===pr.metoda?" akt":"")+'" data-m="'+m.id+'"><span class="ik">'+IK[m.id]+'</span><div><b>'+m.nazwa+'</b><small>'+m.opis+'</small></div><span class="zn">'+(m.id===pr.metoda?"aktywne":m.dostepna?"wybierz":"wkrótce")+'</span></div>').join("");
+  $("metody").innerHTML=Konto.METODY.map(m=>'<div class="metoda'+(m.id===pr.metoda?" akt":"")+'" data-m="'+m.id+'"><span class="ik">'+(IK[m.id]||"f")+'</span><div><b>'+m.nazwa+'</b><small>'+m.opis+'</small></div><span class="zn">'+(m.id===pr.metoda?"aktywne":m.dostepna?"wybierz":"wkrótce")+'</span></div>').join("");
   $("metody").querySelectorAll(".metoda").forEach(d=>d.onclick=()=>{const m=d.dataset.m;if(m===pr.metoda)return;Konto.zaloguj(m).catch(e=>ZP.komunikat(e.message,4200));});
 }
 $("nick").onchange=()=>{Konto.ustaw({nick:$("nick").value.trim().slice(0,14)});ZP.komunikat("Zapisano nick.");};

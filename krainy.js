@@ -254,9 +254,9 @@ window.Krainy=(function(){
     }
     const elem=[];
     function postaw(id,s,nakl,proby){for(let i=0;i<proby;i++){const cx=46*s+r()*(W-92*s),cy=64*s+r()*(H-98*s);if(wolne(cx,cy,s,nakl)){zajete.push(prost(cx,cy,s));elem.push({id,x:cx,y:cy,s});return true;}}return false;}
-    reg.f.forEach(id=>{if(!postaw(id,1.05+r()*.2,.85,200))if(!postaw(id,.9,.75,240))postaw(id,.74,.7,300);});
-    const ile=Math.round(W*H/11000),licz={},LIMIT={chata:2,chata_kaszubska:2,dom_podlaski:2,dom_murowany:2,familok:2,szyb:2,stog:3,wydma:3,falochron:2,plot:2,bocian:2,kamienice:1,gotyk:2};
-    for(let i=0;i<ile;i++){const id=reg.g[i%reg.g.length];if(LIMIT[id]&&(licz[id]||0)>=LIMIT[id])continue;if(postaw(id,.66+r()*.3,.62,40))licz[id]=(licz[id]||0)+1;}
+    [...new Set(reg.f)].forEach(id=>{if(!postaw(id,1.05+r()*.2,.85,200))if(!postaw(id,.9,.75,240))postaw(id,.74,.7,300);});
+    const ile=Math.round(W*H/24000),licz={},LIMIT={chata:2,chata_kaszubska:2,dom_podlaski:2,dom_murowany:2,familok:2,szyb:2,stog:3,wydma:3,falochron:2,plot:2,bocian:2,kamienice:1,gotyk:2};
+    for(let i=0;i<ile;i++){const id=[...new Set(reg.g)][i%new Set(reg.g).size];if((licz[id]||0)>=(LIMIT[id]||2))continue;if(postaw(id,.66+r()*.3,.62,40))licz[id]=(licz[id]||0)+1;}
     let drobne="";
     for(let i=0;i<(GRAFIKI._terrain?0:Math.round(W*H/5200));i++){const x=r()*W,y=r()*H;if(odlSciezki(S,x,y)>36&&!naMorzu(x,y)&&!wJeziorze(x,y,2)&&!wezly.some(p=>Math.hypot(p.x-x,p.y-y)<50)&&!(baner&&y>baner.top&&y<baner.bottom))drobne+=r()<.6?kepa(x,y,.9+r()*.5,["#8DB85A","#77A84C","#A5C870"][i%3]):kwiatki(x,y,.9);}
     // niższe motywy zasłaniają wyższe, jak w krajobrazie
@@ -270,7 +270,7 @@ window.Krainy=(function(){
       let fale="";for(let y=55;y<H;y+=120){let b=st.morze.reduce((a,p)=>Math.abs(p[1]-y)<Math.abs(a[1]-y)?p:a);if(b[0]>65)fale+='<path d="M12 '+y+'q12 4 24 0t24 0" stroke="#fff8df" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".4"/>';}
       anim+='<g class="a-fale">'+fale+'</g>';
     }
-    reg.a.forEach(id=>{
+    [...new Set(reg.a)].forEach(id=>{
       const woda=id==="kuter"||id==="zaglowka";let x=null,y=null;
       for(let k=0;k<120;k++){const cx=16+r()*(W-32),cy=40+r()*(H-80);
         if(woda){if(st.morze?naMorzu(cx+24,cy):wJeziorze(cx,cy,-16)){x=cx;y=cy;break;}}

@@ -3,22 +3,22 @@
 window.Saga=(function(){
   // kolejność krain: wędrówka wężykiem od Bałtyku po Tatry
   const SWIATY=[
-    {woj:"zachodniopomorskie",nazwa:"Pomorze Zachodnie",stolica:"Szczecin",kolor:"#6FB0C9"},
-    {woj:"pomorskie",nazwa:"Kaszuby i Trójmiasto",stolica:"Gdańsk",kolor:"#5FA8B8"},
-    {woj:"warmińsko-mazurskie",nazwa:"Mazury",stolica:"Olsztyn",kolor:"#6DAF8A"},
-    {woj:"podlaskie",nazwa:"Podlasie",stolica:"Białystok",kolor:"#7DB36B"},
-    {woj:"mazowieckie",nazwa:"Mazowsze",stolica:"Warszawa",kolor:"#A9B85E"},
-    {woj:"kujawsko-pomorskie",nazwa:"Kujawy",stolica:"Toruń",kolor:"#8DB86A"},
-    {woj:"wielkopolskie",nazwa:"Wielkopolska",stolica:"Poznań",kolor:"#9CB65C"},
-    {woj:"lubuskie",nazwa:"Ziemia Lubuska",stolica:"Zielona Góra",kolor:"#78AE66"},
-    {woj:"dolnośląskie",nazwa:"Dolny Śląsk",stolica:"Wrocław",kolor:"#88A95E"},
-    {woj:"opolskie",nazwa:"Opolszczyzna",stolica:"Opole",kolor:"#A0AE5A"},
-    {woj:"śląskie",nazwa:"Górny Śląsk",stolica:"Katowice",kolor:"#9A9F68"},
-    {woj:"łódzkie",nazwa:"Ziemia Łódzka",stolica:"Łódź",kolor:"#B3AE5E"},
-    {woj:"świętokrzyskie",nazwa:"Góry Świętokrzyskie",stolica:"Kielce",kolor:"#8FA66A"},
-    {woj:"lubelskie",nazwa:"Lubelszczyzna",stolica:"Lublin",kolor:"#B9B060"},
-    {woj:"podkarpackie",nazwa:"Podkarpacie",stolica:"Rzeszów",kolor:"#82A56E"},
-    {woj:"małopolskie",nazwa:"Małopolska i Tatry",stolica:"Kraków",kolor:"#9AA7B0"}
+    {woj:"zachodniopomorskie",nazwa:"Zachodniopomorskie",stolica:"Szczecin",kolor:"#6FB0C9"},
+    {woj:"pomorskie",nazwa:"Pomorskie",stolica:"Gdańsk",kolor:"#5FA8B8"},
+    {woj:"warmińsko-mazurskie",nazwa:"Warmińsko-mazurskie",stolica:"Olsztyn",kolor:"#6DAF8A"},
+    {woj:"podlaskie",nazwa:"Podlaskie",stolica:"Białystok",kolor:"#7DB36B"},
+    {woj:"mazowieckie",nazwa:"Mazowieckie",stolica:"Warszawa",kolor:"#A9B85E"},
+    {woj:"kujawsko-pomorskie",nazwa:"Kujawsko-pomorskie",stolica:"Toruń",kolor:"#8DB86A"},
+    {woj:"wielkopolskie",nazwa:"Wielkopolskie",stolica:"Poznań",kolor:"#9CB65C"},
+    {woj:"lubuskie",nazwa:"Lubuskie",stolica:"Zielona Góra",kolor:"#78AE66"},
+    {woj:"dolnośląskie",nazwa:"Dolnośląskie",stolica:"Wrocław",kolor:"#88A95E"},
+    {woj:"opolskie",nazwa:"Opolskie",stolica:"Opole",kolor:"#A0AE5A"},
+    {woj:"śląskie",nazwa:"Śląskie",stolica:"Katowice",kolor:"#9A9F68"},
+    {woj:"łódzkie",nazwa:"Łódzkie",stolica:"Łódź",kolor:"#B3AE5E"},
+    {woj:"świętokrzyskie",nazwa:"Świętokrzyskie",stolica:"Kielce",kolor:"#8FA66A"},
+    {woj:"lubelskie",nazwa:"Lubelskie",stolica:"Lublin",kolor:"#B9B060"},
+    {woj:"podkarpackie",nazwa:"Podkarpackie",stolica:"Rzeszów",kolor:"#82A56E"},
+    {woj:"małopolskie",nazwa:"Małopolskie",stolica:"Kraków",kolor:"#9AA7B0"}
   ];
   const NA_SWIAT=6;
   // od najłatwiejszych do najtrudniejszych; kształt powiatu dopiero pod koniec krainy

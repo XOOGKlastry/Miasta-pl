@@ -136,7 +136,7 @@
 <script src="konto.js"></script>
 <script src="saga.js"></script>
 <script src="polandball.js?v=3"></script>
-<script src="krainy.js?v=3"></script>
+<script src="krainy.js?v=4"></script>
 <script>
 const $=id=>document.getElementById(id);
 const TYPY={z:"Z lotu ptaka",g:"Gdzie to jest?",m:"Co to za miasto?",k:"Kształt powiatu",h:"Herb",t:"Tablice",r:"Rzeka",c:"Kluby",w:"Więcej czy mniej",s:"Graniczą?",v:"Województwo",p:"W którym powiecie?",q:"Szybki strzał"};
@@ -340,7 +340,7 @@ fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
 window.addEventListener("resize",()=>{clearTimeout(window._r);window._r=setTimeout(start,200);});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
-<script src="karty.js?v=8"></script>
+<script src="karty.js?v=9"></script>
 <script>setTimeout(()=>{Karty.liczbaNowych().then(n=>{const e=document.getElementById("kolNowe");if(e&&n>0){e.textContent=n>99?"99+":n;e.classList.remove("hidden");}}).catch(()=>{});},1500);</script>
 </body>
 </html>
