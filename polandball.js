@@ -2,7 +2,7 @@
    PB.svg(mina)              – sama kulka: "zwykla", "radosc", "smutek", "zdziwienie", "mrugniecie"
    PB.dymek(el, tekst, opcje) – kulka z dymkiem w podanym miejscu (opcje.mina, opcje.strona "lewa"/"prawa")
    PB.reakcja(ok)            – krótka reakcja po odpowiedzi w grze (wyskakuje z lewego dolnego rogu)
-   Kulka ma kanoniczny wygląd: biała góra, czerwony dół, białe oczy bez źrenic. */
+   Kulka ma kanoniczny wygląd: biała góra, czerwony dół, sympatyczne oczy ze źrenicami. */
 window.PB=(function(){
   let nr=0;
   // oczy: białka z czarnymi źrenicami i błyskiem; miny zmieniają kształt
@@ -15,18 +15,19 @@ window.PB=(function(){
     if(mina==="mrugniecie")return oko(32,40,5.6,7.2)+'<path d="M45 41q5-5 10 0" fill="none" '+o+'/>';
     return '<g class="pb-oczy">'+oko(32,40,5.6,7.2)+oko(50,40,5.6,7.2)+'</g>';
   }
-  // ciało w kształcie jajka: biała góra, czerwony dół, miękkie cieniowanie
+  // Prawdziwe koło, bez rozciągania w jajko podczas animacji.
   function svg(mina){
-    const i=++nr,JAJO="M41 7C58 7 72 27 72 49C72 69 59 80 41 80C23 80 10 69 10 49C10 27 24 7 41 7Z";
+    const i=++nr;
     return '<svg class="pb-kula" viewBox="0 0 82 88" aria-hidden="true">'
-      +'<defs><clipPath id="pbk'+i+'"><path d="'+JAJO+'"/></clipPath>'
-      +'<radialGradient id="pbb'+i+'" cx=".38" cy=".25" r=".8"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#E4E1D8"/></radialGradient>'
-      +'<radialGradient id="pbc'+i+'" cx=".38" cy=".1" r=".95"><stop offset="0" stop-color="#F0434F"/><stop offset="1" stop-color="#AE1320"/></radialGradient></defs>'
-      +'<ellipse class="pb-cien" cx="41" cy="83" rx="23" ry="3.6" fill="#2B1D0E" opacity=".22"/>'
-      +'<g class="pb-cialo"><g clip-path="url(#pbk'+i+')"><rect x="0" y="0" width="82" height="52" fill="url(#pbb'+i+')"/>'
-      +'<path d="M0 52C20 49 62 49 82 52V90H0Z" fill="url(#pbc'+i+')"/>'
-      +'<ellipse cx="29" cy="22" rx="10" ry="7" fill="#fff" opacity=".75"/><ellipse cx="58" cy="68" rx="12" ry="8" fill="#7A0C16" opacity=".25"/></g>'
-      +'<path d="'+JAJO+'" fill="none" stroke="#2B1D0E" stroke-width="3"/>'+oczy(mina||"zwykla")+'</g></svg>';
+      +'<defs><clipPath id="pbk'+i+'"><circle cx="41" cy="42" r="33"/></clipPath>'
+      +'<radialGradient id="pbb'+i+'" cx=".32" cy=".22" r=".9"><stop offset="0" stop-color="#fffdf6"/><stop offset="1" stop-color="#e5ddc9"/></radialGradient>'
+      +'<radialGradient id="pbc'+i+'" cx=".35" cy=".1" r=".95"><stop offset="0" stop-color="#ef564b"/><stop offset="1" stop-color="#c22d30"/></radialGradient></defs>'
+      +'<ellipse class="pb-cien" cx="41" cy="82" rx="24" ry="4" fill="#2B1D0E" opacity=".18"/>'
+      +'<g class="pb-cialo"><g clip-path="url(#pbk'+i+')"><rect width="82" height="84" fill="url(#pbb'+i+')"/>'
+      +'<rect y="42" width="82" height="42" fill="url(#pbc'+i+')"/>'
+      +'<ellipse cx="27" cy="23" rx="7" ry="4" fill="#fff" opacity=".5"/></g>'
+      +'<circle class="pb-obrys" cx="41" cy="42" r="33" fill="none" stroke="#3b3426" stroke-width="2.4"/>'
+      +'<g transform="translate(0 -5)">'+oczy(mina||"zwykla")+'</g></g></svg>';
   }
   function styl(){
     if(document.getElementById("pb-styl"))return;
@@ -38,7 +39,7 @@ window.PB=(function(){
 .pb-kula .pb-cialo{transform-origin:41px 80px;animation:pbOdbicie 2.8s cubic-bezier(.45,0,.55,1) infinite}
 .pb-kula .pb-cien{transform-origin:41px 83px;animation:pbCien 2.8s cubic-bezier(.45,0,.55,1) infinite}
 .pb-kula .pb-oczy{transform-origin:41px 40px;animation:pbMrug 4.6s infinite}
-@keyframes pbOdbicie{0%,100%{transform:translateY(0) scale(1.04,.96)}14%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-6px) scale(.98,1.02)}86%{transform:translateY(0) scale(1,1)}}
+@keyframes pbOdbicie{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @keyframes pbCien{0%,100%{transform:scale(1)}50%{transform:scale(.75);opacity:.12}}
 @keyframes pbMrug{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.1)}}
 .pb-dymek{position:relative;background:#FFF6E0;color:#3A2A14;border:3px solid #3A2A14;border-radius:16px;box-shadow:0 4px 0 #3A2A14;padding:9px 13px;font:800 14px/1.3 Rubik,system-ui,sans-serif;margin-bottom:22px;animation:pbDymek .45s cubic-bezier(.3,1.6,.5,1) both}

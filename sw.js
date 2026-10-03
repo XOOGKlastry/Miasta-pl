@@ -1,10 +1,10 @@
 // Działa offline, ale zawsze najpierw próbuje sieci, żeby poprawki docierały od razu.
-const CACHE = "polskoznawca-v45";
+const CACHE = "polskoznawca-v47-painted-rewards";
 const ASSETS = [
-  "./", "./index.html", "./miasta.html", "./zdjecie.html", "./herb.html", "./gdzie.html", "./ksztalt.html",
-  "./wiecej.html", "./sasiedzi.html", "./dzis.html", "./wyzwanie.html", "./szostka.html", "./cieplo.html", "./profil.html", "./saga.js", "./memory.html", "./strzal.html", "./karty.html", "./polandball.js?v=2", "./krainy.js?v=2", "./krainy-grafiki.json", "./ciekawostki.json", "./karty.js?v=7", "./instaluj.js", "./efekty.js?v=17", "./plansza.css", "./gry.html", "./codzienne.html", "./konto.js", "./pojedynek.html", "./peerjs.min.js", "./kluby.html", "./encyklopedia.html", "./powiaty.html", "./rzeki.html", "./statystyki.html", "./slepa.html", "./miasto.html", "./turniej.html", "./tablice.html",
+  "./", "./index.html", "./miasta.html", "./zdjecie.html", "./herb.html", "./herby-gmin.js?v=1", "./gdzie.html", "./ksztalt.html",
+  "./wiecej.html", "./sasiedzi.html", "./dzis.html", "./wyzwanie.html", "./szostka.html", "./cieplo.html", "./profil.html", "./saga.js", "./memory.html", "./strzal.html", "./karty.html", "./polandball.js?v=3", "./krainy.js?v=3", "./krainy-grafiki.json", "./malowana-plansza.css?v=1", "./grafiki/krainy/natura.webp", "./grafiki/krainy/wies.webp", "./grafiki/krainy/zabytki.webp", "./grafiki/krainy/przygoda.webp", "./grafiki/krainy/laka.webp", "./grafiki/krainy/morze.webp", "./ciekawostki.json", "./karty.js?v=8", "./instaluj.js", "./efekty.js?v=17", "./plansza.css", "./gry.html", "./codzienne.html", "./konto.js", "./pojedynek.html", "./peerjs.min.js", "./kluby.html", "./encyklopedia.html", "./powiaty.html", "./rzeki.html", "./statystyki.html", "./slepa.html", "./miasto.html", "./turniej.html", "./tablice.html",
   "./tablice-app.js", "./tablice-powiaty.js", "./tablice-poland.js",
-  "./wspolne.js?v=21", "./wspolne.css?v=21", "./topojson-client.min.js?v=17", "./powiaty.topojson?v=16", "./woj.geojson?v=16",
+  "./wspolne.js?v=22", "./wspolne.css?v=21", "./topojson-client.min.js?v=17", "./powiaty.topojson?v=16", "./woj.geojson?v=16",
   "./manifest.webmanifest", "./icon.svg"
 ];
 

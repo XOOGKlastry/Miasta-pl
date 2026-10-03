@@ -1,7 +1,7 @@
 /* PLANSZA: krajobraz krain w stylu ilustracji z książki dla dzieci.
    Warstwy każdej krainy (od spodu): teren (łąki, morze, jeziora, pola, góry) → dekoracje (statyczne) → animacje.
    Ścieżkę, pola poziomów, chmury i interfejs rysuje index.html osobno, nad tymi warstwami.
-   Motywy to organiczne kształty z krzywych Béziera z fakturą farby (filtry SVG).
+   Malowane motywy są w atlasach WebP; SVG zostaje awaryjnym wariantem offline.
    Każdy motyw można podmienić na malowaną grafikę: wpis w krainy-grafiki.json, np.
      {"latarnia":"grafiki/krainy/latarnia.webp"} → kwadrat 400×400 px, podstawa motywu na środku dolnej krawędzi.
    Układ jest stały: zależy tylko od numeru krainy i szerokości ekranu (co 10 px), nie od chwili rysowania. */
@@ -113,7 +113,7 @@ window.Krainy=(function(){
     szybowiec:'<g class="a-lot"><path d="M6 52C30 48 70 46 94 48L92 52C70 52 30 54 8 56Z" fill="#F7F3EA"'+o()+'/><path d="M36 52C42 46 56 46 62 50L58 56H40Z" fill="#E2483A"'+o()+'/><path d="M60 54L82 54L86 46" fill="none"'+o(1.4)+'/></g>',
     awionetka:'<g class="a-lot"><path d="M18 50C18 44 30 42 60 44C70 44 78 46 80 50C78 54 70 56 60 56C30 58 18 56 18 50Z" fill="#F2B84A"'+o()+'/><path d="M40 46L46 30H54L52 46M40 54L46 68H54L52 54" fill="#E2483A"'+o()+'/><path d="M84 40V60" stroke="#3A2A14" stroke-width="3" stroke-linecap="round"/><path d="M20 50L12 40H18L26 48Z" fill="#E2483A"'+o(1.1)+'/><circle cx="66" cy="48" r="3" fill="#BFE3F2"'+o(1)+'/></g>'
   };
-  const SMIGLA={wiatrak:{x:50,y:46,s:.62}};
+  const SMIGLA={wiatrak:{x:64,y:34,s:.76}};
   /* ---------- REGIONY: teren i kompozycja ---------- */
   // f: motywy pierwszoplanowe (zabytki, większe), g: wypełnienie krajobrazu, a: animowane, t: teren
   const R={
@@ -151,12 +151,35 @@ window.Krainy=(function(){
   /* ---------- malowane grafiki (opcjonalne) ---------- */
   let GRAFIKI={};
   function ustawGrafiki(g){GRAFIKI=g||{};}
-  function motyw(id){if(GRAFIKI[id])return '<image href="'+GRAFIKI[id]+'" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMax meet"/>';const f=M[id];return f?f():"";}
+  const attr=s=>String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+  function obraz(id,x=0,y=0,w=100,h=100,align="xMidYMax meet"){
+    const g=GRAFIKI[id];if(!g)return "";
+    if(typeof g==="string")return '<image href="'+attr(g)+'" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" preserveAspectRatio="'+align+'"/>';
+    const [sx,sy,sw,sh]=g.rect;
+    return '<svg class="kr-sprite" x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" viewBox="0 0 '+sw+' '+sh+'" preserveAspectRatio="'+align+'" overflow="hidden">'
+      +'<svg width="'+sw+'" height="'+sh+'" viewBox="'+[sx,sy,sw,sh].join(' ')+'" overflow="hidden">'
+      +'<image href="'+attr(g.src)+'" width="'+g.atlas[0]+'" height="'+g.atlas[1]+'"/></svg></svg>';
+  }
+  function motyw(id){return obraz(id)||(M[id]?M[id]():"");}
+  const RUCH={kuter:"a-bujanie",zaglowka:"a-bujanie",mewa:"a-mewa",pszczola:"a-pszczola",szybowiec:"a-lot",awionetka:"a-lot"};
+  function animowany(id){
+    if(!GRAFIKI[id])return A[id]||"";
+    if(id==="smigla")return '<g transform="translate(50 50)"><g class="a-smigla">'+obraz(id,-50,-50,100,100,"xMidYMid meet")+'</g></g>';
+    return '<g class="'+(RUCH[id]||"")+'">'+obraz(id,0,0,100,100,"xMidYMid meet")+'</g>';
+  }
+  // Dekodujemy każdy atlas raz. Przy braku pliku zachowujemy awaryjne wektory.
+  async function zaladujGrafiki(g){
+    const wyniki=await Promise.all([...new Set(Object.values(g||{}).map(v=>typeof v==="string"?v:v.src))].map(src=>new Promise(resolve=>{
+      const img=new Image();img.onload=()=>resolve([src,true]);img.onerror=()=>resolve([src,false]);img.src=src;
+    })));
+    const ok=new Set(wyniki.filter(v=>v[1]).map(v=>v[0]));
+    ustawGrafiki(Object.fromEntries(Object.entries(g||{}).filter(([,v])=>ok.has(typeof v==="string"?v:v.src))));
+  }
   /* ---------- TEREN ---------- */
   function teren(t,W,H,S,r,id,st){
     let h="";
     const ziel=["#8EC274","#7DB36B","#9BCB7E","#6FA75D"];
-    for(let i=0;i<Math.round(H/80);i++){const x=r()*W,y=r()*H;h+='<path d="'+plama(x,y,60+r()*90,40+r()*60,r)+'" fill="'+ziel[i%4]+'" opacity=".55"/>';}
+    for(let i=0;i<(GRAFIKI._terrain?0:Math.round(H/80));i++){const x=r()*W,y=r()*H;h+='<path d="'+plama(x,y,60+r()*90,40+r()*60,r)+'" fill="'+ziel[i%4]+'" opacity=".55"/>';}
     for(let i=0;i<(t.pola||0)*2;i++){
       const y=60+r()*(H-140),strona=r()<.5,x=strona?4+r()*W*.12:W*.62+r()*W*.12,w=W*.26+r()*30,hh=44+r()*26,kol=["#E8CC6A","#C9D97A","#E2B95A","#B9D46E"][i%4];
       h+='<path d="'+gladko([[x,y],[x+w,y-6],[x+w+6,y+hh],[x-4,y+hh+4]],true)+'" fill="'+kol+'" stroke="#B89A4A" stroke-width="1.2" opacity=".9"/>';
@@ -165,8 +188,11 @@ window.Krainy=(function(){
     for(let i=0;i<(t.jeziora||0);i++){
       const y=90+((i+.5)/(t.jeziora))*(H-200)+r()*30,xs=xSciezki(S,y),lewa=xs>W/2,rx=Math.min(48,W*.13)+r()*14,ry=22+r()*10;
       const x=lewa?Math.max(rx+6,xs-60-rx):Math.min(W-rx-6,xs+60+rx);
+      if(GRAFIKI.jezioro)h+=obraz("jezioro",x-rx-12,y-ry-12,rx*2+24,ry*2+24,"none");
+      else {
       h+='<path d="'+plama(x,y,rx+7,ry+6,r,10,.12)+'" fill="#CFE3A8"/><path d="'+plama(x,y,rx,ry,r,10,.12)+'" fill="#7EBFE0" stroke="#4A7FA6" stroke-width="1.4"/>'
         +'<path d="M'+(x-rx*.5).toFixed(1)+' '+(y-ry*.2).toFixed(1)+'q8-4 16 0M'+x.toFixed(1)+' '+(y+ry*.3).toFixed(1)+'q8-4 16 0" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/>';
+      }
       st.jeziora.push({x,y,rx,ry});
     }
     if(t.gory){
@@ -188,12 +214,15 @@ window.Krainy=(function(){
       for(let y=-40;y<=H+40;y+=40){const xs=xSciezki(S,Math.max(0,Math.min(H,y)));const xb=Math.max(30,Math.min(W*.44,xs-66+Math.sin(y/55)*8));brzeg.push([xb,y]);plaza.push([xb+18+Math.sin(y/37)*4,y]);}
       st.morze=brzeg;
       h+='<path d="'+gladko(plaza,false)+'L-10 '+(H+40)+'L-10 -40Z" fill="#F2DDA4"/>';
-      h+='<path d="'+gladko(brzeg,false)+'L-10 '+(H+40)+'L-10 -40Z" fill="#62ADD8"/>';
-      h+='<path d="'+gladko(brzeg.map(p=>[p[0]*.5,p[1]]),false)+'L-10 '+(H+40)+'L-10 -40Z" fill="#3E8EC4" opacity=".5"/>';
+      const morzeD=gladko(brzeg,false)+'L-10 '+(H+40)+'L-10 -40Z';
+      if(GRAFIKI._sea){
+        h+='<defs><pattern id="morze'+id+'" width="260" height="260" patternUnits="userSpaceOnUse"><image href="'+attr(GRAFIKI._sea)+'" width="260" height="260"/></pattern></defs>'
+          +'<path d="'+morzeD+'" fill="url(#morze'+id+')"/>';
+      }else h+='<path d="'+morzeD+'" fill="#62ADD8"/>';
       h+='<path d="'+gladko(brzeg.map(p=>[p[0]-5,p[1]]),false)+'" fill="none" stroke="#fff" stroke-width="3" opacity=".8" stroke-linecap="round"/>';
     }
     // faktura farby (drobne ziarno) na całym terenie
-    h+='<rect width="'+W+'" height="'+H+'" filter="url(#ziarno'+id+')" opacity=".2"/>';
+    if(!GRAFIKI._terrain)h+='<rect width="'+W+'" height="'+H+'" filter="url(#ziarno'+id+')" opacity=".2"/>';
     return h;
   }
   /* ---------- ROZMIESZCZENIE ---------- */
@@ -226,17 +255,21 @@ window.Krainy=(function(){
     const elem=[];
     function postaw(id,s,nakl,proby){for(let i=0;i<proby;i++){const cx=46*s+r()*(W-92*s),cy=64*s+r()*(H-98*s);if(wolne(cx,cy,s,nakl)){zajete.push(prost(cx,cy,s));elem.push({id,x:cx,y:cy,s});return true;}}return false;}
     reg.f.forEach(id=>{if(!postaw(id,1.05+r()*.2,.85,200))if(!postaw(id,.9,.75,240))postaw(id,.74,.7,300);});
-    const ile=Math.round(W*H/8500),licz={},LIMIT={chata:2,chata_kaszubska:2,dom_podlaski:2,dom_murowany:2,familok:2,szyb:2,stog:3,wydma:3,falochron:2,plot:2,bocian:2,kamienice:1,gotyk:2};
+    const ile=Math.round(W*H/11000),licz={},LIMIT={chata:2,chata_kaszubska:2,dom_podlaski:2,dom_murowany:2,familok:2,szyb:2,stog:3,wydma:3,falochron:2,plot:2,bocian:2,kamienice:1,gotyk:2};
     for(let i=0;i<ile;i++){const id=reg.g[i%reg.g.length];if(LIMIT[id]&&(licz[id]||0)>=LIMIT[id])continue;if(postaw(id,.66+r()*.3,.62,40))licz[id]=(licz[id]||0)+1;}
     let drobne="";
-    for(let i=0;i<Math.round(W*H/5200);i++){const x=r()*W,y=r()*H;if(odlSciezki(S,x,y)>36&&!naMorzu(x,y)&&!wJeziorze(x,y,2)&&!wezly.some(p=>Math.hypot(p.x-x,p.y-y)<50)&&!(baner&&y>baner.top&&y<baner.bottom))drobne+=r()<.6?kepa(x,y,.9+r()*.5,["#8DB85A","#77A84C","#A5C870"][i%3]):kwiatki(x,y,.9);}
+    for(let i=0;i<(GRAFIKI._terrain?0:Math.round(W*H/5200));i++){const x=r()*W,y=r()*H;if(odlSciezki(S,x,y)>36&&!naMorzu(x,y)&&!wJeziorze(x,y,2)&&!wezly.some(p=>Math.hypot(p.x-x,p.y-y)<50)&&!(baner&&y>baner.top&&y<baner.bottom))drobne+=r()<.6?kepa(x,y,.9+r()*.5,["#8DB85A","#77A84C","#A5C870"][i%3]):kwiatki(x,y,.9);}
     // niższe motywy zasłaniają wyższe, jak w krajobrazie
     elem.sort((a,b)=>a.y-b.y);
     let deko=drobne;
     elem.forEach(e=>{const sz=100*e.s;deko+='<g transform="translate('+(e.x-sz/2).toFixed(1)+' '+(e.y+34*e.s-sz).toFixed(1)+') scale('+e.s.toFixed(2)+')">'+motyw(e.id)+'</g>';});
     // animacje: łodzie na wodzie, ptaki i samoloty w powietrzu, śmigła wiatraków, pszczoły
     let anim="";
-    if(st.morze){let fale="";for(let y=26;y<H;y+=36){let b=st.morze[0];for(const p of st.morze)if(Math.abs(p[1]-y)<Math.abs(b[1]-y))b=p;const n=Math.floor((b[0]-26)/12);if(n<2)continue;let d="M6 "+y;for(let k=0;k<n;k++)d+="q3-4 6 0t6 0";fale+='<path d="'+d+'" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".75"/>';}anim+='<g class="a-fale">'+fale+'</g>';}
+    if(st.morze&&!GRAFIKI._sea){let fale="";for(let y=26;y<H;y+=36){let b=st.morze[0];for(const p of st.morze)if(Math.abs(p[1]-y)<Math.abs(b[1]-y))b=p;const n=Math.floor((b[0]-26)/12);if(n<2)continue;let d="M6 "+y;for(let k=0;k<n;k++)d+="q3-4 6 0t6 0";fale+='<path d="'+d+'" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".75"/>';}anim+='<g class="a-fale">'+fale+'</g>';}
+    if(st.morze&&GRAFIKI._sea){
+      let fale="";for(let y=55;y<H;y+=120){let b=st.morze.reduce((a,p)=>Math.abs(p[1]-y)<Math.abs(a[1]-y)?p:a);if(b[0]>65)fale+='<path d="M12 '+y+'q12 4 24 0t24 0" stroke="#fff8df" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".4"/>';}
+      anim+='<g class="a-fale">'+fale+'</g>';
+    }
     reg.a.forEach(id=>{
       const woda=id==="kuter"||id==="zaglowka";let x=null,y=null;
       for(let k=0;k<120;k++){const cx=16+r()*(W-32),cy=40+r()*(H-80);
@@ -244,9 +277,9 @@ window.Krainy=(function(){
         else if(odlSciezki(S,cx,cy)>44&&!wezly.some(p=>Math.hypot(p.x-cx,p.y-cy)<64)&&!(baner&&cy>baner.top-20&&cy<baner.bottom+20)){x=cx;y=cy;break;}}
       if(x==null)return;
       const s=woda?(st.morze?.52:.36):id==="mewa"?.36:id==="pszczola"?.34:.5;
-      anim+='<g transform="translate('+(x-50*s).toFixed(1)+' '+(y-50*s).toFixed(1)+') scale('+s+')">'+A[id]+'</g>';
+      anim+='<g transform="translate('+(x-50*s).toFixed(1)+' '+(y-50*s).toFixed(1)+') scale('+s+')">'+animowany(id)+'</g>';
     });
-    elem.forEach(e=>{const sm=SMIGLA[e.id];if(sm&&!GRAFIKI[e.id]){const sz=100*e.s,x0=e.x-sz/2,y0=e.y+34*e.s-sz;anim+='<g transform="translate('+(x0+(sm.x-50*sm.s)*e.s).toFixed(1)+' '+(y0+(sm.y-50*sm.s)*e.s).toFixed(1)+') scale('+(sm.s*e.s).toFixed(2)+')">'+A.smigla+'</g>';}});
+    elem.forEach(e=>{const sm=SMIGLA[e.id];if(sm){const sz=100*e.s,x0=e.x-sz/2,y0=e.y+34*e.s-sz;anim+='<g transform="translate('+(x0+(sm.x-50*sm.s)*e.s).toFixed(1)+' '+(y0+(sm.y-50*sm.s)*e.s).toFixed(1)+') scale('+(sm.s*e.s).toFixed(2)+')">'+animowany('smigla')+'</g>';}});
     return {teren:ter,deko,anim,ile:elem.length,motywy:elem.map(e=>e.id)};
   }
   function filtry(id){
@@ -258,7 +291,10 @@ window.Krainy=(function(){
   function kraina(woj,W,H,pts,baner,ziarno,id){
     const w=warstwy(woj,W,H,pts,baner,ziarno,id);
     const sv=(cls,tresc,filtr)=>'<svg class="'+cls+'" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" aria-hidden="true" focusable="false">'+tresc+'</svg>';
-    return {teren:sv("k-teren",filtry(id)+'<g filter="url(#pedzel'+id+')">'+w.teren+'</g>'),deko:sv("k-deko",filtry(id+100)+'<g filter="url(#pedzelD'+(id+100)+')">'+w.deko+'</g>'),anim:sv("k-anim",w.anim),ile:w.ile,motywy:w.motywy};
+    const malowane=!!GRAFIKI._terrain;
+    return {teren:sv("k-teren",filtry(id)+'<g filter="url(#pedzel'+id+')">'+w.teren+'</g>'),
+      deko:sv("k-deko",malowane?w.deko:filtry(id+100)+'<g filter="url(#pedzelD'+(id+100)+')">'+w.deko+'</g>'),
+      anim:sv("k-anim",w.anim),ile:w.ile,motywy:w.motywy};
   }
-  return {kraina,ustawGrafiki,MOTYWY:M,ANIMOWANE:A,REGIONY:R,motyw};
+  return {kraina,ustawGrafiki,zaladujGrafiki,MOTYWY:M,ANIMOWANE:A,REGIONY:R,motyw};
 })();

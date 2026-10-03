@@ -93,7 +93,7 @@
 
 <script src="topojson-client.min.js?v=17"></script>
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=21"></script>
+<script src="wspolne.js?v=22"></script>
 <script>
 const {$,fmt}=ZP;
 const START=new Date(2026,9,1),DZIEN=ZP.dayKey();
@@ -153,12 +153,14 @@ function losuj(){
 }
 function start(){
   koniec=false;proby=[];cel=losuj();
-  if(tryb==="dzien"){try{const s=JSON.parse(localStorage.getItem(klucz())||"null");if(s&&s.proby)proby=s.proby.map(k=>G.find(g=>g.k===k)).filter(Boolean);}catch(e){}}
+  let zapisana=null;
+  if(tryb==="dzien"){try{const s=JSON.parse(localStorage.getItem(klucz())||"null");zapisana=s;if(s&&s.proby)proby=s.proby.map(k=>G.find(g=>g.k===k)).filter(Boolean);}catch(e){}}
   $("nr").textContent=tryb==="dzien"?"#"+NR:"trening";
   $("warstwa").innerHTML="";$("otoczki").innerHTML="";$("kropki").innerHTML="";$("koniec").classList.add("hidden");$("pasekDol").classList.remove("hidden");$("ostatnia").classList.add("hidden");
   proby.forEach(g=>rysujGmine(g,false));
   odswiez();
-  if(proby.indexOf(cel)>=0)zakoncz(true,true);
+  if(zapisana&&zapisana.done)zakoncz(!!zapisana.wygrana&&!zapisana.poddane,true);
+  else if(proby.indexOf(cel)>=0)zakoncz(true,true);
   else{POLE.wyczysc();POLE.wylacz(false);POLE.focus();}
 }
 function rysujGmine(g,ostatnia){
@@ -228,6 +230,10 @@ function zgadnij(v){
   POLE.wyczysc();POLE.wylacz(false);POLE.focus();
 }
 function zakoncz(wygrana,zPamieci){
+  if(tryb==="dzien"){
+    if(!zPamieci)localStorage.setItem(klucz(),JSON.stringify({proby:proby.map(x=>x.k),done:true,wygrana:!!wygrana,poddane:!wygrana}));
+    ZP.nagrodaDnia("gmina",DZIEN,{ukonczone:!!wygrana,poddane:!wygrana});
+  }
   koniec=true;$("pasekDol").classList.add("hidden");
   if(proby.indexOf(cel)<0)$("warstwa").insertAdjacentHTML("beforeend",'<path class="cel" d="'+P.path(cel.f.geometry,0.4)+'"/>');
   const st=staty();

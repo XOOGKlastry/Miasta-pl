@@ -298,16 +298,39 @@ function przyciskKolekcji(){
   h.appendChild(jk);h.appendChild(a);
   // liczba nowych kart dopiero, gdy przeglądarka ma wolną chwilę
   const licz=()=>{const go=()=>Karty.liczbaNowych().then(n=>{if(n>0){const i=document.createElement("i");i.textContent=n>99?"99+":n;a.appendChild(i);}}).catch(()=>{});
-    if(window.Karty)return go();const sc=document.createElement("script");sc.src="karty.js?v=7";sc.onload=go;document.head.appendChild(sc);};
+    modulKart().then(go).catch(()=>{});};
   setTimeout(()=>{if(window.requestIdleCallback)requestIdleCallback(licz);else licz();},3000);
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",przyciskKolekcji);else setTimeout(przyciskKolekcji,0);
 // po każdej grze: nowe karty gmin lecą do kolekcji (moduł ładowany dopiero wtedy, gdy jest potrzebny)
-function kartyPoGrze(){
-  const uruchom=()=>window.Karty&&Karty.sprawdzPoGrze();
-  if(window.Karty)return uruchom();
-  const sc=document.createElement("script");sc.src="karty.js?v=7";sc.onload=uruchom;document.head.appendChild(sc);
+let KARTY_MODUL=null,DZIENNA_W_TOKU=false;
+function modulKart(){
+  if(window.Karty)return Promise.resolve(window.Karty);
+  if(KARTY_MODUL)return KARTY_MODUL;
+  KARTY_MODUL=new Promise((resolve,reject)=>{
+    let sc=document.querySelector('script[src^="karty.js"]'),nowy=!sc;
+    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=8";}
+    sc.addEventListener("load",()=>resolve(window.Karty),{once:true});
+    sc.addEventListener("error",()=>{KARTY_MODUL=null;sc.remove();reject(Error("Nie wczytano kart"));},{once:true});
+    if(nowy)document.head.appendChild(sc);
+  });
+  return KARTY_MODUL;
 }
+function kartyPoGrze(){
+  if(DZIENNA_W_TOKU)return;
+  return modulKart().then(k=>{if(!DZIENNA_W_TOKU)return k.sprawdzPoGrze();}).catch(()=>{});
+}
+async function nagrodaDnia(typ,dzien,warunki){
+  if(!warunki?.ukonczone||warunki.poddane)return null;
+  DZIENNA_W_TOKU=true;
+  try{
+    const k=await modulKart(),g=await k.nagrodaDnia(typ,dzien,warunki);
+    if(g){komunikat("Nagroda dnia: losowa paczka z gminą!",3200);await k.prezentacja([g]);}
+    return g;
+  }catch(e){komunikat("Nie udało się odebrać paczki. Odśwież wynik, aby spróbować ponownie.",4000);return null;}
+  finally{DZIENNA_W_TOKU=false;}
+}
+
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujKoniec);else obserwujKoniec();
 
 /* ---- mapa „Gdzie to jest?”: ciemny podkład Esri bez podpisów, granice województw, przybliżanie ---- */
@@ -834,7 +857,7 @@ function obserwujJoker(){
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujJoker);else setTimeout(obserwujJoker,0);
 // maskotka PolandBall: ładowana na każdej stronie z grą, reaguje na odpowiedzi
-(function(){if(window.PB||document.querySelector('script[src*="polandball.js"]'))return;const s=document.createElement("script");s.src="polandball.js?v=2";document.head.appendChild(s);})();
+(function(){if(window.PB||document.querySelector('script[src*="polandball.js"]'))return;const s=document.createElement("script");s.src="polandball.js?v=3";document.head.appendChild(s);})();
 function zapisz(kind,id,ok,cicho){
   if(!cicho){poswiata(ok);sesja.wszystkie++;if(ok)sesja.ok++;seriaOdp(ok);}
   if(ok&&GMINNE.indexOf(kind)<0)zeton(1);
@@ -913,5 +936,5 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,IKONA_5050,jokery,dodajJoker,jokerCel,seria,zeton,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,nagrodaDnia,IKONA_5050,jokery,dodajJoker,jokerCel,seria,zeton,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();

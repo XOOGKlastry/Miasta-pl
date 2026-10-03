@@ -237,7 +237,7 @@ svg path{fill-rule:evenodd}
 <script src="peerjs.min.js"></script>
 <script src="topojson-client.min.js?v=17"></script>
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=21"></script>
+<script src="wspolne.js?v=22"></script>
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
@@ -981,6 +981,7 @@ function koniec(){
   pokazWynik(st.res);
 }
 function pokazWynik(res){
+  if(TRYB==="dzien")ZP.nagrodaDnia("wyzwanie",DZIEN,{ukonczone:!!zapisane()?.done&&res.length===Q.length&&Q.length>0,poddane:false});
   schowaj();["segmenty","gora","pytanie","stage","start"].forEach(id=>$(id).classList.add("hidden"));
   $("runda").textContent="";
   const suma=res.reduce((a,r)=>a+r.pts,0),max=res.length*1000,proc=max?Math.round(100*suma/max):0;
