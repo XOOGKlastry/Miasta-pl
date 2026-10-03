@@ -25,7 +25,11 @@
 .karta.odkryta .w,.karta.para .w{transform:rotateY(180deg)}
 .strona{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:3px solid var(--braz);border-radius:12px;box-shadow:0 4px 0 var(--braz);display:grid;place-items:center;overflow:hidden;padding:4px;text-align:center}
 .tyl{background:var(--czer);background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.18) 0 6px,transparent 6px 12px)}
-.tyl i{width:46%;aspect-ratio:1;border-radius:50%;overflow:hidden;border:3px solid var(--braz);background:linear-gradient(#F4F4F2 50%,#DC1E35 50%)}
+.tyl svg{width:62%;height:auto;filter:drop-shadow(0 2px 0 rgba(58,42,20,.4))}
+.tyl{background:#E84A3C;background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.16) 0 7px,transparent 7px 14px),radial-gradient(circle at 50% 45%,rgba(255,255,255,.25),transparent 60%)!important}
+.karta:hover .tyl svg{transform:rotate(-6deg)}
+.maskotka{flex:none}
+.maskotka .pb-kula{width:52px;height:56px}.maskotka .pb-dymek{font-size:13px;margin-bottom:16px;padding:7px 11px}
 .przod{background:#fff;transform:rotateY(180deg);font-weight:900;font-size:13px;line-height:1.1;color:var(--braz)}
 .przod{display:flex!important;flex-direction:column;gap:2px;padding:4px 3px}
 .przod .sym{flex:1;min-height:0;width:100%;display:grid;place-items:center}
@@ -58,14 +62,16 @@
     </div>
     <div class="licznik"><span>Ruchy<b id="ruchy">0</b></span><span>Pary<b id="pary">0/10</b></span><span>Czas<b id="czas">0:00</b></span></div>
     <div class="stol" id="stol"></div>
+    <div class="maskotka" data-pb="Szukaj takich samych par!"></div>
   </main>
   <div id="warstwa"></div>
 </div>
 <script src="tablice-powiaty.js"></script>
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=19"></script>
+<script src="wspolne.js?v=20"></script>
 <script>
 const {$}=ZP;
+const KULKA='<svg viewBox="0 0 40 40"><defs><clipPath id="mk"><circle cx="20" cy="20" r="16"/></clipPath></defs><g clip-path="url(#mk)"><rect width="40" height="20" fill="#F4F4F2"/><rect y="20" width="40" height="20" fill="#DC1E35"/><ellipse cx="14" cy="11" rx="6" ry="3.4" fill="#fff" opacity=".8"/></g><circle cx="20" cy="20" r="16" fill="none" stroke="#3A2A14" stroke-width="2.6"/><ellipse cx="14.5" cy="18" rx="3" ry="3.8" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/><ellipse cx="25.5" cy="18" rx="3" ry="3.8" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/></svg>';
 let TRYB="herby",ILE=10,HERBY=[],WOJ=[],gra=null,zegar=null;
 const STOLICE={"dolnośląskie":"Wrocław","kujawsko-pomorskie":"Bydgoszcz i Toruń","lubelskie":"Lublin","lubuskie":"Zielona Góra i Gorzów","łódzkie":"Łódź","małopolskie":"Kraków","mazowieckie":"Warszawa","opolskie":"Opole","podkarpackie":"Rzeszów","podlaskie":"Białystok","pomorskie":"Gdańsk","śląskie":"Katowice","świętokrzyskie":"Kielce","warmińsko-mazurskie":"Olsztyn","wielkopolskie":"Poznań","zachodniopomorskie":"Szczecin"};
 function sylwetka(f){
@@ -83,7 +89,7 @@ function nowa(){
   gra={karty,odkryte:[],ruchy:0,pary:0,n:p.length,start:0,blok:false};
   const kol=4;
   const s=$("stol");s.style.gridTemplateColumns="repeat("+kol+",minmax(0,1fr))";
-  s.innerHTML=karty.map((k,i)=>'<div class="karta" data-i="'+i+'"><div class="w"><div class="strona tyl"><i></i></div><div class="strona przod">'+k.html+'</div></div></div>').join("");
+  s.innerHTML=karty.map((k,i)=>'<div class="karta" data-i="'+i+'"><div class="w"><div class="strona tyl">'+KULKA+'</div><div class="strona przod">'+k.html+'</div></div></div>').join("");
   // karty kwadratowe, ale mieszczące się na ekranie
   const wier=Math.ceil(karty.length/kol),r=s.getBoundingClientRect(),bok=Math.min((r.width-(kol-1)*8)/kol,(r.height-(wier-1)*8)/wier);
   s.querySelectorAll(".karta").forEach(k=>{k.style.height=bok+"px";k.onclick=()=>odkryj(+k.dataset.i);});

@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=19" />
+<link rel="stylesheet" href="wspolne.css?v=20" />
 <style>
 /* karta z herbem */
 .shield{flex:1;min-height:140px;position:relative;border-radius:var(--r);background:#E9EEEC;display:grid;place-items:center;overflow:hidden;
@@ -78,7 +78,7 @@
 </div>
 
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=19"></script>
+<script src="wspolne.js?v=20"></script>
 <script>
 const $=id=>document.getElementById(id);
 const norm=s=>s.toLowerCase()
@@ -120,7 +120,17 @@ async function sparql(q){
 }
 const fileOf=u=>decodeURIComponent(u.split("/Special:FilePath/")[1]||"");
 
+const ZBIOR_GMINY=new URLSearchParams(location.search).get("zbior")==="gminy";
+if(ZBIOR_GMINY){document.title="Herby gmin · PolskoZnawca";document.querySelector("h1").textContent="Herby gmin";}
 async function loadData(){
+  // herby gmin wiejskich: 1015 herbów z Wikimedia Commons (z bazy encyklopedii)
+  if(ZBIOR_GMINY){
+    try{
+      const b=await fetchT("baza.json",{},20000).then(r=>r.json());
+      HERBY=b.gminy.filter(x=>x.typ==="gmina wiejska"&&x.herb&&x.lat!=null).map(x=>({name:x.n,lat:x.lat,lon:x.lon,pop:x.ludnosc||0,file:x.herb,k:x.k}));
+      return ready("herby gmin wiejskich");
+    }catch(e){}
+  }
   // 1) gotowa, sprawdzona lista z miniaturami w repozytorium (budowana automatycznie raz w miesiącu)
   try{
     const r=await fetchT("herby.json",{cache:"no-cache"},15000);
@@ -275,7 +285,7 @@ function answer(o,btn){
   const got=ok?(game.wpis&&!game.pokazano?3:1):0;
   game.pts+=got;$("pts").textContent=game.pts;
   if(ok){game.hits++;game.streak++;}else game.streak=0;
-  ZP.zapisz("herb",q.c.name,ok);
+  if(q.c.k)ZP.zapisz("gmina",q.c.k,ok);else ZP.zapisz("herb",q.c.name,ok);
   $("hits").textContent=game.hits;$("streak").textContent=game.streak;
   game.res.push({c:q.c,ok,picked:o?o.name:null,got});
   const fb=$("feedback");
@@ -323,7 +333,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Enter"&&game.answered&&$("nextBtn"))$("nextBtn").click();
 });
 
-ZP.kreatorGry({klucz:"herb",kroki:["pojedynek","obszar","wielkosc",{pole:"rtime",tytul:"Ile czasu na herb?",domyslny:"15",opcje:[{v:"8",t:"8 s",opis:"dla szybkich",ilu:'<div class="kr-ikona">⚡</div>'},{v:"15",t:"15 s",opis:"w sam raz",ilu:'<div class="kr-ikona">⏱️</div>'},{v:"0",t:"Bez limitu",opis:"na spokojnie",ilu:'<div class="kr-ikona">☕</div>'}]},"rundy"]});
+ZP.kreatorGry({klucz:ZBIOR_GMINY?"herb-gminy":"herb",kroki:["pojedynek","obszar","wielkosc",{pole:"rtime",tytul:"Ile czasu na herb?",domyslny:"15",opcje:[{v:"8",t:"8 s",opis:"dla szybkich",ilu:'<div class="kr-ikona">⚡</div>'},{v:"15",t:"15 s",opis:"w sam raz",ilu:'<div class="kr-ikona">⏱️</div>'},{v:"0",t:"Bez limitu",opis:"na spokojnie",ilu:'<div class="kr-ikona">☕</div>'}]},"rundy"]});
 loadData();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>

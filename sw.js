@@ -1,10 +1,10 @@
 // Działa offline, ale zawsze najpierw próbuje sieci, żeby poprawki docierały od razu.
-const CACHE = "polskoznawca-v43";
+const CACHE = "polskoznawca-v44";
 const ASSETS = [
   "./", "./index.html", "./miasta.html", "./zdjecie.html", "./herb.html", "./gdzie.html", "./ksztalt.html",
-  "./wiecej.html", "./sasiedzi.html", "./dzis.html", "./wyzwanie.html", "./szostka.html", "./cieplo.html", "./profil.html", "./saga.js", "./memory.html", "./strzal.html", "./karty.html", "./ciekawostki.json", "./karty.js?v=6", "./instaluj.js", "./efekty.js?v=17", "./plansza.css", "./gry.html", "./codzienne.html", "./konto.js", "./pojedynek.html", "./peerjs.min.js", "./kluby.html", "./encyklopedia.html", "./powiaty.html", "./rzeki.html", "./statystyki.html", "./slepa.html", "./miasto.html", "./turniej.html", "./tablice.html",
+  "./wiecej.html", "./sasiedzi.html", "./dzis.html", "./wyzwanie.html", "./szostka.html", "./cieplo.html", "./profil.html", "./saga.js", "./memory.html", "./strzal.html", "./karty.html", "./polandball.js?v=1", "./krainy.js?v=1", "./ciekawostki.json", "./karty.js?v=7", "./instaluj.js", "./efekty.js?v=17", "./plansza.css", "./gry.html", "./codzienne.html", "./konto.js", "./pojedynek.html", "./peerjs.min.js", "./kluby.html", "./encyklopedia.html", "./powiaty.html", "./rzeki.html", "./statystyki.html", "./slepa.html", "./miasto.html", "./turniej.html", "./tablice.html",
   "./tablice-app.js", "./tablice-powiaty.js", "./tablice-poland.js",
-  "./wspolne.js?v=19", "./wspolne.css?v=19", "./topojson-client.min.js?v=17", "./powiaty.topojson?v=16", "./woj.geojson?v=16",
+  "./wspolne.js?v=20", "./wspolne.css?v=20", "./topojson-client.min.js?v=17", "./powiaty.topojson?v=16", "./woj.geojson?v=16",
   "./manifest.webmanifest", "./icon.svg"
 ];
 

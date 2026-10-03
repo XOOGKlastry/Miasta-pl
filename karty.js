@@ -195,7 +195,7 @@ window.Karty=(function(){
     if(!document.querySelector('link[href*="Barlow+Condensed"]')){const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Bungee&display=swap";document.head.appendChild(l);}
     const s=document.createElement("style");s.id="kk-styl";
     s.textContent=`
-.kk{--x:50%;--y:50%;position:relative;aspect-ratio:5/8;container-type:inline-size;clip-path:polygon(50% 0,100% 4%,100% 90%,50% 100%,0 90%,0 4%);background:var(--tlo);color:#14233A;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45));cursor:pointer;transition:transform .15s;font-family:Rubik,system-ui,sans-serif}
+.kk{--x:50%;--y:50%;position:relative;aspect-ratio:5/8;container-type:inline-size;clip-path:polygon(50% 0,100% 4%,100% 90%,50% 100%,0 90%,0 4%);background:repeating-linear-gradient(135deg,rgba(255,255,255,.14) 0 2cqw,transparent 2cqw 4.5cqw),var(--tlo);color:#14233A;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45));cursor:pointer;transition:transform .15s;font-family:Rubik,system-ui,sans-serif}
 .kk.kk-mini{aspect-ratio:5/7}
 .kk .kk-ramka{position:absolute;inset:3cqw;clip-path:inherit;border:.8cqw solid var(--ramka);pointer-events:none;z-index:3}
 .kk .kk-lewa{position:absolute;left:7cqw;top:9cqw;width:22cqw;display:flex;flex-direction:column;align-items:center;gap:.6cqw;z-index:2}
@@ -214,7 +214,7 @@ window.Karty=(function(){
 .kk .kk-jedn{position:absolute;left:6cqw;right:6cqw;top:74.5cqw;text-align:center;font-size:3.8cqw;font-weight:700;line-height:1.25;opacity:.85}
 .kk.kk-mini .kk-jedn{top:81cqw;font-size:5cqw}
 .kk .kk-linia{position:absolute;left:14cqw;right:14cqw;top:85cqw;height:.6cqw;background:var(--ramka);opacity:.7}
-.kk .kk-st{position:absolute;left:6cqw;right:6cqw;top:88cqw;display:grid;grid-template-columns:1fr 1fr;column-gap:4cqw;row-gap:1.8cqw}
+.kk .kk-st{position:absolute;left:5cqw;right:5cqw;top:87cqw;background:rgba(255,255,255,.38);border-radius:3cqw;padding:1.6cqw 2.4cqw;display:grid;grid-template-columns:1fr 1fr;column-gap:4cqw;row-gap:1.8cqw}
 .kk .kk-st span{display:grid;grid-template-columns:4.6cqw minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:1.6cqw;align-items:center}
 .kk .kk-st svg{grid-row:1/3;width:4.6cqw;height:4.6cqw}
 .kk .kk-st em{font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:3.6cqw;text-transform:uppercase;white-space:nowrap;line-height:1.05}
