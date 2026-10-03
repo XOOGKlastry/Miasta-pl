@@ -21,7 +21,7 @@
 .pas{position:absolute;left:0;right:0}
 /* warstwy krajobrazu: teren < dekoracje < animacje < ścieżka < banery < pola < pionek < chmury < interfejs */
 .kr{position:absolute;left:0;right:0;pointer-events:none;overflow:hidden;z-index:0}
-.kr svg{position:absolute;left:0;top:0;display:block;pointer-events:none}
+.kr>svg{position:absolute;left:0;top:0;display:block;pointer-events:none}
 .sciezka{z-index:1}
 .kr .a-bujanie{transform-box:fill-box;transform-origin:50% 90%;animation:krBuja 4.6s ease-in-out infinite}
 .kr .a-mewa{transform-box:fill-box;transform-origin:center;animation:krMewa 7s ease-in-out infinite}
@@ -106,6 +106,7 @@
 .sciana svg{width:46px;height:46px}
 .rzut .wynik{font-family:Bungee,sans-serif;font-size:28px;color:var(--krem);text-shadow:0 3px 0 var(--braz);text-align:center;min-height:36px}
 </style>
+<link rel="stylesheet" href="malowana-plansza.css?v=1">
 </head>
 <body>
 <div class="wrap">
@@ -134,8 +135,8 @@
 <script src="instaluj.js"></script>
 <script src="konto.js"></script>
 <script src="saga.js"></script>
-<script src="polandball.js?v=2"></script>
-<script src="krainy.js?v=2"></script>
+<script src="polandball.js?v=3"></script>
+<script src="krainy.js?v=3"></script>
 <script>
 const $=id=>document.getElementById(id);
 const TYPY={z:"Z lotu ptaka",g:"Gdzie to jest?",m:"Co to za miasto?",k:"Kształt powiatu",h:"Herb",t:"Tablice",r:"Rzeka",c:"Kluby",w:"Więcej czy mniej",s:"Graniczą?",v:"Województwo",p:"W którym powiecie?",q:"Szybki strzał"};
@@ -166,7 +167,7 @@ function rysuj(){
   Saga.SWIATY.forEach((sw,s)=>{
     const dol=H-DOL-s*(Saga.NA_SWIAT*STEP+BANER)+ (s===0?DOL:0),gora=H-DOL-(s+1)*(Saga.NA_SWIAT*STEP+BANER);
     PASY.push({s,top:gora,bottom:dol-(s===0?DOL:0)-BANER*0.2});
-    h+='<div class="pas" style="top:'+gora+'px;height:'+(dol-gora)+'px;background:#84BA6C"></div>';
+    h+='<div class="pas" style="top:'+gora+'px;height:'+(dol-gora)+'px;background-color:#a4bd80"></div>';
   });
   // krajobraz krain: teren, dekoracje i animacje w osobnych warstwach pod ścieżką (bez przechwytywania kliknięć)
   if(window.Krainy)Saga.SWIATY.forEach((sw,s)=>{
@@ -179,7 +180,7 @@ function rysuj(){
   // ścieżka
   let d="M"+pts[0].x.toFixed(0)+" "+(pts[0].y+60).toFixed(0);
   pts.forEach((p,i)=>{if(i===0){d+=" L"+p.x.toFixed(0)+" "+p.y.toFixed(0);return;}const a=pts[i-1];d+=" C"+a.x.toFixed(0)+" "+((a.y+p.y)/2).toFixed(0)+" "+p.x.toFixed(0)+" "+((a.y+p.y)/2).toFixed(0)+" "+p.x.toFixed(0)+" "+p.y.toFixed(0);});
-  h+='<svg class="sciezka" width="'+W+'" height="'+H+'"><path d="'+d+'" fill="none" stroke="#3A2A14" stroke-width="34" stroke-linecap="round" opacity=".25"/><path d="'+d+'" fill="none" stroke="#F3E6C4" stroke-width="26" stroke-linecap="round"/><path d="'+d+'" fill="none" stroke="#B89A5E" stroke-width="3" stroke-dasharray="10 10"/></svg>';
+  h+='<svg class="sciezka" width="'+W+'" height="'+H+'"><path d="'+d+'" fill="none" stroke="#69844e" stroke-width="38" stroke-linecap="round" opacity=".22"/><path d="'+d+'" fill="none" stroke="#fff0c8" stroke-width="30" stroke-linecap="round"/><path d="'+d+'" fill="none" stroke="#d0b787" stroke-width="2" stroke-dasharray="6 14"/></svg>';
   // banery krain
   Saga.SWIATY.forEach((sw,s)=>{
     const y=H-DOL-s*(Saga.NA_SWIAT*STEP+BANER)-BANER+18;
@@ -210,6 +211,9 @@ function powitanie(p,n){
   d.innerHTML='<div class="pb-dymek">'+teksty[Math.floor(Math.random()*teksty.length)]+'</div>';
   d.style.left=(p.x-6)+"px";d.style.top=(p.y-88)+"px";
   $("plotno").appendChild(d);
+  const bubble=d.getBoundingClientRect(),board=$("plotno").getBoundingClientRect();
+  const shift=Math.max(8-(bubble.left-board.left),Math.min(0,board.right-8-bubble.right));
+  d.style.left=(p.x-6+shift)+"px";
   setTimeout(()=>{d.style.opacity="0";setTimeout(()=>d.remove(),600);},4200);
 }
 function pionekNa(p,natychmiast){const pn=$("pionek");if(natychmiast)pn.style.transition="none";pn.style.left=p.x+"px";pn.style.top=(p.y-34)+"px";if(natychmiast){void pn.offsetWidth;pn.style.transition="";}}
@@ -264,7 +268,7 @@ function chmury(){
   zamkniete().forEach(p=>{
     const s=p.s,top=PASY[s].top,wys=(s===0?HPL:PASY[s-1].top)-top;
     let z=s*131+7;const r=()=>{z=(z*1664525+1013904223)>>>0;return z/4294967296;};
-    const H=wys+44;
+    const H=wys;
     let h='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><defs><linearGradient id="nb'+s+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3F7FA" stop-opacity=".78"/><stop offset=".9" stop-color="#EAF2F6" stop-opacity=".7"/><stop offset="1" stop-color="#EAF2F6" stop-opacity="0"/></linearGradient></defs>'
       +'<rect class="niebo" x="0" y="0" width="'+W+'" height="'+(H-10)+'" fill="url(#nb'+s+')"/>';
     for(let y=10,rz=0;y<H-10;y+=62,rz++){
@@ -330,13 +334,13 @@ fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
   });
 }).catch(()=>{}).finally(()=>{
   // opcjonalne malowane grafiki krain (krainy-grafiki.json); bez nich rysujemy wektory
-  fetch("krainy-grafiki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({})).then(g=>{if(window.Krainy)Krainy.ustawGrafiki(g);start();});
+  fetch("krainy-grafiki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({})).then(g=>{if(window.Krainy)return Krainy.zaladujGrafiki(g).then(start);start();});
 });
 (function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();
 window.addEventListener("resize",()=>{clearTimeout(window._r);window._r=setTimeout(start,200);});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
-<script src="karty.js?v=7"></script>
+<script src="karty.js?v=8"></script>
 <script>setTimeout(()=>{Karty.liczbaNowych().then(n=>{const e=document.getElementById("kolNowe");if(e&&n>0){e.textContent=n>99?"99+":n;e.classList.remove("hidden");}}).catch(()=>{});},1500);</script>
 </body>
 </html>

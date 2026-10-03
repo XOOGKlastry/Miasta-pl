@@ -1,1 +1,836 @@
-{}
+{
+  "_terrain": "grafiki/krainy/laka.webp",
+  "sosna": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      0,
+      0,
+      313,
+      337
+    ]
+  },
+  "las_iglasty": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      313,
+      0,
+      315,
+      337
+    ]
+  },
+  "drzewo": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      628,
+      0,
+      312,
+      337
+    ]
+  },
+  "las_mieszany": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      940,
+      0,
+      314,
+      337
+    ]
+  },
+  "brzozy": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      0,
+      337,
+      313,
+      311
+    ]
+  },
+  "jablon": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      313,
+      337,
+      315,
+      311
+    ]
+  },
+  "sad": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      628,
+      337,
+      312,
+      311
+    ]
+  },
+  "krzewy": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      940,
+      337,
+      314,
+      311
+    ]
+  },
+  "kwiaty": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      0,
+      648,
+      313,
+      274
+    ]
+  },
+  "stog": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      313,
+      648,
+      315,
+      274
+    ]
+  },
+  "plot": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      628,
+      648,
+      312,
+      274
+    ]
+  },
+  "wydma": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      940,
+      648,
+      314,
+      274
+    ]
+  },
+  "latarnia": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      0,
+      922,
+      313,
+      332
+    ]
+  },
+  "molo": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      313,
+      922,
+      315,
+      332
+    ]
+  },
+  "promenada": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      628,
+      922,
+      312,
+      332
+    ]
+  },
+  "falochron": {
+    "src": "grafiki/krainy/natura.webp",
+    "atlas": [
+      1254,
+      1254
+    ],
+    "rect": [
+      940,
+      922,
+      314,
+      332
+    ]
+  },
+  "kaszubski_kwiat": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      0,
+      0,
+      384,
+      282
+    ]
+  },
+  "chata": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      384,
+      0,
+      384,
+      282
+    ]
+  },
+  "chata_kaszubska": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      768,
+      0,
+      384,
+      282
+    ]
+  },
+  "dom_podlaski": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      1152,
+      0,
+      384,
+      282
+    ]
+  },
+  "dom_murowany": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      0,
+      282,
+      384,
+      258
+    ]
+  },
+  "familok": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      384,
+      282,
+      384,
+      258
+    ]
+  },
+  "kamienice": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      768,
+      282,
+      384,
+      258
+    ]
+  },
+  "gotyk": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      1152,
+      282,
+      384,
+      258
+    ]
+  },
+  "zubr": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      0,
+      540,
+      384,
+      234
+    ]
+  },
+  "los": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      384,
+      540,
+      384,
+      234
+    ]
+  },
+  "bocian": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      768,
+      540,
+      384,
+      234
+    ]
+  },
+  "koziolki": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      1152,
+      540,
+      384,
+      234
+    ]
+  },
+  "zyrafa": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      0,
+      774,
+      384,
+      250
+    ]
+  },
+  "dino": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      384,
+      774,
+      384,
+      250
+    ]
+  },
+  "zuzel": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      768,
+      774,
+      384,
+      250
+    ]
+  },
+  "cerkiew": {
+    "src": "grafiki/krainy/wies.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      1152,
+      774,
+      384,
+      250
+    ]
+  },
+  "kosciolek": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      0,
+      0,
+      384,
+      325
+    ]
+  },
+  "pkin": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      384,
+      0,
+      384,
+      325
+    ]
+  },
+  "syrenka": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      768,
+      0,
+      384,
+      325
+    ]
+  },
+  "zamek_krolewski": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      1152,
+      0,
+      384,
+      325
+    ]
+  },
+  "piernik": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      0,
+      325,
+      384,
+      231
+    ]
+  },
+  "rogal": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      384,
+      325,
+      384,
+      231
+    ]
+  },
+  "zamek": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      768,
+      325,
+      384,
+      231
+    ]
+  },
+  "palac": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      1152,
+      325,
+      384,
+      231
+    ]
+  },
+  "sky_tower": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      0,
+      556,
+      384,
+      242
+    ]
+  },
+  "rynek": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      384,
+      556,
+      384,
+      242
+    ]
+  },
+  "manufaktura": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      768,
+      556,
+      384,
+      242
+    ]
+  },
+  "szyb": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      1152,
+      556,
+      384,
+      242
+    ]
+  },
+  "spodek": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      0,
+      798,
+      384,
+      226
+    ]
+  },
+  "wawel": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      384,
+      798,
+      384,
+      226
+    ]
+  },
+  "dab_bartek": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      768,
+      798,
+      384,
+      226
+    ]
+  },
+  "jaskinia": {
+    "src": "grafiki/krainy/zabytki.webp",
+    "atlas": [
+      1536,
+      1024
+    ],
+    "rect": [
+      1152,
+      798,
+      384,
+      226
+    ]
+  },
+  "maczuga": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      0,
+      0,
+      334,
+      300
+    ]
+  },
+  "ul": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      334,
+      0,
+      335,
+      300
+    ]
+  },
+  "chmiel": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      669,
+      0,
+      334,
+      300
+    ]
+  },
+  "wiatrak": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      1003,
+      0,
+      335,
+      300
+    ]
+  },
+  "opolanka": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      0,
+      300,
+      334,
+      350
+    ]
+  },
+  "lowiczanka": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      334,
+      300,
+      335,
+      350
+    ]
+  },
+  "krakowiak": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      669,
+      300,
+      334,
+      350
+    ]
+  },
+  "goral": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      1003,
+      300,
+      335,
+      350
+    ]
+  },
+  "kuter": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      0,
+      650,
+      334,
+      275
+    ]
+  },
+  "zaglowka": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      334,
+      650,
+      335,
+      275
+    ]
+  },
+  "mewa": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      669,
+      650,
+      334,
+      275
+    ]
+  },
+  "smigla": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      1003,
+      650,
+      335,
+      275
+    ]
+  },
+  "pszczola": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      0,
+      925,
+      334,
+      251
+    ]
+  },
+  "szybowiec": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      334,
+      925,
+      335,
+      251
+    ]
+  },
+  "awionetka": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      669,
+      925,
+      334,
+      251
+    ]
+  },
+  "jezioro": {
+    "src": "grafiki/krainy/przygoda.webp",
+    "atlas": [
+      1338,
+      1176
+    ],
+    "rect": [
+      1003,
+      925,
+      335,
+      251
+    ]
+  },
+  "_sea": "grafiki/krainy/morze.webp"
+}

@@ -41,8 +41,8 @@
 
 <main>
   <section class="setup" id="setup">
-    <h2>Rozpoznaj miasto po herbie</h2>
-    <p>Pokazuje się herb, wybierasz jedno z czterech miast. Błędne odpowiedzi to zwykle miasta z tej samej okolicy, więc sama znajomość regionu nie wystarczy.</p>
+    <h2>Rozpoznaj gminę po herbie</h2>
+    <p>Rozpoznawaj herby gmin miejskich, wiejskich i miejsko-wiejskich. Miasta na prawach powiatu występują tylko raz. Gminy o tej samej nazwie mają dopisek z typem i powiatem.</p>
     <div class="field"><span>Wielkość miast</span>
       <div id="scope" data-klucz="herb"></div>
     </div>
@@ -78,7 +78,8 @@
 </div>
 
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=21"></script>
+<script src="wspolne.js?v=22"></script>
+<script src="herby-gmin.js?v=1"></script>
 <script>
 const $=id=>document.getElementById(id);
 const norm=s=>s.toLowerCase()
@@ -88,115 +89,22 @@ const norm=s=>s.toLowerCase()
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
 const imgUrl=(f,w)=>f.startsWith("herby/")?f:"https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(f)+"?width="+(w||320);
 
-/* ---------- dane: miasta z OSM + herby z Wikidata ---------- */
-const CK="pl-herby-v1";
-let HERBY=[]; // {name,lat,lon,pop,qid,file}
-
-function fetchT(url,opt,ms){ // fetch z limitem czasu, żeby nic nie wisiało w nieskończoność
-  const ac=new AbortController(),t=setTimeout(()=>ac.abort(),ms);
-  return fetch(url,Object.assign({},opt,{signal:ac.signal})).finally(()=>clearTimeout(t));
-}
-async function overpassCities(){
-  const q='[out:json][timeout:90];area["ISO3166-1"="PL"][admin_level=2]->.pl;(node["place"~"^(city|town)$"](area.pl););out body;';
-  for(const h of ["https://overpass-api.de/api/interpreter","https://overpass.kumi.systems/api/interpreter"]){
-    try{
-      const res=await fetchT(h,{method:"POST",body:"data="+encodeURIComponent(q)},60000);
-      if(!res.ok)throw 0;
-      const j=await res.json();
-      const out=j.elements.filter(e=>e.tags&&e.tags.name).map(e=>({
-        name:e.tags.name.trim(),lat:e.lat,lon:e.lon,qid:/^Q\d+$/.test(e.tags.wikidata||"")?e.tags.wikidata:null,
-        pop:parseInt((e.tags.population||"0").replace(/\D/g,""),10)||0}));
-      if(out.length>400)return out;
-    }catch(e){}
-  }
-  return null;
-}
-async function sparql(q){
-  const r=await fetchT("https://query.wikidata.org/sparql",{method:"POST",
-    headers:{"Content-Type":"application/x-www-form-urlencoded"},
-    body:"format=json&query="+encodeURIComponent(q)},20000);
-  if(!r.ok)throw new Error("sparql "+r.status);
-  return (await r.json()).results.bindings;
-}
-const fileOf=u=>decodeURIComponent(u.split("/Special:FilePath/")[1]||"");
-
-const ZBIOR_GMINY=new URLSearchParams(location.search).get("zbior")==="gminy";
-if(ZBIOR_GMINY){document.title="Herby gmin · PolskoZnawca";document.querySelector("h1").textContent="Herby gmin";}
+/* Wszystkie typy gmin w jednej grze; miasta na prawach powiatu tylko raz. */
+let HERBY=[];
 async function loadData(){
-  // herby gmin wiejskich: 1015 herbów z Wikimedia Commons (z bazy encyklopedii)
-  if(ZBIOR_GMINY){
-    try{
-      const b=await fetchT("baza.json",{},20000).then(r=>r.json());
-      HERBY=b.gminy.filter(x=>x.typ==="gmina wiejska"&&x.herb&&x.lat!=null).map(x=>({name:x.n,lat:x.lat,lon:x.lon,pop:x.ludnosc||0,file:x.herb,k:x.k}));
-      return ready("herby gmin wiejskich");
-    }catch(e){}
-  }
-  // 1) gotowa, sprawdzona lista z miniaturami w repozytorium (budowana automatycznie raz w miesiącu)
   try{
-    const r=await fetchT("herby.json",{cache:"no-cache"},15000);
-    if(r.ok){
-      const j=await r.json();
-      if(j.miasta&&j.miasta.length>100){
-        HERBY=j.miasta.map(c=>({name:c.n,lat:c.lat,lon:c.lon,pop:c.pop,file:c.img}));
-        return ready("lista z "+new Date(j.zbudowano).toLocaleDateString("pl-PL"));
-      }
-    }
-  }catch(e){}
-  // 2) zapas: pobieranie na żywo z OSM i Wikidata
-  try{
-    const o=JSON.parse(localStorage.getItem(CK)||"null");
-    const fresh=o&&(o.wd!==false||Date.now()-o.ts<864e5); // bez Wikidata: ponów po dobie
-    if(o&&o.list&&o.list.length>100&&fresh){HERBY=o.list;return ready("zapisane "+new Date(o.ts).toLocaleDateString("pl-PL"));}
-  }catch(e){}
-  $("datastate").textContent="Pobieram listę miast z OpenStreetMap…";
-  let list=[],wdOk=false;
-  const cities=await overpassCities();
-  try{
-    if(cities){
-      $("datastate").textContent="Pobieram herby z Wikidata…";
-      const byQ=new Map(cities.filter(c=>c.qid).map(c=>[c.qid,c]));
-      const ids=[...byQ.keys()];
-      try{
-        for(let i=0;i<ids.length;i+=250){
-          const vals=ids.slice(i,i+250).map(q=>"wd:"+q).join(" ");
-          const rows=await sparql("SELECT ?item ?coa WHERE { VALUES ?item {"+vals+"} ?item wdt:P94 ?coa . }");
-          rows.forEach(r=>{const q=r.item.value.split("/").pop(),c=byQ.get(q);if(c&&!c.file)c.file=fileOf(r.coa.value);});
-          $("datastate").textContent="Pobieram herby z Wikidata… "+Math.min(100,Math.round((i+250)/ids.length*100))+"%";
-        }
-        wdOk=true;
-      }catch(e){ /* Wikidata nie odpowiada: zostaje nazwa pliku według konwencji Commons */ }
-      // brakujące herby: standardowa nazwa pliku na Commons, np. „POL Kraków COA.svg”;
-      // jeśli pliku nie ma, gra sama pominie to miasto
-      cities.forEach(c=>{if(!c.file)c.file="POL "+c.name+" COA.svg";});
-      list=cities;
-    }else{
-      // zapas: same miasta z Wikidata
-      $("datastate").textContent="OpenStreetMap nie odpowiada, pobieram z Wikidata…";
-      const rows=await sparql(`SELECT ?item ?itemLabel ?coa ?pop ?coord WHERE {
-        VALUES ?cls {wd:Q515 wd:Q3957 wd:Q1549591}
-        ?item wdt:P31 ?cls; wdt:P17 wd:Q36; wdt:P94 ?coa; wdt:P625 ?coord.
-        OPTIONAL{?item wdt:P1082 ?pop}
-        SERVICE wikibase:label { bd:serviceParam wikibase:language "pl". } }`);
-      const seen=new Set();
-      rows.forEach(r=>{
-        const q=r.item.value.split("/").pop();if(seen.has(q))return;seen.add(q);
-        const m=/Point\(([-\d.]+) ([-\d.]+)\)/.exec(r.coord.value);if(!m)return;
-        list.push({name:r.itemLabel.value,lon:+m[1],lat:+m[2],pop:Math.round(+(r.pop&&r.pop.value)||0),qid:q,file:fileOf(r.coa.value)});
-      });
-      wdOk=true;
-    }
-  }catch(e){list=[];}
-  // jedna pozycja na nazwę (zostaje największe miasto)
-  const best=new Map();
-  list.forEach(c=>{const k=norm(c.name);const p=best.get(k);if(!p||c.pop>p.pop)best.set(k,c);});
-  HERBY=[...best.values()].filter(c=>c.file&&!/\.(tif|tiff)$/i.test(c.file));
-  if(HERBY.length<50){$("datastate").textContent="Nie udało się pobrać herbów. Sprawdź połączenie i odśwież stronę.";return;}
-  try{localStorage.setItem(CK,JSON.stringify({ts:Date.now(),wd:wdOk,list:HERBY}));}catch(e){}
-  ready("pobrane dziś");
+    const [b,h]=await Promise.all([
+      ZP.fetchT("baza.json",{},20000).then(r=>{if(!r.ok)throw Error("baza");return r.json();}),
+      ZP.fetchT("herby.json",{},15000).then(r=>r.ok?r.json():{}).catch(()=>({}))
+    ]);
+    HERBY=HerbyGmin.lista(b,h.miasta||[]);
+    if(!HERBY.length)throw Error("Brak herbów");
+    await ready("gminy miejskie, wiejskie i miejsko-wiejskie");
+  }catch(e){$("datastate").textContent="Nie udało się wczytać herbów gmin. Odśwież stronę, aby spróbować ponownie.";}
 }
 async function ready(src){
-  HERBY=ZP.popHerby(HERBY,await ZP.poprawki());
-  $("datastate").textContent=HERBY.length+" miast z herbem ("+src+")";
+  HERBY=ZP.popHerby(HERBY,await ZP.poprawki(),c=>c.n);
+  $("datastate").textContent=HERBY.length+" gmin z herbem ("+src+")";
   $("startBtn").disabled=false;
   refreshBest();
 }
@@ -218,9 +126,9 @@ function makeQuestion(c,pool){
 }
 function startGame(){
   const pool=HERBY.filter(c=>ZP.wZakresie(c,ZP.zakresStan($("scope")))&&ZP.wObszarze(c)&&!BAD.has(c.file));
-  if(pool.length<8){$("datastate").textContent="Za mało miast na tym poziomie.";return;}
+  if(pool.length<8){$("datastate").textContent="Za mało gmin w wybranym zakresie.";return;}
   const n=Math.min(+$("rounds").value,pool.length);
-  const picks=ZP.losujNauka(pool,"herb",c=>c.name,n,$("ucz").value==="1");
+  const picks=ZP.losujNauka(pool,"gmina",c=>c.k,n,$("ucz").value==="1");
   game={pool,wpis:$("odp").value==="t",qs:picks.map(c=>makeQuestion(c,pool)),i:-1,hits:0,streak:0,rtime:+$("rtime").value,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
   ["stats","shield"].forEach(id=>$(id).classList.remove("hidden"));
@@ -229,7 +137,7 @@ function startGame(){
   if(game.wpis&&!POLE)POLE=ZP.poleWpisu($("wpis"),()=>HERBY.map(c=>c.name),v=>{
     const q=game.qs[game.i];
     if(ZP.pasuje(v,q.c.name))answer(q.c,null);else answer(v===null?null:{name:v},null);
-  },{placeholder:"Nazwa miasta…",poprawne:()=>[game.qs[game.i].c.name],pokazEtykieta:"Pokaż podpowiedzi<br><small>−2 pkt</small>",pokaz:()=>{
+  },{placeholder:"Nazwa gminy…",poprawne:()=>[game.qs[game.i].c.name],pokazEtykieta:"Pokaż podpowiedzi<br><small>−2 pkt</small>",pokaz:()=>{
     game.pokazano=true;$("answers").classList.remove("hidden");budujOpcje(game.qs[game.i]);
   }});
   $("hits").textContent=0;$("streak").textContent=0;refreshBest();
@@ -290,11 +198,11 @@ function answer(o,btn){
   game.res.push({c:q.c,ok,picked:o?o.name:null,got});
   const fb=$("feedback");
   const info=q.c.pop?q.c.pop.toLocaleString("pl-PL")+" mieszkańców":"";
-  const head=ok?"Dobrze, to "+q.c.name+" (+"+got+")":(o||game.wpis?"To herb miasta "+q.c.name:"Czas minął, to "+q.c.name);
+  const head=ok?"Dobrze, to "+q.c.name+" (+"+got+")":(o||game.wpis?"To herb gminy "+q.c.name:"Czas minął, to "+q.c.name);
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=head;
   fb.querySelector("span").textContent=info;
-  ZP.dopiszEncykl(fb,{miasto:q.c.name,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.name});
+  ZP.dopiszEncykl(fb,{g:q.c.k,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.n});
   $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";
   $("nextBtn").onclick=next;
   fb.classList.remove("hidden");
@@ -333,7 +241,7 @@ document.addEventListener("keydown",e=>{
   if(e.key==="Enter"&&game.answered&&$("nextBtn"))$("nextBtn").click();
 });
 
-ZP.kreatorGry({klucz:ZBIOR_GMINY?"herb-gminy":"herb",kroki:["pojedynek","obszar","wielkosc",{pole:"rtime",tytul:"Ile czasu na herb?",domyslny:"15",opcje:[{v:"8",t:"8 s",opis:"dla szybkich",ilu:'<div class="kr-ikona">⚡</div>'},{v:"15",t:"15 s",opis:"w sam raz",ilu:'<div class="kr-ikona">⏱️</div>'},{v:"0",t:"Bez limitu",opis:"na spokojnie",ilu:'<div class="kr-ikona">☕</div>'}]},"rundy"]});
+ZP.kreatorGry({klucz:"herb",kroki:["pojedynek","obszar","wielkosc",{pole:"rtime",tytul:"Ile czasu na herb?",domyslny:"15",opcje:[{v:"8",t:"8 s",opis:"dla szybkich",ilu:'<div class="kr-ikona">⚡</div>'},{v:"15",t:"15 s",opis:"w sam raz",ilu:'<div class="kr-ikona">⏱️</div>'},{v:"0",t:"Bez limitu",opis:"na spokojnie",ilu:'<div class="kr-ikona">☕</div>'}]},"rundy"]});
 loadData();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>

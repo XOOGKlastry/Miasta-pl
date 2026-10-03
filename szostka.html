@@ -74,7 +74,7 @@
 </div>
 
 <script src="topojson-client.min.js?v=17"></script>
-<script src="wspolne.js?v=21"></script>
+<script src="wspolne.js?v=22"></script>
 <script>
 const {$,fmt}=ZP;
 const START=new Date(2026,9,1),DZIEN=ZP.dayKey();
@@ -167,6 +167,7 @@ function zakoncz(zPamieci){
   $("ksztalt").classList.remove("bez-foto");
   $("wpis").classList.add("hidden");
   const wygrana=proby[proby.length-1]===cel,st=statystyki();
+  if(tryb==="dzien")ZP.nagrodaDnia("miasto",DZIEN,{ukonczone:wygrana||proby.length>=6,poddane:false});
   if(tryb==="dzien"&&!zPamieci&&st.ost!==DZIEN){
     const w=new Date();w.setDate(w.getDate()-1);
     st.gry++;if(wygrana){st.wygrane++;st.rozklad[proby.length-1]++;st.seria=st.ost===ZP.dayKey(w)&&st.seria>0?st.seria+1:1;}else st.seria=0;

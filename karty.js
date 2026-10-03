@@ -64,7 +64,7 @@ window.Karty=(function(){
   function zetony(){return +localStorage.getItem("karty-zetony")||0;}
   function zdobyte(){
     let n={};try{n=JSON.parse(localStorage.getItem("nauka-v1")||"{}");}catch(e){}
-    const pkt={},od=new Set(paczki());
+    const pkt={},od=new Set(paczki().concat(Object.values(dzienne()).map(r=>r.k).filter(Boolean)));
     Object.entries(n).forEach(([klucz,r])=>{
       if(!(r.ok>0))return;
       const i=klucz.indexOf(":"),rodz=klucz.slice(0,i),id=klucz.slice(i+1);
@@ -107,6 +107,30 @@ window.Karty=(function(){
     g._joker=Math.random()<.3;
     if(g._joker&&window.ZP&&ZP.dodajJoker)ZP.dodajJoker(1,"z paczki");
     return g;
+  }
+  // Jedno rozliczenie na typ zadania i dzień, niezależnie od przeładowania strony.
+  // Rekord jest jednocześnie dowodem przyznania i własnością karty: jeden zapis.
+  function dzienne(){try{return JSON.parse(localStorage.getItem("karty-dzienne-v1")||"{}");}catch(e){return {};}}
+  async function nagrodaDnia(typ,dzien,{ukonczone=false,poddane=false}={}){
+    if(!ukonczone||poddane||!["wyzwanie","miasto","gmina"].includes(typ)||!/^\d{4}-\d{2}-\d{2}$/.test(dzien))return null;
+    await zaladuj();migracja();
+    const przyznaj=()=>{
+      const klucz=typ+":"+dzien,zapis=dzienne();if(zapis[klucz])return null;
+      const mam=zdobyte().mam;let r=Math.random(),rz="zwykla";
+      for(const [k,p]of SZANSE){if(r<p){rz=k;break;}r-=p;}
+      let pula=DANE.g.filter(g=>g.rz===rz&&!mam.has(g.k));
+      if(!pula.length)pula=DANE.g.filter(g=>!mam.has(g.k));
+      if(!pula.length)pula=DANE.g; // pełny album: paczka nadal może zawierać kartę
+      if(!pula.length)return null;
+      const g=pula[Math.floor(Math.random()*pula.length)];
+      zapis[klucz]={k:g.k,przyznano:Date.now()};
+      localStorage.setItem("karty-dzienne-v1",JSON.stringify(zapis));
+      const og=ogloszone()||[];localStorage.setItem("karty-ogloszone",JSON.stringify([...new Set(og.concat(g.k))]));
+      return {...g,_paczka:true,_joker:false};
+    };
+    // Dwie otwarte karty przeglądarki nie mogą naliczyć tej samej nagrody.
+    if(typeof navigator!=="undefined"&&navigator.locks)return navigator.locks.request("polskoznawca-dzienna-nagroda",przyznaj);
+    return przyznaj();
   }
   function otworzPaczki(){
     const nowe=[];let z=zetony();
@@ -401,5 +425,5 @@ window.Karty=(function(){
       if(n.length)setTimeout(()=>prezentacja(n,info),1200);else setTimeout(info,1200);
     }catch(e){}
   }
-  return {linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
+  return {nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
 })();
