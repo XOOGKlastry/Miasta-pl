@@ -19,10 +19,34 @@
 .mapa::-webkit-scrollbar{display:none}
 .plotno{position:relative;width:100%}
 .pas{position:absolute;left:0;right:0}
-.deko-pas{position:absolute;left:0;right:0;pointer-events:none;overflow:hidden}
-.deko-pas .deko{display:block}
-.deko .kr-smigla{animation:krObrot 6s linear infinite}
+/* warstwy krajobrazu: teren < dekoracje < animacje < ścieżka < banery < pola < pionek < chmury < interfejs */
+.kr{position:absolute;left:0;right:0;pointer-events:none;overflow:hidden;z-index:0}
+.kr svg{position:absolute;left:0;top:0;display:block;pointer-events:none}
+.sciezka{z-index:1}
+.kr .a-bujanie{transform-box:fill-box;transform-origin:50% 90%;animation:krBuja 4.6s ease-in-out infinite}
+.kr .a-mewa{transform-box:fill-box;transform-origin:center;animation:krMewa 7s ease-in-out infinite}
+.kr .a-smigla{animation:krObrot 9s linear infinite}
+.kr .a-pszczola{animation:krPszczola 6s ease-in-out infinite}
+.kr .a-lot{transform-box:fill-box;transform-origin:center;animation:krLot 9s ease-in-out infinite}
+.kr .a-fale{animation:krFale 7s ease-in-out infinite}
+@keyframes krBuja{0%,100%{transform:rotate(-2.5deg) translateY(0)}50%{transform:rotate(2.5deg) translateY(2px)}}
+@keyframes krMewa{0%,100%{transform:translate(0,0) scaleY(1)}25%{transform:translate(14px,-4px) scaleY(.8)}50%{transform:translate(26px,0) scaleY(1)}75%{transform:translate(12px,3px) scaleY(.85)}}
 @keyframes krObrot{to{transform:rotate(360deg)}}
+@keyframes krPszczola{0%,100%{transform:translate(0,0)}25%{transform:translate(18px,-10px)}50%{transform:translate(30px,4px)}75%{transform:translate(10px,10px)}}
+@keyframes krLot{0%,100%{transform:translate(0,0) rotate(-2deg)}50%{transform:translate(22px,-8px) rotate(2deg)}}
+@keyframes krFale{0%,100%{transform:translateX(0)}50%{transform:translateX(6px)}}
+/* animacje tylko w widocznych krainach */
+.kr:not(.widac) .k-anim *,.chmury:not(.widac) *{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){.kr .k-anim *,.chmury *{animation:none!important}}
+/* chmury nad zablokowanymi krainami */
+.chmury{position:absolute;left:0;right:0;z-index:5;pointer-events:none}
+.chmury svg{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+.chmury .ch{transform-box:fill-box;transform-origin:center;transition:transform 1.9s cubic-bezier(.5,0,.3,1),opacity 1.9s ease-in}
+.chmury .dryf{animation:chDryf 14s ease-in-out infinite}
+@keyframes chDryf{0%,100%{transform:translateX(0)}50%{transform:translateX(8px)}}
+.chmury.rozwiej .ch.l{transform:translateX(-120%);opacity:0}
+.chmury.rozwiej .ch.p{transform:translateX(120%);opacity:0}
+.chmury.rozwiej .niebo{opacity:0;transition:opacity 1.6s}
 .pb-powitanie{position:absolute;z-index:6;transform:translate(-14%,-100%);pointer-events:none;transition:opacity .5s}
 .pb-powitanie .pb-dymek{white-space:nowrap;margin-bottom:0}
 .pb-powitanie .pb-dymek::before{left:18px;bottom:-12px;transform:rotate(-45deg) skew(10deg,10deg)}
@@ -34,6 +58,7 @@
 .falsz{position:fixed;z-index:940;width:58px;height:58px;border-radius:50%;border:4px solid #8A7F62;background:#C9C0A0;display:grid;place-items:center;transform:translate(-50%,-50%);pointer-events:none}
 .pas::after{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(58,42,20,.08) 1.5px,transparent 1.5px);background-size:16px 16px}
 .sciezka{position:absolute;left:0;top:0;pointer-events:none}
+.baner{z-index:2}
 .baner{position:absolute;left:12px;right:12px;display:flex;align-items:center;gap:10px;padding:8px 12px;z-index:2}
 .baner svg.woj{width:54px;height:46px;flex:none}
 .baner svg.woj path{fill:var(--zolt);stroke:var(--braz);stroke-width:1.6;vector-effect:non-scaling-stroke;stroke-linejoin:round}
@@ -109,8 +134,8 @@
 <script src="instaluj.js"></script>
 <script src="konto.js"></script>
 <script src="saga.js"></script>
-<script src="polandball.js?v=1"></script>
-<script src="krainy.js?v=1"></script>
+<script src="polandball.js?v=2"></script>
+<script src="krainy.js?v=2"></script>
 <script>
 const $=id=>document.getElementById(id);
 const TYPY={z:"Z lotu ptaka",g:"Gdzie to jest?",m:"Co to za miasto?",k:"Kształt powiatu",h:"Herb",t:"Tablice",r:"Rzeka",c:"Kluby",w:"Więcej czy mniej",s:"Graniczą?",v:"Województwo",p:"W którym powiecie?",q:"Szybki strzał"};
@@ -118,7 +143,7 @@ const IKK={mapa:'<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><
   symbole:'<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>',granice:'<path d="M5 4l9 2 5 6-3 8-9-1-3-7z"/>',liczby:'<path d="M12 3v18M5 21h14M4 8h16M7 8l-3 7h6zM17 8l-3 7h6z"/>',woda:'<path d="M3 8c3-3 6 3 9 0s6 3 9 0M3 15c3-3 6 3 9 0s6 3 9 0"/>'};
 const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}catch(e){return d;}};
 const STEP=96,BANER=110,GORA=140,DOL=150;
-let WOJ={},stan=Saga.stan(),biez=Saga.biezacy(stan),PASY=[],MGLA=null;
+let WOJ={},stan=Saga.stan(),biez=Saga.biezacy(stan),PASY=[],MGLA=null,HPL=0;
 
 function wspolrzedne(W){
   // od dołu: poziom 0 na dole, każda kraina zaczyna się banerem
@@ -133,7 +158,7 @@ function wspolrzedne(W){
 }
 function gwiazdkiHtml(g){return [1,2,3].map(i=>'<span class="'+(i<=g?"z":"")+'">★</span>').join("");}
 function rysuj(){
-  const W=$("mapa").clientWidth,{pts,H}=wspolrzedne(W),pl=$("plotno");
+  const W=$("mapa").clientWidth,{pts,H}=wspolrzedne(W),pl=$("plotno");HPL=H;
   pl.style.height=H+"px";
   let h="";
   // pasy krain
@@ -141,15 +166,15 @@ function rysuj(){
   Saga.SWIATY.forEach((sw,s)=>{
     const dol=H-DOL-s*(Saga.NA_SWIAT*STEP+BANER)+ (s===0?DOL:0),gora=H-DOL-(s+1)*(Saga.NA_SWIAT*STEP+BANER);
     PASY.push({s,top:gora,bottom:dol-(s===0?DOL:0)-BANER*0.2});
-    h+='<div class="pas" style="top:'+gora+'px;height:'+(dol-gora)+'px;background:'+sw.kolor+'"></div>';
+    h+='<div class="pas" style="top:'+gora+'px;height:'+(dol-gora)+'px;background:#84BA6C"></div>';
   });
-  // motywy krain (morze, góry, zabytki…) wokół ścieżki
+  // krajobraz krain: teren, dekoracje i animacje w osobnych warstwach pod ścieżką (bez przechwytywania kliknięć)
   if(window.Krainy)Saga.SWIATY.forEach((sw,s)=>{
     const p=PASY[s],top=p.top,wys=(s===0?H:PASY[s-1].top)-top;
-    const pk=pts.slice(s*Saga.NA_SWIAT,(s+1)*Saga.NA_SWIAT).map(q=>({x:q.x,y:q.y-top}));
-    const yb=H-DOL-s*(Saga.NA_SWIAT*STEP+BANER)-BANER+18-top+30;   // baner krainy: tam bez ozdób
-    [.1,.3,.5,.7,.9].forEach(f=>pk.push({x:W*f,y:yb}));
-    h+='<div class="deko-pas" style="top:'+top+'px;height:'+wys+'px">'+Krainy.deko(sw.woj,W,wys,pk,s*97+13)+'</div>';
+    const pk=pts.map(q=>({x:q.x,y:q.y-top})).filter(q=>q.y>-STEP*2&&q.y<wys+STEP*2);
+    const yb=H-DOL-s*(Saga.NA_SWIAT*STEP+BANER)-BANER+18-top;
+    const k=Krainy.kraina(sw.woj,W,wys,pk,{top:yb-14,bottom:yb+78},s*97+13,s+1);
+    h+='<div class="kr" data-s="'+s+'" data-m="'+k.motywy.join(" ")+'" style="top:'+top+'px;height:'+wys+'px">'+k.teren+k.deko+k.anim+'</div>';
   });
   // ścieżka
   let d="M"+pts[0].x.toFixed(0)+" "+(pts[0].y+60).toFixed(0);
@@ -232,6 +257,41 @@ $("instX").onclick=()=>{localStorage.setItem("instaluj-ukryj","1");pokazInstaluj
   $("sumaGw").textContent=Saga.sumaGwiazd(stan)+"/"+Saga.ILE*3;
   $("kraina").textContent=Saga.poziom(biez).kraina.nazwa+" · poziom "+(biez+1);
 })();
+/* chmury: miękkie obłoki nad zablokowanymi krainami; aktywna kraina zostaje odsłonięta */
+function chmury(){
+  document.querySelectorAll(".chmury").forEach(e=>e.remove());
+  const pl=$("plotno"),W=pl.clientWidth;
+  zamkniete().forEach(p=>{
+    const s=p.s,top=PASY[s].top,wys=(s===0?HPL:PASY[s-1].top)-top;
+    let z=s*131+7;const r=()=>{z=(z*1664525+1013904223)>>>0;return z/4294967296;};
+    const H=wys+44;
+    let h='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none"><defs><linearGradient id="nb'+s+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3F7FA" stop-opacity=".78"/><stop offset=".9" stop-color="#EAF2F6" stop-opacity=".7"/><stop offset="1" stop-color="#EAF2F6" stop-opacity="0"/></linearGradient></defs>'
+      +'<rect class="niebo" x="0" y="0" width="'+W+'" height="'+(H-10)+'" fill="url(#nb'+s+')"/>';
+    for(let y=10,rz=0;y<H-10;y+=62,rz++){
+      const n=3+(rz%2);
+      for(let i=0;i<n;i++){
+        const cx=(i+.5+(rz%2?-.25:0))/n*W+(r()-.5)*30,cw=W/n*.95+r()*40,cy=y+r()*18;
+        let puch="",jasne="";
+        for(let k=0;k<6;k++){const px=cx+(k-2.5)/5*cw*.8,py=cy+(k%2?-6:4)-Math.sin(k/5*Math.PI)*16,pr=16+r()*14+Math.sin(k/5*Math.PI)*10;
+          puch+='<circle cx="'+px.toFixed(1)+'" cy="'+py.toFixed(1)+'" r="'+pr.toFixed(1)+'"/>';jasne+='<circle cx="'+(px-3).toFixed(1)+'" cy="'+(py-5).toFixed(1)+'" r="'+(pr*.82).toFixed(1)+'"/>';}
+        h+='<g class="ch '+(cx<W/2?"l":"p")+'"><g class="'+(r()<.5?"dryf":"")+'"><g fill="#D6E3EC">'+puch+'</g><g fill="#FFFFFF">'+jasne+'</g></g></g>';
+      }
+    }
+    const d=document.createElement("div");d.className="chmury";d.dataset.s=s;
+    d.style.top=top+"px";d.style.height=H+"px";d.innerHTML=h+'</svg>';
+    pl.appendChild(d);
+  });
+  obserwujWidok();
+}
+function rozwiejChmury(s){const d=document.querySelector('.chmury[data-s="'+s+'"]');if(!d)return;d.classList.add("rozwiej");setTimeout(()=>d.remove(),2300);}
+// animacje działają tylko w krainach widocznych na ekranie
+let WIDOK=null;
+function obserwujWidok(){
+  if(!window.IntersectionObserver){document.querySelectorAll(".kr,.chmury").forEach(e=>e.classList.add("widac"));return;}
+  if(WIDOK)WIDOK.disconnect();
+  WIDOK=new IntersectionObserver(w=>w.forEach(e=>e.target.classList.toggle("widac",e.isIntersecting)),{root:$("mapa"),rootMargin:"120px 0px"});
+  document.querySelectorAll(".kr,.chmury").forEach(e=>WIDOK.observe(e));
+}
 function zamkniete(){
   // mgła wisi nad krainami, których pierwszy poziom jest jeszcze zamknięty (oprócz świeżo otwartej, ta rozwieje się na oczach gracza)
   return PASY.filter(p=>!Saga.odblokowany(p.s*Saga.NA_SWIAT,stan)||p.s===NOWA_KRAINA);
@@ -242,7 +302,7 @@ function start(){
   if(nowy>0&&nowy%Saga.NA_SWIAT===0)NOWA_KRAINA=nowy/Saga.NA_SWIAT;
   const pts=rysuj();
   const mg=$("mgla"),m0=$("mapa");mg.style.top=m0.offsetTop+"px";mg.style.height=m0.clientHeight+"px";
-  if(window.Efekty){if(MGLA)MGLA.stop();MGLA=Efekty.chmury(mg,m0,zamkniete);}
+  chmury();
   if(nowy>0&&window.Efekty)setTimeout(()=>{
     // świeżo odblokowane pole: kłódka pęka na odłamki
     const w=document.querySelector('.wezel[data-n="'+nowy+'"] .kolo');if(!w)return;
@@ -251,7 +311,7 @@ function start(){
     f.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A7F62" stroke-width="2.6"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
     document.body.appendChild(f);
     setTimeout(()=>{Efekty.rozbij(f,["#C9C0A0","#B3AA88","#8A7F62","#E8DFC2"],()=>f.remove());Efekty.fala(r.left+r.width/2,r.top+r.height/2,"#F5B82E");
-      if(NOWA_KRAINA>=0&&MGLA){const p=PASY.find(x=>x.s===NOWA_KRAINA);if(p)MGLA.rozwiej(p.top,p.bottom);NOWA_KRAINA=-1;}},700);
+      if(NOWA_KRAINA>=0){rozwiejChmury(NOWA_KRAINA);NOWA_KRAINA=-1;}},700);
   },1500);
   const h=location.hash.match(/poziom=(\d+)/),cel=h?Math.min(+h[1],biez):biez;
   const m=$("mapa"),naSrodek=p=>{m.scrollTop=p.y-m.clientHeight*0.55;};
@@ -268,7 +328,10 @@ fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
     const d=polys.map(p=>"M"+p[0].filter((_,i)=>i%2===0).map(([x,y])=>((x-b[0])*k*s+1).toFixed(1)+" "+((b[3]-y)*s+1).toFixed(1)).join("L")+"Z").join("");
     WOJ[f.properties.nazwa]='<svg class="woj" viewBox="0 0 54 46"><path d="'+d+'"/></svg>';
   });
-}).catch(()=>{}).finally(start);
+}).catch(()=>{}).finally(()=>{
+  // opcjonalne malowane grafiki krain (krainy-grafiki.json); bez nich rysujemy wektory
+  fetch("krainy-grafiki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({})).then(g=>{if(window.Krainy)Krainy.ustawGrafiki(g);start();});
+});
 (function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();
 window.addEventListener("resize",()=>{clearTimeout(window._r);window._r=setTimeout(start,200);});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});

@@ -5,24 +5,28 @@
    Kulka ma kanoniczny wygląd: biała góra, czerwony dół, białe oczy bez źrenic. */
 window.PB=(function(){
   let nr=0;
+  // oczy: białka z czarnymi źrenicami i błyskiem; miny zmieniają kształt
   function oczy(mina){
-    const o='stroke="#2B1D0E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"';
-    if(mina==="radosc")return '<path d="M25 37q6-8 12 0" fill="none" '+o+'/><path d="M45 37q6-8 12 0" fill="none" '+o+'/>';
-    if(mina==="smutek")return '<g class="pb-oczy"><path d="M25 33q6 6 12 4v6q-6 2-12-3z" fill="#fff" '+o+'/><path d="M57 33q-6 6-12 4v6q6 2 12-3z" fill="#fff" '+o+'/></g>';
-    if(mina==="zdziwienie")return '<g class="pb-oczy"><circle cx="31" cy="36" r="7.5" fill="#fff" '+o+'/><circle cx="51" cy="36" r="7.5" fill="#fff" '+o+'/></g>';
-    if(mina==="mrugniecie")return '<ellipse cx="31" cy="36" rx="5.6" ry="7" fill="#fff" '+o+'/><path d="M45 37q6-6 12 0" fill="none" '+o+'/>';
-    return '<g class="pb-oczy"><ellipse cx="31" cy="36" rx="5.6" ry="7" fill="#fff" '+o+'/><ellipse cx="51" cy="36" rx="5.6" ry="7" fill="#fff" '+o+'/></g>';
+    const o='stroke="#2B1D0E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"';
+    const oko=(x,y,rx,ry,dx)=>'<ellipse cx="'+x+'" cy="'+y+'" rx="'+rx+'" ry="'+ry+'" fill="#fff" '+o+'/><ellipse cx="'+(x+(dx||1.2))+'" cy="'+(y+1.6)+'" rx="'+(rx*.48)+'" ry="'+(ry*.5)+'" fill="#1D140A"/><circle cx="'+(x+(dx||1.2)-1.2)+'" cy="'+(y-.4)+'" r="'+(rx*.2)+'" fill="#fff"/>';
+    if(mina==="radosc")return '<path d="M27 40q5-7 10 0M45 40q5-7 10 0" fill="none" '+o+'/>';
+    if(mina==="smutek")return '<g class="pb-oczy">'+oko(32,41,5.4,6.2,0)+oko(50,41,5.4,6.2,0)+'</g><path d="M26 32l10 3M56 32l-10 3" fill="none" '+o+'/>';
+    if(mina==="zdziwienie")return '<g class="pb-oczy">'+oko(32,39,7,8)+oko(50,39,7,8)+'</g>';
+    if(mina==="mrugniecie")return oko(32,40,5.6,7.2)+'<path d="M45 41q5-5 10 0" fill="none" '+o+'/>';
+    return '<g class="pb-oczy">'+oko(32,40,5.6,7.2)+oko(50,40,5.6,7.2)+'</g>';
   }
+  // ciało w kształcie jajka: biała góra, czerwony dół, miękkie cieniowanie
   function svg(mina){
-    const i=++nr;
-    return '<svg class="pb-kula" viewBox="0 0 82 86" aria-hidden="true">'
-      +'<defs><clipPath id="pbk'+i+'"><circle cx="41" cy="41" r="34"/></clipPath>'
-      +'<radialGradient id="pbb'+i+'" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#E6E3DA"/></radialGradient>'
-      +'<radialGradient id="pbc'+i+'" cx=".35" cy=".1" r=".9"><stop offset="0" stop-color="#F2414F"/><stop offset="1" stop-color="#B5121F"/></radialGradient></defs>'
-      +'<ellipse class="pb-cien" cx="41" cy="81" rx="24" ry="3.6" fill="#2B1D0E" opacity=".22"/>'
-      +'<g class="pb-cialo"><g clip-path="url(#pbk'+i+')"><rect x="0" y="0" width="82" height="43" fill="url(#pbb'+i+')"/><rect x="0" y="43" width="82" height="40" fill="url(#pbc'+i+')"/>'
-      +'<ellipse cx="29" cy="20" rx="12" ry="7" fill="#fff" opacity=".7"/></g>'
-      +'<circle cx="41" cy="41" r="34" fill="none" stroke="#2B1D0E" stroke-width="3.2"/>'+oczy(mina||"zwykla")+'</g></svg>';
+    const i=++nr,JAJO="M41 7C58 7 72 27 72 49C72 69 59 80 41 80C23 80 10 69 10 49C10 27 24 7 41 7Z";
+    return '<svg class="pb-kula" viewBox="0 0 82 88" aria-hidden="true">'
+      +'<defs><clipPath id="pbk'+i+'"><path d="'+JAJO+'"/></clipPath>'
+      +'<radialGradient id="pbb'+i+'" cx=".38" cy=".25" r=".8"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#E4E1D8"/></radialGradient>'
+      +'<radialGradient id="pbc'+i+'" cx=".38" cy=".1" r=".95"><stop offset="0" stop-color="#F0434F"/><stop offset="1" stop-color="#AE1320"/></radialGradient></defs>'
+      +'<ellipse class="pb-cien" cx="41" cy="83" rx="23" ry="3.6" fill="#2B1D0E" opacity=".22"/>'
+      +'<g class="pb-cialo"><g clip-path="url(#pbk'+i+')"><rect x="0" y="0" width="82" height="52" fill="url(#pbb'+i+')"/>'
+      +'<path d="M0 52C20 49 62 49 82 52V90H0Z" fill="url(#pbc'+i+')"/>'
+      +'<ellipse cx="29" cy="22" rx="10" ry="7" fill="#fff" opacity=".75"/><ellipse cx="58" cy="68" rx="12" ry="8" fill="#7A0C16" opacity=".25"/></g>'
+      +'<path d="'+JAJO+'" fill="none" stroke="#2B1D0E" stroke-width="3"/>'+oczy(mina||"zwykla")+'</g></svg>';
   }
   function styl(){
     if(document.getElementById("pb-styl"))return;
@@ -30,11 +34,11 @@ window.PB=(function(){
     s.textContent=`
 .pb{display:flex;align-items:flex-end;gap:10px}
 .pb.prawa{flex-direction:row-reverse}
-.pb-kula{width:64px;height:68px;flex:none;overflow:visible}
-.pb-kula .pb-cialo{transform-origin:41px 78px;animation:pbOdbicie 2.2s cubic-bezier(.45,0,.55,1) infinite}
-.pb-kula .pb-cien{transform-origin:41px 81px;animation:pbCien 2.2s cubic-bezier(.45,0,.55,1) infinite}
-.pb-kula .pb-oczy{transform-origin:41px 36px;animation:pbMrug 4.6s infinite}
-@keyframes pbOdbicie{0%,100%{transform:translateY(0) scale(1.06,.94)}12%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-9px) scale(.97,1.03)}88%{transform:translateY(0) scale(1,1)}}
+.pb-kula{width:62px;height:66px;flex:none;overflow:visible}
+.pb-kula .pb-cialo{transform-origin:41px 80px;animation:pbOdbicie 2.8s cubic-bezier(.45,0,.55,1) infinite}
+.pb-kula .pb-cien{transform-origin:41px 83px;animation:pbCien 2.8s cubic-bezier(.45,0,.55,1) infinite}
+.pb-kula .pb-oczy{transform-origin:41px 40px;animation:pbMrug 4.6s infinite}
+@keyframes pbOdbicie{0%,100%{transform:translateY(0) scale(1.04,.96)}14%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-6px) scale(.98,1.02)}86%{transform:translateY(0) scale(1,1)}}
 @keyframes pbCien{0%,100%{transform:scale(1)}50%{transform:scale(.75);opacity:.12}}
 @keyframes pbMrug{0%,46%,50%,100%{transform:scaleY(1)}48%{transform:scaleY(.1)}}
 .pb-dymek{position:relative;background:#FFF6E0;color:#3A2A14;border:3px solid #3A2A14;border-radius:16px;box-shadow:0 4px 0 #3A2A14;padding:9px 13px;font:800 14px/1.3 Rubik,system-ui,sans-serif;margin-bottom:22px;animation:pbDymek .45s cubic-bezier(.3,1.6,.5,1) both}
@@ -57,14 +61,14 @@ window.PB=(function(){
   // reakcja po odpowiedzi: krótko, nie zasłania gry
   const DOBRZE=["Brawo!","Świetnie!","Tak jest!","Znasz Polskę!","Super!","Dokładnie!"],ZLE=["Ojej…","Następnym razem!","Prawie!","Nie szkodzi!"];
   let el=null,t=0,ostatnio=0;
-  function reakcja(ok,tekst){
+  function reakcja(ok,tekst,ms){
     if(Date.now()-ostatnio<700)return;ostatnio=Date.now();
     styl();
     if(!el){el=document.createElement("div");el.className="pb-reakcja";document.body.appendChild(el);}
     const l=ok?DOBRZE:ZLE;
     dymek(el,tekst||l[Math.floor(Math.random()*l.length)],{mina:ok?"radosc":"smutek"});
     requestAnimationFrame(()=>el.classList.add("widac"));
-    clearTimeout(t);t=setTimeout(()=>el.classList.remove("widac"),1500);
+    clearTimeout(t);t=setTimeout(()=>el.classList.remove("widac"),ms||1800);
   }
   // elementy z atrybutem data-pb="tekst" dostają kulkę z dymkiem automatycznie
   function auto(){document.querySelectorAll("[data-pb]").forEach(e=>{if(!e.dataset.pbZrob){e.dataset.pbZrob=1;dymek(e,e.dataset.pb,{mina:e.dataset.pbMina,strona:e.dataset.pbStrona});}});}

@@ -271,6 +271,9 @@ function obserwujKoniec(){
   const sprawdz=()=>{
     const s=sesja;sesja={ok:0,wszystkie:0};
     if(s.wszystkie>=3&&s.ok/s.wszystkie>=0.8)setTimeout(fanfary,250);
+    // PolandBall podsumowuje rundę (nie komentuje pojedynczych odpowiedzi)
+    if(window.PB&&s.wszystkie>=1){const q=s.ok/s.wszystkie;
+      setTimeout(()=>PB.reakcja(q>=.5,q>=.9?"Świetna runda! "+s.ok+"/"+s.wszystkie:q>=.6?"Dobra robota! "+s.ok+"/"+s.wszystkie:q>=.4?"Nieźle! "+s.ok+"/"+s.wszystkie:"Następnym razem będzie lepiej!",3200),900);}
     kartyPoGrze();
   };
   ["summary","done","wynik","koniec"].forEach(id=>{
@@ -831,9 +834,9 @@ function obserwujJoker(){
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujJoker);else setTimeout(obserwujJoker,0);
 // maskotka PolandBall: ładowana na każdej stronie z grą, reaguje na odpowiedzi
-(function(){if(window.PB||document.querySelector('script[src*="polandball.js"]'))return;const s=document.createElement("script");s.src="polandball.js?v=1";document.head.appendChild(s);})();
+(function(){if(window.PB||document.querySelector('script[src*="polandball.js"]'))return;const s=document.createElement("script");s.src="polandball.js?v=2";document.head.appendChild(s);})();
 function zapisz(kind,id,ok,cicho){
-  if(!cicho){poswiata(ok);sesja.wszystkie++;if(ok)sesja.ok++;seriaOdp(ok);if(window.PB)PB.reakcja(ok,ok&&seria()>0&&seria()%5===0?"Seria "+seria()+"! +1 podpowiedź 50/50":"");}
+  if(!cicho){poswiata(ok);sesja.wszystkie++;if(ok)sesja.ok++;seriaOdp(ok);}
   if(ok&&GMINNE.indexOf(kind)<0)zeton(1);
   const s=nauka(),k=kind+":"+id,r=s[k]||{ok:0,no:0};
   if(ok)r.ok++;else r.no++;
