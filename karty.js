@@ -1,11 +1,12 @@
 /* Karty gmin: wspólna logika dla albumu (karty.html), gier (animacja „do inwentarza”) i menu (przycisk Kolekcja).
    Karta jest zdobyta, gdy:
    - trafisz gminę po konturze (Do sześciu razy sztuka, Kształt gminy), nawet z podpowiedziami, albo
-   - odpowiesz o niej poprawnie w co najmniej 3 różnych rodzajach gier (mapa, z lotu ptaka, herb, zdjęcie, rzeka, kluby, gminy). */
+   - zbierzesz 3/4/5/6/7 fragmentów zależnie od rzadkości. */
 window.Karty=(function(){
   const RZ={diament:"Diamentowa",zloto:"Złota",srebro:"Srebrna",braz:"Brązowa",zwykla:"Zwykła"},KOLEJ=["diament","zloto","srebro","braz","zwykla"];
   const RODZAJE=["miasto","herb","miejsce","rzeka","klub","gmina"];
-  const PROG=3;
+  const PROG=3, PROGI={zwykla:3,braz:4,srebro:5,zloto:6,diament:7};
+  const prog=g=>PROGI[g.rz]||3;
   let DANE=null;
   const norm=s=>String(s||"").toLowerCase().replace(/ł/g,"l").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
   const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -56,13 +57,13 @@ window.Karty=(function(){
   }
   /* zdobyte karty:
      1. Kształt gminy: trafiona gmina to od razu karta,
-     2. gry gminne (herby, Gdzie ta gmina, Ciepło-zimno, Kształt gminy): 3 trafienia tej samej gminy to karta,
+     2. gry gminne (herby, Gdzie ta gmina, Ciepło-zimno, Kształt gminy): 3–7 trafień tej samej gminy to karta,
      3. wszystkie inne gry dają żetony; 25 żetonów to paczka z jedną losową nową kartą. */
   const PACZKA=25;
   const SZANSE=[["diament",.005],["zloto",.035],["srebro",.09],["braz",.25],["zwykla",.62]];
   function paczki(){try{return JSON.parse(localStorage.getItem("karty-paczki")||"[]");}catch(e){return [];}}
   function zetony(){return +localStorage.getItem("karty-zetony")||0;}
-  function zdobyte(){
+  function zdobyte(stare=false){
     let n={};try{n=JSON.parse(localStorage.getItem("nauka-v1")||"{}");}catch(e){}
     const pkt={},od=new Set(paczki().concat(Object.values(dzienne()).map(r=>r.k).filter(Boolean)));
     Object.entries(n).forEach(([klucz,r])=>{
@@ -74,39 +75,43 @@ window.Karty=(function(){
       else if(rodz==="herb")g=gminaPoNazwie(id);
       if(g)pkt[g.k]=(pkt[g.k]||0)+r.ok;
     });
+    Object.values(JSON.parse(localStorage.getItem("karty-nagrody-v1")||"{}")).forEach(r=>od.add(r.k));
     const postep={};
-    Object.entries(pkt).forEach(([k,v])=>{if(v>=PROG)od.add(k);postep[k]={size:Math.min(v,PROG)};});
+    Object.entries(pkt).forEach(([k,v])=>{const limit=stare?3:prog(DANE.PO_K[k]);if(v>=limit)od.add(k);postep[k]={size:Math.min(v,limit)};});
     return {mam:od,postep};
   }
   // jednorazowo przy zmianie zasad: karty zdobyte po staremu zostają w kolekcji
   function migracja(){
-    if(localStorage.getItem("karty-zasady")==="2")return;
+    if(localStorage.getItem("karty-zasady")==="3")return;
     try{
       const stare=JSON.parse(localStorage.getItem("karty-ogloszone")||"[]");
-      localStorage.setItem("karty-paczki",JSON.stringify([...new Set(paczki().concat(stare))]));
+      localStorage.setItem("karty-paczki",JSON.stringify([...new Set(paczki().concat(stare,[...zdobyte(true).mam]))]));
     }catch(e){}
-    localStorage.setItem("karty-zasady","2");
+    localStorage.setItem("karty-zasady","3");
   }
   // paczki czekają na otwarcie; gracz otwiera je sam, po jednej
   function liczbaPaczek(){return Math.floor(zetony()/PACZKA);}
+  const PACZKI=[["zwykla",.80],["srebro",.16],["zloto",.035],["diament",.005]];
+  const DROP={zwykla:[["diament",.001],["zloto",.009],["srebro",.09],["braz",.25],["zwykla",.65]],srebro:[["diament",.005],["zloto",.045],["srebro",.5],["braz",.3],["zwykla",.15]],zloto:[["diament",.03],["zloto",.57],["srebro",.3],["braz",.1]],diament:[["diament",.35],["zloto",.5],["srebro",.15]]};
+  function losuj(tabela,r=Math.random()){for(const [k,p]of tabela){if(r<p)return k;r-=p;}return tabela.at(-1)[0];}
+  function losowaKarta(kolor){
+    const rz=losuj(DROP[kolor]),mam=zdobyte().mam;
+    let pula=DANE.g.filter(g=>g.rz===rz&&!mam.has(g.k));
+    if(!pula.length)pula=DANE.g.filter(g=>g.rz===rz);
+    if(!pula.length)pula=DANE.g;
+    return pula[Math.floor(Math.random()*pula.length)];
+  }
   async function otworzPaczke(){
     await zaladuj();migracja();
-    let z=zetony();if(z<PACZKA)return null;
-    const mam=zdobyte().mam;let r=Math.random(),rz="zwykla";
-    for(const [k,p] of SZANSE){if(r<p){rz=k;break;}r-=p;}
-    let pula=DANE.g.filter(g=>g.rz===rz&&!mam.has(g.k));
-    if(!pula.length)pula=DANE.g.filter(g=>!mam.has(g.k));
-    if(!pula.length)return null;
-    const g=pula[Math.floor(Math.random()*pula.length)];
-    localStorage.setItem("karty-paczki",JSON.stringify(paczki().concat([g.k])));
-    localStorage.setItem("karty-zetony",String(z-PACZKA));
-    // ogłoszona od razu, żeby nie wyskoczyła drugi raz po grze
-    const og=ogloszone()||[];localStorage.setItem("karty-ogloszone",JSON.stringify(og.concat([g.k])));
-    g._paczka=true;
-    // w paczce czasem jest też podpowiedź 50/50
-    g._joker=Math.random()<.3;
-    if(g._joker&&window.ZP&&ZP.dodajJoker)ZP.dodajJoker(1,"z paczki");
-    return g;
+    const otworz=()=>{
+      const z=zetony();if(z<PACZKA)return null;
+      const kolor=losuj(PACZKI),g=losowaKarta(kolor);if(!g)return null;
+      localStorage.setItem("karty-paczki",JSON.stringify([...new Set(paczki().concat(g.k))]));
+      localStorage.setItem("karty-zetony",String(z-PACZKA));
+      localStorage.setItem("karty-ogloszone",JSON.stringify([...new Set((ogloszone()||[]).concat(g.k))]));
+      return {...g,_paczka:true,_kolorPaczki:kolor,_joker:false};
+    };
+    return navigator.locks?navigator.locks.request("polskoznawca-paczka",otworz):otworz();
   }
   // Jedno rozliczenie na typ zadania i dzień, niezależnie od przeładowania strony.
   // Rekord jest jednocześnie dowodem przyznania i własnością karty: jeden zapis.
@@ -116,36 +121,28 @@ window.Karty=(function(){
     await zaladuj();migracja();
     const przyznaj=()=>{
       const klucz=typ+":"+dzien,zapis=dzienne();if(zapis[klucz])return null;
-      const mam=zdobyte().mam;let r=Math.random(),rz="zwykla";
-      for(const [k,p]of SZANSE){if(r<p){rz=k;break;}r-=p;}
-      let pula=DANE.g.filter(g=>g.rz===rz&&!mam.has(g.k));
-      if(!pula.length)pula=DANE.g.filter(g=>!mam.has(g.k));
-      if(!pula.length)pula=DANE.g; // pełny album: paczka nadal może zawierać kartę
-      if(!pula.length)return null;
-      const g=pula[Math.floor(Math.random()*pula.length)];
-      zapis[klucz]={k:g.k,przyznano:Date.now()};
+      const kolor=losuj(PACZKI),g=losowaKarta(kolor);if(!g)return null;
+      zapis[klucz]={k:g.k,kolor,przyznano:Date.now()};
       localStorage.setItem("karty-dzienne-v1",JSON.stringify(zapis));
       const og=ogloszone()||[];localStorage.setItem("karty-ogloszone",JSON.stringify([...new Set(og.concat(g.k))]));
-      return {...g,_paczka:true,_joker:false};
+      return {...g,_paczka:true,_kolorPaczki:kolor,_joker:false};
     };
     // Dwie otwarte karty przeglądarki nie mogą naliczyć tej samej nagrody.
     if(typeof navigator!=="undefined"&&navigator.locks)return navigator.locks.request("polskoznawca-dzienna-nagroda",przyznaj);
     return przyznaj();
   }
-  function otworzPaczki(){
-    const nowe=[];let z=zetony();
-    while(false&&z>=PACZKA){
-      const mam=zdobyte().mam;let r=Math.random(),rz="zwykla";
-      for(const [k,p] of SZANSE){if(r<p){rz=k;break;}r-=p;}
-      let pula=DANE.g.filter(g=>g.rz===rz&&!mam.has(g.k));
-      if(!pula.length)pula=DANE.g.filter(g=>!mam.has(g.k));
-      if(!pula.length)break;
-      const g=pula[Math.floor(Math.random()*pula.length)];
-      localStorage.setItem("karty-paczki",JSON.stringify(paczki().concat([g.k])));
-      z-=PACZKA;localStorage.setItem("karty-zetony",String(z));
-      nowe.push(g.k);
-    }
-    return nowe;
+  async function nagrodaZa(id){
+    await zaladuj();migracja();
+    const przyznaj=()=>{
+      const zapis=JSON.parse(localStorage.getItem("karty-nagrody-v1")||"{}");
+      if(zapis[id])return null;
+      const kolor=losuj(PACZKI),g=losowaKarta(kolor);if(!g)return null;
+      // Jeden rekord przechowuje zarówno własność, jak i identyfikator rozliczenia.
+      zapis[id]={k:g.k,kolor};localStorage.setItem("karty-nagrody-v1",JSON.stringify(zapis));
+      localStorage.setItem("karty-ogloszone",JSON.stringify([...new Set((ogloszone()||[]).concat(g.k))]));
+      return {...g,_paczka:!id.startsWith("mecz:"),_kolorPaczki:kolor};
+    };
+    return navigator.locks?navigator.locks.request("polskoznawca-nagroda",przyznaj):przyznaj();
   }
   function widziane(){try{return JSON.parse(localStorage.getItem("karty-widziane")||"[]");}catch(e){return [];}}
   function ogloszone(){try{return JSON.parse(localStorage.getItem("karty-ogloszone")||"null");}catch(e){return null;}}
@@ -198,7 +195,7 @@ window.Karty=(function(){
       +'<div class="kk-mapka" data-m="'+g.k+'"></div>'
       +(ot&&CIEK[g.k]?'<button type="button" class="kk-pb" data-c="'+g.k+'" aria-label="Ciekawostki">'+KULA+'</button>':'')
       +'<div class="kk-nazwa">'+(ot?esc(g.n):"???")+'</div>'
-      +'<div class="kk-jedn">'+(ot?(mnp(g)?"miasto na prawach powiatu<br>woj. "+g.woj:g.typ+(pelna?"<br>"+esc(g.powiat)+" · woj. "+g.woj:"")):(o.postep?"postęp "+o.postep+"/"+PROG+" trafień":"woj. "+g.woj))+'</div>'
+      +'<div class="kk-jedn">'+(ot?(mnp(g)?"miasto na prawach powiatu<br>woj. "+g.woj:g.typ+(pelna?"<br>"+esc(g.powiat)+" · woj. "+g.woj:"")):(o.postep?"postęp "+o.postep+"/"+prog(g)+" fragmentów":"woj. "+g.woj))+'</div>'
       +st+'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
   }
   const KULA='<svg viewBox="0 0 40 40" aria-hidden="true"><defs><clipPath id="kkKl"><circle cx="20" cy="20" r="17"/></clipPath></defs><g clip-path="url(#kkKl)"><rect width="40" height="20" fill="#F4F4F2"/><rect y="20" width="40" height="20" fill="#DC1E35"/></g><circle cx="20" cy="20" r="17" fill="none" stroke="#3A2A14" stroke-width="2.4"/><ellipse cx="14" cy="17" rx="3.4" ry="4.2" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/><ellipse cx="26" cy="17" rx="3.4" ry="4.2" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/></svg>';
@@ -219,7 +216,9 @@ window.Karty=(function(){
     if(!document.querySelector('link[href*="Barlow+Condensed"]')){const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Bungee&display=swap";document.head.appendChild(l);}
     const s=document.createElement("style");s.id="kk-styl";
     s.textContent=`
-.kk{--x:50%;--y:50%;position:relative;aspect-ratio:5/8;container-type:inline-size;clip-path:polygon(50% 0,100% 4%,100% 90%,50% 100%,0 90%,0 4%);background:repeating-linear-gradient(135deg,rgba(255,255,255,.14) 0 2cqw,transparent 2cqw 4.5cqw),var(--tlo);color:#14233A;filter:drop-shadow(0 6px 10px rgba(0,0,0,.45));cursor:pointer;transition:transform .15s;font-family:Rubik,system-ui,sans-serif}
+@media(prefers-reduced-motion:reduce){.pk *,.pk,.kk{animation:none!important;transition:none!important}}
+
+.kk{--x:50%;--y:50%;position:relative;aspect-ratio:5/8;container-type:inline-size;border-radius:6cqw;clip-path:inset(0 round 6cqw);background:var(--tlo);color:#14233A;filter:drop-shadow(0 6px 10px rgba(30,60,40,.16));cursor:pointer;transition:transform .15s;font-family:Rubik,system-ui,sans-serif}
 .kk.kk-mini{aspect-ratio:5/7}
 .kk .kk-ramka{position:absolute;inset:3cqw;clip-path:inherit;border:.8cqw solid var(--ramka);pointer-events:none;z-index:3}
 .kk .kk-lewa{position:absolute;left:7cqw;top:9cqw;width:22cqw;display:flex;flex-direction:column;align-items:center;gap:.6cqw;z-index:2}
@@ -250,8 +249,8 @@ window.Karty=(function(){
 .kk.r-zwykla{--tlo:linear-gradient(160deg,#FBF6E8,#E2D6B8);--ramka:#9C8A62;--holo:none;--blask:0}
 .kk.r-braz{--tlo:linear-gradient(160deg,#F4DCC4,#C98B5C);--ramka:#7E4620;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,230,200,.8),transparent 45%)}
 .kk.r-srebro{--tlo:linear-gradient(160deg,#F7F9FB,#AEB9C4);--ramka:#5F6C78;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.95),transparent 42%),linear-gradient(115deg,transparent 30%,rgba(255,255,255,.6) 48%,transparent 60%)}
-.kk.r-zloto{--tlo:linear-gradient(160deg,#FFF3C2,#E0A812);--ramka:#7A5400;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,250,210,1),transparent 40%),repeating-linear-gradient(115deg,transparent 0 12px,rgba(255,255,255,.35) 12px 16px);--blask:.75}
-.kk.r-diament{--tlo:linear-gradient(160deg,#F2FBFF 0%,#BFE6FF 38%,#E6D6FF 70%,#BFE6FF 100%);--ramka:#3D6FD1;--mieszanie:color-dodge;--blask:.5;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.95),transparent 30%),linear-gradient(calc(var(--kat,115) * 1deg),#ff6b6b33,#ffd93d55,#6bff9a44,#6bd5ff55,#c06bff44,#ff6b6b33)}
+.kk.r-zloto{--tlo:linear-gradient(160deg,#FFF3C2,#E0A812);--ramka:#7A5400;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,250,210,1),transparent 40%),repeating-linear-gradient(115deg,transparent 0 12px,rgba(255,255,255,.35) 12px 16px);--blask:.25}
+.kk.r-diament{--tlo:linear-gradient(160deg,#F2FBFF 0%,#BFE6FF 38%,#E6D6FF 70%,#BFE6FF 100%);--ramka:#3D6FD1;--mieszanie:soft-light;--blask:.3;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.95),transparent 30%),linear-gradient(calc(var(--kat,115) * 1deg),#ff6b6b33,#ffd93d55,#6bff9a44,#6bd5ff55,#c06bff44,#ff6b6b33)}
 .kk.zablokowana{--tlo:#2A2F3A!important;color:#8B93A6}.kk.zablokowana::after{display:none}.kk.zablokowana .kk-mapka{filter:grayscale(1) brightness(.35);border-color:#454C5C}.kk.zablokowana .kk-ramka{border-color:#454C5C}
 .kk .kk-pb{position:absolute;right:4cqw;top:56cqw;z-index:6;width:14cqw;height:14cqw;padding:0;border:none;background:none;cursor:pointer;animation:kkPbSkok 2.4s ease-in-out infinite;filter:drop-shadow(0 0 1.5cqw rgba(255,215,90,.9))}
 .kk .kk-pb svg{width:100%;height:100%;display:block}
@@ -361,6 +360,7 @@ window.Karty=(function(){
   function podepnijMapy(root){geometrie().then(()=>root.querySelectorAll(".kk-mapka").forEach(el=>{if(widok&&!el.closest(".pk,.kk-podglad"))widok.observe(el);else mapa(el);}));}
   function holo(el){
     const ruch=(x,y)=>{el.style.setProperty("--x",x+"%");el.style.setProperty("--y",y+"%");el.style.setProperty("--kat",90+x);el.style.transform="perspective(700px) rotateY("+((x-50)/7)+"deg) rotateX("+((50-y)/7)+"deg)";};
+    if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;
     el.addEventListener("pointermove",e=>{const r=el.getBoundingClientRect();ruch(100*(e.clientX-r.left)/r.width,100*(e.clientY-r.top)/r.height);});
     el.addEventListener("pointerleave",()=>{el.style.transform="";});
   }
@@ -405,7 +405,7 @@ window.Karty=(function(){
         const el=w.querySelector(".pk-karta .kk");holo(el);podepnijMapy(w);
         setTimeout(()=>w.classList.add("faza5"),700);
         if(pelne&&window.ZP&&ZP.fanfary)setTimeout(ZP.fanfary,250);};
-      t.push(setTimeout(odslon,3100));
+      t.push(setTimeout(odslon,matchMedia("(prefers-reduced-motion: reduce)").matches?0:3100));
       w.querySelector(".pk-pomin").onclick=e=>{e.stopPropagation();if(!w.classList.contains("faza4"))odslon();else zakoncz();};
       w.querySelectorAll(".pk-dol [data-a]").forEach(b=>b.onclick=e=>{e.stopPropagation();if(b.dataset.a==="dalej"){i++;pokaz();}else zakoncz();});
     };
@@ -425,5 +425,5 @@ window.Karty=(function(){
       if(n.length)setTimeout(()=>prezentacja(n,info),1200);else setTimeout(info,1200);
     }catch(e){}
   }
-  return {nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
+  return {prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
 })();

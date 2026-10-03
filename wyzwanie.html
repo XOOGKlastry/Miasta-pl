@@ -237,7 +237,7 @@ svg path{fill-rule:evenodd}
 <script src="peerjs.min.js"></script>
 <script src="topojson-client.min.js?v=17"></script>
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=22"></script>
+<script src="multiplayer-zasady.js"></script><script src="wspolne.js?v=23"></script>
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
@@ -787,7 +787,7 @@ function ekranLobby(){
       :'<p>Jesteś w pokoju <b style="color:var(--gold)">'+MULTI.kod+'</b>. Gospodarz zaraz zacznie.</p>')
     +listaGraczy()
     +(h?'<button class="ghost" id="mpUst">🎛️ Ustaw rozgrywkę</button><div class="datastate" id="mpOpis">'+opisKonfig(KONFIG)+'</div>'
-      +'<button class="big" id="mpStart"'+(MULTI.gracze.length<2?" disabled":"")+'>'+(MULTI.gracze.length<2?"Czekam na drugą osobę…":"Zaczynamy")+'</button>'
+      +'<label style="display:block;margin:12px 0">Format <select id="mpFormat"><option value="1">Jeden mecz</option><option value="2">Dwumecz — łączny wynik</option></select></label>'+'<button class="big" id="mpStart"'+(MULTI.gracze.length<2?" disabled":"")+'>'+(MULTI.gracze.length<2?"Czekam na drugą osobę…":"Zaczynamy")+'</button>'
       :'<div class="datastate" id="mpOpis">'+(MULTI.konfigOpis||"Gospodarz ustawia rozgrywkę…")+'</div><div class="datastate">Czekamy na start…</div>'));
   if(h){
     $("mpLink").onclick=async()=>{const u=location.origin+location.pathname+"?tryb=pojedynek&pokoj="+MULTI.kod,t="Zagraj ze mną w PolskoZnawcę! Pokój "+MULTI.kod+": "+u;
@@ -841,13 +841,17 @@ function odGracza(c,m){
 async function startPojedynku(){
   await laduj();
   MULTI.gracze.forEach(g=>g.pts=0);
-  MULTI.gra={i:-1,odp:{},seed:Math.random().toString(36).slice(2,8)};
-  doWszystkich({t:"start",seed:MULTI.gra.seed,k:kodKonfig(KONFIG)});
+  MULTI.gra={i:-1,odp:{},seed:crypto.randomUUID(),legs:+$("mpFormat").value||1};
+  doWszystkich({t:"start",seed:MULTI.gra.seed,legs:MULTI.gra.legs,k:kodKonfig(KONFIG)});
   setTimeout(()=>nastepnaRunda(),1800);
 }
 function nastepnaRunda(){
   const g=MULTI.gra;g.i++;
-  if(g.i>=Q.length){doWszystkich({t:"koniec",gracze:MULTI.gracze.map(x=>({id:x.id,nick:x.nick,aw:x.aw,pts:x.pts}))});MULTI.gra=null;return;}
+  if(g.i>=Q.length&&MeczZasady.remis(MULTI.gracze)){
+    const max=Math.max(...MULTI.gracze.map(p=>p.pts));g.tieIds=MULTI.gracze.filter(p=>p.pts===max).map(p=>p.id);
+    doWszystkich({t:"dogrywka",seed:g.seed+":"+g.i});
+  }
+  if(g.i>=Q.length){doWszystkich({t:"koniec",matchId:g.seed,gracze:MULTI.gracze.map(x=>({id:x.id,nick:x.nick,aw:x.aw,pts:x.pts}))});MULTI.gra=null;return;}
   g.odp={};doWszystkich({t:"runda",i:g.i});
   clearTimeout(g.t);g.t=setTimeout(zamknijRunde,((KONFIG.czas||60)+3)*1000);
 }
@@ -861,8 +865,10 @@ function zamknijRunde(){
   const g=MULTI.gra;if(!g||g.zamknieta===g.i)return;g.zamknieta=g.i;clearTimeout(g.t);
   // premia za szybkość dla dwóch najszybszych dobrych odpowiedzi
   const dobre=Object.entries(g.odp).filter(([,o])=>o.pts>=500).sort((a,b)=>a[1].ms-b[1].ms);
-  const dod={};Object.entries(g.odp).forEach(([id,o])=>dod[id]=o.pts);
-  if(KONFIG.premia){if(dobre[0])dod[dobre[0][0]]+=300;if(dobre[1])dod[dobre[1][0]]+=150;}
+  const dod={};
+  if(g.tieIds){const winner=MeczZasady.szybki(g.odp,g.tieIds);if(winner)dod[winner]=1;}
+  else Object.entries(g.odp).forEach(([id,o])=>dod[id]=o.pts);
+  if(KONFIG.premia&&!g.tieIds){if(dobre[0])dod[dobre[0][0]]+=300;if(dobre[1])dod[dobre[1][0]]+=150;}
   MULTI.gracze.forEach(x=>x.pts+=dod[x.id]||0);
   const szybki=dobre[0]&&MULTI.gracze.find(x=>x.id===dobre[0][0]);
   doWszystkich({t:"wynik",i:g.i,dod,szybki:szybki?{nick:szybki.nick,ms:dobre[0][1].ms}:null,gracze:MULTI.gracze.map(x=>({id:x.id,nick:x.nick,aw:x.aw,pts:x.pts}))});
@@ -873,10 +879,16 @@ async function odGospodarza(m){
   if(m.t==="blad")lobbyStart(m.tekst);
   if(m.t==="lobby"){MULTI.gracze=m.gracze;if($("konfig").classList.contains("hidden"))ekranLobby();}
   if(m.t==="konfig"){MULTI.konfigOpis=m.opis;const o=$("mpOpis");if(o&&!MULTI.host)o.innerHTML=m.opis;}
+  if(m.t==="dogrywka"){
+    const types=["v","h","r","c","p"],type=types[Math.floor(ZP.seeded(m.seed)()*types.length)];
+    const extra=budujPytania(ZP.seeded(m.seed),1,null,[type,"v"])[0];
+    if(extra)Q.push(extra);KONFIG.czas=10;
+    ZP.komunikat("Remis! Dogrywka: najszybsza poprawna odpowiedź.");
+  }
   if(m.t==="start"){
     await laduj();
     KONFIG=zKodu(m.k)||nowaKonfig();ustawPodp();
-    Q=pytaniaZKonfig(KONFIG,ZP.seeded("pojedynek-"+m.seed));st={i:-1,res:[]};
+    Q=pytaniaZKonfig(KONFIG,ZP.seeded("pojedynek-"+m.seed));if(m.legs===2)Q=Q.concat(pytaniaZKonfig(KONFIG,ZP.seeded("rewanz-"+m.seed)));st={i:-1,res:[]};
     lobby('<h2 style="text-align:center;margin-top:30%">Uwaga…</h2><div class="mp-kod" id="odl">3</div>');
     let n=3;const id=setInterval(()=>{n--;if(n<=0)clearInterval(id);else if($("odl"))$("odl").textContent=n;},550);
   }
@@ -907,7 +919,7 @@ async function odGospodarza(m){
     if(s)s.innerHTML=(m.szybki?'⚡ Najszybciej: <b>'+escH(m.szybki.nick)+'</b> ('+(m.szybki.ms/1000).toFixed(1).replace(".",",")+' s) · ':'')+'Ty +'+fmt(moje)
       +'<div class="mp-tabela">'+MULTI.gracze.slice().sort((a,b)=>b.pts-a.pts).map(g=>'<span'+(g.id===MULTI.ja.id?' class="ja"':'')+'>'+escH(g.nick)+' '+fmt(g.pts)+'</span>').join("")+'</div>';
   }
-  if(m.t==="koniec")podium(m.gracze);
+  if(m.t==="koniec")podium(m.gracze,m.matchId);
 }
 function ustawPodp(){$("wpis").classList.toggle("bez-podp",TRYB!=="dzien"&&!KONFIG.podp);}
 function zegar(sek){
@@ -926,7 +938,7 @@ function czasMinal(cicho){
   $("karty2").querySelectorAll("button").forEach(x=>x.disabled=true);
   wynikRundy(0,false,"Czas minął");
 }
-function podium(gr){
+function podium(gr,matchId){
   schowaj();["segmenty","gora","pytanie","stage"].forEach(id=>$(id).classList.add("hidden"));
   $("runda").textContent="koniec";
   const r=gr.slice().sort((a,b)=>b.pts-a.pts),idx=g=>MULTI.gracze.findIndex(x=>x.id===g.id);
@@ -934,7 +946,10 @@ function podium(gr){
   const pod=[r[1],r[0],r[2]].map((g,i)=>g?'<div class="m'+[2,1,3][i]+'"><span>'+(g.aw||AV[idx(g)%8])+'</span><b>'+escH(g.nick)+'</b>'+fmt(g.pts)+'</div>':'<div style="visibility:hidden"></div>').join("");
   lobby('<h2 style="text-align:center">'+(r[0].id===MULTI.ja.id?"Wygrywasz!":escH(r[0].nick)+" wygrywa")+'</h2><div class="mp-podium">'+pod+'</div>'+listaGraczy(true)
     +(MULTI.host?'<button class="big" id="mpRewanz">Rewanż</button>':'<div class="datastate">Gospodarz może zaproponować rewanż.</div>'));
-  if(r[0].id===MULTI.ja.id)setTimeout(ZP.fanfary,400);
+  if(MeczZasady.zwyciezca(gr)?.id===MULTI.ja.id){setTimeout(ZP.fanfary,400);
+    const award=()=>Karty.nagrodaZa("mecz:"+matchId).then(g=>{if(g)Karty.prezentacja([g]);}).catch(()=>ZP.komunikat("Nie udało się zapisać nagrody."));
+    if(window.Karty)award();else{const s=document.createElement("script");s.src="karty.js?v=9";s.onload=award;document.head.append(s);}
+  }
   if(MULTI.host)$("mpRewanz").onclick=()=>{MULTI.gracze.forEach(g=>g.pts=0);rozeslijLobby();};
 }
 window.addEventListener("beforeunload",()=>{try{MULTI&&MULTI.peer&&MULTI.peer.destroy();}catch(e){}});
@@ -945,6 +960,7 @@ function wynikSaga(){
   const suma=st.res.reduce((a,r)=>a+r.pts,0),max=st.res.length*1000,proc=Math.round(100*suma/Math.max(1,max));
   const gw=Saga.gwiazdki(proc),przed=Saga.stan(),bylOdbl=Saga.odblokowany(POZIOM.n+1,przed);
   const s=Saga.zapisz(POZIOM.n,gw,suma),teraz=POZIOM.n+1<Saga.ILE&&Saga.odblokowany(POZIOM.n+1,s);
+  if(gw===3){const sc=()=>Karty.nagrodaZa("poziom:"+POZIOM.n).then(g=>{if(g){ZP.komunikat("3 gwiazdki! Zdobywasz paczkę.");Karty.prezentacja([g]);}}).catch(()=>ZP.komunikat("Nie udało się odebrać nagrody. Spróbuj ponownie."));if(window.Karty)sc();else{const js=document.createElement("script");js.src="karty.js?v=9";js.onload=sc;document.head.append(js);}}
   const zal=gw>=POZIOM.progGwiazd;
   const w=$("wynik");
   w.innerHTML='<div class="saga-wynik"><div class="saga-gw">'+[1,2,3].map(i=>'<span class="'+(i<=gw?"zdobyta":"")+'" style="animation-delay:'+(0.3+i*0.35)+'s">★</span>').join("")+'</div>'

@@ -6,9 +6,9 @@ window.Konto=(function(){
   const AWATARY=["🦊","🐻","🦉","🐺","🦌","🐗","🦅","🐿️","🦫","🐸","🦔","🐝"];
   const METODY=[
     {id:"gosc",nazwa:"Gość",opis:"bez rejestracji, postęp tylko na tym urządzeniu",dostepna:true},
-    {id:"google",nazwa:"Google",opis:"jedno stuknięcie na Androidzie",dostepna:false},
-    {id:"email",nazwa:"E-mail",opis:"link logujący bez hasła",dostepna:false},
-    {id:"apple",nazwa:"Apple",opis:"dla iPhone'a",dostepna:false}
+    {id:"google",nazwa:"Google",opis:"jedno stuknięcie na Androidzie",dostepna:!!window.Online?.enabled()},
+    {id:"email",nazwa:"E-mail",opis:"link logujący bez hasła",dostepna:!!window.Online?.enabled()},
+    {id:"facebook",nazwa:"Facebook",opis:"tylko podstawowy profil i e-mail",dostepna:!!window.Online?.enabled()}
   ];
   function czytaj(){try{return JSON.parse(localStorage.getItem(KLUCZ)||"null");}catch(e){return null;}}
   function profil(){
@@ -24,8 +24,8 @@ window.Konto=(function(){
     const poz=Math.floor(Math.sqrt(ok/8))+1,od=8*(poz-1)*(poz-1),do_=8*poz*poz;
     return {poziom:poz,xp:ok,postep:(ok-od)/(do_-od),doNastepnego:do_-ok};
   }
-  function zaloguj(metoda){return Promise.reject(new Error("Logowanie przez "+metoda+" będzie dostępne w wersji z kontami."));}
-  function wyloguj(){return Promise.resolve();}
+  function zaloguj(metoda){if(metoda==="gosc")return Promise.resolve();location.href="logowanie.html";return Promise.resolve();}
+  function wyloguj(){return window.Online?Online.logout():Promise.resolve();}
   function usunDane(){try{localStorage.clear();}catch(e){}if(window.caches)caches.keys().then(k=>k.forEach(x=>caches.delete(x)));}
   return {profil,ustaw,poziom,zaloguj,wyloguj,usunDane,METODY,AWATARY};
 })();

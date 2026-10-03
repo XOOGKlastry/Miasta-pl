@@ -1,0 +1,29 @@
+-- Rekreacyjny ranking. Wartości są zgłaszane z klienta, nie są dowodem wygranej.
+create table if not exists public.player_scores (
+ user_id uuid primary key references auth.users(id) on delete cascade,
+ nickname text not null check(char_length(nickname) between 3 and 24),
+ visible boolean not null default false,
+ points bigint not null default 0 check(points between 0 and 1000000000),
+ cards integer not null default 0 check(cards between 0 and 3000),
+ updated_at timestamptz not null default now()
+);
+alter table public.player_scores enable row level security;
+revoke all on public.player_scores from anon, authenticated;
+create or replace function public.publish_score(p_nickname text,p_visible boolean,p_points bigint,p_cards integer)
+returns void language plpgsql security definer set search_path = '' as $$
+begin
+ if auth.uid() is null then raise exception 'Authentication required';end if;
+ insert into public.player_scores(user_id,nickname,visible,points,cards) values(auth.uid(),trim(p_nickname),p_visible,p_points,p_cards)
+ on conflict(user_id) do update set nickname=excluded.nickname,visible=excluded.visible,points=excluded.points,cards=excluded.cards,updated_at=now();
+end;$$;
+revoke all on function public.publish_score(text,boolean,bigint,integer) from public,anon;
+grant execute on function public.publish_score(text,boolean,bigint,integer) to authenticated;
+create or replace function public.leaderboard(p_mode text)
+returns table(place bigint,nickname text,value bigint)
+language sql stable security definer set search_path = '' as $$
+ select rank() over(order by case when p_mode='cards' then s.cards else s.points end desc),s.nickname,
+ case when p_mode='cards' then s.cards else s.points end
+ from public.player_scores s where s.visible order by 3 desc,s.nickname limit 100;
+$$;
+revoke all on function public.leaderboard(text) from public;
+grant execute on function public.leaderboard(text) to anon,authenticated;

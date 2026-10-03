@@ -309,7 +309,7 @@ function modulKart(){
   if(KARTY_MODUL)return KARTY_MODUL;
   KARTY_MODUL=new Promise((resolve,reject)=>{
     let sc=document.querySelector('script[src^="karty.js"]'),nowy=!sc;
-    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=8";}
+    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=9";}
     sc.addEventListener("load",()=>resolve(window.Karty),{once:true});
     sc.addEventListener("error",()=>{KARTY_MODUL=null;sc.remove();reject(Error("Nie wczytano kart"));},{once:true});
     if(nowy)document.head.appendChild(sc);
@@ -803,7 +803,16 @@ function nauka(){
 }
 // gry gminne (herby, gminy, kształt gminy) dają postęp konkretnej karcie; wszystkie inne dają żetony na paczki
 const GMINNE=["gmina","herb","kontur"];
-function zeton(n){try{localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)+(n||1)));}catch(e){}}
+function lotNagrody(symbol,n){
+  const target=document.querySelector(".zp-kol"),source=document.querySelector("#answers .ok,#stage,#pytanie")||document.body;
+  if(!target)return;
+  const a=source.getBoundingClientRect(),b=target.getBoundingClientRect(),el=document.createElement("span");
+  el.textContent=symbol+" +"+n;el.style.cssText="position:fixed;z-index:9999;pointer-events:none;color:#315841;background:#fff6df;border-radius:20px;padding:8px;font-weight:700;left:"+(a.left+a.width/2)+"px;top:"+(Math.min(innerHeight-60,a.top+a.height/2))+"px";
+  document.body.append(el);
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches||!el.animate){setTimeout(()=>el.remove(),450);return;}
+  const r=el.getBoundingClientRect();const anim=el.animate([{transform:"translate(-50%,0) scale(1)",opacity:1},{transform:"translate("+(b.left-r.left)+"px,"+(b.top-r.top)+"px) scale(.5)",opacity:.2}],{duration:750,easing:"cubic-bezier(.3,.1,.5,1)"});anim.onfinish=()=>el.remove();
+}
+function zeton(n){lotNagrody("🪙",n||1);try{localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)+(n||1)));}catch(e){}}
 /* ---- podpowiedzi 50/50: +1 za każde 5 dobrych odpowiedzi z rzędu (5, 10, 15…), zbierają się na zapas.
    Użycie podpowiedzi zeruje serię. Gra podaje poprawną odpowiedź przez jokerCel albo opcję „poprawne” pola wpisu. ---- */
 let JOKER_CEL=null,JOKER_RECZNY=false;
@@ -860,9 +869,9 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 (function(){if(window.PB||document.querySelector('script[src*="polandball.js"]'))return;const s=document.createElement("script");s.src="polandball.js?v=3";document.head.appendChild(s);})();
 function zapisz(kind,id,ok,cicho){
   if(!cicho){poswiata(ok);sesja.wszystkie++;if(ok)sesja.ok++;seriaOdp(ok);}
-  if(ok&&GMINNE.indexOf(kind)<0)zeton(1);
+  if(ok&&kind!=="wymienianie"&&GMINNE.indexOf(kind)<0)zeton(1);
   const s=nauka(),k=kind+":"+id,r=s[k]||{ok:0,no:0};
-  if(ok)r.ok++;else r.no++;
+  if(ok){r.ok++;if(GMINNE.includes(kind))lotNagrody(kind==="kontur"?"▣":"◈",1);}else r.no++;
   r.t=Date.now();s[k]=r;
   try{localStorage.setItem(NAUKA,JSON.stringify(s));}catch(e){}
 }
@@ -938,3 +947,6 @@ function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
 window.ZP={$,nagrodaDnia,IKONA_5050,jokery,dodajJoker,jokerCel,seria,zeton,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();
+
+// Konfiguracja i kontrola kont po załadowaniu strony.
+(async()=>{try{for(const src of ["online-config.js","online.js"]){await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src=src;s.onload=resolve;s.onerror=reject;document.head.append(s);});}await Online.gate();}catch(e){console.warn("Nie wczytano kont online",e);}})();
