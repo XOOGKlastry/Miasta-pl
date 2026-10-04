@@ -68,6 +68,35 @@ def znajdz_szkoly(year: int):
                     logging.info('WYBRANO szkoły %s: %s',v['id'],opis[:160]);return v['id'],meta
     return None,None
 
+# Nowe wskaźniki kart. Zmienną GUS wybieramy po nazwie (w logu zostają kandydaci, żeby dało się sprawdzić wybór),
+# zawsze z najnowszego dostępnego roku nie późniejszego niż --year.
+NOWE=[
+  # pole, frazy do wyszukania, wszystkie muszą wystąpić w opisie, żadne nie może, jak przeliczyć wartość
+  ('mieszkanie_m2_os',['przeciętna powierzchnia użytkowa mieszkania na 1 osobę','powierzchnia użytkowa mieszkania na 1 osobę'],['na 1 osob'],['nowo','oddan','wiejsk','miast'],None),
+  ('obciazenie_demograficzne',['ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym','wieku nieprodukcyjnym na 100'],['nieprodukcyjn','100'],['kobiet','mężczyzn','miast','wieś','wsi'],None),
+  ('drogi_na_100km2',['drogi gminne o nawierzchni twardej na 100 km2','drogi gminne o nawierzchni twardej'],['gminne','twardej','100 km'],['ulepszon','nieulepsz','gruntow'],None),
+  ('firmy_na_1000',['podmioty wpisane do rejestru REGON na 10 tys. ludności','rejestru regon na 10 tys'],['10 tys','regon'],['nowo','wyrejestr','osoby fizyczne','sektor'],lambda v:round(v/10,2)),
+  ('zadluzenie_na_mieszk',['zobowiązania ogółem na 1 mieszkańca','zadłużenie na 1 mieszkańca','zobowiązania ogółem'],['zobowiąz'],['wymagaln','kraj','zagranic'],None),
+]
+
+def znajdz_zmienna(frazy,musi,nie,year):
+    widziane=set()
+    for fraza in frazy:
+        try:j=request('/variables/search?name='+urllib.parse.quote(fraza)+'&page-size=100&format=json')
+        except Exception as exc:logging.warning('Szukanie %s: %s',fraza,exc);continue
+        for v in j.get('results',[]):
+            if v['id'] in widziane:continue
+            widziane.add(v['id'])
+            opis=' '.join(str(v.get(k,'')) for k in ('n1','n2','n3','n4','n5','measureUnitName')).lower()
+            logging.info('kandydat %s | %s | poziom %s',v['id'],opis[:150],v.get('level'))
+            if all(m.lower() in opis for m in musi) and not any(n.lower() in opis for n in nie) and int(v.get('level',0))>=6:
+                try:meta=request(f"/variables/{v['id']}?format=json")
+                except Exception:continue
+                lata=[y for y in meta.get('years',[]) if y<=year]
+                if lata:
+                    logging.info('WYBRANO %s rok %s: %s',v['id'],max(lata),opis[:160]);return v['id'],max(lata),meta
+    return None,None,None
+
 def main() -> None:
     """Pobierz jawnie wybrany rok i dołącz tylko pasujące kody gmin."""
     parser=argparse.ArgumentParser();parser.add_argument('--year',type=int,default=2025);args=parser.parse_args()
@@ -88,6 +117,15 @@ def main() -> None:
         if lata:
             sz_rok=max(lata);szkoly=download(sz_id,sz_rok);sources['szkoly']={'id':sz_id,'rok':sz_rok,'url':BASE+f'/variables/{sz_id}','opis':sz_meta}
     except Exception as exc:logging.warning('Szkoły: %s',exc);szkoly={}
+    nowe={}
+    for pole,frazy,musi,nie,przelicz in NOWE:
+        try:
+            zid,rok,meta=znajdz_zmienna(frazy,musi,nie,args.year)
+            if not zid:logging.warning('Nie znaleziono zmiennej dla %s',pole);continue
+            dane=download(zid,rok)
+            nowe[pole]=({k:(przelicz(v) if przelicz else v) for k,v in dane.items()},rok)
+            sources[pole]={'id':zid,'rok':rok,'url':BASE+f'/variables/{zid}','opis':meta}
+        except Exception as exc:logging.warning('%s: %s',pole,exc)
     result={};missing=[]
     for key,g in sorted(rows.items()):
         row={};years={}
@@ -99,6 +137,8 @@ def main() -> None:
             row['pit_na_mieszk']=values['pit_suma'][key]/g['ludnosc'];years['pit_na_mieszk']=args.year
         if key in szkoly and g.get('ludnosc',0)>0:
             row['szkoly_na_1000']=round(szkoly[key]/g['ludnosc']*1000,3);years['szkoly_na_1000']=sz_rok
+        for pole,(dane,rok) in nowe.items():
+            if key in dane:row[pole]=round(dane[key],3);years[pole]=rok
         row['lata']=years;result[key]=row
         absent=[x for x in ['przyrost_naturalny','pit_na_mieszk','powierzchnia'] if x not in row]
         if absent:missing.append({'k':key,'pola':absent})
