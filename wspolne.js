@@ -309,7 +309,7 @@ function modulKart(){
   if(KARTY_MODUL)return KARTY_MODUL;
   KARTY_MODUL=new Promise((resolve,reject)=>{
     let sc=document.querySelector('script[src^="karty.js"]'),nowy=!sc;
-    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=9";}
+    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=10";}
     sc.addEventListener("load",()=>resolve(window.Karty),{once:true});
     sc.addEventListener("error",()=>{KARTY_MODUL=null;sc.remove();reject(Error("Nie wczytano kart"));},{once:true});
     if(nowy)document.head.appendChild(sc);
@@ -928,14 +928,14 @@ async function loadGminy(){
   const fs=topojson.feature(t,o).features;
   const powNazwa={};pw.forEach(p=>powNazwa[p.k]=p.full);
   const ile={};fs.forEach(f=>{const n=f.properties.n;ile[n]=(ile[n]||0)+1;});
-  // bez miast na prawach powiatu: tam gmina i powiat to ten sam obszar i ta sama nazwa
-  GMC=fs.filter(f=>f.geometry&&String(f.properties.k).slice(-1)<"4"&&+String(f.properties.k).slice(2,4)<60).map(f=>{
+  // Miasta na prawach powiatu są także gminami; wybieramy pełne gminy (TERYT 1/2/3).
+  GMC=fs.filter(f=>f.geometry&&/^[0-9]{6}[123]$/.test(String(f.properties.k))).map(f=>{
     const k=String(f.properties.k),n=f.properties.n,typ=k.slice(-1);
     let b=[1e9,1e9,-1e9,-1e9];
     const polys=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;
     polys.forEach(p=>p[0].forEach(([x,y])=>{if(x<b[0])b[0]=x;if(y<b[1])b[1]=y;if(x>b[2])b[2]=x;if(y>b[3])b[3]=y;}));
     const dopisek=ile[n]>1?(typ==="1"?" (miasto)":typ==="2"?" (wiejska)":""):"";
-    return {f,k,n,city:false,woj:WOJ_KOD[k.slice(0,2)],bb:b,lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2,
+    return {f,k,n,city:+k.slice(2,4)>=61,woj:WOJ_KOD[k.slice(0,2)],bb:b,lon:(b[0]+b[2])/2,lat:(b[1]+b[3])/2,
       short:n,label:n+dopisek,full:"gmina "+n+dopisek,typ:TYP_GMINY[typ]||"gmina",powiat:powNazwa[k.slice(0,4)]||""};
   });
   return GMC;

@@ -75,7 +75,7 @@
         <p><b>Gry gminne</b> dają postęp konkretnej gminie:</p>
         <ul>
           <li><b>Kształt gminy:</b> trafiona gmina to od razu karta, także po podpowiedzi.</li>
-          <li><b>Jaki to herb?, Gdzie ta gmina?, Ciepło-zimno:</b> każde trafienie danej gminy to 1 fragment; zwykła karta wymaga 3, brązowa 4, srebrna 5, złota 6, diamentowa 7 fragmentów.</li>
+          <li><b>Jaki to herb?, Gdzie ta gmina?, Ciepło-zimno:</b> każde trafienie danej gminy to 1 fragment; zwykła karta wymaga 3, srebrna 4, złota 5, diamentowa 6, legendarna 7 fragmentów.</li>
         </ul>
         <p><b>Wszystkie pozostałe gry</b> (miasta, powiaty, rzeki, kluby, tablice, plansza przygód, wyzwania, Do sześciu razy sztuka, Memory, Szybki strzał) dają <b>żetony</b>: 1 żeton za każde trafienie; w wymienianiu miast 1 żeton za 10 miast. <b>25 żetonów to paczka</b> z jedną losową kartą.</p>
         <p>Kolor paczki: zwykła 80%, srebrna 16%, złota 3,5%, diamentowa 0,5%. Lepsze paczki częściej zawierają rzadkie karty. Szczegółowe szanse znajdziesz w albumie.</p>
@@ -84,34 +84,20 @@
       <details><summary>Podpowiedzi 50/50</summary>
         <p>Za <b>każde 5 dobrych odpowiedzi z rzędu</b> dostajesz 1 podpowiedź 50/50: przy serii 5 pierwszą, przy 10 drugą, przy 15 trzecią i tak dalej. Podpowiedzi zbierają się na zapas (<b id="kiJok">0</b> teraz).</p>
         <p>Podpowiedź usuwa 2 błędne odpowiedzi w pytaniu z wyborem. Przycisk „Podpowiedź 50/50” pojawia się nad odpowiedziami. <b>Użycie podpowiedzi zeruje serię.</b></p>
-        <p>Podpowiedź może też losowo wypaść z paczki z kartą albo jako nagroda w Memory.</p>
+        <p>W Karcie w ciemno podpowiedź odsłania wskaźnik jednej wybranej karty.</p>
       </details>
       <details><summary>Ciekawostki</summary>
         <p>Niektóre karty mają na sobie mieniącego się PolandBalla. Stuknij go, a zobaczysz ciekawostki o tej gminie, czasem z linkiem.</p>
       </details>
-      <details><summary>Rzadkość karty</summary>
-        <p>Im mniej mieszkańców ma gmina, tym rzadsza karta (dane GUS):</p>
-        <ul>
-          <li><b>Diamentowe (6):</b> 3 najmniejsze miasta i 3 najmniejsze gminy wiejskie lub miejsko-wiejskie.</li>
-          <li><b>Złote:</b> 3% najmniejszych gmin.</li><li><b>Srebrne:</b> do 15% najmniejszych.</li><li><b>Brązowe:</b> do 45% najmniejszych.</li><li><b>Zwykłe:</b> pozostałe, największe gminy i miasta.</li>
-        </ul>
-      </details>
-      <details><summary>Jak liczona jest ocena OVR</summary>
-        <p>Każdy wskaźnik dostaje od 1 do 99 punktów według miejsca gminy w rankingu wszystkich 2473 gmin w Polsce. OVR to średnia ważona trzech wskaźników:</p>
-        <ul>
-          <li><b>Gęstość zaludnienia, waga 2:</b> im mniejsza, tym więcej punktów.</li>
-          <li><b>Bezrobocie, waga 1:</b> im niższe, tym więcej punktów.</li>
-          <li><b>Migracja (saldo na 1000 osób), waga 1:</b> im większy napływ mieszkańców, tym więcej punktów.</li>
-        </ul>
-        <p class="ki-wzor">OVR = (2 × gęstość + bezrobocie + migracja) / 4</p>
-        <p>Pozostałe wskaźniki są na karcie tylko informacyjnie i nie zmieniają OVR: ludność, powierzchnia i dochód (miejsce w rankingu) oraz wodociągi, kanalizacja i lesistość (procent wprost, więc 100% to 100 punktów).</p>
-        <p>Źródła: GUS Bank Danych Lokalnych, granice PRG.</p>
-      </details>
+      <details><summary>Rzadkość za rekordy</summary><p>Liczymy skrajne wartości w obu kierunkach. Rekord nie zawsze oznacza zaletę.</p><ul><li>Zwykła: bez rekordu.</li><li>Srebrna: 1 rekord województwa.</li><li>Złota: co najmniej 2 rekordy województwa.</li><li>Diamentowa: 1 rekord Polski.</li><li>Legendarna: co najmniej 2 rekordy Polski.</li></ul><p>Współrekordzistki otrzymują ten sam tytuł. Zdobyte odznaczenia są zachowywane według edycji. Zestaw rekordzistek województwa daje raz na edycję paczkę i odznakę.</p></details>
+      <details><summary>OVR miast i wsi</summary><p>Każdy wskaźnik jest oceniany w swojej grupie: wsie osobno, a miasta, MNP i gminy miejsko-wiejskie razem. Remisy mają identyczne punkty. Krzywa 40–94 skupia większość kart w przedziale 55–75; około 2% najlepszych ma 90+.</p><p>Miasta: PIT/os. ×2, bezrobocie ×2, migracja ×1,5, przyrost ×1, kanalizacja ×1.</p><p>Wsie: lesistość ×2, przyrost ×1,5, migracja ×1,5, kanalizacja ×1, wodociągi ×1, bezrobocie ×1. Szkoły publiczne ×1 są wstrzymane do pozyskania pełnych danych.</p><p>Średnia ważona wyznacza pozycję w grupie, którą przeliczamy na krzywą OVR. Stuknij numer na karcie, żeby zobaczyć obliczenia. „Zarobki” oznaczają PIT gminy na mieszkańca, nie przeciętną pensję.</p></details>
+      <details><summary>Ulepszanie i holografia</summary><p>Cały powiat: +1. Co 10 trafień konturu tej gminy: +1, maksymalnie +4. Łączne +5 daje kartę holograficzną. Premia zwiększa OVR i każdy dostępny wskaźnik, do limitu 99.</p><p>Na karcie widzisz dwa paski postępu i przycisk aktywowania połysku przy przechylaniu telefonu. Przy ograniczeniu ruchu efekt pozostaje statyczny.</p></details>
+      <a class="ki-album" href="karta-w-ciemno.html">Zagraj w Kartę w ciemno →</a>
     </div>
   </section>
   <section class="sekcja"><h3>Konto</h3>
     <div class="metody" id="metody"></div>
-    <p class="datastate" style="margin-top:8px">Na razie grasz jako gość: postęp jest zapisany na tym urządzeniu. Logowanie przez Google i e-mail pozwoli przenieść go na inne urządzenia i grać w rankingach.</p>
+    <p class="datastate" style="margin-top:8px">Na razie grasz jako gość: postęp jest zapisany na tym urządzeniu. Konto pozwala opublikować wynik w rankingu. Kolekcja i postęp są nadal lokalne.</p>
   </section>
   <section class="sekcja"><h3>Więcej</h3>
     <div class="linki">

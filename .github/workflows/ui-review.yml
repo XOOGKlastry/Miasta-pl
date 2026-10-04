@@ -1,0 +1,27 @@
+name: UI review
+on:
+  push:
+    branches: [codex/ovr-rekordy-karta-w-ciemno, codex/malowane-krajobrazy-v2]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/*.test.cjs
+      - run: npm install --no-save playwright@1.62.1
+      - run: npx playwright install --with-deps chromium
+      - run: python3 -m http.server 8765 > /tmp/server.log 2>&1 &
+      - run: node tests/ui-review.cjs
+      - run: node tests/peer-review.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-review
+          path: ui-review-output/
