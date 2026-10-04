@@ -3,6 +3,8 @@
    Obie wybrane karty odpadają z talii. 5 rund. Czysta logika: żadnych zapisów do kolekcji. */
 window.CiemnoZasady=(()=>{
  const TALIA=10,RUNDY=5,PULA=50,BEZ=['wodociag_proc','kanalizacja_proc','szkoly_na_1000'];
+ // wskaźniki do zakrywania: tylko te, które są na przodzie każdej karty (i miasta, i wsi)
+ const WSPOLNE=['ludnosc','gestosc','saldo_migracji','przyrost_naturalny','bezrobocie_proc','obciazenie_demograficzne'];
  const shuffle=(a,r=Math.random)=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
  const seeded=seed=>()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
  function value(c,k,records=false){return c.oc[k]==null?null:Math.min(99,c.oc[k]+c.bonus+(records&&c.rekordy.some(r=>r.k===k)?5:0));}
@@ -33,5 +35,5 @@ window.CiemnoZasady=(()=>{
  }
  // nagrody w grze rankingowej: monety, punkty rankingu pojedynków i szansa na paczkę
  const NAGRODY={wygrana:{monety:5,pkt:20,paczka:.15},remis:{monety:2,pkt:5,paczka:.06},przegrana:{monety:1,pkt:-10,paczka:.03}};
- return {PULA,BEZ,rozdaj,TALIA,RUNDY,shuffle,seeded,value,ovr,compare,candidates,ai,resolve,deck,NAGRODY};
+ return {WSPOLNE,PULA,BEZ,rozdaj,TALIA,RUNDY,shuffle,seeded,value,ovr,compare,candidates,ai,resolve,deck,NAGRODY};
 })();

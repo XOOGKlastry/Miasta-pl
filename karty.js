@@ -1,18 +1,30 @@
 /* Reguły edycji kart. Ranking percentylowy z remisami, osobno dla miast i wsi. */
 window.KartyModel=(()=>{
+ // t: 'r' więcej = lepiej, 'o' mniej = lepiej. miasto/wies: waga w OVR (miasta i gminy miejsko-wiejskie / gminy wiejskie).
  const STATY=[
   {k:'ludnosc',n:'Ludność',t:'r',miasto:0,wies:0},
   {k:'powierzchnia',n:'Powierzchnia',t:'r',miasto:0,wies:0},
   {k:'gestosc',n:'Gęstość',t:'o',miasto:0,wies:0},
   {k:'saldo_migracji',n:'Migracja',t:'r',miasto:1.5,wies:1.5},
-  {k:'przyrost_naturalny',n:'Przyrost naturalny',t:'r',miasto:1,wies:1.5},
+  {k:'przyrost_naturalny',n:'Przyrost naturalny',t:'r',miasto:0,wies:1.5},
   {k:'pit_na_mieszk',n:'Zarobki · PIT/os.',t:'r',miasto:2,wies:0},
   {k:'bezrobocie_proc',n:'Bezrobocie',t:'o',miasto:2,wies:1},
-  {k:'wodociag_proc',n:'Wodociągi',t:'r',miasto:0,wies:0,bezRekordu:true},
-  {k:'kanalizacja_proc',n:'Kanalizacja',t:'r',miasto:0,wies:0,bezRekordu:true},
+  {k:'firmy_na_1000',n:'Firmy na 1000 os.',t:'r',miasto:1.5,wies:0},
+  {k:'zadluzenie_na_mieszk',n:'Zadłużenie gminy',t:'o',miasto:1,wies:0},
+  {k:'mieszkanie_m2_os',n:'Mieszkanie na osobę',t:'r',miasto:1,wies:0},
+  {k:'obciazenie_demograficzne',n:'Obciążenie demograficzne',t:'o',miasto:1,wies:1},
   {k:'lesistosc_proc',n:'Lesistość',t:'r',miasto:0,wies:2},
-  {k:'szkoly_na_1000',n:'Szkoły podstawowe',t:'r',miasto:0,wies:1}
+  {k:'drogi_na_100km2',n:'Drogi twarde',t:'r',miasto:0,wies:1},
+  {k:'szkoly_na_1000',n:'Szkoły podstawowe',t:'r',miasto:0,wies:1},
+  {k:'odleglosc_stolica',n:'Do stolicy woj.',t:'o',miasto:0,wies:1},
+  {k:'wodociag_proc',n:'Wodociągi',t:'r',miasto:0,wies:0,bezRekordu:true},
+  {k:'kanalizacja_proc',n:'Kanalizacja',t:'r',miasto:0,wies:0,bezRekordu:true}
  ];
+ // przód karty: 10 wskaźników, inne dla miast i dla wsi; reszta w panelu „Pozostałe dane”
+ const TWARZ={
+  miasto:['ludnosc','gestosc','pit_na_mieszk','bezrobocie_proc','firmy_na_1000','saldo_migracji','zadluzenie_na_mieszk','mieszkanie_m2_os','obciazenie_demograficzne','przyrost_naturalny'],
+  wies:['ludnosc','gestosc','lesistosc_proc','przyrost_naturalny','saldo_migracji','bezrobocie_proc','obciazenie_demograficzne','drogi_na_100km2','szkoly_na_1000','odleglosc_stolica']};
+
  const grupa=g=>g.typ==='gmina wiejska'?'wies':'miasto';
  const valid=v=>typeof v==='number'&&Number.isFinite(v);
  const curve=p=>{const a=[[0,40],[.05,50],[.2,58],[.5,65],[.8,75],[.95,85],[.98,90],[1,94]];p=Math.max(0,Math.min(1,p));for(let i=1;i<a.length;i++)if(p<=a[i][0])return Math.round(a[i-1][1]+(a[i][1]-a[i-1][1])*(p-a[i-1][0])/(a[i][0]-a[i-1][0]));return 94;};
@@ -26,9 +38,10 @@ window.KartyModel=(()=>{
   for(const group of ['miasto','wies']){
    const z=g.filter(x=>x.grupa===group);
    STATY.forEach(s=>rank(z,x=>x[s.k],(x,v)=>x.oc[s.k]=v,s.t==='o'));
-   z.forEach(x=>{let sum=0,w=0,available=0;STATY.forEach(s=>{const weight=paused.includes(s.k)?0:s[group];if(!weight)return;w+=weight;if(x.oc[s.k]!=null)available+=weight;sum+=weight*(x.oc[s.k]??65);});x.srednia=sum/w;x.pokrycie=available/w;});
-   rank(z.filter(x=>x.pokrycie===1),x=>x.srednia,(x,v,p)=>{x.ovr=v;x.percentyl=p;});
-   z.filter(x=>x.pokrycie!==1).forEach(x=>{x.ovr=null;x.percentyl=null;});
+   const brak=STATY.filter(s=>s[group]&&z.filter(x=>valid(x[s.k])).length<z.length*.8).map(s=>s.k);
+   z.forEach(x=>{let sum=0,w=0,available=0;STATY.forEach(s=>{const weight=paused.includes(s.k)||brak.includes(s.k)?0:s[group];if(!weight)return;w+=weight;if(x.oc[s.k]!=null)available+=weight;sum+=weight*(x.oc[s.k]??65);});x.srednia=sum/w;x.pokrycie=available/w;});
+   rank(z.filter(x=>x.pokrycie>=.75),x=>x.srednia,(x,v,p)=>{x.ovr=v;x.percentyl=p;});
+   z.filter(x=>x.pokrycie<.75).forEach(x=>{x.ovr=null;x.percentyl=null;});
    for(const woj of new Set(z.map(x=>x.woj))){const l=z.filter(x=>x.woj===woj&&x.ovr!=null).sort((a,b)=>b.srednia-a.srednia);l.forEach((x,i)=>x.pozycjaWoj=i&&x.srednia===l[i-1].srednia?l[i-1].pozycjaWoj:i+1);}
   }
   // Rzadkość z rekordzistek: pierwsza piątka w Polsce albo w województwie, w obie strony.
@@ -37,7 +50,10 @@ window.KartyModel=(()=>{
  const OPIS={ludnosc:['najwięcej mieszkańców','najmniej mieszkańców'],powierzchnia:['największa powierzchnia','najmniejsza powierzchnia'],gestosc:['najgęściej zaludniona','najrzadziej zaludniona'],
   saldo_migracji:['największy napływ mieszkańców','największy odpływ mieszkańców'],przyrost_naturalny:['najwyższy przyrost naturalny','najniższy przyrost naturalny'],
   pit_na_mieszk:['najwyższe zarobki (PIT/os.)','najniższe zarobki (PIT/os.)'],bezrobocie_proc:['najwyższe bezrobocie','najniższe bezrobocie'],
-  lesistosc_proc:['najbardziej zalesiona','najmniej zalesiona'],szkoly_na_1000:['najwięcej szkół na 1000 os.','najmniej szkół na 1000 os.']};
+  lesistosc_proc:['najbardziej zalesiona','najmniej zalesiona'],szkoly_na_1000:['najwięcej szkół na 1000 os.','najmniej szkół na 1000 os.'],
+  firmy_na_1000:['najwięcej firm na 1000 os.','najmniej firm na 1000 os.'],zadluzenie_na_mieszk:['najbardziej zadłużona','najmniej zadłużona'],
+  mieszkanie_m2_os:['najwięcej metrów mieszkania na osobę','najciaśniej w mieszkaniach'],obciazenie_demograficzne:['najstarsza demograficznie','najmłodsza demograficznie'],
+  drogi_na_100km2:['najgęstsza sieć dróg','najrzadsza sieć dróg'],odleglosc_stolica:['najdalej od stolicy województwa','najbliżej stolicy województwa']};
  const TOP=5;
  const scopes=[['pl',g],...Array.from(new Set(g.map(x=>x.woj)),w=>[w,g.filter(x=>x.woj===w)])];
  for(const [scope,z] of scopes)for(const s of STATY){
@@ -62,7 +78,7 @@ window.KartyModel=(()=>{
   return {bonus:owned.has(g.k)?contour+powiat:0,powiat,contour,hits,count,total:county.length};
  }
  const score=(g,k,bonus=0,records=false)=>g.oc[k]==null?null:Math.min(99,g.oc[k]+bonus+(records&&g.rekordy.some(r=>r.k===k)?5:0));
- return {STATY,grupa,curve,rank,calculate,upgrade,score};
+ return {STATY,TWARZ,grupa,curve,rank,calculate,upgrade,score};
 })();
 
 /* Karty gmin: wspólna logika dla albumu (karty.html), gier (animacja „do inwentarza”) i menu (przycisk Kolekcja).
@@ -103,7 +119,7 @@ window.Karty=(function(){
   const STATY=Model.STATY;
   function przelicz(){Model.calculate(DANE.g,DANE.edycja,DANE.meta.wstrzymane||[]);}
   function ulepszenie(g){let n={};try{n=JSON.parse(localStorage.getItem("nauka-v1")||"{}");}catch{}return Model.upgrade(g,DANE.g,zdobyte().mam,n);}
-  function komplet(g){return g.ovr!=null&&STATY.filter(s=>!DANE.meta.wstrzymane?.includes(s.k)).every(s=>g.oc[s.k]!=null);}
+  function komplet(g){return g.ovr!=null;}
   function wynik(g,k,o={}){return Model.score(g,k,o.rowna?0:ulepszenie(g).bonus,!!o.rekordy);}
   function ocenaOVR(g,rowna=false){return g.ovr==null?null:Math.min(99,g.ovr+(rowna?0:ulepszenie(g).bonus));}
   function gminaPoNazwie(n){
@@ -228,7 +244,13 @@ window.Karty=(function(){
    bezrobocie_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V4h6v3M3 13h18"/></svg>',
    wodociag_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"/></svg>',
    kanalizacja_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M7 9h10M6 12h12M7 15h10"/></svg>',
-   lesistosc_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M12 2l6 9h-3l4 6H5l4-6H6z"/><path d="M12 17v5"/></svg>'};
+   lesistosc_proc:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M12 2l6 9h-3l4 6H5l4-6H6z"/><path d="M12 17v5"/></svg>',
+   firmy_na_1000:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M3 21V9l6 4V9l6 4V5h6v16z"/></svg>',
+   zadluzenie_na_mieszk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg>',
+   mieszkanie_m2_os:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M3 11l9-7 9 7v10H3z"/><path d="M9 21v-6h6v6"/></svg>',
+   obciazenie_demograficzne:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v18M4 7h16M4 7l-2 6h4zM20 7l-2 6h4z"/></svg>',
+   drogi_na_100km2:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M8 3L4 21M16 3l4 18M12 5v3M12 11v3M12 17v3"/></svg>',
+   odleglosc_stolica:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><path d="M18 3l1.5 3 3.5.5-2.5 2.4.6 3.4L18 10.6l-3.1 1.7.6-3.4L13 6.5l3.5-.5z"/><path d="M8 16c3-2 4-4 8-5" stroke-dasharray="2 2.5"/></svg>'};
   const TYP={"gmina miejska":"MIASTO","gmina wiejska":"WIEŚ","gmina miejsko-wiejska":"M-W"};
   const WS={"dolnośląskie":"DLŚ","kujawsko-pomorskie":"K-P","lubelskie":"LUB","lubuskie":"LBU","łódzkie":"ŁDZ","małopolskie":"MAŁ","mazowieckie":"MAZ","opolskie":"OPO","podkarpackie":"PKR","podlaskie":"PDL","pomorskie":"POM","śląskie":"ŚLĄ","świętokrzyskie":"ŚWK","warmińsko-mazurskie":"W-M","wielkopolskie":"WLK","zachodniopomorskie":"ZPM"};
   const mnp=g=>+g.k.slice(2,4)>=61;
@@ -241,6 +263,12 @@ window.Karty=(function(){
     if(k==="saldo_migracji"||k==="przyrost_naturalny")return (v>0?"+":"")+liczba(v)+"‰";
     if(k==="pit_na_mieszk")return liczba(v,0)+" zł/os.";
     if(k==="szkoly_na_1000")return liczba(v,2)+" / 1000 os.";
+    if(k==="firmy_na_1000")return liczba(v,0)+" / 1000 os.";
+    if(k==="zadluzenie_na_mieszk")return liczba(v,0)+" zł/os.";
+    if(k==="mieszkanie_m2_os")return liczba(v,1)+" m²/os.";
+    if(k==="obciazenie_demograficzne")return liczba(v,1)+" na 100";
+    if(k==="drogi_na_100km2")return liczba(v,0)+" km/100 km²";
+    if(k==="odleglosc_stolica")return liczba(v,0)+" km";
     return liczba(v)+"%";
   }
   let HERBY={};
@@ -252,7 +280,7 @@ window.Karty=(function(){
   // tryb: "mini" (album), "pelna" (podgląd i prezentacja)
   function karta(g,o){
     o=o||{};const ot=o.otwarta!==false,pelna=o.tryb==="pelna",u=o.rowna?{bonus:0,count:0,total:0,hits:0}:ulepszenie(g),oc=Object.fromEntries(Object.entries(g.oc||{}).map(([k,v])=>[k,Math.min(99,v+u.bonus)])),h=ot?herbSrc(g):"";
-    const st=pelna?'<span class="kk-linia"></span><div class="kk-st">'+STATY.map(s=>'<span>'+(IK[s.k]||IK.ludnosc)+'<em>'+s.n+'</em><b>'+(ot&&o.ukryj!==s.k&&oc[s.k]!=null?oc[s.k]:"?")+'</b><i>'+(ot&&o.ukryj!==s.k?wartosc(g,s.k):"")+'</i></span>').join("")+'</div>':'';
+    const st=pelna?'<span class="kk-linia"></span><div class="kk-st">'+Model.TWARZ[g.grupa||'miasto'].map(k=>STATY.find(x=>x.k===k)).filter(Boolean).map(s=>'<span data-k="'+s.k+'">'+(IK[s.k]||IK.ludnosc)+'<em>'+s.n+'</em><b>'+(ot&&o.ukryj!==s.k&&oc[s.k]!=null?oc[s.k]:"?")+'</b><i>'+(ot&&o.ukryj!==s.k?wartosc(g,s.k):"")+'</i></span>').join("")+'</div>':'';
     return '<div class="kk kk-'+(pelna?"pelna":"mini")+' r-'+g.rz+(u.bonus===5?' holograficzna':'')+(ot?"":" zablokowana")+'" data-k="'+g.k+'">'+(o.nowa?'<span class="kk-nowa">NOWA</span>':'')+'<span class="kk-ramka"></span>'
       +'<div class="kk-lewa"><button type="button" class="kk-ovr" data-ovr="'+g.k+'" aria-label="Dlaczego takie OVR?">'+(ot&&g.ovr!=null?Math.min(99,g.ovr+u.bonus):"?")+'</button>'+(ot&&u.bonus?'<small class="kk-premia">+'+u.bonus+'</small>':'')+'<span class="kk-typ">'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</span>'+(h?'<img class="kk-herb" alt="" loading="lazy" src="'+h+'">':'')+'<span class="kk-kres"></span><span class="kk-wojs">'+(WS[g.woj]||"")+'</span></div>'
       +'<div class="kk-mapka" data-m="'+g.k+'"></div>'
@@ -263,7 +291,7 @@ window.Karty=(function(){
   }
   // rekord dobry (zielony), zły (czerwony) albo neutralny (złoty)
   function znakRekordu(r){
-    if(r.k==='ludnosc'||r.k==='powierzchnia')return 'neutral';
+    if(r.k==='ludnosc'||r.k==='powierzchnia'||r.k==='gestosc')return 'neutral';
     const s=STATY.find(x=>x.k===r.k),lepiejMniej=s&&s.t==='o';
     return (r.dir==='max')!==lepiejMniej?'plus':'minus';
   }
@@ -278,6 +306,7 @@ window.Karty=(function(){
       +(g.pozycjaWoj?'<p class="kk-poz">#'+g.pozycjaWoj+' w woj. '+esc(g.woj.replace(/ie$/,'im'))+' · '+(g.grupa==='wies'?'wśród wsi':'wśród miast i M-W')+'</p>':'')
       +(g.odleglosc_stolica!=null?'<p class="kk-poz">'+(g.odleglosc_stolica<1?'Stolica województwa':'Do stolicy województwa: '+liczba(g.odleglosc_stolica,0)+' km ('+esc(g.najblizsza_stolica)+(g.inne_woj?', sąsiednie województwo':'')+')')+'</p>':'')
       +(r?'<b class="kk-pn">Rekordy</b>'+r:'<p class="kk-brak">Bez rekordów w pierwszej piątce.</p>')
+      +'<b class="kk-pn">Pozostałe dane</b><div class="kk-reszta">'+STATY.filter(s=>!Model.TWARZ[g.grupa||'miasto'].includes(s.k)).map(s=>'<span>'+(IK[s.k]||'')+'<em>'+s.n+'</em><i>'+wartosc(g,s.k)+'</i><b>'+(g.oc[s.k]??'–')+'</b></span>').join('')+'</div>'
       +'<div class="kk-postep">'+(m?'':'<label><span>Powiat</span><progress value="'+u.count+'" max="'+Math.max(1,u.total)+'"></progress><em>'+u.count+'/'+u.total+'</em></label>')
       +'<label><span>Kontury</span><progress value="'+Math.min(40,u.hits)+'" max="40"></progress><em>'+Math.min(40,u.hits)+'/40</em></label></div>'
       +(u.bonus?'<p class="kk-bonus">Premia karty: +'+u.bonus+(u.bonus===5?' · karta holograficzna':'')+'</p>':'')
@@ -389,6 +418,13 @@ window.Karty=(function(){
 .kk-panel p{margin:0;font-weight:700;font-size:12.5px;color:#7A6440}
 .kk-panel .kk-pn{font-family:Bungee,sans-serif;font-weight:400;font-size:14px}
 .kk-postep{display:grid;gap:4px}
+.kk-reszta{display:grid;gap:3px}
+.kk-reszta span{display:grid;grid-template-columns:16px minmax(0,1fr) auto 28px;gap:6px;align-items:center;font:700 12px Rubik,sans-serif;padding:3px 0;border-bottom:1px dashed rgba(58,42,20,.25)}
+.kk-reszta span:last-child{border-bottom:none}
+.kk-reszta svg{width:16px;height:16px}
+.kk-reszta em{font-style:normal}
+.kk-reszta i{font-style:normal;color:#7A6440}
+.kk-reszta b{text-align:right;font-family:Bungee,sans-serif;font-weight:400}
 .kk-postep label{display:grid;grid-template-columns:64px 1fr 46px;align-items:center;gap:8px;font-weight:800;font-size:12px}
 .kk-postep progress{width:100%;height:10px;accent-color:#27AE60}
 .kk-postep em{font-style:normal;text-align:right}

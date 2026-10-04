@@ -97,6 +97,38 @@ def znajdz_zmienna(frazy,musi,nie,year):
                     logging.info('WYBRANO %s rok %s: %s',v['id'],max(lata),opis[:160]);return v['id'],max(lata),meta
     return None,None,None
 
+# nowe wskaźniki: szukane w BDL po nazwie; każdy kandydat trafia do logu, żeby wybór dało się sprawdzić
+NOWE={
+    'powierzchnia_mieszk_os':{'frazy':['powierzchnia użytkowa mieszkania na 1 osobę','przeciętna powierzchnia użytkowa 1 mieszkania na 1 osobę'],
+        'musi':['na 1 osob','powierzchni'],'nie':['w miastach','na wsi','oddan','nowo'],'mnoznik':1},
+    'obciazenie_demograficzne':{'frazy':['ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym','nieprodukcyjnym na 100'],
+        'musi':['nieprodukcyjn','na 100'],'nie':['poprodukcyjnym na 100 osób w wieku przed','kobiet','mężczyzn'],'mnoznik':1},
+    'firmy_na_1000':{'frazy':['podmioty wpisane do rejestru REGON na 10 tys. ludności','REGON na 10 tys'],
+        'musi':['regon','10 tys'],'nie':['osoby fizyczne','nowo','wyrejestrow','sektor publiczny','spółki'],'mnoznik':0.1},
+    'drogi_twarde_100km2':{'frazy':['drogi gminne o nawierzchni twardej na 100 km2','nawierzchni twardej na 100'],
+        'musi':['twardej','100 km'],'nie':['ulepszon','powiatow','wojewódz','krajow','gruntow'],'mnoznik':1},
+    'zadluzenie_na_mieszk':{'frazy':['zobowiązania ogółem na 1 mieszkańca','zobowiązania na 1 mieszkańca','zadłużenie na 1 mieszkańca'],
+        'musi':['zobowiąz','mieszka'],'nie':['wymagaln','powiat','wojewódz'],'mnoznik':1},
+}
+
+def znajdz(cel: dict, year: int):
+    """Pierwsza zmienna na poziomie gmin pasująca do opisu, z najnowszym rokiem nie późniejszym niż year."""
+    for fraza in cel['frazy']:
+        try:j=request('/variables/search?name='+urllib.parse.quote(fraza)+'&page-size=100&format=json')
+        except Exception as exc:logging.warning('Szukanie %s: %s',fraza,exc);continue
+        for v in j.get('results',[]):
+            opis=' '.join(str(v.get(k,'')) for k in ('n1','n2','n3','n4','n5','measureUnitName')).lower()
+            logging.info('kandydat %s | %s | poziom %s',v.get('id'),opis[:150],v.get('level'))
+        for v in j.get('results',[]):
+            opis=' '.join(str(v.get(k,'')) for k in ('n1','n2','n3','n4','n5','measureUnitName')).lower()
+            if all(m in opis for m in cel['musi']) and not any(n in opis for n in cel['nie']) and int(v.get('level',0))>=6:
+                try:meta=request(f"/variables/{v['id']}?format=json")
+                except Exception:continue
+                lata=[y for y in meta.get('years',[]) if y<=year]
+                if lata:
+                    logging.info('WYBRANO %s: %s (rok %s)',v['id'],opis[:160],max(lata));return v['id'],max(lata),meta
+    return None,None,None
+
 def main() -> None:
     """Pobierz jawnie wybrany rok i dołącz tylko pasujące kody gmin."""
     parser=argparse.ArgumentParser();parser.add_argument('--year',type=int,default=2025);args=parser.parse_args()
@@ -126,6 +158,15 @@ def main() -> None:
             nowe[pole]=({k:(przelicz(v) if przelicz else v) for k,v in dane.items()},rok)
             sources[pole]={'id':zid,'rok':rok,'url':BASE+f'/variables/{zid}','opis':meta}
         except Exception as exc:logging.warning('%s: %s',pole,exc)
+    # nowe wskaźniki kart
+    nowe={}
+    for pole,cel in NOWE.items():
+        vid,rok,meta=znajdz(cel,args.year)
+        if not vid:logging.warning('NIE ZNALEZIONO zmiennej dla %s',pole);continue
+        try:
+            w=download(vid,rok);nowe[pole]=({k:round(v*cel['mnoznik'],3) for k,v in w.items()},rok)
+            sources[pole]={'id':vid,'rok':rok,'url':BASE+f'/variables/{vid}','opis':meta}
+        except Exception as exc:logging.warning('%s: %s',pole,exc)
     result={};missing=[]
     for key,g in sorted(rows.items()):
         row={};years={}
@@ -139,6 +180,8 @@ def main() -> None:
             row['szkoly_na_1000']=round(szkoly[key]/g['ludnosc']*1000,3);years['szkoly_na_1000']=sz_rok
         for pole,(dane,rok) in nowe.items():
             if key in dane:row[pole]=round(dane[key],3);years[pole]=rok
+        for pole,(wart,rok) in nowe.items():
+            if key in wart:row[pole]=wart[key];years[pole]=rok
         row['lata']=years;result[key]=row
         absent=[x for x in ['przyrost_naturalny','pit_na_mieszk','powierzchnia'] if x not in row]
         if absent:missing.append({'k':key,'pola':absent})
