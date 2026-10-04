@@ -1,2 +1,2 @@
-// Wyłącznie publiczny URL i klucz publishable/anon. Nigdy service_role ani sekrety OAuth.
-window.ONLINE_CONFIG={url:"",key:"",requireAccount:true};
+// Wyłącznie publiczny klucz publishable. Sekrety dostawców pozostają w Supabase.
+window.ONLINE_CONFIG={url:"https://dhzjqxhoiaroauimoepq.supabase.co",key:"sb_publishable_tfncaLD_9cjaDGmOZAbeaw_zyE4TX04",requireAccount:false,emailReady:false};

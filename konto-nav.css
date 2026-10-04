@@ -1,0 +1,1 @@
+.quick-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:12px}.quick-nav a{display:flex;align-items:center;justify-content:center;gap:6px;min-height:48px;padding:8px;border:1px solid #bdcdb5;border-radius:14px;background:#fff8e8;color:#254632;text-decoration:none;font:700 13px system-ui;box-shadow:0 3px 9px #25463214}

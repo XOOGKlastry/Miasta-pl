@@ -1,56 +1,90 @@
+/* Reguły edycji kart. Ranking percentylowy z remisami, osobno dla miast i wsi. */
+window.KartyModel=(()=>{
+ const STATY=[
+  {k:'ludnosc',n:'Ludność',t:'r',miasto:0,wies:0},
+  {k:'powierzchnia',n:'Powierzchnia',t:'r',miasto:0,wies:0},
+  {k:'gestosc',n:'Gęstość',t:'o',miasto:0,wies:0},
+  {k:'saldo_migracji',n:'Migracja',t:'r',miasto:1.5,wies:1.5},
+  {k:'przyrost_naturalny',n:'Przyrost naturalny',t:'r',miasto:1,wies:1.5},
+  {k:'pit_na_mieszk',n:'Zarobki · PIT/os.',t:'r',miasto:2,wies:0},
+  {k:'bezrobocie_proc',n:'Bezrobocie',t:'o',miasto:2,wies:1},
+  {k:'wodociag_proc',n:'Wodociągi',t:'r',miasto:0,wies:1},
+  {k:'kanalizacja_proc',n:'Kanalizacja',t:'r',miasto:1,wies:1},
+  {k:'lesistosc_proc',n:'Lesistość',t:'r',miasto:0,wies:2},
+  {k:'szkoly_na_1000',n:'Szkoły publiczne',t:'r',miasto:0,wies:1}
+ ];
+ const grupa=g=>g.typ==='gmina wiejska'?'wies':'miasto';
+ const valid=v=>typeof v==='number'&&Number.isFinite(v);
+ const curve=p=>{const a=[[0,40],[.05,50],[.2,58],[.5,65],[.8,75],[.95,85],[.98,90],[1,94]];p=Math.max(0,Math.min(1,p));for(let i=1;i<a.length;i++)if(p<=a[i][0])return Math.round(a[i-1][1]+(a[i][1]-a[i-1][1])*(p-a[i-1][0])/(a[i][0]-a[i-1][0]));return 94;};
+ // O(n log n). Remisy mają średnią pozycję, niezależną od kolejności wejścia.
+ function rank(list,value,assign,reverse=false){
+  const z=list.filter(g=>valid(value(g))).sort((a,b)=>(value(a)-value(b))*(reverse?-1:1));
+  for(let i=0;i<z.length;){let j=i+1;while(j<z.length&&value(z[j])===value(z[i]))j++;const p=z.length===1?.5:(i+j-1)/2/(z.length-1);for(let k=i;k<j;k++)assign(z[k],curve(p),p);i=j;}
+ }
+ function calculate(g,edition,paused=[]){
+  g.forEach(x=>{x.oc={};x.rekordy=[];x.grupa=grupa(x);if(valid(x.ludnosc)&&x.powierzchnia>0)x.gestosc=x.ludnosc/x.powierzchnia;});
+  for(const group of ['miasto','wies']){
+   const z=g.filter(x=>x.grupa===group);
+   STATY.forEach(s=>rank(z,x=>x[s.k],(x,v)=>x.oc[s.k]=v,s.t==='o'));
+   z.forEach(x=>{let sum=0,w=0,available=0;STATY.forEach(s=>{const weight=paused.includes(s.k)?0:s[group];if(!weight)return;w+=weight;if(x.oc[s.k]!=null)available+=weight;sum+=weight*(x.oc[s.k]??65);});x.srednia=sum/w;x.pokrycie=available/w;});
+   rank(z.filter(x=>x.pokrycie===1),x=>x.srednia,(x,v,p)=>{x.ovr=v;x.percentyl=p;});
+   z.filter(x=>x.pokrycie!==1).forEach(x=>{x.ovr=null;x.percentyl=null;});
+   for(const woj of new Set(z.map(x=>x.woj))){const l=z.filter(x=>x.woj===woj&&x.ovr!=null).sort((a,b)=>b.srednia-a.srednia);l.forEach((x,i)=>x.pozycjaWoj=i&&x.srednia===l[i-1].srednia?l[i-1].pozycjaWoj:i+1);}
+  }
+  const scopes=[['pl',g],...Array.from(new Set(g.map(x=>x.woj)),w=>[w,g.filter(x=>x.woj===w)])];
+  for(const [scope,z] of scopes)for(const s of STATY){const a=z.filter(x=>valid(x[s.k]));if(a.length<2)continue;const min=Math.min(...a.map(x=>x[s.k])),max=Math.max(...a.map(x=>x[s.k]));if(min===max)continue;
+   for(const [dir,v]of [['min',min],['max',max]])a.filter(x=>x[s.k]===v).forEach(x=>x.rekordy.push({k:s.k,dir,scope,rok:edition,wartosc:v,opis:(dir==='min'?'Najniższa wartość: ':'Najwyższa wartość: ')+s.n+(scope==='pl'?' w Polsce':' w woj. '+scope)}));
+  }
+  g.forEach(x=>{const pl=x.rekordy.filter(r=>r.scope==='pl').length,woj=x.rekordy.filter(r=>r.scope!=='pl').length;x.rz=pl>=2?'legenda':pl===1?'diament':woj>=2?'zloto':woj===1?'srebro':'zwykla';});
+  return g;
+ }
+ function upgrade(g,all,owned,learning){const county=all.filter(x=>x.k.slice(0,4)===g.k.slice(0,4)),count=county.filter(x=>owned.has(x.k)).length;
+  const hits=Math.max(0,Number(learning['kontur:'+g.k]?.ok)||0),contour=Math.min(4,Math.floor(hits/10)),powiat=county.length>0&&count===county.length?1:0;
+  return {bonus:owned.has(g.k)?contour+powiat:0,powiat,contour,hits,count,total:county.length};
+ }
+ const score=(g,k,bonus=0,records=false)=>g.oc[k]==null?null:Math.min(99,g.oc[k]+bonus+(records&&g.rekordy.some(r=>r.k===k)?5:0));
+ return {STATY,grupa,curve,rank,calculate,upgrade,score};
+})();
+
 /* Karty gmin: wspólna logika dla albumu (karty.html), gier (animacja „do inwentarza”) i menu (przycisk Kolekcja).
    Karta jest zdobyta, gdy:
    - trafisz gminę po konturze (Do sześciu razy sztuka, Kształt gminy), nawet z podpowiedziami, albo
    - zbierzesz 3/4/5/6/7 fragmentów zależnie od rzadkości. */
 window.Karty=(function(){
-  const RZ={diament:"Diamentowa",zloto:"Złota",srebro:"Srebrna",braz:"Brązowa",zwykla:"Zwykła"},KOLEJ=["diament","zloto","srebro","braz","zwykla"];
+  const RZ={legenda:"Legendarna",diament:"Diamentowa",zloto:"Złota",srebro:"Srebrna",zwykla:"Zwykła"},KOLEJ=["legenda","diament","zloto","srebro","zwykla"];
   const RODZAJE=["miasto","herb","miejsce","rzeka","klub","gmina"];
-  const PROG=3, PROGI={zwykla:3,braz:4,srebro:5,zloto:6,diament:7};
+  const PROG=3, PROGI={zwykla:3,srebro:4,zloto:5,diament:6,legenda:7};
   const prog=g=>PROGI[g.rz]||3;
   let DANE=null;
+  const Model=window.KartyModel;
   const norm=s=>String(s||"").toLowerCase().replace(/ł/g,"l").normalize("NFKD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
   const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
 
-  /* wskaźnik 1-99 jak w grach piłkarskich: miejsce w rankingu wszystkich gmin */
-  function ocena(lista,pole,odwrotnie){
-    const z=lista.filter(g=>g[pole]!=null).sort((a,b)=>odwrotnie?b[pole]-a[pole]:a[pole]-b[pole]),n=z.length;
-    z.forEach((g,i)=>{g.oc=g.oc||{};g.oc[pole]=Math.max(1,Math.min(99,Math.round(1+98*i/Math.max(1,n-1))));});
-  }
   let CIEK={};
   async function zaladuj(){
     if(DANE)return DANE;
     fetch("ciekawostki.json").then(r=>r.ok?r.json():{}).then(c=>{CIEK=c||{};}).catch(()=>{});
     const b=await fetch("baza.json").then(r=>r.json());
+    const extra=await fetch("karty-dane.json").then(r=>{if(!r.ok)throw Error("Nie udało się wczytać danych kart");return r.json();});
     const g=b.gminy.filter(x=>/[123]$/.test(x.k));
     // rzadkość: im mniej mieszkańców, tym rzadsza; 3 najmniejsze miasta i 3 najmniejsze gminy są diamentowe
     const z=g.filter(x=>x.ludnosc).sort((a,c)=>a.ludnosc-c.ludnosc),n=z.length;
     const diam=new Set(z.filter(x=>x.typ==="gmina miejska").slice(0,3).concat(z.filter(x=>x.typ!=="gmina miejska").slice(0,3)).map(x=>x.k));
     z.forEach((x,i)=>{x.rz=diam.has(x.k)?"diament":i<n*.03?"zloto":i<n*.15?"srebro":i<n*.45?"braz":"zwykla";});
     g.forEach(x=>{if(!x.rz)x.rz="zwykla";x.woj=WOJ_KOD[x.k.slice(0,2)];});
+    g.forEach(x=>{x._staryProg={zwykla:3,braz:4,srebro:5,zloto:6,diament:7}[x.rz];const fresh=extra.gminy?.[x.k];if(fresh)Object.assign(x,fresh);});
     g.sort((a,c)=>(a.ludnosc||1e9)-(c.ludnosc||1e9)).forEach((x,i)=>x.nr=i+1);
     const pow={};(b.powiaty||[]).forEach(p=>pow[p.k]=p.n);
     g.forEach(x=>{const kp=x.k.slice(0,4);x.powiat=+kp.slice(2)>=61?"miasto na prawach powiatu":"powiat "+(pow[kp]||"");});
     const PO_K={},PO_N={};g.forEach(x=>{PO_K[x.k]=x;(PO_N[norm(x.n)]=PO_N[norm(x.n)]||[]).push(x);});
-    DANE={g,PO_K,PO_N};przelicz();return DANE;
+    DANE={g,PO_K,PO_N,edycja:extra.rok||"edycja 2026",meta:extra};przelicz();return DANE;
   }
-  // wskaźniki 1-99; bezrobocie odwrotnie (mniej bezrobotnych, wyższa ocena)
-  // wskaźniki karty: miejsce w rankingu gmin (1-99) albo wprost procent (100% = 100 punktów)
-  // t: "r" ranking (więcej = lepiej), "o" ranking odwrotny (mniej = lepiej), "p" procent wprost
-  // w: waga w ocenie ogólnej (OVR); wskaźniki z wagą 0 są na karcie, ale nie wchodzą do OVR
-  const STATY=[
-    {k:"ludnosc",n:"Ludność",t:"r",w:0},{k:"powierzchnia",n:"Powierzchnia",t:"r",w:0},{k:"gestosc",n:"Gęstość",t:"o",w:2},
-    {k:"saldo_migracji",n:"Migracja",t:"r",w:1},{k:"dochod_na_mieszk",n:"Dochód",t:"r",w:0},{k:"bezrobocie_proc",n:"Bezrobocie",t:"o",w:1},
-    {k:"wodociag_proc",n:"Wodociągi",t:"p",w:0},{k:"kanalizacja_proc",n:"Kanalizacja",t:"p",w:0},{k:"lesistosc_proc",n:"Lesistość",t:"p",w:0}];
-  function przelicz(){
-    const g=DANE.g;
-    g.forEach(x=>{x.oc={};if(x.ludnosc&&x.powierzchnia)x.gestosc=Math.round(x.ludnosc/x.powierzchnia*10)/10;});
-    STATY.forEach(s=>{
-      if(s.t==="p")g.forEach(x=>{if(x[s.k]!=null)x.oc[s.k]=Math.max(0,Math.min(100,Math.round(x[s.k])));});
-      else ocena(g,s.k,s.t==="o");
-    });
-    // OVR: średnia ważona: gęstość ×2 (im rzadziej zaludniona, tym lepiej), bezrobocie ×1 (im niższe, tym lepiej), migracja ×1 (im większy napływ, tym lepiej)
-    g.forEach(x=>{let s=0,wg=0;STATY.forEach(t=>{if(t.w&&x.oc[t.k]!=null){s+=t.w*x.oc[t.k];wg+=t.w;}});x.ovr=wg?Math.round(s/wg):0;});
-  }
+  const STATY=Model.STATY;
+  function przelicz(){Model.calculate(DANE.g,DANE.edycja,DANE.meta.wstrzymane||[]);}
+  function ulepszenie(g){let n={};try{n=JSON.parse(localStorage.getItem("nauka-v1")||"{}");}catch{}return Model.upgrade(g,DANE.g,zdobyte().mam,n);}
+  function komplet(g){return g.ovr!=null&&STATY.filter(s=>!DANE.meta.wstrzymane?.includes(s.k)).every(s=>g.oc[s.k]!=null);}
+  function wynik(g,k,o={}){return Model.score(g,k,o.rowna?0:ulepszenie(g).bonus,!!o.rekordy);}
+  function ocenaOVR(g,rowna=false){return g.ovr==null?null:Math.min(99,g.ovr+(rowna?0:ulepszenie(g).bonus));}
   function gminaPoNazwie(n){
     const l=DANE.PO_N[norm(n)];if(!l)return null;
     return l.find(x=>x.typ==="gmina miejska")||l.find(x=>x.typ==="gmina miejsko-wiejska")||l[0];
@@ -60,9 +94,10 @@ window.Karty=(function(){
      2. gry gminne (herby, Gdzie ta gmina, Ciepło-zimno, Kształt gminy): 3–7 trafień tej samej gminy to karta,
      3. wszystkie inne gry dają żetony; 25 żetonów to paczka z jedną losową nową kartą. */
   const PACZKA=25;
-  const SZANSE=[["diament",.005],["zloto",.035],["srebro",.09],["braz",.25],["zwykla",.62]];
+  const SZANSE=[["legenda",.001],["diament",.009],["zloto",.04],["srebro",.15],["zwykla",.80]];
   function paczki(){try{return JSON.parse(localStorage.getItem("karty-paczki")||"[]");}catch(e){return [];}}
-  function zetony(){return +localStorage.getItem("karty-zetony")||0;}
+  function odznaki(){try{return JSON.parse(localStorage.getItem("karty-zestawy-v1")||"{}");}catch{return {};}}
+  function zetony(){return (+localStorage.getItem("karty-zetony")||0)+Object.keys(odznaki()).length*25;}
   function zdobyte(stare=false){
     let n={};try{n=JSON.parse(localStorage.getItem("nauka-v1")||"{}");}catch(e){}
     const pkt={},od=new Set(paczki().concat(Object.values(dzienne()).map(r=>r.k).filter(Boolean)));
@@ -77,22 +112,28 @@ window.Karty=(function(){
     });
     Object.values(JSON.parse(localStorage.getItem("karty-nagrody-v1")||"{}")).forEach(r=>od.add(r.k));
     const postep={};
-    Object.entries(pkt).forEach(([k,v])=>{const limit=stare?3:prog(DANE.PO_K[k]);if(v>=limit)od.add(k);postep[k]={size:Math.min(v,limit)};});
+    Object.entries(pkt).forEach(([k,v])=>{const limit=stare?(localStorage.getItem("karty-zasady")==="3"?DANE.PO_K[k]._staryProg:3):prog(DANE.PO_K[k]);if(v>=limit)od.add(k);postep[k]={size:Math.min(v,limit)};});
     return {mam:od,postep};
   }
   // jednorazowo przy zmianie zasad: karty zdobyte po staremu zostają w kolekcji
   function migracja(){
-    if(localStorage.getItem("karty-zasady")==="3")return;
+    if(localStorage.getItem("karty-zasady")==="4"){archiwizuj();return;}
     try{
       const stare=JSON.parse(localStorage.getItem("karty-ogloszone")||"[]");
       localStorage.setItem("karty-paczki",JSON.stringify([...new Set(paczki().concat(stare,[...zdobyte(true).mam]))]));
     }catch(e){}
-    localStorage.setItem("karty-zasady","3");
+    localStorage.setItem("karty-zasady","4");archiwizuj();
   }
   // paczki czekają na otwarcie; gracz otwiera je sam, po jednej
   function liczbaPaczek(){return Math.floor(zetony()/PACZKA);}
   const PACZKI=[["zwykla",.80],["srebro",.16],["zloto",.035],["diament",.005]];
-  const DROP={zwykla:[["diament",.001],["zloto",.009],["srebro",.09],["braz",.25],["zwykla",.65]],srebro:[["diament",.005],["zloto",.045],["srebro",.5],["braz",.3],["zwykla",.15]],zloto:[["diament",.03],["zloto",.57],["srebro",.3],["braz",.1]],diament:[["diament",.35],["zloto",.5],["srebro",.15]]};
+  const DROP={zwykla:[["legenda",.001],["diament",.009],["zloto",.04],["srebro",.15],["zwykla",.80]],srebro:[["legenda",.005],["diament",.025],["zloto",.17],["srebro",.55],["zwykla",.25]],zloto:[["legenda",.02],["diament",.08],["zloto",.60],["srebro",.30]],diament:[["legenda",.10],["diament",.50],["zloto",.30],["srebro",.10]]};
+  function archiwizuj(){
+    const owned=zdobyte().mam,records=JSON.parse(localStorage.getItem("karty-rekordy-v1")||"{}"),badges=odznaki();
+    for(const k of owned){const g=DANE.PO_K[k];if(g?.rekordy.length&&!records[k+":"+DANE.edycja])records[k+":"+DANE.edycja]={rz:g.rz,rekordy:g.rekordy};}
+    for(const woj of new Set(DANE.g.map(g=>g.woj))){const set=DANE.g.filter(g=>g.woj===woj&&g.rekordy.length);if(set.length&&set.every(g=>owned.has(g.k)))badges[DANE.edycja+":"+woj]={woj,rok:DANE.edycja};}
+    localStorage.setItem("karty-rekordy-v1",JSON.stringify(records));localStorage.setItem("karty-zestawy-v1",JSON.stringify(badges));
+  }
   function losuj(tabela,r=Math.random()){for(const [k,p]of tabela){if(r<p)return k;r-=p;}return tabela.at(-1)[0];}
   function losowaKarta(kolor){
     const rz=losuj(DROP[kolor]),mam=zdobyte().mam;
@@ -107,7 +148,7 @@ window.Karty=(function(){
       const z=zetony();if(z<PACZKA)return null;
       const kolor=losuj(PACZKI),g=losowaKarta(kolor);if(!g)return null;
       localStorage.setItem("karty-paczki",JSON.stringify([...new Set(paczki().concat(g.k))]));
-      localStorage.setItem("karty-zetony",String(z-PACZKA));
+      localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)-PACZKA));
       localStorage.setItem("karty-ogloszone",JSON.stringify([...new Set((ogloszone()||[]).concat(g.k))]));
       return {...g,_paczka:true,_kolorPaczki:kolor,_joker:false};
     };
@@ -176,8 +217,9 @@ window.Karty=(function(){
     if(k==="ludnosc")return liczba(v,0)+" mieszk.";
     if(k==="powierzchnia")return liczba(v,1)+" km²";
     if(k==="gestosc")return liczba(v,0)+" os./km²";
-    if(k==="saldo_migracji")return (v>0?"+":"")+liczba(v)+"‰";
-    if(k==="dochod_na_mieszk")return liczba(v,0)+" zł/os.";
+    if(k==="saldo_migracji"||k==="przyrost_naturalny")return (v>0?"+":"")+liczba(v)+"‰";
+    if(k==="pit_na_mieszk")return liczba(v,0)+" zł/os.";
+    if(k==="szkoly_na_1000")return liczba(v,2)+" / 1000 os.";
     return liczba(v)+"%";
   }
   let HERBY={};
@@ -188,16 +230,36 @@ window.Karty=(function(){
   const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
   // tryb: "mini" (album), "pelna" (podgląd i prezentacja)
   function karta(g,o){
-    o=o||{};const ot=o.otwarta!==false,pelna=o.tryb==="pelna",oc=g.oc||{},h=ot?herbSrc(g):"";
-    const st=pelna?'<span class="kk-linia"></span><div class="kk-st">'+STATY.map(s=>'<span>'+IK[s.k]+'<em>'+s.n+'</em><b>'+(ot&&oc[s.k]!=null?oc[s.k]:"?")+'</b><i>'+(ot?wartosc(g,s.k):"")+'</i></span>').join("")+'</div>':'';
-    return '<div class="kk kk-'+(pelna?"pelna":"mini")+' r-'+g.rz+(ot?"":" zablokowana")+'" data-k="'+g.k+'">'+(o.nowa?'<span class="kk-nowa">NOWA</span>':'')+'<span class="kk-ramka"></span>'
-      +'<div class="kk-lewa"><span class="kk-ovr">'+(ot&&g.ovr?g.ovr:"?")+'</span><span class="kk-typ">'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</span>'+(h?'<img class="kk-herb" alt="" loading="lazy" src="'+h+'">':'')+'<span class="kk-kres"></span><span class="kk-wojs">'+(WS[g.woj]||"")+'</span></div>'
+    o=o||{};const ot=o.otwarta!==false,pelna=o.tryb==="pelna",u=o.rowna?{bonus:0,count:0,total:0,hits:0}:ulepszenie(g),oc=Object.fromEntries(Object.entries(g.oc||{}).map(([k,v])=>[k,Math.min(99,v+u.bonus)])),h=ot?herbSrc(g):"";
+    const st=pelna?'<span class="kk-linia"></span><div class="kk-st">'+STATY.map(s=>'<span>'+(IK[s.k]||IK.ludnosc)+'<em>'+s.n+'</em><b>'+(ot&&o.ukryj!==s.k&&oc[s.k]!=null?oc[s.k]:"?")+'</b><i>'+(ot&&o.ukryj!==s.k?wartosc(g,s.k):"")+'</i></span>').join("")+'</div>':'';
+    return '<div class="kk kk-'+(pelna?"pelna":"mini")+' r-'+g.rz+(u.bonus===5?' holograficzna':'')+(ot?"":" zablokowana")+'" data-k="'+g.k+'">'+(o.nowa?'<span class="kk-nowa">NOWA</span>':'')+'<span class="kk-ramka"></span>'
+      +'<div class="kk-lewa"><button type="button" class="kk-ovr" data-ovr="'+g.k+'" aria-label="Dlaczego takie OVR?">'+(ot&&g.ovr!=null?Math.min(99,g.ovr+u.bonus):"?")+'</button>'+(ot&&u.bonus?'<small class="kk-premia">+'+u.bonus+'</small>':'')+'<span class="kk-typ">'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</span>'+(h?'<img class="kk-herb" alt="" loading="lazy" src="'+h+'">':'')+'<span class="kk-kres"></span><span class="kk-wojs">'+(WS[g.woj]||"")+'</span></div>'
       +'<div class="kk-mapka" data-m="'+g.k+'"></div>'
       +(ot&&CIEK[g.k]?'<button type="button" class="kk-pb" data-c="'+g.k+'" aria-label="Ciekawostki">'+KULA+'</button>':'')
       +'<div class="kk-nazwa">'+(ot?esc(g.n):"???")+'</div>'
       +'<div class="kk-jedn">'+(ot?(mnp(g)?"miasto na prawach powiatu<br>woj. "+g.woj:g.typ+(pelna?"<br>"+esc(g.powiat)+" · woj. "+g.woj:"")):(o.postep?"postęp "+o.postep+"/"+prog(g)+" fragmentów":"woj. "+g.woj))+'</div>'
-      +st+'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
+      +st+(pelna&&ot&&!o.ukryj?szczegoly(g,u,o):'')+'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
   }
+  function szczegoly(g,u,o){
+    const records=g.rekordy.map(r=>'<li>'+ (r.scope==='pl'?'🇵🇱':'🏆')+' '+esc(r.opis)+' <small>· '+esc(r.rok)+'</small></li>').join('');
+    const history=JSON.parse(localStorage.getItem('karty-rekordy-v1')||'{}');
+    const years=Object.entries(history).filter(([k])=>k.startsWith(g.k+':')&&!k.endsWith(':'+DANE.edycja)).map(([k])=>k.split(':')[1]);
+    return '<div class="kk-details">'+(g.pozycjaWoj?'<p>#'+g.pozycjaWoj+' w woj. '+esc(g.woj)+' · '+(g.grupa==='wies'?'wsie':'miasta i M-W')+'</p>':'<p>OVR czeka na komplet danych GUS.</p>')
+     +(o.rowna?'': '<label>Powiat '+u.count+'/'+u.total+' <progress value="'+u.count+'" max="'+Math.max(1,u.total)+'"></progress></label><label>Kontury '+Math.min(40,u.hits)+'/40 <progress value="'+Math.min(40,u.hits)+'" max="40"></progress></label>')
+     +(records?'<details><summary>Rekordzistka '+esc(DANE.edycja)+' · '+g.rekordy.length+' 🏆</summary><ul>'+records+'</ul></details>':'')
+     +(years.length?'<p>Zachowane odznaczenia: '+years.map(esc).join(', ')+'</p>':'')
+     +'<small>Forma: brak porównywalnych danych wieloletnich. PIT/os. to dochód gminy z PIT na mieszkańca, nie pensja. Szkoły publiczne: oczekiwanie na pełne źródło, waga wstrzymana. Zestaw GUS '+esc(DANE.edycja)+'.</small>'
+     +(u.bonus===5?'<button type="button" data-tilt>✦ Włącz połysk przy przechylaniu</button>':'')+'</div>';
+  }
+  function dlaczego(g){
+    const u=ulepszenie(g),d=document.createElement('div');d.className='kk-ciek';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-label','Wyjaśnienie OVR');
+    d.innerHTML='<div class="kk-ciek-pole"><div class="kk-ciek-gora"><div><b>Dlaczego '+(ocenaOVR(g)??'?')+'?</b><small>'+esc(g.n)+'</small></div><button aria-label="Zamknij">×</button></div><p>Porównanie: '+(g.grupa==='wies'?'gminy wiejskie':'miasta, MNP i gminy miejsko-wiejskie')+'.</p><ul>'+STATY.filter(s=>s[g.grupa]&&!DANE.meta.wstrzymane?.includes(s.k)).map(s=>'<li>'+s.n+': '+(g.oc[s.k]??'brak danych')+' × '+s[g.grupa]+'</li>').join('')+'</ul><p>Średnia ważona: '+g.srednia.toFixed(2)+'. Pozycja tej średniej w grupie przechodzi przez krzywą 40–94 → OVR '+(g.ovr??'?')+'.</p><p>Powiat +'+u.powiat+', kontury +'+u.contour+'. Premia do OVR i każdego wskaźnika: +'+u.bonus+' (limit 99).</p><p>'+esc(DANE.meta.szkoly_status||'')+'</p><p>Brak danych nie oznacza zera. Niepełne karty nie mają OVR i nie uczestniczą w Karcie w ciemno.</p></div>';
+    const before=document.activeElement,close=()=>{d.remove();before?.focus();};d.onclick=e=>{if(e.target===d||e.target.closest('.kk-ciek-gora button'))close();};d.onkeydown=e=>{if(e.key==='Escape')close();};document.body.appendChild(d);d.querySelector('button').focus();
+  }
+  document.addEventListener('click',async e=>{
+    const b=e.target.closest?.('[data-ovr]');if(b){if(b.closest('[data-blind]'))return;e.stopPropagation();if(!b.closest('.zablokowana'))dlaczego(DANE.PO_K[b.dataset.ovr]);return;}
+    const tilt=e.target.closest?.('[data-tilt]');if(tilt){e.stopPropagation();if(matchMedia('(prefers-reduced-motion: reduce)').matches){tilt.textContent='Ograniczenie ruchu — połysk statyczny';return;}try{if(typeof DeviceOrientationEvent==='undefined')throw Error('Brak czujnika przechylenia');if(DeviceOrientationEvent.requestPermission&&await DeviceOrientationEvent.requestPermission()!=='granted')throw Error('Brak zgody na czujnik');const card=tilt.closest('.kk');const fn=v=>{if(!card.isConnected){window.removeEventListener('deviceorientation',fn);return;}card.style.setProperty('--x',Math.max(0,Math.min(100,50+(v.gamma||0)))+'%');card.style.setProperty('--kat',90+(v.beta||0));};window.addEventListener('deviceorientation',fn);tilt.textContent='✦ Połysk włączony';tilt.disabled=true;}catch(err){tilt.textContent=err.message+' — przesuń palcem po karcie';}}
+  },true);
   const KULA='<svg viewBox="0 0 40 40" aria-hidden="true"><defs><clipPath id="kkKl"><circle cx="20" cy="20" r="17"/></clipPath></defs><g clip-path="url(#kkKl)"><rect width="40" height="20" fill="#F4F4F2"/><rect y="20" width="40" height="20" fill="#DC1E35"/></g><circle cx="20" cy="20" r="17" fill="none" stroke="#3A2A14" stroke-width="2.4"/><ellipse cx="14" cy="17" rx="3.4" ry="4.2" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/><ellipse cx="26" cy="17" rx="3.4" ry="4.2" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/></svg>';
   function linki(g){
     return '<div class="kk-linki"><a href="encyklopedia.html#g'+g.k+'">🗺️ Na mapie</a>'+(g.wiki?'<a href="'+g.wiki+'" target="_blank" rel="noopener">📖 Wikipedia</a>':'')+'</div>';
@@ -214,6 +276,7 @@ window.Karty=(function(){
   function styl(){
     if(document.getElementById("kk-styl"))return;
     if(!document.querySelector('link[href*="Barlow+Condensed"]')){const l=document.createElement("link");l.rel="stylesheet";l.href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Bungee&display=swap";document.head.appendChild(l);}
+    const extra=document.createElement("link");extra.rel="stylesheet";extra.href="karty-v4.css";document.head.appendChild(extra);
     const s=document.createElement("style");s.id="kk-styl";
     s.textContent=`
 @media(prefers-reduced-motion:reduce){.pk *,.pk,.kk{animation:none!important;transition:none!important}}
@@ -385,7 +448,7 @@ window.Karty=(function(){
       setTimeout(()=>{w.remove();},950);setTimeout(()=>{pl.remove();naKoniec&&naKoniec();},2000);
     };
     const pokaz=()=>{
-      const g=karty[i],pelne=g.rz==="diament"||g.rz==="zloto";
+      const g=karty[i],pelne=g.rz==="legenda"||g.rz==="diament"||g.rz==="zloto";
       w.className="pk r-"+g.rz;
       const wo=WOJ&&WOJ[g.woj]?WOJ[g.woj]:"";
       let iskry="";for(let n=0;n<(pelne?40:18);n++)iskry+='<i style="left:'+(Math.random()*100).toFixed(1)+'%;animation-duration:'+(3+Math.random()*4).toFixed(1)+'s;animation-delay:'+(-Math.random()*6).toFixed(1)+'s"></i>';
@@ -425,5 +488,5 @@ window.Karty=(function(){
       if(n.length)setTimeout(()=>prezentacja(n,info),1200);else setTimeout(info,1200);
     }catch(e){}
   }
-  return {prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
+  return {komplet,ulepszenie,wynik,ocenaOVR,odznaki,archiwizuj,prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
 })();

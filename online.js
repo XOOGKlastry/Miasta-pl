@@ -24,10 +24,11 @@ window.Online=(()=>{
   const u=new URL(config().url+'/auth/v1/authorize');u.search=new URLSearchParams({provider,redirect_to:new URL('logowanie.html',location.href).href,code_challenge:challenge,code_challenge_method:'s256',scopes:provider==='facebook'?'email':'openid email profile'}).toString();location.assign(u.href);
  }
  async function callback(){
-  const u=new URL(location.href),code=u.searchParams.get('code');if(!code)return;
+  const u=new URL(location.href),failure=u.searchParams.get('error_description'),code=u.searchParams.get('code');if(failure)throw Error(failure);if(!code)return;
   const verifier=sessionStorage.getItem('pkce-verifier');if(!verifier)throw Error('Sesja logowania wygasła. Zaloguj się ponownie.');
   save(await request('/auth/v1/token?grant_type=pkce',{auth_code:code,code_verifier:verifier}));sessionStorage.removeItem('pkce-verifier');u.searchParams.delete('code');history.replaceState(null,'',u);
  }
+ async function providers(){const data=await request("/auth/v1/settings");return data.external||{};}
  async function email(email){return request('/auth/v1/otp',{email,create_user:true});}
  async function verify(email,token){return save(await request('/auth/v1/verify',{email,token,type:'email'}));}
  async function logout(){const s=await session();if(s)await request('/auth/v1/logout',{},s.access_token);localStorage.removeItem('online-session');}
@@ -45,5 +46,5 @@ window.Online=(()=>{
   if(await session())return;
   sessionStorage.setItem('login-return',location.pathname+location.search+location.hash);location.replace('logowanie.html');
  }
- return {enabled,session,oauth,email,verify,callback,logout,points,publish,ranking,gate};
+ return {providers,enabled,session,oauth,email,verify,callback,logout,points,publish,ranking,gate};
 })();
