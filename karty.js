@@ -85,13 +85,15 @@ window.Karty=(function(){
     fetch("ciekawostki.json").then(r=>r.ok?r.json():{}).then(c=>{CIEK=c||{};}).catch(()=>{});
     const b=await fetch("baza.json").then(r=>r.json());
     const extra=await fetch("karty-dane.json").then(r=>{if(!r.ok)throw Error("Nie udało się wczytać danych kart");return r.json();});
+    // odległość od najbliższej stolicy województwa (narzedzia/odleglosci_stolic.py); brak pliku nie psuje kart
+    const geo=await fetch("karty-geo.json").then(r=>r.ok?r.json():{gminy:{}}).catch(()=>({gminy:{}}));
     const g=b.gminy.filter(x=>/[123]$/.test(x.k));
     // rzadkość: im mniej mieszkańców, tym rzadsza; 3 najmniejsze miasta i 3 najmniejsze gminy są diamentowe
     const z=g.filter(x=>x.ludnosc).sort((a,c)=>a.ludnosc-c.ludnosc),n=z.length;
     const diam=new Set(z.filter(x=>x.typ==="gmina miejska").slice(0,3).concat(z.filter(x=>x.typ!=="gmina miejska").slice(0,3)).map(x=>x.k));
     z.forEach((x,i)=>{x.rz=diam.has(x.k)?"diament":i<n*.03?"zloto":i<n*.15?"srebro":i<n*.45?"braz":"zwykla";});
     g.forEach(x=>{if(!x.rz)x.rz="zwykla";x.woj=WOJ_KOD[x.k.slice(0,2)];});
-    g.forEach(x=>{x._staryProg={zwykla:3,braz:4,srebro:5,zloto:6,diament:7}[x.rz];const fresh=extra.gminy?.[x.k];if(fresh)Object.assign(x,fresh);});
+    g.forEach(x=>{x._staryProg={zwykla:3,braz:4,srebro:5,zloto:6,diament:7}[x.rz];const fresh=extra.gminy?.[x.k];if(fresh)Object.assign(x,fresh);const gg=geo.gminy?.[x.k];if(gg)Object.assign(x,gg);});
     g.sort((a,c)=>(a.ludnosc||1e9)-(c.ludnosc||1e9)).forEach((x,i)=>x.nr=i+1);
     const pow={};(b.powiaty||[]).forEach(p=>pow[p.k]=p.n);
     g.forEach(x=>{const kp=x.k.slice(0,4);x.powiat=+kp.slice(2)>=61?"miasto na prawach powiatu":"powiat "+(pow[kp]||"");});
@@ -274,6 +276,7 @@ window.Karty=(function(){
     const u=ulepszenie(g),r=rekordyHTML(g),m=+g.k.slice(2,4)>=61;
     return '<div class="kk-panel">'
       +(g.pozycjaWoj?'<p class="kk-poz">#'+g.pozycjaWoj+' w woj. '+esc(g.woj.replace(/ie$/,'im'))+' · '+(g.grupa==='wies'?'wśród wsi':'wśród miast i M-W')+'</p>':'')
+      +(g.odleglosc_stolica!=null?'<p class="kk-poz">'+(g.odleglosc_stolica<1?'Stolica województwa':'Do stolicy województwa: '+liczba(g.odleglosc_stolica,0)+' km ('+esc(g.najblizsza_stolica)+(g.inne_woj?', sąsiednie województwo':'')+')')+'</p>':'')
       +(r?'<b class="kk-pn">Rekordy</b>'+r:'<p class="kk-brak">Bez rekordów w pierwszej piątce.</p>')
       +'<div class="kk-postep">'+(m?'':'<label><span>Powiat</span><progress value="'+u.count+'" max="'+Math.max(1,u.total)+'"></progress><em>'+u.count+'/'+u.total+'</em></label>')
       +'<label><span>Kontury</span><progress value="'+Math.min(40,u.hits)+'" max="40"></progress><em>'+Math.min(40,u.hits)+'/40</em></label></div>'
