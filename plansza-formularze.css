@@ -34,3 +34,5 @@
 .tresc details summary{font-weight:900;cursor:pointer;color:var(--braz)}
 .tresc details p{margin-top:6px;font-size:13px}
 .drobne{font-size:12px!important;color:var(--krem)!important;text-shadow:0 1px 0 var(--braz);text-align:center}
+
+.przelacznik.trzy{grid-template-columns:repeat(3,minmax(0,1fr))}

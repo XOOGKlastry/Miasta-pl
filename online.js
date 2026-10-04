@@ -37,7 +37,7 @@ window.Online=(()=>{
   const s=await session();if(!s)throw Error('Zaloguj się, aby zapisać wynik.');
   const n=nick.trim();if(n.length<3||n.length>24)throw Error('Pseudonim musi mieć od 3 do 24 znaków.');
   await Karty.zaladuj();Karty.migracja();
-  return request('/rest/v1/rpc/publish_score',{p_nickname:n,p_visible:visible,p_points:points(),p_cards:Karty.zdobyte().mam.size},s.access_token);
+  let d={};try{d=JSON.parse(localStorage.getItem('ciemno-ranking')||'{}');}catch(e){}return request('/rest/v1/rpc/publish_score',{p_nickname:n,p_visible:visible,p_points:points(),p_cards:Karty.zdobyte().mam.size,p_duel_points:Math.max(0,Number(d.pkt)||0),p_duel_wins:Math.max(0,Number(d.w)||0)},s.access_token);
  }
  async function ranking(mode){return request('/rest/v1/rpc/leaderboard',{p_mode:mode});}
  async function gate(){
