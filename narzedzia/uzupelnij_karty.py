@@ -74,10 +74,34 @@ NOWE=[
   # pole, frazy do wyszukania, wszystkie muszą wystąpić w opisie, żadne nie może, jak przeliczyć wartość
   ('mieszkanie_m2_os',['przeciętna powierzchnia użytkowa mieszkania na 1 osobę','powierzchnia użytkowa mieszkania na 1 osobę'],['na 1 osob'],['nowo','oddan','wiejsk','miast'],None),
   ('obciazenie_demograficzne',['ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym','wieku nieprodukcyjnym na 100'],['nieprodukcyjn','100'],['kobiet','mężczyzn','miast','wieś','wsi'],None),
-  ('drogi_na_100km2',['drogi gminne o nawierzchni twardej na 100 km2','drogi gminne o nawierzchni twardej'],['gminne','twardej','100 km'],['ulepszon','nieulepsz','gruntow'],None),
+  ('drogi_na_100km2',['drogi gminne o nawierzchni twardej na 100 km2','o nawierzchni twardej na 100 km2'],['twardej','100 km'],['ulepszon','nieulepsz','gruntow','powiatow','wojew','krajow'],None),
   ('firmy_na_1000',['podmioty wpisane do rejestru REGON na 10 tys. ludności','rejestru regon na 10 tys'],['10 tys','regon'],['nowo','wyrejestr','osoby fizyczne','sektor'],lambda v:round(v/10,2)),
-  ('zadluzenie_na_mieszk',['zobowiązania ogółem na 1 mieszkańca','zadłużenie na 1 mieszkańca','zobowiązania ogółem'],['zobowiąz'],['wymagaln','kraj','zagranic'],None),
+  ('zadluzenie_na_mieszk',['zobowiązania ogółem na 1 mieszkańca','zadłużenie na 1 mieszkańca','zobowiązania ogółem'],['zobowiąz','ogółem'],['wymagaln','kraj','zagranic','powiat','wojew'],None),
 ]
+
+TEMATY={'drogi_na_100km2':['drogi publiczne gminne','drogi gminne','drogi publiczne'],
+        'zadluzenie_na_mieszk':['zobowiązania','zadłużenie','dochody i wydatki budżetów gmin']}
+
+def z_tematow(frazy,musi,nie,year):
+    """Gdy wyszukiwanie zmiennych nic nie da: szukamy tematów BDL i przeglądamy ich zmienne."""
+    for fraza in frazy:
+        try:j=request('/subjects/search?name='+urllib.parse.quote(fraza)+'&page-size=50&format=json')
+        except Exception as exc:logging.warning('Temat %s: %s',fraza,exc);continue
+        for t in j.get('results',[]):
+            logging.info('temat %s | %s | zmienne %s',t.get('id'),t.get('name','')[:120],t.get('hasVariables'))
+            if not t.get('hasVariables'):continue
+            try:v=request('/variables?subject-id='+t['id']+'&page-size=100&format=json')
+            except Exception:continue
+            for x in v.get('results',[]):
+                opis=' '.join(str(x.get(k,'')) for k in ('n1','n2','n3','n4','n5','measureUnitName')).lower()
+                logging.info('  zmienna %s | %s | poziom %s',x['id'],opis[:150],x.get('level'))
+                if all(m.lower() in opis for m in musi) and not any(n.lower() in opis for n in nie) and int(x.get('level',0))>=6:
+                    try:meta=request(f"/variables/{x['id']}?format=json")
+                    except Exception:continue
+                    lata=[y for y in meta.get('years',[]) if y<=year]
+                    if lata:
+                        logging.info('WYBRANO z tematu %s: %s rok %s',t['id'],x['id'],max(lata));return x['id'],max(lata),meta
+    return None,None,None
 
 def znajdz_zmienna(frazy,musi,nie,year):
     widziane=set()
@@ -121,6 +145,7 @@ def main() -> None:
     for pole,frazy,musi,nie,przelicz in NOWE:
         try:
             zid,rok,meta=znajdz_zmienna(frazy,musi,nie,args.year)
+            if not zid and pole in TEMATY:zid,rok,meta=z_tematow(TEMATY[pole],musi,nie,args.year)
             if not zid:logging.warning('Nie znaleziono zmiennej dla %s',pole);continue
             dane=download(zid,rok)
             opis=' '.join(str(meta.get(k,'')) for k in ('n1','n2','n3','n4','n5')).lower()
