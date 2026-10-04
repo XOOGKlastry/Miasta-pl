@@ -1,37 +1,24 @@
-2026-10-04 18:50:46,375 Cecha 450551: strona 11/40
-2026-10-04 18:50:49,841 Cecha 450551: strona 21/40
-2026-10-04 18:50:53,887 Cecha 450551: strona 31/40
-2026-10-04 18:50:59,091 Cecha 450551: 2479 gmin
-2026-10-04 18:51:05,105 Cecha 76046: strona 11/40
-2026-10-04 18:51:09,227 Cecha 76046: strona 21/40
-2026-10-04 18:51:13,570 Cecha 76046: strona 31/40
-2026-10-04 18:51:17,231 Cecha 76046: 2479 gmin
-2026-10-04 18:51:25,343 Cecha 1: strona 11/40
-2026-10-04 18:51:28,607 Cecha 1: strona 21/40
-2026-10-04 18:51:33,617 Cecha 1: strona 31/40
-2026-10-04 18:51:36,923 Cecha 1: 2479 gmin
-2026-10-04 18:51:42,439 Cecha 838: strona 11/40
-2026-10-04 18:51:49,123 Cecha 838: strona 21/40
-2026-10-04 18:51:53,272 Cecha 838: strona 31/40
-2026-10-04 18:51:57,421 Cecha 838: 2477 gmin
-2026-10-04 18:52:05,378 kandydat 60573 | przeciętna powierzchnia użytkowa mieszkania na 1 osobę     m2 | poziom 6
-2026-10-04 18:52:05,968 WYBRANO 60573 rok 2025: przeciętna powierzchnia użytkowa mieszkania na 1 osobę     m2
-2026-10-04 18:52:10,865 Cecha 60573: strona 11/40
-2026-10-04 18:52:14,473 Cecha 60573: strona 21/40
-2026-10-04 18:52:18,241 Cecha 60573: strona 31/40
-2026-10-04 18:52:21,510 Cecha 60573: 2479 gmin
-2026-10-04 18:52:29,944 kandydat 60563 | ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym     osoba | poziom 6
-2026-10-04 18:52:30,566 WYBRANO 60563 rok 2025: ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym     osoba
-2026-10-04 18:52:35,365 Cecha 60563: strona 11/40
-2026-10-04 18:52:39,627 Cecha 60563: strona 21/40
-2026-10-04 18:52:45,643 Cecha 60563: strona 31/40
-2026-10-04 18:52:48,924 Cecha 60563: 2479 gmin
-2026-10-04 18:52:58,913 Nie znaleziono zmiennej dla drogi_na_100km2
-2026-10-04 18:53:05,910 kandydat 60530 | podmioty wpisane do rejestru regon na 10 tys. ludności     - | poziom 6
-2026-10-04 18:53:07,709 WYBRANO 60530 rok 2025: podmioty wpisane do rejestru regon na 10 tys. ludności     -
-2026-10-04 18:53:14,427 Cecha 60530: strona 11/40
-2026-10-04 18:53:17,788 Cecha 60530: strona 21/40
-2026-10-04 18:53:23,442 Cecha 60530: strona 31/40
-2026-10-04 18:53:27,540 Cecha 60530: 2479 gmin
-2026-10-04 18:53:41,475 Nie znaleziono zmiennej dla zadluzenie_na_mieszk
-2026-10-04 18:53:41,493 Zapis: 2479 gmin, 6 z brakami
+2026-10-04 18:54:00,090 Cecha 450551: strona 11/40
+2026-10-04 18:54:03,696 Cecha 450551: strona 21/40
+2026-10-04 18:54:08,280 Cecha 450551: strona 31/40
+2026-10-04 18:54:12,550 Cecha 450551: 2479 gmin
+2026-10-04 18:54:18,267 Cecha 76046: strona 11/40
+2026-10-04 18:54:21,750 Cecha 76046: strona 21/40
+2026-10-04 18:54:25,845 Cecha 76046: strona 31/40
+2026-10-04 18:54:30,738 Cecha 76046: 2479 gmin
+2026-10-04 18:54:36,037 Cecha 1: strona 11/40
+2026-10-04 18:54:40,224 Cecha 1: strona 21/40
+2026-10-04 18:54:43,663 Cecha 1: strona 31/40
+2026-10-04 18:54:46,444 Cecha 1: 2479 gmin
+2026-10-04 18:54:51,328 Cecha 838: strona 11/40
+2026-10-04 18:54:55,209 Cecha 838: strona 21/40
+2026-10-04 18:55:01,172 Cecha 838: strona 31/40
+2026-10-04 18:55:04,745 Cecha 838: 2477 gmin
+Traceback (most recent call last):
+  File "/home/runner/work/Miasta-pl/Miasta-pl/narzedzia/uzupelnij_karty.py", line 192, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/home/runner/work/Miasta-pl/Miasta-pl/narzedzia/uzupelnij_karty.py", line 153, in main
+    for pole,frazy,musi,nie,przelicz in NOWE:
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ValueError: too many values to unpack (expected 5)
