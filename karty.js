@@ -388,10 +388,8 @@ window.Karty=(function(){
       const obj=Object.values(t.objects).sort((a,c)=>c.geometries.length-a.geometries.length)[0];
       topojson.feature(t,obj).features.forEach(f=>{if(!f.geometry)return;const ps=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;let b=[1e9,1e9,-1e9,-1e9];
         ps.forEach(p=>p[0].forEach(([x,y])=>{b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);}));f._bb=b;GEO[String(f.properties.k)]=f;
-        // powierzchnia zawsze z urzędowych granic PRG
-        const g=DANE&&DANE.PO_K[String(f.properties.k)];
-        if(g){let a=0;ps.forEach(p=>p.forEach((r,ri)=>{let s=0;for(let i=0,j=r.length-1;i<r.length;j=i++)s+=(r[j][0]-r[i][0])*(r[j][1]+r[i][1]);a+=(ri?-1:1)*Math.abs(s)/2;}));
-          g.powierzchnia=Math.round(a*111.32*111.32*Math.cos((b[1]+b[3])/2*Math.PI/180)*10)/10;}});
+        // Geometria służy tylko do mapki; nie nadpisuje danych GUS ani rekordów.
+      });
       (h.miasta||[]).forEach(c=>HERBY[c.n]=c.img);
       if(DANE)przelicz();
       return GEO;
@@ -417,7 +415,7 @@ window.Karty=(function(){
     h+='<svg viewBox="0 0 '+W+' '+H+'"><path d="M0 0H'+W+'V'+H+'H0Z'+d+'" fill="rgba(20,24,34,.38)" fill-rule="evenodd"/><path d="'+d+'" fill="none" stroke="#fff" stroke-width="4" opacity=".8"/><path d="'+d+'" fill="none" stroke="#7B2FBF" stroke-width="2" stroke-dasharray="6 3"/></svg>'
       +'<span class="atr">© OSM, OpenTopoMap</span>';
     el.innerHTML=h;
-    el.querySelectorAll("img").forEach(i=>i.onerror=()=>{if(i.dataset.osm&&i.src!==i.dataset.osm)i.src=i.dataset.osm;});
+    el.querySelectorAll("img").forEach(i=>i.onerror=()=>{if(i.dataset.osm&&i.src!==i.dataset.osm)i.src=i.dataset.osm;else i.style.display="none";});
   }
   const widok=window.IntersectionObserver?new IntersectionObserver(w=>w.forEach(e=>{if(e.isIntersecting){mapa(e.target);widok.unobserve(e.target);}}),{rootMargin:"300px"}):null;
   function podepnijMapy(root){geometrie().then(()=>root.querySelectorAll(".kk-mapka").forEach(el=>{if(widok&&!el.closest(".pk,.kk-podglad"))widok.observe(el);else mapa(el);}));}
