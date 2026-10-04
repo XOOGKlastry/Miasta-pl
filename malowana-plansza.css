@@ -32,3 +32,7 @@
 .gora>.kolekcja{grid-column:4;grid-row:1;width:36px;height:36px;border-width:2px;box-shadow:0 2px 0 #71613e}
 nav.dol{border-top-width:2px}
 @media(prefers-reduced-motion:reduce){.wezel.teraz .kolo,.dzis-btn i,.kr *,.pb-kula *{animation:none!important}.pionek,.chmury *{transition:none!important}}
+
+/* puchar rankingu obok kolekcji w nagłówku planszy */
+.gora h1{grid-column:2}
+.gora>.zp-ng.puchar{grid-column:3;grid-row:1;justify-self:end;width:36px;height:36px;margin-left:0;border-width:2px;box-shadow:0 2px 0 #71613e}

@@ -1,6 +1,60 @@
-<!doctype html><html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#e8efdf"><title>Ranking — PolskoZnawca</title><link rel="stylesheet" href="konto-ui.css?v=1"></head><body><main class="account-main"><div class="account-hero"><img src="icon.svg" alt=""><div><span class="brand">PolskoZnawca</span><h1>Ranking odkrywców</h1></div></div><nav class="account-nav"><a href="./">⌂ Plansza</a><a href="ranking.html" aria-current="page">🏆 Ranking</a><a href="logowanie.html">● Konto</a></nav><p>Każde trafienie to 10 punktów. Każda nowa gmina wzbogaca Twoją kolekcję.</p><section class="score-cards" aria-label="Twój postęp"><div><b id="local-points">—</b><span>Twoje punkty</span></div><div><b id="local-cards">—</b><span>Unikalne karty</span></div></section><div class="tab-buttons" role="group" aria-label="Rodzaj rankingu"><button id="points" aria-pressed="true">✦ Punkty</button><button id="cards" aria-pressed="false">▣ Kolekcja</button></div><p id="status" role="status" aria-live="polite"></p><table class="ranking-table"><thead><tr><th>Miejsce</th><th>Odkrywca</th><th id="value">Punkty</th></tr></thead><tbody id="rows"></tbody></table><section class="panel"><div id="sign-in"><h2>Dołącz do rankingu</h2><p>Wybierz pseudonim i zdecyduj, czy Twój wynik ma być widoczny.</p><a class="action-link" href="logowanie.html">Zaloguj się lub załóż konto →</a></div><form id="publish" hidden><h2>Twój profil</h2><label>Pseudonim<input id="nick" minlength="3" maxlength="24" autocomplete="nickname" required></label><label class="check-label"><input id="visible" type="checkbox"><span>Pokaż mój pseudonim i wynik w rankingu</span></label><button>Zapisz aktualny wynik</button></form></section><p class="privacy">Ranking rekreacyjny. Wyniki pochodzą z urządzenia gracza. Twój e-mail jest prywatny.</p><a class="back-link" href="gry.html">← Wróć do gier</a></main><script src="karty.js?v=10"></script><script src="online-config.js"></script><script src="online.js"></script><script>
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Ranking · PolskoZnawca</title>
+<meta name="theme-color" content="#FFF6E0" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="plansza.css?v=4" />
+<link rel="stylesheet" href="plansza-formularze.css?v=1" />
+</head>
+<body>
+<div class="wrap">
+  <header class="gora"><a href="gry.html" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Ranking<small>odkrywcy z całej Polski</small></h1></header>
+  <main class="tresc">
+    <div data-pb="Kto zna Polskę najlepiej?"></div>
+    <section class="liczniki" aria-label="Twój postęp">
+      <div class="pole"><b id="local-points">–</b><span>Twoje punkty</span></div>
+      <div class="pole"><b id="local-cards">–</b><span>Twoje karty</span></div>
+    </section>
+    <div class="przelacznik" role="group" aria-label="Rodzaj rankingu">
+      <button id="points" aria-pressed="true">Punkty</button>
+      <button id="cards" aria-pressed="false">Kolekcja</button>
+    </div>
+    <p id="status" class="stan" role="status" aria-live="polite"></p>
+    <section class="pole tabela">
+      <table class="ranking-table"><thead><tr><th>Miejsce</th><th>Odkrywca</th><th id="value">Punkty</th></tr></thead><tbody id="rows"></tbody></table>
+    </section>
+    <section class="pole formularz">
+      <div id="sign-in"><h2>Dołącz do rankingu</h2><p>Wybierz pseudonim i zdecyduj, czy Twój wynik ma być widoczny.</p><a class="klocek" href="logowanie.html">Zaloguj się lub załóż konto</a></div>
+      <form id="publish" hidden>
+        <h2>Twój profil</h2>
+        <label>Pseudonim<input id="nick" minlength="3" maxlength="24" autocomplete="nickname" required></label>
+        <label class="check-label"><input id="visible" type="checkbox"><span>Pokaż mój pseudonim i wynik w rankingu</span></label>
+        <button class="klocek">Zapisz aktualny wynik</button>
+      </form>
+    </section>
+    <p class="drobne">Każde trafienie to 10 punktów. Ranking rekreacyjny: wyniki pochodzą z urządzenia gracza, a e-mail pozostaje prywatny.</p>
+  </main>
+  <nav class="dol">
+  <a href="./" data-n="plansza"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20c0-4 3-4 3-8s-3-4-3-8"/><circle cx="16" cy="6" r="2.5"/><circle cx="16" cy="18" r="2.5"/><path d="M16 8.5v7"/></svg>Plansza</a>
+  <a href="codzienne.html" data-n="codzienne"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Codzienne</a>
+  <a href="wyzwanie.html?tryb=pojedynek" data-n="znajomi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15 20c0-2.5 1.5-4.5 4-4.5"/></svg>Znajomi</a>
+  <a href="gry.html" data-n="gry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Gry</a>
+  <a href="profil.html" data-n="profil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Profil</a>
+</nav>
+</div>
+<script>(function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();</script>
+<script src="polandball.js?v=2"></script>
+<script src="naglowek.js?v=1"></script>
+<script src="karty.js?v=11"></script><script src="online-config.js"></script><script src="online.js"></script><script>
 let mode='points',sequence=0;const status=document.getElementById('status'),rows=document.getElementById('rows');
-async function load(){const id=++sequence;document.getElementById('value').textContent=mode==='points'?'Punkty':'Karty';for(const x of ['points','cards'])document.getElementById(x).setAttribute('aria-pressed',String(x===mode));rows.replaceChildren();if(!Online.enabled()){status.textContent='Ranking online jest niedostępny. Twój postęp pozostaje na urządzeniu.';return;}status.textContent='Wczytywanie…';try{const data=await Online.ranking(mode);if(id!==sequence)return;status.textContent=data.length?'':'Bądź pierwszym odkrywcą w rankingu.';for(const r of data){const tr=document.createElement('tr');for(const val of [r.place,r.nickname,r.value]){const td=document.createElement('td');td.textContent=val;tr.append(td);}rows.append(tr);}}catch(e){if(id===sequence)status.textContent=e.message;}}
+async function load(){const id=++sequence;document.getElementById('value').textContent=mode==='points'?'Punkty':'Karty';for(const x of ['points','cards'])document.getElementById(x).setAttribute('aria-pressed',String(x===mode));rows.replaceChildren();if(!Online.enabled()){status.textContent='Ranking online jest niedostępny. Twój postęp pozostaje na urządzeniu.';return;}status.textContent='Wczytywanie…';try{const data=await Online.ranking(mode);if(id!==sequence)return;status.textContent=data.length?'':'Bądź pierwszym odkrywcą w rankingu.';for(const r of data){const tr=document.createElement('tr');for(const val of [r.place<=3?['🥇','🥈','🥉'][r.place-1]:r.place,r.nickname,Number(r.value).toLocaleString('pl-PL')]){const td=document.createElement('td');td.textContent=val;tr.append(td);}if(r.place<=3)tr.className='podium';rows.append(tr);}}catch(e){if(id===sequence)status.textContent=/fetch|network|sieć/i.test(e.message)?'Brak połączenia z rankingiem. Sprawdź internet i spróbuj ponownie.':e.message;}}
 for(const x of ['points','cards'])document.getElementById(x).onclick=()=>{mode=x;load();};
 document.getElementById('publish').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;try{const nick=document.getElementById('nick').value,visible=document.getElementById('visible').checked;await Online.publish(nick,visible);localStorage.setItem('ranking-profile',JSON.stringify({nick,visible}));await load();status.textContent=visible?'Profil zapisany w rankingu.':'Wynik zapisany prywatnie.';}catch(e){status.textContent=e.message;}finally{b.disabled=false;}};
 (async()=>{document.getElementById('local-points').textContent=Online.points().toLocaleString('pl-PL');try{await Karty.zaladuj();Karty.migracja();document.getElementById('local-cards').textContent=Karty.zdobyte().mam.size;}catch(e){status.textContent=e.message;}const s=await Online.session();document.getElementById('publish').hidden=!s;document.getElementById('sign-in').hidden=!!s;try{const p=JSON.parse(localStorage.getItem('ranking-profile')||'{}');document.getElementById('nick').value=p.nick||'';document.getElementById('visible').checked=!!p.visible;}catch{}await load();})();

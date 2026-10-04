@@ -8,10 +8,10 @@ window.KartyModel=(()=>{
   {k:'przyrost_naturalny',n:'Przyrost naturalny',t:'r',miasto:1,wies:1.5},
   {k:'pit_na_mieszk',n:'Zarobki · PIT/os.',t:'r',miasto:2,wies:0},
   {k:'bezrobocie_proc',n:'Bezrobocie',t:'o',miasto:2,wies:1},
-  {k:'wodociag_proc',n:'Wodociągi',t:'r',miasto:0,wies:1},
-  {k:'kanalizacja_proc',n:'Kanalizacja',t:'r',miasto:1,wies:1},
+  {k:'wodociag_proc',n:'Wodociągi',t:'r',miasto:0,wies:0,bezRekordu:true},
+  {k:'kanalizacja_proc',n:'Kanalizacja',t:'r',miasto:0,wies:0,bezRekordu:true},
   {k:'lesistosc_proc',n:'Lesistość',t:'r',miasto:0,wies:2},
-  {k:'szkoly_na_1000',n:'Szkoły publiczne',t:'r',miasto:0,wies:1}
+  {k:'szkoly_na_1000',n:'Szkoły podstawowe',t:'r',miasto:0,wies:1}
  ];
  const grupa=g=>g.typ==='gmina wiejska'?'wies':'miasto';
  const valid=v=>typeof v==='number'&&Number.isFinite(v);
@@ -31,11 +31,30 @@ window.KartyModel=(()=>{
    z.filter(x=>x.pokrycie!==1).forEach(x=>{x.ovr=null;x.percentyl=null;});
    for(const woj of new Set(z.map(x=>x.woj))){const l=z.filter(x=>x.woj===woj&&x.ovr!=null).sort((a,b)=>b.srednia-a.srednia);l.forEach((x,i)=>x.pozycjaWoj=i&&x.srednia===l[i-1].srednia?l[i-1].pozycjaWoj:i+1);}
   }
-  const scopes=[['pl',g],...Array.from(new Set(g.map(x=>x.woj)),w=>[w,g.filter(x=>x.woj===w)])];
-  for(const [scope,z] of scopes)for(const s of STATY){const a=z.filter(x=>valid(x[s.k]));if(a.length<2)continue;const min=Math.min(...a.map(x=>x[s.k])),max=Math.max(...a.map(x=>x[s.k]));if(min===max)continue;
-   for(const [dir,v]of [['min',min],['max',max]])a.filter(x=>x[s.k]===v).forEach(x=>x.rekordy.push({k:s.k,dir,scope,rok:edition,wartosc:v,opis:(dir==='min'?'Najniższa wartość: ':'Najwyższa wartość: ')+s.n+(scope==='pl'?' w Polsce':' w woj. '+scope)}));
+  // Rzadkość z rekordzistek: pierwsza piątka w Polsce albo w województwie, w obie strony.
+ // Wodociągi i kanalizacja się nasycają (wiele gmin ma 100%), więc nie tworzą rekordów.
+ // Grupa remisowa, która wychodzi poza piątkę, odpada (rekord ma coś znaczyć).
+ const OPIS={ludnosc:['najwięcej mieszkańców','najmniej mieszkańców'],powierzchnia:['największa powierzchnia','najmniejsza powierzchnia'],gestosc:['najgęściej zaludniona','najrzadziej zaludniona'],
+  saldo_migracji:['największy napływ mieszkańców','największy odpływ mieszkańców'],przyrost_naturalny:['najwyższy przyrost naturalny','najniższy przyrost naturalny'],
+  pit_na_mieszk:['najwyższe zarobki (PIT/os.)','najniższe zarobki (PIT/os.)'],bezrobocie_proc:['najwyższe bezrobocie','najniższe bezrobocie'],
+  lesistosc_proc:['najbardziej zalesiona','najmniej zalesiona'],szkoly_na_1000:['najwięcej szkół na 1000 os.','najmniej szkół na 1000 os.']};
+ const TOP=5;
+ const scopes=[['pl',g],...Array.from(new Set(g.map(x=>x.woj)),w=>[w,g.filter(x=>x.woj===w)])];
+ for(const [scope,z] of scopes)for(const s of STATY){
+  if(s.bezRekordu||paused.includes(s.k))continue;
+  const a=z.filter(x=>valid(x[s.k]));if(a.length<TOP+1)continue;
+  for(const [dir,znak] of [['max',-1],['min',1]]){
+   const l=a.slice().sort((p,q)=>(p[s.k]-q[s.k])*znak);
+   for(let i=0;i<l.length&&i<TOP;){let j=i+1;while(j<l.length&&l[j][s.k]===l[i][s.k])j++;if(j>TOP)break;
+    for(let t=i;t<j;t++)l[t].rekordy.push({k:s.k,dir,scope,miejsce:i+1,rok:edition,wartosc:l[t][s.k],
+     opis:(i+1)+'. miejsce '+(scope==='pl'?'w Polsce':'w woj. '+scope.replace(/ie$/,'im'))+': '+(OPIS[s.k]?OPIS[s.k][dir==='max'?0:1]:s.n)});
+    i=j;}
   }
-  g.forEach(x=>{const pl=x.rekordy.filter(r=>r.scope==='pl').length,woj=x.rekordy.filter(r=>r.scope!=='pl').length;x.rz=pl>=2?'legenda':pl===1?'diament':woj>=2?'zloto':woj===1?'srebro':'zwykla';});
+ }
+ // legendarna: 1. miejsce w Polsce · diamentowa: pierwsza piątka Polski · złota: 1. miejsce w województwie · srebrna: pierwsza piątka województwa
+ g.forEach(x=>{const r=x.rekordy,pl=r.filter(q=>q.scope==='pl'),w=r.filter(q=>q.scope!=='pl');
+  x.rekordy.sort((p,q)=>(p.scope==='pl'?0:1)-(q.scope==='pl'?0:1)||p.miejsce-q.miejsce);
+  x.rz=pl.some(q=>q.miejsce===1)?'legenda':pl.length?'diament':w.some(q=>q.miejsce===1)?'zloto':w.length?'srebro':'zwykla';});
   return g;
  }
  function upgrade(g,all,owned,learning){const county=all.filter(x=>x.k.slice(0,4)===g.k.slice(0,4)),count=county.filter(x=>owned.has(x.k)).length;

@@ -296,6 +296,7 @@ function przyciskKolekcji(){
   const jk=document.createElement("span");jk.className="zp-jk";jk.title="Podpowiedzi 50/50";
   const odsJk=()=>{jk.innerHTML=IKONA_5050+'<b>'+jokery()+'</b>';};odsJk();ZP_JK_ODS=odsJk;
   h.appendChild(jk);h.appendChild(a);
+  if(!document.querySelector('script[src*="naglowek.js"]')){const sc=document.createElement("script");sc.src="naglowek.js?v=1";document.head.appendChild(sc);}
   // liczba nowych kart dopiero, gdy przeglądarka ma wolną chwilę
   const licz=()=>{const go=()=>Karty.liczbaNowych().then(n=>{if(n>0){const i=document.createElement("i");i.textContent=n>99?"99+":n;a.appendChild(i);}}).catch(()=>{});
     modulKart().then(go).catch(()=>{});};
@@ -309,7 +310,7 @@ function modulKart(){
   if(KARTY_MODUL)return KARTY_MODUL;
   KARTY_MODUL=new Promise((resolve,reject)=>{
     let sc=document.querySelector('script[src^="karty.js"]'),nowy=!sc;
-    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=10";}
+    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=11";}
     sc.addEventListener("load",()=>resolve(window.Karty),{once:true});
     sc.addEventListener("error",()=>{KARTY_MODUL=null;sc.remove();reject(Error("Nie wczytano kart"));},{once:true});
     if(nowy)document.head.appendChild(sc);

@@ -196,18 +196,56 @@ window.Krainy=(function(){
       st.jeziora.push({x,y,rx,ry});
     }
     if(t.gory){
-      const typ=t.gory,wys=typ==="tatry"?H*.42:typ==="srednie"?H*.32:typ==="poloniny"?H*.3:H*.24;
-      const kol=typ==="tatry"?["#94A3B6","#7E8EA3"]:typ==="poloniny"?["#A9CB78","#8EB863"]:typ==="pagorki"?["#9CC57A","#86B466"]:["#97ABA6","#7F9792"];
-      for(let w=0;w<2;w++){
-        const n=typ==="poloniny"||typ==="pagorki"?5:7,pp=[];
-        for(let i=0;i<=n;i++)pp.push([i/n*W,(i%2?wys*(.1+r()*.18):wys*(.42+r()*.2))+w*wys*.24]);
-        const d=(typ==="poloniny"||typ==="pagorki"?gladko(pp,false):"M"+pp.map(p=>p[0].toFixed(1)+" "+p[1].toFixed(1)).join("L"))+"L"+W+" "+(wys+80)+"L0 "+(wys+80)+"Z";
-        h+='<path d="'+d+'" fill="'+kol[w]+'" stroke="#5E6E6C" stroke-width="1.2"/>';
-        if(typ==="tatry"&&w===0)pp.forEach((p,i)=>{if(i%2)h+='<path d="M'+(p[0]-14).toFixed(1)+' '+(p[1]+15).toFixed(1)+'L'+p[0].toFixed(1)+' '+p[1].toFixed(1)+'L'+(p[0]+14).toFixed(1)+' '+(p[1]+15).toFixed(1)+'Q'+(p[0]+6).toFixed(1)+' '+(p[1]+11).toFixed(1)+' '+p[0].toFixed(1)+' '+(p[1]+17).toFixed(1)+'Q'+(p[0]-6).toFixed(1)+' '+(p[1]+11).toFixed(1)+' '+(p[0]-14).toFixed(1)+' '+(p[1]+15).toFixed(1)+'Z" fill="#F7FBFF" stroke="#8E9DB0" stroke-width="1"/>';});
+      // góry malowane warstwami: dalsze jaśniejsze i bardziej niebieskie (perspektywa powietrzna),
+      // stoki od słońca rozjaśnione, śnieg z nieregularną krawędzią, u podnóża miękkie przejście w łąkę
+      const typ=t.gory,ost=typ==="tatry"||typ==="srednie"||typ==="niskie";
+      const wys=typ==="tatry"?H*.42:typ==="srednie"?H*.32:typ==="poloniny"?H*.3:H*.24;
+      const PAL=typ==="tatry"?[["#C3CDDC","#A7B4C8"],["#9AA8BE","#7F8EA6"],["#7E8C7F","#66755F"]]
+        :typ==="srednie"?[["#B9C8C6","#9FB2AE"],["#8FA59C","#768F84"],["#6E8E62","#5A7A4F"]]
+        :typ==="niskie"?[["#B7C2B4","#9EAB9A"],["#8E9C86","#76856F"],["#6F8A5C","#5C774B"]]
+        :[["#B9D39A","#A2C383"],["#9CC57A","#86B466"],["#86B463","#73A353"]];
+      let defs="";
+      for(let w=0;w<3;w++){
+        const gid="gr"+id+"_"+w;defs+='<linearGradient id="'+gid+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+PAL[w][0]+'"/><stop offset="1" stop-color="'+PAL[w][1]+'"/></linearGradient>';
+        const n=ost?5+w:4+w,baza=wys*(.55+w*.18),szczyty=[];
+        let d="M-20 "+(baza+60).toFixed(1)+"L-20 "+(baza*.9).toFixed(1);
+        for(let i=0;i<=n;i++){
+          const x=(i+.5)/(n+1)*W+(r()-.5)*W/(n+1)*.5;
+          const hgt=ost?wys*(.2+r()*.22)+w*wys*.17:wys*(.32+r()*.16)+w*wys*.16;
+          szczyty.push([x,hgt]);
+        }
+        szczyty.forEach((q,i)=>{
+          const prev=i?szczyty[i-1]:[-20,baza*.9],dol=(prev[0]+q[0])/2,dy=Math.max(prev[1],q[1])+wys*(ost?.12+r()*.08:.08);
+          if(ost)d+="C"+(dol-6).toFixed(1)+" "+(dy-4).toFixed(1)+" "+(dol+4).toFixed(1)+" "+dy.toFixed(1)+" "+dol.toFixed(1)+" "+dy.toFixed(1)
+            +"C"+(dol+(q[0]-dol)*.45).toFixed(1)+" "+(dy-(dy-q[1])*.55).toFixed(1)+" "+(q[0]-5).toFixed(1)+" "+(q[1]+6).toFixed(1)+" "+q[0].toFixed(1)+" "+q[1].toFixed(1);
+          else d+="C"+(dol-24).toFixed(1)+" "+dy.toFixed(1)+" "+(dol+10).toFixed(1)+" "+dy.toFixed(1)+" "+dol.toFixed(1)+" "+dy.toFixed(1)+"S"+(q[0]-24).toFixed(1)+" "+q[1].toFixed(1)+" "+q[0].toFixed(1)+" "+q[1].toFixed(1);
+        });
+        d+="C"+(W*.98).toFixed(1)+" "+(baza*.8).toFixed(1)+" "+W+" "+baza.toFixed(1)+" "+(W+20)+" "+baza.toFixed(1)+"L"+(W+20)+" "+(baza+60).toFixed(1)+"Z";
+        h+='<path d="'+d+'" fill="url(#'+gid+')" stroke="'+(w===2?"#4F5E45":"#6F7C88")+'" stroke-width="'+(w===2?1.1:.8)+'" stroke-opacity=".55"/>';
+        if(ost)szczyty.forEach(q=>{
+          // jasny stok od słońca (z lewej) i cień po prawej
+          const sz=wys*(.16+w*.02),x=q[0],y=q[1];
+          h+='<path d="M'+x.toFixed(1)+' '+y.toFixed(1)+'C'+(x-sz*.35).toFixed(1)+' '+(y+sz*.4).toFixed(1)+' '+(x-sz*.55).toFixed(1)+' '+(y+sz*.8).toFixed(1)+' '+(x-sz*.9).toFixed(1)+' '+(y+sz*1.25).toFixed(1)+'C'+(x-sz*.4).toFixed(1)+' '+(y+sz*1.1).toFixed(1)+' '+(x-sz*.1).toFixed(1)+' '+(y+sz*.7).toFixed(1)+' '+(x+2).toFixed(1)+' '+(y+sz*.2).toFixed(1)+'Z" fill="#fff" opacity="'+(w===2?.1:.18)+'"/>';
+          if(typ==="tatry"&&w<2||typ==="srednie"&&w===0){
+            const s2=sz*(.55+r()*.15);
+            h+='<path d="M'+x.toFixed(1)+' '+y.toFixed(1)+'C'+(x-s2*.3).toFixed(1)+' '+(y+s2*.25).toFixed(1)+' '+(x-s2*.55).toFixed(1)+' '+(y+s2*.55).toFixed(1)+' '+(x-s2*.8).toFixed(1)+' '+(y+s2*.75).toFixed(1)
+              +'Q'+(x-s2*.55).toFixed(1)+' '+(y+s2*.62).toFixed(1)+' '+(x-s2*.4).toFixed(1)+' '+(y+s2*.8).toFixed(1)+'Q'+(x-s2*.2).toFixed(1)+' '+(y+s2*.55).toFixed(1)+' '+x.toFixed(1)+' '+(y+s2*.78).toFixed(1)
+              +'Q'+(x+s2*.2).toFixed(1)+' '+(y+s2*.5).toFixed(1)+' '+(x+s2*.38).toFixed(1)+' '+(y+s2*.66).toFixed(1)+'C'+(x+s2*.3).toFixed(1)+' '+(y+s2*.4).toFixed(1)+' '+(x+s2*.15).toFixed(1)+' '+(y+s2*.2).toFixed(1)+' '+x.toFixed(1)+' '+y.toFixed(1)+'Z" fill="#FBFDFF" stroke="#C9D3E0" stroke-width=".7"/>';
+          }
+        });
+        else szczyty.forEach(q=>{h+='<path d="M'+(q[0]-W*.12).toFixed(1)+' '+(q[1]+wys*.12).toFixed(1)+'Q'+q[0].toFixed(1)+' '+(q[1]-2).toFixed(1)+' '+(q[0]+W*.1).toFixed(1)+' '+(q[1]+wys*.1).toFixed(1)+'" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".22"/>';});
       }
-      h+='<path d="M0 '+(wys+60)+'Q'+W/2+' '+(wys+30)+' '+W+' '+(wys+60)+'V'+(wys+90)+'H0Z" fill="#7DB36B" opacity=".7"/>';
-      if(typ==="tatry"){const gx=W*.8,gy=wys*.06;
-        h+='<path d="M'+(gx-52)+' '+(wys*.55)+'C'+(gx-30)+' '+(gy+30)+' '+(gx-16)+' '+(gy+6)+' '+gx+' '+gy+'C'+(gx+14)+' '+(gy+14)+' '+(gx+30)+' '+(gy+40)+' '+(gx+52)+' '+(wys*.55)+'Z" fill="#8494A9" stroke="#5E6E6C" stroke-width="1.4"/><path d="M'+(gx-10)+' '+(gy+12)+'L'+gx+' '+gy+'L'+(gx+9)+' '+(gy+10)+'Q'+gx+' '+(gy+8)+' '+(gx-10)+' '+(gy+12)+'Z" fill="#fff"/><path d="M'+gx+' '+(gy-1)+'V'+(gy-16)+'M'+(gx-5)+' '+(gy-11)+'H'+(gx+5)+'" stroke="#3A2A14" stroke-width="2.2" stroke-linecap="round"/>';}
+      // las u podnóża i łagodne przejście w łąkę
+      const gl="gl"+id;defs+='<linearGradient id="'+gl+'" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6E9F55" stop-opacity="0"/><stop offset=".35" stop-color="#78AC60" stop-opacity=".9"/><stop offset=".7" stop-color="#80B467" stop-opacity=".45"/><stop offset="1" stop-color="#84BA6C" stop-opacity="0"/></linearGradient>';
+      h='<defs>'+defs+'</defs>'+h+'<path d="M-10 '+(wys*.9).toFixed(1)+'Q'+(W*.3).toFixed(1)+' '+(wys*.82).toFixed(1)+' '+(W*.55).toFixed(1)+' '+(wys*1.0).toFixed(1)+'T'+(W+10)+' '+(wys*.98).toFixed(1)+'V'+(wys*1.5).toFixed(1)+'H-10Z" fill="url(#'+gl+')"/>';
+      if(typ==="tatry"){
+        // Giewont z krzyżem
+        const gx=W*.8,gy=wys*.08;
+        h+='<path d="M'+(gx-58)+' '+(wys*.62)+'C'+(gx-36)+' '+(gy+40)+' '+(gx-20)+' '+(gy+8)+' '+gx+' '+gy+'C'+(gx+12)+' '+(gy+10)+' '+(gx+20)+' '+(gy+26)+' '+(gx+30)+' '+(gy+34)+'C'+(gx+40)+' '+(gy+44)+' '+(gx+50)+' '+(gy+70)+' '+(gx+62)+' '+(wys*.62)+'Z" fill="#7F8EA6" stroke="#5E6E7C" stroke-width="1"/>'
+          +'<path d="M'+gx+' '+gy+'C'+(gx-10)+' '+(gy+14)+' '+(gx-20)+' '+(gy+34)+' '+(gx-34)+' '+(gy+60)+'C'+(gx-16)+' '+(gy+44)+' '+(gx-6)+' '+(gy+24)+' '+(gx+2)+' '+(gy+6)+'Z" fill="#fff" opacity=".2"/>'
+          +'<path d="M'+(gx-12)+' '+(gy+14)+'Q'+(gx-4)+' '+(gy+4)+' '+gx+' '+gy+'Q'+(gx+6)+' '+(gy+6)+' '+(gx+12)+' '+(gy+14)+'Q'+gx+' '+(gy+10)+' '+(gx-12)+' '+(gy+14)+'Z" fill="#FBFDFF"/>'
+          +'<path d="M'+gx+' '+(gy-1)+'V'+(gy-17)+'M'+(gx-5)+' '+(gy-12)+'H'+(gx+5)+'" stroke="#3A2A14" stroke-width="2.2" stroke-linecap="round"/>';
+      }
     }
     if(t.morze){
       const brzeg=[],plaza=[];
@@ -226,6 +264,8 @@ window.Krainy=(function(){
     return h;
   }
   /* ---------- ROZMIESZCZENIE ---------- */
+  // motywy z napisami albo asymetrią, której nie wolno odbijać
+  const NIE_ODBIJAJ={pkin:1,syrenka:1,sky_tower:1,spodek:1,wawel:1,zamek_krolewski:1,manufaktura:1,latarnia:1,kosciolek:1,cerkiew:1,rynek:1,gotyk:1,piernik:1};
   function warstwy(woj,W,H,pts,baner,ziarno,id){
     const reg=R[woj];if(!reg)return {teren:"",deko:"",anim:""};
     const r=los(ziarno+Math.round(W/10)*7919),st={morze:null,jeziora:[]};
@@ -253,16 +293,19 @@ window.Krainy=(function(){
       return !zajete.some(z=>{const ix=Math.min(z.x2,q.x2)-Math.max(z.x1,q.x1),iy=Math.min(z.y2,q.y2)-Math.max(z.y1,q.y1);if(ix<=0||iy<=0)return false;return ix*iy>(1-nakl)*Math.min((z.x2-z.x1)*(z.y2-z.y1),(q.x2-q.x1)*(q.y2-q.y1));});
     }
     const elem=[];
-    function postaw(id,s,nakl,proby){for(let i=0;i<proby;i++){const cx=46*s+r()*(W-92*s),cy=64*s+r()*(H-98*s);if(wolne(cx,cy,s,nakl)){zajete.push(prost(cx,cy,s));elem.push({id,x:cx,y:cy,s});return true;}}return false;}
+    function postaw(id,s,nakl,proby){for(let i=0;i<proby;i++){const cx=46*s+r()*(W-92*s),cy=64*s+r()*(H-98*s);if(wolne(cx,cy,s,nakl)){zajete.push(prost(cx,cy,s));elem.push({id,x:cx,y:cy,s,odb:r()<.5,ton:Math.floor(r()*4)});return true;}}return false;}
     [...new Set(reg.f)].forEach(id=>{if(!postaw(id,1.05+r()*.2,.85,200))if(!postaw(id,.9,.75,240))postaw(id,.74,.7,300);});
-    const ile=Math.round(W*H/24000),licz={},LIMIT={chata:2,chata_kaszubska:2,dom_podlaski:2,dom_murowany:2,familok:2,szyb:2,stog:3,wydma:3,falochron:2,plot:2,bocian:2,kamienice:1,gotyk:2};
-    for(let i=0;i<ile;i++){const id=[...new Set(reg.g)][i%new Set(reg.g).size];if((licz[id]||0)>=(LIMIT[id]||2))continue;if(postaw(id,.66+r()*.3,.62,40))licz[id]=(licz[id]||0)+1;}
+    const ile=Math.round(W*H/30000),licz={},LIMIT={las_iglasty:2,las_mieszany:2,sosna:2,drzewo:2,wydma:2,kwiaty:2};
+    const pula=[...new Set(reg.g)];
+    for(let i=0;i<ile;i++){const id=pula[(i+Math.floor(ziarno))%pula.length];if((licz[id]||0)>=(LIMIT[id]||1))continue;if(postaw(id,.62+r()*.34,.62,40))licz[id]=(licz[id]||0)+1;}
     let drobne="";
     for(let i=0;i<(GRAFIKI._terrain?0:Math.round(W*H/5200));i++){const x=r()*W,y=r()*H;if(odlSciezki(S,x,y)>36&&!naMorzu(x,y)&&!wJeziorze(x,y,2)&&!wezly.some(p=>Math.hypot(p.x-x,p.y-y)<50)&&!(baner&&y>baner.top&&y<baner.bottom))drobne+=r()<.6?kepa(x,y,.9+r()*.5,["#8DB85A","#77A84C","#A5C870"][i%3]):kwiatki(x,y,.9);}
     // niższe motywy zasłaniają wyższe, jak w krajobrazie
     elem.sort((a,b)=>a.y-b.y);
     let deko=drobne;
-    elem.forEach(e=>{const sz=100*e.s;deko+='<g transform="translate('+(e.x-sz/2).toFixed(1)+' '+(e.y+34*e.s-sz).toFixed(1)+') scale('+e.s.toFixed(2)+')">'+motyw(e.id)+'</g>';});
+    const TONY=["","filter:saturate(.9) brightness(1.04)","filter:hue-rotate(-7deg) saturate(1.05)","filter:hue-rotate(6deg) brightness(.97)"];
+    elem.forEach(e=>{const sz=100*e.s,x0=e.x-sz/2,y0=e.y+34*e.s-sz,odb=e.odb&&!NIE_ODBIJAJ[e.id];
+      deko+='<g transform="translate('+(odb?x0+sz:x0).toFixed(1)+' '+y0.toFixed(1)+') scale('+(odb?-e.s:e.s).toFixed(2)+' '+e.s.toFixed(2)+')"'+(GRAFIKI[e.id]&&TONY[e.ton]?' style="'+TONY[e.ton]+'"':'')+'>'+motyw(e.id)+'</g>';});
     // animacje: łodzie na wodzie, ptaki i samoloty w powietrzu, śmigła wiatraków, pszczoły
     let anim="";
     if(st.morze&&!GRAFIKI._sea){let fale="";for(let y=26;y<H;y+=36){let b=st.morze[0];for(const p of st.morze)if(Math.abs(p[1]-y)<Math.abs(b[1]-y))b=p;const n=Math.floor((b[0]-26)/12);if(n<2)continue;let d="M6 "+y;for(let k=0;k<n;k++)d+="q3-4 6 0t6 0";fale+='<path d="'+d+'" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" opacity=".75"/>';}anim+='<g class="a-fale">'+fale+'</g>';}

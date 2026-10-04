@@ -1,0 +1,36 @@
+/* Formularze, przełączniki i tabele w stylu planszy (ranking, Karta w ciemno, konto). */
+.tresc{flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:12px 12px 24px;display:flex;flex-direction:column;gap:12px}
+.tresc h2{font-family:Bungee,sans-serif;font-weight:400;font-size:17px;margin:0 0 6px;color:var(--braz)}
+.tresc p{margin:0;font-weight:700;color:var(--braz-2);font-size:14px;line-height:1.4}
+.naglowek{font-family:Bungee,sans-serif;font-size:17px;color:var(--krem);text-shadow:0 2px 0 var(--braz);margin:4px 2px -4px}
+.liczniki{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.liczniki .pole{padding:10px 12px;text-align:center}
+.liczniki b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:26px;color:var(--braz)}
+.liczniki span{font-size:12px;font-weight:900;color:var(--braz-2)}
+.przelacznik{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.przelacznik button{min-height:44px;border:3px solid var(--braz);border-radius:14px;background:var(--krem);box-shadow:0 4px 0 var(--braz);font:900 14px Rubik,sans-serif;color:var(--braz);cursor:pointer}
+.przelacznik button[aria-pressed=true]{background:var(--zolt);transform:translateY(2px);box-shadow:0 2px 0 var(--braz)}
+.stan{min-height:0;text-align:center;color:var(--krem)!important;text-shadow:0 1px 0 var(--braz)}
+.stan:empty{display:none}
+.tabela{padding:4px 6px}
+.ranking-table{width:100%;border-collapse:collapse;font-size:14px}
+.ranking-table th{font-size:11px;font-weight:900;color:var(--braz-2);text-transform:uppercase;letter-spacing:.5px;text-align:left;padding:8px 6px;border-bottom:3px solid var(--braz)}
+.ranking-table td{padding:10px 6px;border-bottom:2px dashed rgba(58,42,20,.25);font-weight:700;overflow-wrap:anywhere}
+.ranking-table tr:last-child td{border-bottom:none}
+.ranking-table td:first-child{font-family:Bungee,sans-serif;font-weight:400;width:56px}
+.ranking-table td:last-child,.ranking-table th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.ranking-table tr.podium td{background:rgba(245,184,46,.18)}
+.ranking-table tbody:empty::after{content:"Tu pojawią się odkrywcy.";display:block;padding:14px;text-align:center;color:var(--braz-2);font-weight:700}
+.formularz{padding:14px;display:flex;flex-direction:column;gap:8px}
+.formularz .klocek,.tresc form .klocek{width:100%;justify-content:center}
+.tresc label{display:flex;flex-direction:column;gap:5px;font-weight:900;font-size:13px;color:var(--braz)}
+.tresc input:not([type=checkbox]):not([type=radio]),.tresc select{min-height:46px;border:3px solid var(--braz);border-radius:12px;background:#fff;padding:8px 12px;font:700 15px Rubik,sans-serif;color:var(--braz);width:100%;box-sizing:border-box}
+.tresc fieldset{border:3px solid var(--braz);border-radius:14px;background:var(--krem);padding:8px 12px 10px;margin:0}
+.tresc legend{font-weight:900;font-size:13px;padding:0 6px;color:var(--braz)}
+.tresc fieldset label{flex-direction:row;align-items:flex-start;gap:9px;font-weight:700;font-size:14px;margin:6px 0}
+.check-label{flex-direction:row!important;align-items:flex-start;gap:10px!important;font-weight:700!important}
+.tresc input[type=checkbox],.tresc input[type=radio]{width:20px;height:20px;flex:none;margin:1px 0 0;accent-color:#E8A400}
+.tresc details{background:var(--krem);border:3px solid var(--braz);border-radius:14px;padding:8px 12px}
+.tresc details summary{font-weight:900;cursor:pointer;color:var(--braz)}
+.tresc details p{margin-top:6px;font-size:13px}
+.drobne{font-size:12px!important;color:var(--krem)!important;text-shadow:0 1px 0 var(--braz);text-align:center}

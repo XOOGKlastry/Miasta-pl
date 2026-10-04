@@ -1,0 +1,37 @@
+name: Dane kart gmin
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "narzedzia/uzupelnij_karty.py"
+      - ".github/workflows/karty-dane.yml"
+  schedule:
+    - cron: "0 6 4 * *"   # raz w miesiącu
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  karty:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Dane kart
+        run: python narzedzia/uzupelnij_karty.py --year 2025 2>&1 | tee narzedzia/karty-dane.log
+      - name: Zapisz zmiany
+        if: always()
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add narzedzia/karty-dane.log
+          [ -f karty-dane.json ] && git add karty-dane.json || true
+          if ! git diff --cached --quiet; then git commit -m "Dane kart gmin: aktualizacja"; for i in 1 2 3 4 5; do git pull --rebase -X theirs && git push && break; sleep $((i*7)); done; fi
