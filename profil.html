@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=21" />
+<link rel="stylesheet" href="wspolne.css?v=22" />
 <style>
 .przewijana{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:10px}
 .karta-gracza{display:flex;align-items:center;gap:14px;background:var(--ink-2);border:3px solid var(--line-2);border-radius:20px;padding:14px;box-shadow:var(--cien)}
@@ -70,14 +70,16 @@
   <section class="sekcja"><h3>Twoje wyniki</h3><div class="kafle" id="kafle"></div></section>
   <section class="sekcja" id="kartyInfo"><h3>Karty gmin: jak to działa</h3>
     <div class="ki">
-      <div class="ki-zet"><span>Żetony do następnej paczki</span><b id="kiZet">0 / 25</b><div class="ki-pasek"><i id="kiPasek"></i></div><a href="karty.html" class="ki-album">Otwórz album ›</a></div>
+      <div class="ki-zet"><span>Monety do następnej paczki</span><b id="kiZet">0 / 25</b><div class="ki-pasek"><i id="kiPasek"></i></div><a href="karty.html" class="ki-album">Otwórz album ›</a></div>
       <details open><summary>Jak zdobywać karty</summary>
         <p><b>Gry gminne</b> dają postęp konkretnej gminie:</p>
         <ul>
           <li><b>Kształt gminy:</b> trafiona gmina to od razu karta, także po podpowiedzi.</li>
           <li><b>Jaki to herb?, Gdzie ta gmina?, Ciepło-zimno:</b> każde trafienie danej gminy to 1 fragment; zwykła karta wymaga 3, srebrna 4, złota 5, diamentowa 6, legendarna 7 fragmentów.</li>
         </ul>
-        <p><b>Wszystkie pozostałe gry</b> (miasta, powiaty, rzeki, kluby, tablice, plansza przygód, wyzwania, Do sześciu razy sztuka, Memory, Szybki strzał) dają <b>żetony</b>: 1 żeton za każde trafienie; w wymienianiu miast 1 żeton za 10 miast. <b>25 żetonów to paczka</b> z jedną losową kartą.</p>
+        <p><b>Wszystkie pozostałe gry</b> (miasta, powiaty, rzeki, kluby, tablice, plansza przygód, wyzwania, Do sześciu razy sztuka, Memory, Szybki strzał) dają <b>monety</b>. Każde trafienie daje punkty, a <b>10 punktów to 1 moneta</b>:</p>
+        <ul><li>zwykłe pytanie: 5 pkt (2 trafienia = 1 moneta),</li><li>Więcej czy mniej: 1 pkt (10 trafień = 1 moneta),</li><li>wymienianie miast: 1 moneta za 10 miast,</li><li>Karta w ciemno, gra rankingowa: 5 monet za wygraną, 2 za remis, 1 za przegraną, do tego szansa na paczkę.</li></ul>
+        <p><b>25 monet to paczka</b> z jedną losową kartą.</p>
         <p>Kolor paczki: zwykła 80%, srebrna 16%, złota 3,5%, diamentowa 0,5%. Lepsze paczki częściej zawierają rzadkie karty. Szczegółowe szanse znajdziesz w albumie.</p>
         <p>Nowe karty z gier gminnych pokazują się po zakończeniu gry. <b>Paczki otwierasz sam</b> w albumie kart, po jednej, kiedy chcesz.</p>
       </details>
@@ -113,7 +115,7 @@
 </div>
 <script src="instaluj.js"></script>
 <script src="online-config.js"></script><script src="online.js"></script><script src="konto.js"></script>
-<script src="wspolne.js?v=23"></script>
+<script src="wspolne.js?v=22"></script>
 <script>
 const {$,fmt}=ZP;
 const p=Konto.profil();

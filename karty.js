@@ -57,7 +57,7 @@ window.KartyModel=(()=>{
   x.rz=pl.some(q=>q.miejsce===1)?'legenda':pl.length?'diament':w.some(q=>q.miejsce===1)?'zloto':w.length?'srebro':'zwykla';});
   return g;
  }
- function upgrade(g,all,owned,learning){const county=all.filter(x=>x.k.slice(0,4)===g.k.slice(0,4)),count=county.filter(x=>owned.has(x.k)).length;
+ function upgrade(g,all,owned,learning){const mnpK=+g.k.slice(2,4)>=61,county=mnpK?[]:all.filter(x=>x.k.slice(0,4)===g.k.slice(0,4)),count=county.filter(x=>owned.has(x.k)).length;
   const hits=Math.max(0,Number(learning['kontur:'+g.k]?.ok)||0),contour=Math.min(4,Math.floor(hits/10)),powiat=county.length>0&&count===county.length?1:0;
   return {bonus:owned.has(g.k)?contour+powiat:0,powiat,contour,hits,count,total:county.length};
  }
@@ -257,15 +257,36 @@ window.Karty=(function(){
       +(ot&&CIEK[g.k]?'<button type="button" class="kk-pb" data-c="'+g.k+'" aria-label="Ciekawostki">'+KULA+'</button>':'')
       +'<div class="kk-nazwa">'+(ot?esc(g.n):"???")+'</div>'
       +'<div class="kk-jedn">'+(ot?(mnp(g)?"miasto na prawach powiatu<br>woj. "+g.woj:g.typ+(pelna?"<br>"+esc(g.powiat)+" · woj. "+g.woj:"")):(o.postep?"postęp "+o.postep+"/"+prog(g)+" fragmentów":"woj. "+g.woj))+'</div>'
-      +st+(pelna&&ot&&!o.ukryj?szczegoly(g,u,o):'')+'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
+      +st+(pelna&&ot&&!o.ukryj&&!o.bezSzczegolow?szczegoly(g,u,o):'')+'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
+  }
+  // rekord dobry (zielony), zły (czerwony) albo neutralny (złoty)
+  function znakRekordu(r){
+    if(r.k==='ludnosc'||r.k==='powierzchnia')return 'neutral';
+    const s=STATY.find(x=>x.k===r.k),lepiejMniej=s&&s.t==='o';
+    return (r.dir==='max')!==lepiejMniej?'plus':'minus';
+  }
+  function rekordyHTML(g){
+    if(!g.rekordy||!g.rekordy.length)return '';
+    return '<ul class="kk-rekordy">'+g.rekordy.map(r=>{const z=znakRekordu(r);return '<li class="'+z+'"><i>'+(z==='plus'?'▲':z==='minus'?'▼':'●')+'</i><span>'+esc(r.opis)+'</span></li>';}).join('')+'</ul>';
+  }
+  // panel informacji pod kartą w podglądzie: wszystko na jednym ekranie, bez rozwijania
+  function panel(g){
+    const u=ulepszenie(g),r=rekordyHTML(g),m=+g.k.slice(2,4)>=61;
+    return '<div class="kk-panel">'
+      +(g.pozycjaWoj?'<p class="kk-poz">#'+g.pozycjaWoj+' w woj. '+esc(g.woj.replace(/ie$/,'im'))+' · '+(g.grupa==='wies'?'wśród wsi':'wśród miast i M-W')+'</p>':'')
+      +(r?'<b class="kk-pn">Rekordy</b>'+r:'<p class="kk-brak">Bez rekordów w pierwszej piątce.</p>')
+      +'<div class="kk-postep">'+(m?'':'<label><span>Powiat</span><progress value="'+u.count+'" max="'+Math.max(1,u.total)+'"></progress><em>'+u.count+'/'+u.total+'</em></label>')
+      +'<label><span>Kontury</span><progress value="'+Math.min(40,u.hits)+'" max="40"></progress><em>'+Math.min(40,u.hits)+'/40</em></label></div>'
+      +(u.bonus?'<p class="kk-bonus">Premia karty: +'+u.bonus+(u.bonus===5?' · karta holograficzna':'')+'</p>':'')
+      +'</div>';
   }
   function szczegoly(g,u,o){
-    const records=g.rekordy.map(r=>'<li>'+ (r.scope==='pl'?'🇵🇱':'🏆')+' '+esc(r.opis)+' <small>· '+esc(r.rok)+'</small></li>').join('');
+    const records=rekordyHTML(g);
     const history=JSON.parse(localStorage.getItem('karty-rekordy-v1')||'{}');
     const years=Object.entries(history).filter(([k])=>k.startsWith(g.k+':')&&!k.endsWith(':'+DANE.edycja)).map(([k])=>k.split(':')[1]);
     return '<div class="kk-details">'+(g.pozycjaWoj?'<p>#'+g.pozycjaWoj+' w woj. '+esc(g.woj)+' · '+(g.grupa==='wies'?'wsie':'miasta i M-W')+'</p>':'<p>OVR czeka na komplet danych GUS.</p>')
      +(o.rowna?'': '<label>Powiat '+u.count+'/'+u.total+' <progress value="'+u.count+'" max="'+Math.max(1,u.total)+'"></progress></label><label>Kontury '+Math.min(40,u.hits)+'/40 <progress value="'+Math.min(40,u.hits)+'" max="40"></progress></label>')
-     +(records?'<details><summary>Rekordzistka '+esc(DANE.edycja)+' · '+g.rekordy.length+' 🏆</summary><ul>'+records+'</ul></details>':'')
+     +(records||'')
      +(years.length?'<p>Zachowane odznaczenia: '+years.map(esc).join(', ')+'</p>':'')
      +'<small>Forma: brak porównywalnych danych wieloletnich. PIT/os. to dochód gminy z PIT na mieszkańca, nie pensja. Szkoły publiczne: oczekiwanie na pełne źródło, waga wstrzymana. Zestaw GUS '+esc(DANE.edycja)+'.</small>'
      +(u.bonus===5?'<button type="button" data-tilt>✦ Włącz połysk przy przechylaniu</button>':'')+'</div>';
@@ -355,6 +376,19 @@ window.Karty=(function(){
 .kk-ciek li{font-weight:700;line-height:1.4}.kk-ciek li::marker{font-family:Bungee,sans-serif;color:#E84A3C}
 .kk-ciek li p{margin:0}
 .kk-ciek li a{display:inline-flex;margin-top:6px;min-height:38px;align-items:center;padding:0 14px;border-radius:10px;border:3px solid #3A2A14;box-shadow:0 3px 0 #3A2A14;background:#F5B82E;color:#3A2A14;text-decoration:none;font-weight:900}
+.kk-rekordy{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:5px}
+.kk-rekordy li{display:flex;align-items:flex-start;gap:7px;padding:5px 9px;border-radius:10px;border:2px solid;font:800 12.5px/1.3 Rubik,sans-serif}
+.kk-rekordy li i{font-style:normal;font-size:11px;margin-top:2px}
+.kk-rekordy li.plus{background:#E1F5DA;border-color:#2E8B3D;color:#1E5E28}
+.kk-rekordy li.minus{background:#FDE2DE;border-color:#C7372B;color:#8A1F17}
+.kk-rekordy li.neutral{background:#FFF1C2;border-color:#B8860B;color:#6E5100}
+.kk-panel{width:min(92vw,380px);background:#FFF6E0;color:#3A2A14;border:3px solid #3A2A14;border-radius:16px;box-shadow:0 4px 0 #3A2A14;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-family:Rubik,sans-serif}
+.kk-panel p{margin:0;font-weight:700;font-size:12.5px;color:#7A6440}
+.kk-panel .kk-pn{font-family:Bungee,sans-serif;font-weight:400;font-size:14px}
+.kk-postep{display:grid;gap:4px}
+.kk-postep label{display:grid;grid-template-columns:64px 1fr 46px;align-items:center;gap:8px;font-weight:800;font-size:12px}
+.kk-postep progress{width:100%;height:10px;accent-color:#27AE60}
+.kk-postep em{font-style:normal;text-align:right}
 .kk .kk-nowa{position:absolute;left:50%;top:1.5cqw;transform:translateX(-50%);background:#E84A3C;color:#fff;font-size:4.5cqw;font-weight:900;padding:.5cqw 3cqw;border-radius:0 0 2cqw 2cqw;z-index:5}
 /* prezentacja nowej karty, jak po otwarciu paczki */
 .pk{position:fixed;inset:0;z-index:6000;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Rubik,system-ui,sans-serif;color:#FFF6E0;animation:pkWej .35s both;
@@ -505,5 +539,5 @@ window.Karty=(function(){
       if(n.length)setTimeout(()=>prezentacja(n,info),1200);else setTimeout(info,1200);
     }catch(e){}
   }
-  return {komplet,ulepszenie,wynik,ocenaOVR,odznaki,archiwizuj,prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
+  return {panel,rekordyHTML,komplet,ulepszenie,wynik,ocenaOVR,odznaki,archiwizuj,prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
 })();

@@ -79,10 +79,15 @@ def main() -> None:
         if args.year not in meta['years']:raise ValueError(f'Brak roku {args.year}: {name}')
         values[name]=download(var,args.year);sources[name]={'id':var,'rok':args.year,'url':BASE+f'/variables/{var}','opis':meta}
     # szkoły podstawowe ogółem (publiczne i niepubliczne); gdy GUS ich nie poda, wskaźnik zostaje wstrzymany
-    sz_id,sz_meta=znajdz_szkoly(args.year);szkoly={}
-    if sz_id:
-        try:szkoly=download(sz_id,args.year);sources['szkoly']={'id':sz_id,'rok':args.year,'url':BASE+f'/variables/{sz_id}','opis':sz_meta}
-        except Exception as exc:logging.warning('Szkoły: %s',exc);szkoly={}
+    # zmienna 838: szkoły podstawowe dla dzieci i młodzieży (bez specjalnych), ogółem, wszystkie organy prowadzące;
+    # bierzemy najnowszy dostępny rok, bo dane oświatowe GUS publikuje z opóźnieniem
+    sz_id,szkoly,sz_rok=838,{},None
+    try:
+        sz_meta=request(f'/variables/{sz_id}?format=json')
+        lata=[y for y in sz_meta.get('years',[]) if y<=args.year]
+        if lata:
+            sz_rok=max(lata);szkoly=download(sz_id,sz_rok);sources['szkoly']={'id':sz_id,'rok':sz_rok,'url':BASE+f'/variables/{sz_id}','opis':sz_meta}
+    except Exception as exc:logging.warning('Szkoły: %s',exc);szkoly={}
     result={};missing=[]
     for key,g in sorted(rows.items()):
         row={};years={}
@@ -93,11 +98,11 @@ def main() -> None:
         if key in values['pit_suma'] and g.get('ludnosc',0)>0 and g.get('ludnosc_rok')==args.year:
             row['pit_na_mieszk']=values['pit_suma'][key]/g['ludnosc'];years['pit_na_mieszk']=args.year
         if key in szkoly and g.get('ludnosc',0)>0:
-            row['szkoly_na_1000']=round(szkoly[key]/g['ludnosc']*1000,3);years['szkoly_na_1000']=args.year
+            row['szkoly_na_1000']=round(szkoly[key]/g['ludnosc']*1000,3);years['szkoly_na_1000']=sz_rok
         row['lata']=years;result[key]=row
         absent=[x for x in ['przyrost_naturalny','pit_na_mieszk','powierzchnia'] if x not in row]
         if absent:missing.append({'k':key,'pola':absent})
-    status=('Szkoły podstawowe ogółem (publiczne i niepubliczne) na 1000 mieszkańców, GUS BDL, zmienna '+str(sz_id)+'.') if szkoly else 'Brak danych GUS o szkołach podstawowych. Waga szkół jest wstrzymana.'
+    status=('Szkoły podstawowe ogółem (publiczne i niepubliczne) na 1000 mieszkańców, GUS BDL, zmienna '+str(sz_id)+', rok '+str(sz_rok)+'.') if szkoly else 'Brak danych GUS o szkołach podstawowych. Waga szkół jest wstrzymana.'
     artifact={'rok':'edycja 2026','pobrano':datetime.datetime.now(datetime.timezone.utc).isoformat(),'szkoly_status':status,'wstrzymane':[] if szkoly else ['szkoly_na_1000'],'zrodla':sources,'uwagi':'Pozostałe wskaźniki pochodzą z baza.json; rok ich obserwacji nie był zapisany. Edycja oznacza datę zestawu, nie jednolity rok wszystkich danych.','gminy':result,'braki':missing}
     target=ROOT/'karty-dane.json';temp=target.with_suffix('.tmp');temp.write_text(json.dumps(artifact,ensure_ascii=False,separators=(',',':')),encoding='utf-8');temp.replace(target)
     logging.info('Zapis: %s gmin, %s z brakami',len(result),len(missing))

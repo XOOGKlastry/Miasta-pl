@@ -49,7 +49,8 @@
 .chmury.rozwiej .niebo{opacity:0;transition:opacity 1.6s}
 .pb-powitanie{position:absolute;z-index:6;transform:translate(-14%,-100%);pointer-events:none;transition:opacity .5s}
 .pb-powitanie .pb-dymek{white-space:nowrap;margin-bottom:0}
-.pb-powitanie .pb-dymek::before{left:18px;bottom:-12px;transform:rotate(-45deg) skew(10deg,10deg)}
+.pb-powitanie .pb-dymek::before{left:16px;bottom:-14px;border-width:14px 8px 0 8px;border-color:#3A2A14 transparent transparent transparent}
+.pb-powitanie .pb-dymek::after{left:18.5px;bottom:-9.5px;border-width:10px 5.5px 0 5.5px;border-color:#FFF1D3 transparent transparent transparent}
 .instaluj{flex:none;display:flex;align-items:center;gap:10px;padding:8px 10px;background:#FFE7A3;border-bottom:4px solid var(--braz);position:relative;z-index:5}
 .instaluj span{flex:1;min-width:0}.instaluj b{display:block;font-size:14px}.instaluj small{display:block;font-size:11px;font-weight:700;color:var(--braz-2)}
 .instaluj .klocek{min-height:40px;padding:0 12px;font-size:13px}
@@ -135,7 +136,7 @@
 <script src="instaluj.js"></script>
 <script src="konto.js"></script>
 <script src="saga.js"></script>
-<script src="polandball.js?v=3"></script>
+<script src="polandball.js?v=4"></script>
 <script src="krainy.js?v=5"></script>
 <script>
 const $=id=>document.getElementById(id);
@@ -206,7 +207,8 @@ function rysuj(){
 function powitanie(p,n){
   if(!window.PB||!p)return;
   const poz=Saga.poziom(n),nowa=n%Saga.NA_SWIAT===0;
-  const teksty=n===0&&!(stan.gw[0])?["Hej! Odkryjmy Polskę!"]:nowa?["Witaj: "+poz.kraina.nazwa+"!"]:poz.boss?["Czas na stolicę: "+poz.kraina.stolica+"!"]:["Każda podróż ma swój początek!","Gramy dalej?","Do dzieła!","Następny przystanek!"];
+  let dzisGotowe=false;try{const d=new Date(),k="dzis-"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");dzisGotowe=!!(JSON.parse(localStorage.getItem(k)||"null")||{}).done;}catch(e){}
+  const teksty=n===0&&!(stan.gw[0])?["Hej! Odkryjmy Polskę!"]:!dzisGotowe&&Math.random()<.4?["Wyzwanie dnia czeka!"]:nowa?["Witaj: "+poz.kraina.nazwa+"!"]:poz.boss?["Czas na stolicę: "+poz.kraina.stolica+"!"]:["Każda podróż ma swój początek!","Gramy dalej?","Do dzieła!","Następny przystanek!"];
   const d=document.createElement("div");d.className="pb-powitanie";PB.styl();
   d.innerHTML='<div class="pb-dymek">'+teksty[Math.floor(Math.random()*teksty.length)]+'</div>';
   d.style.left=(p.x-6)+"px";d.style.top=(p.y-88)+"px";
@@ -340,7 +342,7 @@ fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
 window.addEventListener("resize",()=>{clearTimeout(window._r);window._r=setTimeout(start,200);});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
-<script src="karty.js?v=11"></script>
+<script src="karty.js?v=12"></script>
 <script>setTimeout(()=>{Karty.liczbaNowych().then(n=>{const e=document.getElementById("kolNowe");if(e&&n>0){e.textContent=n>99?"99+":n;e.classList.remove("hidden");}}).catch(()=>{});},1500);</script>
 <script src="naglowek.js?v=1"></script>
 </body>

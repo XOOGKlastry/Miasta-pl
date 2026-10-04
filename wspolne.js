@@ -310,7 +310,7 @@ function modulKart(){
   if(KARTY_MODUL)return KARTY_MODUL;
   KARTY_MODUL=new Promise((resolve,reject)=>{
     let sc=document.querySelector('script[src^="karty.js"]'),nowy=!sc;
-    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=11";}
+    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=12";}
     sc.addEventListener("load",()=>resolve(window.Karty),{once:true});
     sc.addEventListener("error",()=>{KARTY_MODUL=null;sc.remove();reject(Error("Nie wczytano kart"));},{once:true});
     if(nowy)document.head.appendChild(sc);
@@ -813,6 +813,15 @@ function lotNagrody(symbol,n){
   if(matchMedia("(prefers-reduced-motion: reduce)").matches||!el.animate){setTimeout(()=>el.remove(),450);return;}
   const r=el.getBoundingClientRect();const anim=el.animate([{transform:"translate(-50%,0) scale(1)",opacity:1},{transform:"translate("+(b.left-r.left)+"px,"+(b.top-r.top)+"px) scale(.5)",opacity:.2}],{duration:750,easing:"cubic-bezier(.3,.1,.5,1)"});anim.onfinish=()=>el.remove();
 }
+/* monety za gry niegminne: każda dobra odpowiedź daje punkty, a 10 punktów to 1 moneta.
+   Zwykłe pytanie 5 pkt (2 trafienia = moneta); szybkie gry z mnóstwem odpowiedzi mniej:
+   Więcej czy mniej 1 pkt (10 trafień = moneta). 25 monet = paczka z kartą. */
+const MONETY_PKT={ludnosc:1};
+function punktyMonet(kind){
+  let a=(+localStorage.getItem("monety-pkt")||0)+(MONETY_PKT[kind]??5);
+  const n=Math.floor(a/10);if(n){zeton(n);a-=n*10;}
+  try{localStorage.setItem("monety-pkt",String(a));}catch(e){}
+}
 function zeton(n){lotNagrody("🪙",n||1);try{localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)+(n||1)));}catch(e){}}
 /* ---- podpowiedzi 50/50: +1 za każde 5 dobrych odpowiedzi z rzędu (5, 10, 15…), zbierają się na zapas.
    Użycie podpowiedzi zeruje serię. Gra podaje poprawną odpowiedź przez jokerCel albo opcję „poprawne” pola wpisu. ---- */
@@ -867,10 +876,10 @@ function obserwujJoker(){
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujJoker);else setTimeout(obserwujJoker,0);
 // maskotka PolandBall: ładowana na każdej stronie z grą, reaguje na odpowiedzi
-(function(){if(window.PB||document.querySelector('script[src*="polandball.js"]'))return;const s=document.createElement("script");s.src="polandball.js?v=3";document.head.appendChild(s);})();
+(function(){if(window.PB||document.querySelector('script[src*="polandball.js"]'))return;const s=document.createElement("script");s.src="polandball.js?v=4";document.head.appendChild(s);})();
 function zapisz(kind,id,ok,cicho){
   if(!cicho){poswiata(ok);sesja.wszystkie++;if(ok)sesja.ok++;seriaOdp(ok);}
-  if(ok&&kind!=="wymienianie"&&GMINNE.indexOf(kind)<0)zeton(1);
+  if(ok&&kind!=="wymienianie"&&GMINNE.indexOf(kind)<0)punktyMonet(kind);
   const s=nauka(),k=kind+":"+id,r=s[k]||{ok:0,no:0};
   if(ok){r.ok++;if(GMINNE.includes(kind))lotNagrody(kind==="kontur"?"▣":"◈",1);}else r.no++;
   r.t=Date.now();s[k]=r;

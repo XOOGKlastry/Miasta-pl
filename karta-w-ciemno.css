@@ -15,7 +15,9 @@
 .match-head b{font-family:Bungee,sans-serif;font-weight:400;font-size:18px}
 #metric{font-family:Bungee,sans-serif;font-weight:400;font-size:22px;text-align:center;color:var(--krem);text-shadow:0 3px 0 var(--braz);margin:2px 0}
 #turn{text-align:center;color:var(--krem)!important;text-shadow:0 1px 0 var(--braz)}
-.blind-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.blind-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;justify-items:center}
+.blind-choice{width:min(100%,360px)}
+@media(min-width:720px){.blind-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .blind-choice{min-width:0;border:3px solid var(--braz);border-radius:16px;background:var(--krem);box-shadow:0 4px 0 var(--braz);padding:8px;display:flex;flex-direction:column;gap:6px}
 .blind-choice .kk{width:100%;pointer-events:none}
 .blind-choice>button{min-height:42px;font-size:14px;width:100%}
@@ -39,5 +41,10 @@
 .round-result strong{display:block;margin:5px 0;overflow-wrap:anywhere}
 #room-info{overflow-wrap:anywhere}
 @keyframes flip{from{transform:rotateY(85deg);opacity:0}to{transform:rotateY(0);opacity:1}}
-@media(max-width:650px){.blind-grid{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:calc(100% - 28px);overflow-x:auto;scroll-snap-type:x mandatory;gap:12px;padding:4px 3px 12px}.blind-choice{scroll-snap-align:start}}
+
 @media(prefers-reduced-motion:reduce){.round-result>div{animation:none}}
+
+.nagroda-info{display:flex;flex-direction:column;gap:4px;margin:10px 0;padding:10px 12px;background:#FFF1C2;border:3px solid var(--braz);border-radius:14px;font-weight:800;color:var(--braz)}
+.nagroda-info .paczka-drop{color:#B5121F}
+.ranking-stan{display:block;margin-top:4px;font-weight:800;color:var(--braz-2)}
+.kwc #reveal .klocek{margin-top:10px;width:100%;justify-content:center}

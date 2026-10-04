@@ -50,9 +50,9 @@
 </nav>
 </div>
 <script>(function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();</script>
-<script src="polandball.js?v=2"></script>
+<script src="polandball.js?v=4"></script>
 <script src="naglowek.js?v=1"></script>
-<script src="karty.js?v=11"></script><script src="online-config.js"></script><script src="online.js"></script><script>
+<script src="karty.js?v=12"></script><script src="online-config.js"></script><script src="online.js"></script><script>
 let mode='points',sequence=0;const status=document.getElementById('status'),rows=document.getElementById('rows');
 async function load(){const id=++sequence;document.getElementById('value').textContent=mode==='points'?'Punkty':'Karty';for(const x of ['points','cards'])document.getElementById(x).setAttribute('aria-pressed',String(x===mode));rows.replaceChildren();if(!Online.enabled()){status.textContent='Ranking online jest niedostępny. Twój postęp pozostaje na urządzeniu.';return;}status.textContent='Wczytywanie…';try{const data=await Online.ranking(mode);if(id!==sequence)return;status.textContent=data.length?'':'Bądź pierwszym odkrywcą w rankingu.';for(const r of data){const tr=document.createElement('tr');for(const val of [r.place<=3?['🥇','🥈','🥉'][r.place-1]:r.place,r.nickname,Number(r.value).toLocaleString('pl-PL')]){const td=document.createElement('td');td.textContent=val;tr.append(td);}if(r.place<=3)tr.className='podium';rows.append(tr);}}catch(e){if(id===sequence)status.textContent=/fetch|network|sieć/i.test(e.message)?'Brak połączenia z rankingiem. Sprawdź internet i spróbuj ponownie.':e.message;}}
 for(const x of ['points','cards'])document.getElementById(x).onclick=()=>{mode=x;load();};

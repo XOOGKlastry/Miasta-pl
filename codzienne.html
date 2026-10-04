@@ -42,7 +42,7 @@
   <header class="gora"><img src="icon.svg?v=14" alt="" width="36" height="36" style="border-radius:10px;border:3px solid var(--braz)"><h1>Codzienne<small>trzy zagadki każdego dnia</small></h1><span class="zeton" title="Seria dni"><svg width="16" height="16" viewBox="0 0 24 24" fill="#E84A3C" stroke="#3A2A14" stroke-width="2"><path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-7 2 1 3 3 3 5 1-2 0-5 0-8z"/></svg><span id="seriaZ">0</span></span></header>
   <main class="tresc"><div class="naglowek">Twoja seria</div>
 <div class="pole tydzien" id="tydzien"></div>
-<div data-pb="Ukończ zadanie i odbierz losową paczkę z gminą!"></div>
+<div id="pbDzien" data-pb="Ukończ zadanie i odbierz losową paczkę z gminą!"></div>
 <p style="font-size:12px">Jedna paczka za każde zadanie dziennie. Poddanie się nie daje paczki.</p>
 <div class="naglowek">Dzisiejsze zagadki</div>
 <a class="pole dzien" href="wyzwanie.html" id="d1"><span class="etyk" id="d1e">Wyzwanie dnia</span><h2>Osiem pytań, jedna próba</h2><p id="d1p">Ten sam zestaw dla wszystkich.</p><div class="rzad"><span class="kratki" id="d1k"></span><span class="klocek" id="d1b">Graj</span></div></a>
@@ -57,7 +57,7 @@
   <a href="profil.html" data-n="profil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Profil</a>
 </nav>
 </div>
-<script src="polandball.js?v=3"></script>
+<script src="polandball.js?v=4"></script>
 <script>
 const $=id=>document.getElementById(id);
 const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}catch(e){return d;}};
@@ -84,5 +84,16 @@ odl();setInterval(odl,30000);
 <script>(function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});</script>
 <script src="naglowek.js?v=1"></script>
+<script>
+(function(){
+  // po wyliczeniu stanu zagadek maskotka mówi, co dalej
+  setTimeout(()=>{
+    const ile=["d1","d2","d3"].filter(id=>{const e=document.getElementById(id);return e&&e.classList.contains("gotowe");}).length;
+    const el=document.getElementById("pbDzien");if(!window.PB||!el)return;
+    if(ile===3)PB.powiedz(el,"Wszystkie codzienne wyzwania gotowe! Możesz trenować w zakładce Gry.","radosc");
+    else if(ile>0)PB.powiedz(el,"Świetnie! Zostało jeszcze "+(3-ile)+(3-ile===1?" wyzwanie":" wyzwania")+" na dziś.");
+  },300);
+})();
+</script>
 </body>
 </html>

@@ -9,10 +9,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=21" />
+<link rel="stylesheet" href="wspolne.css?v=22" />
 <style>
 .app{max-width:900px}
-.zakladki{display:flex;gap:6px;flex:none;overflow-x:auto}
+.zakladki{display:flex;flex-wrap:wrap;gap:6px;flex:none}
 .zakladki button{flex:1;min-width:84px;min-height:44px;border-radius:12px;border:1px solid var(--line-2);background:var(--ink-2);font-weight:700;font-size:14px;white-space:nowrap}
 .zakladki button.akt{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
 .zakladki button .n{font-size:11px;background:var(--red);color:#fff;border-radius:999px;padding:1px 6px;margin-left:4px}
@@ -75,6 +75,13 @@
 .c-poz textarea{min-height:60px;font:inherit;padding:8px;border:2px solid #3A2A14;border-radius:10px}
 .c-poz input{font:inherit;padding:8px;border:2px solid #3A2A14;border-radius:10px}
 .c-nr{font-weight:900;font-size:18px;padding-top:6px}
+/* ciekawostki: przewijana zakładka, elementy się nie ściskają ani nie nachodzą */
+#z-ciekawostki{overflow-y:auto;overflow-x:hidden;padding-bottom:20px}
+#z-ciekawostki>*{flex-shrink:0}
+.c-wyniki button{max-width:100%;white-space:normal;text-align:left}
+.c-edycja textarea,.c-edycja input{width:100%;box-sizing:border-box;min-width:0}
+.c-poz>div{min-width:0}
+.c-pusta{font-weight:700;color:#7A6440;margin:0}
 </style>
 </head>
 <body>
@@ -190,7 +197,7 @@
 </main>
 </div>
 
-<script src="wspolne.js?v=23"></script>
+<script src="wspolne.js?v=22"></script>
 <script>
 const {$}=ZP;
 const L={token:"admin-token",repo:"admin-repo",szkic:"admin-szkic-v1"};
@@ -451,7 +458,7 @@ fetch("baza.json").then(r=>r.json()).then(b=>{GMINY_B=b.gminy;cLista();}).catch(
 const cNazwa=k=>{const g=GMINY_B.find(x=>x.k===k);return g?g.n+" ("+g.typ.replace("gmina ","")+", "+(ZP.WOJ_KOD[k.slice(0,2)]||"")+")":k;};
 function cZmiana(){CIEK_ZM=true;try{localStorage.setItem("admin-ciek",JSON.stringify(CIEK));}catch(e){}zmian++;pokazZmiany();}
 function cLista(){
-  const ks=Object.keys(CIEK);
+  const ks=Object.keys(CIEK).filter(k=>CIEK[k]&&CIEK[k].length);
   $("cLista").innerHTML=ks.length?ks.map(k=>'<button class="ghost" data-k="'+k+'">'+cNazwa(k)+' · '+CIEK[k].length+'</button>').join(""):'<span class="status">Jeszcze żadnej.</span>';
   $("cLista").querySelectorAll("button").forEach(b=>b.onclick=()=>cEdytuj(b.dataset.k));
 }
@@ -463,15 +470,16 @@ $("cSzukaj").oninput=()=>{
   $("cWyniki").querySelectorAll("button").forEach(b=>b.onclick=()=>{$("cWyniki").innerHTML="";cEdytuj(b.dataset.k);});
 };
 function cEdytuj(k){
-  const l=CIEK[k]=CIEK[k]||[];
+  const l=CIEK[k]||[];
   const e=$("cEdycja");
   e.innerHTML='<div class="c-edycja"><h3>'+cNazwa(k)+'</h3>'+l.map((x,i)=>'<div class="c-poz" data-i="'+i+'"><span class="c-nr">'+(i+1)+'.</span><div><textarea data-p="t" placeholder="Treść ciekawostki">'+(x.t||"").replace(/</g,"&lt;")+'</textarea><input data-p="link" placeholder="Link (opcjonalnie)" value="'+(x.link||"").replace(/"/g,"&quot;")+'"><input data-p="etykieta" placeholder="Napis na przycisku, np. Obejrzyj" value="'+(x.etykieta||"").replace(/"/g,"&quot;")+'"></div><button class="ghost c-usun" title="Usuń">✕</button></div>').join("")
-    +'<button class="big" id="cDodaj" style="width:100%">+ Dodaj ciekawostkę</button></div>';
+    +(l.length?'':'<p class="c-pusta">Ta gmina nie ma jeszcze ciekawostek.</p>')+'<button class="big" id="cDodaj" style="width:100%">+ Dodaj ciekawostkę</button></div>';
   e.querySelectorAll(".c-poz").forEach(d=>{const i=+d.dataset.i;
     d.querySelectorAll("[data-p]").forEach(f=>f.onchange=()=>{const v=f.value.trim();if(v)l[i][f.dataset.p]=v;else delete l[i][f.dataset.p];cZmiana();});
     d.querySelector(".c-usun").onclick=()=>{l.splice(i,1);if(!l.length)delete CIEK[k];cZmiana();cEdytuj(k);cLista();};});
   $("cDodaj").onclick=()=>{CIEK[k]=CIEK[k]||[];CIEK[k].push({t:""});cZmiana();cEdytuj(k);cLista();setTimeout(()=>{const t=e.querySelectorAll("textarea");t[t.length-1].focus();},50);};
   cLista();
+  setTimeout(()=>e.scrollIntoView({behavior:"smooth",block:"start"}),50);
 }
 
 /* ---------- zapis ---------- */
