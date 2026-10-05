@@ -1,41 +1,65 @@
-2026-10-05 04:47:37,750 Cecha 450551: strona 11/40
-2026-10-05 04:47:43,992 Cecha 450551: strona 21/40
-2026-10-05 04:47:48,166 Cecha 450551: strona 31/40
-2026-10-05 04:47:52,184 Cecha 450551: 2479 gmin
-2026-10-05 04:47:59,160 Cecha 76046: strona 11/40
-2026-10-05 04:48:02,958 Cecha 76046: strona 21/40
-2026-10-05 04:48:07,755 Cecha 76046: strona 31/40
-2026-10-05 04:48:11,256 Cecha 76046: 2479 gmin
-2026-10-05 04:48:17,743 Cecha 1: strona 11/40
-2026-10-05 04:48:21,966 Cecha 1: strona 21/40
-2026-10-05 04:48:26,319 Cecha 1: strona 31/40
-2026-10-05 04:48:30,086 Cecha 1: 2479 gmin
-2026-10-05 04:48:37,049 Cecha 838: strona 11/40
-2026-10-05 04:48:41,992 Cecha 838: strona 21/40
-2026-10-05 04:48:46,604 Cecha 838: strona 31/40
-2026-10-05 04:48:49,764 Cecha 838: 2477 gmin
-2026-10-05 04:48:50,413 kandydat 60573 | przeciętna powierzchnia użytkowa mieszkania na 1 osobę     m2 | poziom 6
-2026-10-05 04:48:50,875 WYBRANO 60573 rok 2025: przeciętna powierzchnia użytkowa mieszkania na 1 osobę     m2
-2026-10-05 04:48:55,941 Cecha 60573: strona 11/40
-2026-10-05 04:48:59,870 Cecha 60573: strona 21/40
-2026-10-05 04:49:03,023 Cecha 60573: strona 31/40
-2026-10-05 04:49:06,505 Cecha 60573: 2479 gmin
-2026-10-05 04:49:06,962 kandydat 60563 | ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym     osoba | poziom 6
-2026-10-05 04:49:07,430 WYBRANO 60563 rok 2025: ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym     osoba
-2026-10-05 04:49:12,352 Cecha 60563: strona 11/40
-2026-10-05 04:49:15,449 Cecha 60563: strona 21/40
-2026-10-05 04:49:19,057 Cecha 60563: strona 31/40
-2026-10-05 04:49:22,176 Cecha 60563: 2479 gmin
-2026-10-05 04:49:22,653 kandydat 60530 | podmioty wpisane do rejestru regon na 10 tys. ludności     - | poziom 6
-2026-10-05 04:49:23,121 WYBRANO 60530 rok 2025: podmioty wpisane do rejestru regon na 10 tys. ludności     -
-2026-10-05 04:49:29,140 Cecha 60530: strona 11/40
-2026-10-05 04:49:32,263 Cecha 60530: strona 21/40
-2026-10-05 04:49:35,565 Cecha 60530: strona 31/40
-2026-10-05 04:49:38,605 Cecha 60530: 2479 gmin
-2026-10-05 04:49:39,527 Drogi (1703492,) rok 2025: Za małe pokrycie cechy 1703492: 0
-2026-10-05 04:49:43,035 Cecha 1703492: strona 11/40
-2026-10-05 04:49:45,430 Cecha 1703492: strona 21/40
-2026-10-05 04:49:47,836 Cecha 1703492: strona 31/40
-2026-10-05 04:49:49,717 Cecha 1703492: 2477 gmin
-2026-10-05 04:49:49,718 Drogi gminne twarde: zmienne (1703492,), rok 2024, gmin 2477
-2026-10-05 04:49:49,744 Zapis: 2479 gmin, 6 z brakami
+2026-10-05 04:52:53,521 Cecha 450551: strona 11/40
+2026-10-05 04:52:56,116 HTTP 429, próba 1; zachowano cache
+2026-10-05 04:52:56,651 HTTP 429, próba 1; zachowano cache
+2026-10-05 04:52:57,366 HTTP 429, próba 1; zachowano cache
+2026-10-05 04:53:06,436 HTTP 429, próba 2; zachowano cache
+2026-10-05 04:53:07,412 HTTP 429, próba 2; zachowano cache
+2026-10-05 04:53:07,825 HTTP 429, próba 2; zachowano cache
+2026-10-05 04:53:27,032 HTTP 429, próba 3; zachowano cache
+2026-10-05 04:53:27,839 HTTP 429, próba 3; zachowano cache
+2026-10-05 04:53:28,358 HTTP 429, próba 3; zachowano cache
+2026-10-05 04:53:57,349 HTTP 429, próba 4; zachowano cache
+2026-10-05 04:53:58,187 HTTP 429, próba 4; zachowano cache
+2026-10-05 04:53:58,844 HTTP 429, próba 4; zachowano cache
+2026-10-05 04:54:37,672 HTTP 429, próba 5; zachowano cache
+2026-10-05 04:54:38,506 HTTP 429, próba 5; zachowano cache
+2026-10-05 04:54:39,158 HTTP 429, próba 5; zachowano cache
+2026-10-05 04:55:28,120 HTTP 429, próba 6; zachowano cache
+2026-10-05 04:55:28,933 HTTP 429, próba 6; zachowano cache
+2026-10-05 04:55:29,687 HTTP 429, próba 6; zachowano cache
+2026-10-05 04:56:28,916 HTTP 429, próba 7; zachowano cache
+2026-10-05 04:56:29,353 HTTP 429, próba 7; zachowano cache
+2026-10-05 04:56:30,104 HTTP 429, próba 7; zachowano cache
+2026-10-05 04:57:29,345 HTTP 429, próba 8; zachowano cache
+2026-10-05 04:57:29,786 HTTP 429, próba 8; zachowano cache
+2026-10-05 04:57:30,533 HTTP 429, próba 8; zachowano cache
+2026-10-05 04:58:30,334 Cecha 450551: strona 21/40
+2026-10-05 04:58:33,239 Cecha 450551: strona 31/40
+2026-10-05 04:58:36,010 Cecha 450551: 2479 gmin
+2026-10-05 04:58:41,439 Cecha 76046: strona 11/40
+2026-10-05 04:58:44,451 Cecha 76046: strona 21/40
+2026-10-05 04:58:48,346 Cecha 76046: strona 31/40
+2026-10-05 04:58:51,508 Cecha 76046: 2479 gmin
+2026-10-05 04:58:56,420 Cecha 1: strona 11/40
+2026-10-05 04:58:59,842 Cecha 1: strona 21/40
+2026-10-05 04:59:03,050 Cecha 1: strona 31/40
+2026-10-05 04:59:06,491 Cecha 1: 2479 gmin
+2026-10-05 04:59:11,682 Cecha 838: strona 11/40
+2026-10-05 04:59:15,409 Cecha 838: strona 21/40
+2026-10-05 04:59:19,290 Cecha 838: strona 31/40
+2026-10-05 04:59:22,857 Cecha 838: 2477 gmin
+2026-10-05 04:59:23,172 kandydat 60573 | przeciętna powierzchnia użytkowa mieszkania na 1 osobę     m2 | poziom 6
+2026-10-05 04:59:23,490 WYBRANO 60573 rok 2025: przeciętna powierzchnia użytkowa mieszkania na 1 osobę     m2
+2026-10-05 04:59:28,029 Cecha 60573: strona 11/40
+2026-10-05 04:59:30,849 Cecha 60573: strona 21/40
+2026-10-05 04:59:34,231 Cecha 60573: strona 31/40
+2026-10-05 04:59:37,736 Cecha 60573: 2479 gmin
+2026-10-05 04:59:38,074 kandydat 60563 | ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym     osoba | poziom 6
+2026-10-05 04:59:38,384 WYBRANO 60563 rok 2025: ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym     osoba
+2026-10-05 04:59:43,291 Cecha 60563: strona 11/40
+2026-10-05 04:59:46,025 Cecha 60563: strona 21/40
+2026-10-05 04:59:49,684 Cecha 60563: strona 31/40
+2026-10-05 04:59:52,091 Cecha 60563: 2479 gmin
+2026-10-05 04:59:52,401 kandydat 60530 | podmioty wpisane do rejestru regon na 10 tys. ludności     - | poziom 6
+2026-10-05 04:59:52,712 WYBRANO 60530 rok 2025: podmioty wpisane do rejestru regon na 10 tys. ludności     -
+2026-10-05 04:59:58,146 Cecha 60530: strona 11/40
+2026-10-05 05:00:01,554 Cecha 60530: strona 21/40
+2026-10-05 05:00:05,705 Cecha 60530: strona 31/40
+2026-10-05 05:00:08,063 Cecha 60530: 2479 gmin
+2026-10-05 05:00:08,691 Drogi (1703492,) rok 2025: Za małe pokrycie cechy 1703492: 0
+2026-10-05 05:00:11,580 Cecha 1703492: strona 11/40
+2026-10-05 05:00:13,696 Cecha 1703492: strona 21/40
+2026-10-05 05:00:15,371 Cecha 1703492: strona 31/40
+2026-10-05 05:00:16,921 Cecha 1703492: 2477 gmin
+2026-10-05 05:00:16,923 Drogi gminne twarde: zmienne (1703492,), rok 2024, gmin 2477
+2026-10-05 05:00:16,956 Zapis: 2479 gmin, 6 z brakami
