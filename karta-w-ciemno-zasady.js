@@ -2,7 +2,7 @@
    ma najlepszy zakryty wskaźnik. Ta sama karta = remis; inaczej wygrywa wyższa ocena wskaźnika (przy równej: OVR).
    Obie wybrane karty odpadają z talii. 5 rund. Czysta logika: żadnych zapisów do kolekcji. */
 window.CiemnoZasady=(()=>{
- const TALIA=10,RUNDY=5,PULA=50,BEZ=['wodociag_proc','kanalizacja_proc','szkoly_na_1000'];
+ const TALIA=12,RUNDY=5,PULA=60,BEZ=['wodociag_proc','kanalizacja_proc','szkoly_na_1000'];
  // wskaźniki do zakrywania: tylko te, które są na przodzie każdej karty (i miasta, i wsi)
  const WSPOLNE=['ludnosc','gestosc','saldo_migracji','przyrost_naturalny','bezrobocie_proc','obciazenie_demograficzne'];
  const shuffle=(a,r=Math.random)=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};

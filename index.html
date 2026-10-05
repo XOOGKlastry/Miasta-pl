@@ -106,6 +106,13 @@
 .sciana{position:absolute;inset:0;background:var(--krem);border:5px solid var(--braz);border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:Bungee,sans-serif;font-size:13px}
 .sciana svg{width:46px;height:46px}
 .rzut .wynik{font-family:Bungee,sans-serif;font-size:28px;color:var(--krem);text-shadow:0 3px 0 var(--braz);text-align:center;min-height:36px}
+/* malowana plansza */
+.malowany{position:absolute;left:0;right:0;background-size:100% 100%;background-repeat:no-repeat;pointer-events:none}
+.separator{position:absolute;left:0;right:0;background:linear-gradient(#5f8a55,#6f9a60 40%,#5f8a55);box-shadow:inset 0 3px 0 rgba(58,42,20,.35),inset 0 -3px 0 rgba(58,42,20,.35);pointer-events:none}
+.malowana-tryb .wezel .kolo{width:60px;height:60px}
+.malowana-tryb .wezel.boss .kolo{width:70px;height:70px}
+.malowana-tryb .wezel .gwiazdki{margin-top:3px;background:#FFF6E0;border:2px solid #3A2A14;border-radius:999px;padding:1px 5px;font-size:13px;text-shadow:none;color:#C9BFA0;filter:none}
+.malowana-tryb .wezel .gwiazdki .z{color:#F5B82E;text-shadow:0 1px 0 #3A2A14}
 </style>
 <link rel="stylesheet" href="malowana-plansza.css?v=2">
 </head>
@@ -147,7 +154,20 @@ const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}
 const STEP=96,BANER=110,GORA=140,DOL=150;
 let WOJ={},stan=Saga.stan(),biez=Saga.biezacy(stan),PASY=[],MGLA=null,HPL=0;
 
+// malowane krainy (grafiki/plansza): pola leżą tam, gdzie na ilustracji, a nasze pola zakrywają narysowane
+let MALOWANA=null;
+const MAL_ID={"zachodniopomorskie":"zachodniopomorskie","pomorskie":"pomorskie","warmińsko-mazurskie":"warminsko-mazurskie","podlaskie":"podlaskie","mazowieckie":"mazowieckie","kujawsko-pomorskie":"kujawsko-pomorskie","wielkopolskie":"wielkopolskie","lubuskie":"lubuskie","dolnośląskie":"dolnoslaskie","opolskie":"opolskie","śląskie":"slaskie","łódzkie":"lodzkie","świętokrzyskie":"swietokrzyskie","lubelskie":"lubelskie","podkarpackie":"podkarpackie","małopolskie":"malopolskie"};
+function ukladMalowany(W){
+  const reg={};MALOWANA.regions.forEach(r=>reg[r.id]=r);
+  const panele=Saga.SWIATY.map(sw=>{const r=reg[MAL_ID[sw.woj]];return {r,h:W*r.h/r.w};});
+  const H=GORA+DOL+panele.reduce((a,p)=>a+p.h+BANER_M,0);
+  const pts=[],top=[];let y=H-DOL;
+  panele.forEach((p,s)=>{y-=BANER_M;const t=y-p.h;top.push(t);p.r.levels.forEach(l=>pts.push({x:W*l.x/100,y:t+p.h*l.y/100}));y=t;});
+  return {pts,H,panele,top};
+}
+const BANER_M=96;
 function wspolrzedne(W){
+  if(MALOWANA)return ukladMalowany(W);
   // od dołu: poziom 0 na dole, każda kraina zaczyna się banerem
   const pts=[],H=GORA+DOL+Saga.ILE*STEP+Saga.SWIATY.length*BANER;
   for(let n=0;n<Saga.ILE;n++){
@@ -158,11 +178,36 @@ function wspolrzedne(W){
   }
   return {pts,H};
 }
+// plansza z malowanych ilustracji: tło krainy, separator z banerem, prawdziwe pola i pionek
+function rysujMalowana(W,uk,pl){
+  const {pts,H,panele,top}=uk;let h="";PASY=[];
+  Saga.SWIATY.forEach((sw,s)=>{
+    const t=top[s],ph=panele[s].h;
+    PASY.push({s,top:t,bottom:t+ph+BANER_M});
+    h+='<div class="malowany" data-s="'+s+'" style="top:'+t+'px;height:'+ph.toFixed(1)+'px;background-image:url(grafiki/plansza/'+panele[s].r.id+'.webp?v=1)"></div>';
+    const gw=[...Array(Saga.NA_SWIAT)].reduce((a,_,i)=>a+(stan.gw[s*Saga.NA_SWIAT+i]||0),0),otw=Saga.odblokowany(s*Saga.NA_SWIAT,stan);
+    h+='<div class="separator" style="top:'+(t+ph)+'px;height:'+BANER_M+'px"></div>';
+    h+='<div class="baner pole'+(otw?"":" zamk")+'" style="top:'+(t+ph+(BANER_M-66)/2)+'px">'+(WOJ[sw.woj]||'<svg class="woj"></svg>')+'<div><b>'+sw.nazwa+'</b><small>Kraina '+(s+1)+' · stolica: '+sw.stolica+'</small></div><span class="ile">★ '+gw+'/'+(Saga.NA_SWIAT*3)+'</span></div>';
+  });
+  pts.forEach((p,n)=>{
+    const poz=Saga.poziom(n),g=stan.gw[n]||0,otw=Saga.odblokowany(n,stan);
+    const kl=(n===biez?"teraz":otw?"zrobiony":"zamkniety")+(poz.boss?" boss":"");
+    const tresc=!otw?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A7F62" stroke-width="2.6"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
+      :poz.boss?'<svg width="30" height="26" viewBox="0 0 34 30"><path d="M3 26 L3 8 L10 15 L17 3 L24 15 L31 8 L31 26 Z" fill="'+(n===biez?"#fff":"#E84A3C")+'" stroke="#3A2A14" stroke-width="2.5" stroke-linejoin="round"/></svg>':(n+1);
+    // gwiazdki zawsze widoczne (puste też), żeby zakryć gwiazdki narysowane na ilustracji
+    h+='<button class="wezel '+kl+'" data-n="'+n+'" style="left:'+p.x.toFixed(0)+'px;top:'+p.y.toFixed(0)+'px"><span class="kolo">'+tresc+'</span><span class="gwiazdki">'+gwiazdkiHtml(g)+'</span></button>';
+  });
+  h+='<div class="pionek" id="pionek">'+(window.PB?PB.svg("zwykla"):"")+'</div>';
+  pl.innerHTML=h;
+  pl.querySelectorAll(".wezel").forEach(b=>b.onclick=e=>{if(window.Efekty)Efekty.fala(e.clientX,e.clientY);setTimeout(()=>arkusz(+b.dataset.n),120);});
+  return pts;
+}
 function gwiazdkiHtml(g){return [1,2,3].map(i=>'<span class="'+(i<=g?"z":"")+'">★</span>').join("");}
 function rysuj(){
-  const W=$("mapa").clientWidth,{pts,H}=wspolrzedne(W),pl=$("plotno");HPL=H;
-  pl.style.height=H+"px";
+  const W=$("mapa").clientWidth,uk=wspolrzedne(W),{pts,H}=uk,pl=$("plotno");HPL=H;
+  pl.style.height=H+"px";pl.classList.toggle("malowana-tryb",!!MALOWANA);
   let h="";
+  if(MALOWANA)return rysujMalowana(W,uk,pl);
   // pasy krain
   PASY=[];
   Saga.SWIATY.forEach((sw,s)=>{
@@ -336,13 +381,17 @@ fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
   });
 }).catch(()=>{}).finally(()=>{
   // opcjonalne malowane grafiki krain (krainy-grafiki.json); bez nich rysujemy wektory
-  fetch("krainy-grafiki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({})).then(g=>{if(window.Krainy)return Krainy.zaladujGrafiki(g).then(start);start();});
+  // malowana plansza; gdy jej nie ma, zostaje dotychczasowy rysowany krajobraz
+  fetch("grafiki/plansza/plansza.json?v=1").then(r=>r.ok?r.json():null).catch(()=>null).then(m=>{
+    if(m&&m.regions&&m.regions.length===16){MALOWANA=m;start();return;}
+    fetch("krainy-grafiki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({})).then(g=>{if(window.Krainy)return Krainy.zaladujGrafiki(g).then(start);start();});
+  });
 });
 (function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();
 window.addEventListener("resize",()=>{clearTimeout(window._r);window._r=setTimeout(start,200);});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
-<script src="karty.js?v=19"></script>
+<script src="karty.js?v=20"></script>
 <script>setTimeout(()=>{Karty.liczbaNowych().then(n=>{const e=document.getElementById("kolNowe");if(e&&n>0){e.textContent=n>99?"99+":n;e.classList.remove("hidden");}}).catch(()=>{});},1500);</script>
 <script src="naglowek.js?v=1"></script>
 </body>

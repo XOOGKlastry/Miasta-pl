@@ -109,7 +109,7 @@ window.Karty=(function(){
     const diam=new Set(z.filter(x=>x.typ==="gmina miejska").slice(0,3).concat(z.filter(x=>x.typ!=="gmina miejska").slice(0,3)).map(x=>x.k));
     z.forEach((x,i)=>{x.rz=diam.has(x.k)?"diament":i<n*.03?"zloto":i<n*.15?"srebro":i<n*.45?"braz":"zwykla";});
     g.forEach(x=>{if(!x.rz)x.rz="zwykla";x.woj=WOJ_KOD[x.k.slice(0,2)];});
-    g.forEach(x=>{x._staryProg={zwykla:3,braz:4,srebro:5,zloto:6,diament:7}[x.rz];const fresh=extra.gminy?.[x.k];if(fresh)Object.assign(x,fresh);const gg=geo.gminy?.[x.k];if(gg)Object.assign(x,gg);});
+    g.forEach(x=>{x._staryProg={zwykla:3,braz:4,srebro:5,zloto:6,diament:7}[x.rz];const fresh=extra.gminy?.[x.k];if(fresh)Object.assign(x,fresh);const gg=geo.gminy?.[x.k];if(gg)Object.assign(x,gg);if(x.odleglosc_stolica!=null&&x.odleglosc_stolica<1){x.stolicaWoj=true;delete x.odleglosc_stolica;}});
     g.sort((a,c)=>(a.ludnosc||1e9)-(c.ludnosc||1e9)).forEach((x,i)=>x.nr=i+1);
     const pow={};(b.powiaty||[]).forEach(p=>pow[p.k]=p.n);
     g.forEach(x=>{const kp=x.k.slice(0,4);x.powiat=+kp.slice(2)>=61?"miasto na prawach powiatu":"powiat "+(pow[kp]||"");});
@@ -320,16 +320,16 @@ window.Karty=(function(){
   function tyl(g){
     const u=ulepszenie(g),m=+g.k.slice(2,4)>=61,wstrz=(DANE.meta&&DANE.meta.wstrzymane)||[];
     const przod=new Set(Model.TWARZ[g.grupa||'miasto']);
-    const reszta=STATY.filter(s=>!przod.has(s.k)&&!wstrz.includes(s.k));
+    const reszta=STATY.filter(s=>!przod.has(s.k)&&!wstrz.includes(s.k)&&!(s.k==='odleglosc_stolica'&&g.stolicaWoj));
     const pasek=(n,v,mx)=>'<label><span>'+n+'</span><i><b style="width:'+Math.round(100*Math.min(v,mx)/Math.max(1,mx))+'%"></b></i><em>'+Math.min(v,mx)+'/'+mx+'</em></label>';
     const pol=(g.pozycjaWoj?'#'+g.pozycjaWoj+' w woj. '+esc(g.woj.replace(/ie$/,'im')):'')
-      +(g.odleglosc_stolica!=null?(g.pozycjaWoj?' · ':'')+(g.odleglosc_stolica<1?'stolica województwa':liczba(g.odleglosc_stolica,0)+' km do: '+esc(g.najblizsza_stolica)):'');
+      +(g.stolicaWoj?(g.pozycjaWoj?' · ':'')+'stolica województwa':g.odleglosc_stolica!=null?(g.pozycjaWoj?' · ':'')+(g.odleglosc_stolica<1?'stolica województwa':liczba(g.odleglosc_stolica,0)+' km do: '+esc(g.najblizsza_stolica)):'');
     return '<div class="kk kk-pelna kk-odwrot r-'+g.rz+'"><span class="kk-ramka"></span>'
       +'<div class="kk-o-gora"><span class="kk-o-ovr">'+(ocenaOVR(g)??'?')+'</span><span class="kk-o-nazwa">'+esc(g.n)+'</span></div>'
       +'<div class="kk-o-blok"><b>Ulepszenia</b>'+(m?'':pasek('Powiat',u.count,u.total))+pasek('Kontury',u.hits,40)
       +'<p>Premia <strong>+'+u.bonus+'</strong>'+(u.bonus===5?' · hologram':' · przy +5 hologram')+'</p></div>'
       +'<div class="kk-o-blok"><b>Pozostałe dane</b><div class="kk-o-st">'+reszta.map(s=>'<span>'+(IK[s.k]||IK.ludnosc)+'<em>'+s.n+'</em><strong>'+(g.oc&&g.oc[s.k]!=null?g.oc[s.k]:'–')+'</strong><i>'+wartosc(g,s.k)+'</i></span>').join('')+'</div></div>'
-      +'<div class="kk-o-blok"><b>Skąd OVR '+(ocenaOVR(g)??'?')+'</b><div class="kk-o-ovr-lista">'+STATY.filter(s=>s[g.grupa||'miasto']&&!wstrz.includes(s.k)).map(s=>'<span><em>'+s.n+' ×'+String(s[g.grupa||'miasto']).replace('.',',')+'</em><i><b style="width:'+(g.oc&&g.oc[s.k]!=null?g.oc[s.k]:0)+'%"></b></i><strong>'+(g.oc&&g.oc[s.k]!=null?g.oc[s.k]:'–')+'</strong></span>').join('')+'</div></div>'
+      +(herbSrc(g)?'<div class="kk-o-herb"><img alt="Herb: '+esc(g.n)+'" onerror="this.parentNode.remove()" src="'+herbSrc(g)+'"></div>':'')
       +(pol?'<p class="kk-o-pol">'+pol+'</p>':'')
       +'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
   }
@@ -499,6 +499,8 @@ window.Karty=(function(){
 .kk-odwrot .kk-o-st i{font-style:normal;font-weight:700;font-size:2.8cqw;opacity:.75;white-space:nowrap}
 .kk-odwrot .kk-o-pol{margin:0;text-align:center;font-size:3.6cqw!important;font-weight:800;color:inherit!important;text-shadow:none!important}
 .kk-odwrot .kk-rz{position:static;margin-top:0;padding-bottom:7cqw}
+.kk-odwrot .kk-o-herb{flex:1;min-height:0;display:grid;place-items:center}
+.kk-odwrot .kk-o-herb img{max-width:46cqw;max-height:100%;object-fit:contain;filter:drop-shadow(0 1.2cqw 1.2cqw rgba(0,0,0,.3))}
 .kk-odwrot .kk-o-ovr-lista{display:grid;gap:1.2cqw}
 .kk-odwrot .kk-o-ovr-lista span{display:grid;grid-template-columns:30cqw 1fr 8cqw;align-items:center;gap:2cqw}
 .kk-odwrot .kk-o-ovr-lista em{font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:3.5cqw;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -675,5 +677,5 @@ window.Karty=(function(){
       if(n.length)setTimeout(()=>prezentacja(n,info),1200);else setTimeout(info,1200);
     }catch(e){}
   }
-  return {tyl,panel,rekordyHTML,komplet,ulepszenie,wynik,ocenaOVR,odznaki,archiwizuj,prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
+  return {herbSrc,tyl,panel,rekordyHTML,komplet,ulepszenie,wynik,ocenaOVR,odznaki,archiwizuj,prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
 })();

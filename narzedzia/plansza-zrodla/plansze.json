@@ -1,0 +1,897 @@
+{
+  "version": 1,
+  "purpose": "Przewijany prototyp wizualny; poziomy wywołują zdarzenie plansza:level.",
+  "direction": "bottom-to-top",
+  "assets": {
+    "polnoc-zachod-podlasie": {
+      "file": "assets/polnoc-zachod-podlasie.webp",
+      "width": 1254,
+      "height": 1254
+    },
+    "pomorze-mazury": {
+      "file": "assets/pomorze-mazury.webp",
+      "width": 1024,
+      "height": 1536
+    },
+    "mazowsze-kujawy": {
+      "file": "assets/mazowsze-kujawy.webp",
+      "width": 1024,
+      "height": 1536
+    },
+    "wielkopolska-lubuskie": {
+      "file": "assets/wielkopolska-lubuskie.webp",
+      "width": 1269,
+      "height": 1240
+    },
+    "dolnyslask-opole": {
+      "file": "assets/dolnyslask-opole.webp",
+      "width": 1254,
+      "height": 1254
+    },
+    "slask-lodz": {
+      "file": "assets/slask-lodz.webp",
+      "width": 1024,
+      "height": 1536
+    },
+    "swietokrzyskie-lubelskie": {
+      "file": "assets/swietokrzyskie-lubelskie.webp",
+      "width": 1024,
+      "height": 1536
+    },
+    "podkarpacie-malopolska": {
+      "file": "assets/podkarpacie-malopolska.webp",
+      "width": 1287,
+      "height": 1222
+    }
+  },
+  "regions": [
+    {
+      "id": "zachodniopomorskie",
+      "name": "Zachodniopomorskie",
+      "order": 1,
+      "asset": "polnoc-zachod-podlasie",
+      "crop": {
+        "left": 18,
+        "width": 597,
+        "height": 1254
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 1,
+          "x": 63.9866,
+          "y": 86.5231
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 2,
+          "x": 65.4941,
+          "y": 68.6603
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 3,
+          "x": 56.4489,
+          "y": 56.4593
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 4,
+          "x": 76.2144,
+          "y": 38.118
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 5,
+          "x": 79.062,
+          "y": 27.8309
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 6,
+          "x": 80.737,
+          "y": 18.74
+        }
+      ],
+      "play": {
+        "x": 79.44890000000001,
+        "y": 56.4593
+      }
+    },
+    {
+      "id": "pomorskie",
+      "name": "Pomorskie",
+      "order": 2,
+      "asset": "pomorze-mazury",
+      "crop": {
+        "left": 17,
+        "width": 483,
+        "height": 1536
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 7,
+          "x": 46.5839,
+          "y": 86.9141
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 8,
+          "x": 62.5259,
+          "y": 71.4193
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 9,
+          "x": 53.6232,
+          "y": 61.6536
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 10,
+          "x": 72.2567,
+          "y": 39.3229
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 11,
+          "x": 76.1905,
+          "y": 29.4271
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 12,
+          "x": 77.6398,
+          "y": 21.4193
+        }
+      ],
+      "play": {
+        "x": 76.6232,
+        "y": 61.6536
+      }
+    },
+    {
+      "id": "warminsko-mazurskie",
+      "name": "Warmińsko-Mazurskie",
+      "order": 3,
+      "asset": "pomorze-mazury",
+      "crop": {
+        "left": 526,
+        "width": 482,
+        "height": 1536
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 13,
+          "x": 51.4523,
+          "y": 86.9141
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 14,
+          "x": 61.2033,
+          "y": 72.2656
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 15,
+          "x": 53.527,
+          "y": 61.849
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 16,
+          "x": 77.1784,
+          "y": 39.3229
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 17,
+          "x": 74.6888,
+          "y": 29.9479
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 18,
+          "x": 73.6515,
+          "y": 22.3307
+        }
+      ],
+      "play": {
+        "x": 76.527,
+        "y": 61.849
+      }
+    },
+    {
+      "id": "podlaskie",
+      "name": "Podlaskie",
+      "order": 4,
+      "asset": "polnoc-zachod-podlasie",
+      "crop": {
+        "left": 640,
+        "width": 596,
+        "height": 1254
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 19,
+          "x": 57.5503,
+          "y": 87.4003
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 20,
+          "x": 57.047,
+          "y": 70.5742
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 21,
+          "x": 48.1544,
+          "y": 56.7783
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 22,
+          "x": 58.2215,
+          "y": 39.6332
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 23,
+          "x": 51.8456,
+          "y": 28.7879
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 24,
+          "x": 64.5973,
+          "y": 18.8995
+        }
+      ],
+      "play": {
+        "x": 71.15440000000001,
+        "y": 56.7783
+      }
+    },
+    {
+      "id": "mazowieckie",
+      "name": "Mazowieckie",
+      "order": 5,
+      "asset": "mazowsze-kujawy",
+      "crop": {
+        "left": 17,
+        "width": 483,
+        "height": 1536
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 25,
+          "x": 50.1035,
+          "y": 84.4401
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 26,
+          "x": 51.9669,
+          "y": 68.2292
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 27,
+          "x": 56.7288,
+          "y": 54.1667
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 28,
+          "x": 75.7764,
+          "y": 36.9792
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 29,
+          "x": 75.3623,
+          "y": 26.3672
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 30,
+          "x": 81.1594,
+          "y": 18.1641
+        }
+      ],
+      "play": {
+        "x": 79.7288,
+        "y": 54.1667
+      }
+    },
+    {
+      "id": "kujawsko-pomorskie",
+      "name": "Kujawsko-Pomorskie",
+      "order": 6,
+      "asset": "mazowsze-kujawy",
+      "crop": {
+        "left": 526,
+        "width": 482,
+        "height": 1536
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 31,
+          "x": 56.0166,
+          "y": 84.7005
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 32,
+          "x": 60.166,
+          "y": 69.0104
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 33,
+          "x": 56.4315,
+          "y": 54.2318
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 34,
+          "x": 72.1992,
+          "y": 37.5
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 35,
+          "x": 58.5062,
+          "y": 26.9531
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 36,
+          "x": 72.4066,
+          "y": 18.1641
+        }
+      ],
+      "play": {
+        "x": 79.4315,
+        "y": 54.2318
+      }
+    },
+    {
+      "id": "wielkopolskie",
+      "name": "Wielkopolskie",
+      "order": 7,
+      "asset": "wielkopolska-lubuskie",
+      "crop": {
+        "left": 17,
+        "width": 606,
+        "height": 1240
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 37,
+          "x": 57.4257,
+          "y": 85.7258
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 38,
+          "x": 53.4653,
+          "y": 71.4516
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 39,
+          "x": 57.0957,
+          "y": 57.0968
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 40,
+          "x": 74.7525,
+          "y": 38.871
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 41,
+          "x": 73.1023,
+          "y": 27.2581
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 42,
+          "x": 65.8416,
+          "y": 17.9032
+        }
+      ],
+      "play": {
+        "x": 80.0957,
+        "y": 57.0968
+      }
+    },
+    {
+      "id": "lubuskie",
+      "name": "Lubuskie",
+      "order": 8,
+      "asset": "wielkopolska-lubuskie",
+      "crop": {
+        "left": 647,
+        "width": 605,
+        "height": 1240
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 43,
+          "x": 56.3636,
+          "y": 85.5645
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 44,
+          "x": 59.5041,
+          "y": 71.4516
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 45,
+          "x": 50.0826,
+          "y": 57.8226
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 46,
+          "x": 59.6694,
+          "y": 38.7903
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 47,
+          "x": 52.562,
+          "y": 29.3548
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 48,
+          "x": 64.2975,
+          "y": 20.3226
+        }
+      ],
+      "play": {
+        "x": 73.0826,
+        "y": 57.8226
+      }
+    },
+    {
+      "id": "dolnoslaskie",
+      "name": "Dolnośląskie",
+      "order": 9,
+      "asset": "dolnyslask-opole",
+      "crop": {
+        "left": 18,
+        "width": 597,
+        "height": 1254
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 49,
+          "x": 63.9866,
+          "y": 86.5231
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 50,
+          "x": 65.4941,
+          "y": 68.5805
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 51,
+          "x": 56.4489,
+          "y": 56.4593
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 52,
+          "x": 76.2144,
+          "y": 38.118
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 53,
+          "x": 79.062,
+          "y": 27.8309
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 54,
+          "x": 80.737,
+          "y": 18.74
+        }
+      ],
+      "play": {
+        "x": 79.44890000000001,
+        "y": 56.4593
+      }
+    },
+    {
+      "id": "opolskie",
+      "name": "Opolskie",
+      "order": 10,
+      "asset": "dolnyslask-opole",
+      "crop": {
+        "left": 640,
+        "width": 596,
+        "height": 1254
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 55,
+          "x": 57.5503,
+          "y": 87.4003
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 56,
+          "x": 57.047,
+          "y": 70.5742
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 57,
+          "x": 48.1544,
+          "y": 56.7783
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 58,
+          "x": 58.2215,
+          "y": 39.6332
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 59,
+          "x": 51.8456,
+          "y": 28.7879
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 60,
+          "x": 64.5973,
+          "y": 18.8995
+        }
+      ],
+      "play": {
+        "x": 71.15440000000001,
+        "y": 56.7783
+      }
+    },
+    {
+      "id": "slaskie",
+      "name": "Śląskie",
+      "order": 11,
+      "asset": "slask-lodz",
+      "crop": {
+        "left": 17,
+        "width": 483,
+        "height": 1536
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 61,
+          "x": 68.9441,
+          "y": 84.5703
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 62,
+          "x": 63.9752,
+          "y": 72.9818
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 63,
+          "x": 53.4161,
+          "y": 56.25
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 64,
+          "x": 55.6936,
+          "y": 38.8021
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 65,
+          "x": 71.2215,
+          "y": 28.1901
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 66,
+          "x": 73.0849,
+          "y": 19.401
+        }
+      ],
+      "play": {
+        "x": 76.4161,
+        "y": 56.25
+      }
+    },
+    {
+      "id": "lodzkie",
+      "name": "Łódzkie",
+      "order": 12,
+      "asset": "slask-lodz",
+      "crop": {
+        "left": 526,
+        "width": 482,
+        "height": 1536
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 67,
+          "x": 58.2988,
+          "y": 84.5703
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 68,
+          "x": 60.166,
+          "y": 71.4193
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 69,
+          "x": 57.4689,
+          "y": 56.1849
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 70,
+          "x": 56.8465,
+          "y": 38.6719
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 71,
+          "x": 66.5975,
+          "y": 28.2552
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 72,
+          "x": 66.805,
+          "y": 19.401
+        }
+      ],
+      "play": {
+        "x": 80.46889999999999,
+        "y": 56.1849
+      }
+    },
+    {
+      "id": "swietokrzyskie",
+      "name": "Świętokrzyskie",
+      "order": 13,
+      "asset": "swietokrzyskie-lubelskie",
+      "crop": {
+        "left": 17,
+        "width": 483,
+        "height": 1536
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 73,
+          "x": 65.8385,
+          "y": 84.6354
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 74,
+          "x": 62.1118,
+          "y": 72.6562
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 75,
+          "x": 51.1387,
+          "y": 58.0078
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 76,
+          "x": 77.0186,
+          "y": 35.7422
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 77,
+          "x": 69.3582,
+          "y": 25.1302
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 78,
+          "x": 73.706,
+          "y": 17.6432
+        }
+      ],
+      "play": {
+        "x": 74.1387,
+        "y": 58.0078
+      }
+    },
+    {
+      "id": "lubelskie",
+      "name": "Lubelskie",
+      "order": 14,
+      "asset": "swietokrzyskie-lubelskie",
+      "crop": {
+        "left": 526,
+        "width": 482,
+        "height": 1536
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 79,
+          "x": 57.6763,
+          "y": 84.7005
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 80,
+          "x": 59.5436,
+          "y": 73.2422
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 81,
+          "x": 57.4689,
+          "y": 58.138
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 82,
+          "x": 53.9419,
+          "y": 37.5
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 83,
+          "x": 54.1494,
+          "y": 25.2604
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 84,
+          "x": 65.7676,
+          "y": 18.5547
+        }
+      ],
+      "play": {
+        "x": 80.46889999999999,
+        "y": 58.138
+      }
+    },
+    {
+      "id": "podkarpackie",
+      "name": "Podkarpackie",
+      "order": 15,
+      "asset": "podkarpacie-malopolska",
+      "crop": {
+        "left": 18,
+        "width": 612,
+        "height": 1222
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 85,
+          "x": 64.2157,
+          "y": 86.8249
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 86,
+          "x": 65.6863,
+          "y": 68.6579
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 87,
+          "x": 56.8627,
+          "y": 56.7103
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 88,
+          "x": 76.1438,
+          "y": 38.2979
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 89,
+          "x": 79.2484,
+          "y": 27.9869
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 90,
+          "x": 80.8824,
+          "y": 19.0671
+        }
+      ],
+      "play": {
+        "x": 79.86269999999999,
+        "y": 56.7103
+      }
+    },
+    {
+      "id": "malopolskie",
+      "name": "Małopolskie",
+      "order": 16,
+      "asset": "podkarpacie-malopolska",
+      "crop": {
+        "left": 657,
+        "width": 612,
+        "height": 1222
+      },
+      "levels": [
+        {
+          "localLevel": 1,
+          "globalLevel": 91,
+          "x": 57.5163,
+          "y": 87.9705
+        },
+        {
+          "localLevel": 2,
+          "globalLevel": 92,
+          "x": 57.0261,
+          "y": 70.6219
+        },
+        {
+          "localLevel": 3,
+          "globalLevel": 93,
+          "x": 48.0392,
+          "y": 57.1195
+        },
+        {
+          "localLevel": 4,
+          "globalLevel": 94,
+          "x": 58.1699,
+          "y": 39.6072
+        },
+        {
+          "localLevel": 5,
+          "globalLevel": 95,
+          "x": 52.1242,
+          "y": 28.9689
+        },
+        {
+          "localLevel": 6,
+          "globalLevel": 96,
+          "x": 64.8693,
+          "y": 19.0671
+        }
+      ],
+      "play": {
+        "x": 71.0392,
+        "y": 57.1195
+      }
+    }
+  ]
+}

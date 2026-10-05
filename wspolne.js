@@ -310,7 +310,7 @@ function modulKart(){
   if(KARTY_MODUL)return KARTY_MODUL;
   KARTY_MODUL=new Promise((resolve,reject)=>{
     let sc=document.querySelector('script[src^="karty.js"]'),nowy=!sc;
-    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=19";}
+    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=20";}
     sc.addEventListener("load",()=>resolve(window.Karty),{once:true});
     sc.addEventListener("error",()=>{KARTY_MODUL=null;sc.remove();reject(Error("Nie wczytano kart"));},{once:true});
     if(nowy)document.head.appendChild(sc);

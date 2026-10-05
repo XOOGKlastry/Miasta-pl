@@ -16,9 +16,10 @@
   const obrot=[-3,2,-1.5,3,-2.5,1.5,-1,2.5,-2,1];
   $('choices').innerHTML=game.candidates[t].map((c,n)=>{const odsl=game.hinted[t].has(c.k);
     return '<button type="button" class="stol-karta r-'+c.rz+(c.borrowed?' borrowed':'')+(odsl?' revealed':'')+'" style="--obr:'+obrot[n%obrot.length]+'deg" data-podglad="'+c.k+'">'
+     +(Karty.herbSrc&&Karty.herbSrc(c)?'<img class="sk-herb" alt="" loading="lazy" onerror="this.remove()" src="'+Karty.herbSrc(c)+'">':'')
      +'<span class="sk-gora"><span class="sk-ovr">'+Z.ovr(c)+'</span><span class="sk-typ">'+(+c.k.slice(2,4)>=61?'MNP':c.typ==='gmina wiejska'?'WIEŚ':c.typ==='gmina miejska'?'MIASTO':'M-W')+'</span></span>'
      +'<b class="sk-nazwa" style="font-size:'+(Math.max(...c.n.split(/[ -]/).map(x=>x.length))>11?11:Math.max(...c.n.split(/[ -]/).map(x=>x.length))>8?13:15)+'px">'+escape(c.n).replace(/-/g,'-<wbr>')+'</b>'
-     +'<small class="sk-woj">'+escape(Karty.WS?Karty.WS[c.woj]||c.woj:c.woj)+(c.bonus?' · +'+c.bonus:'')+(c.borrowed?' · pożyczona':'')+'</small>'
+     +'<small class="sk-woj">woj. '+escape(c.woj)+(c.bonus?' · +'+c.bonus:'')+(c.borrowed?' · pożyczona':'')+'</small>'
      +(odsl?'<span class="sk-wart">'+Z.value(c,k,game.o.records)+'</span>':'')+'</button>';}).join('');
   $('choices').querySelectorAll('[data-podglad]').forEach(b=>b.onclick=()=>{b.classList.add('odkrywa');setTimeout(()=>{b.classList.remove('odkrywa');podgladKarty(b.dataset.podglad);},260);});
  }
