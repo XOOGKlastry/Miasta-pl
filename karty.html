@@ -90,11 +90,12 @@ details[open]>summary .strz{transform:rotate(90deg)}
 .kk-flip{--w:min(78vw,320px,calc((var(--app-h,100vh) - 300px) / 1.6));width:var(--w);height:calc(var(--w) * 1.6);position:relative;flex:none;perspective:1200px}
 .kk-strona{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .6s cubic-bezier(.3,1.2,.4,1)}
 .kk-strona.tyl{transform:rotateY(180deg)}
+.kk-strona.tyl .kk{height:100%}
 .kk-flip.odwrocona .przod{transform:rotateY(-180deg)}
 .kk-flip.odwrocona .tyl{transform:rotateY(0)}
 .kk-flip .kk{width:100%!important;animation:none!important}
 .kk-pod{width:min(92vw,380px);flex:none;min-height:0}
-.tyl-widac .kk-pod{visibility:hidden}
+.tyl-widac .kk-pod{opacity:.25}
 .kk-przyciski{display:flex;gap:6px;flex-wrap:nowrap;justify-content:center;flex:none;max-width:96vw}
 .kk-przyciski .kk-linki{display:contents}
 .kk-przyciski .kk-linki a{min-height:44px;padding:0 10px;font-size:13px;white-space:nowrap}
@@ -118,7 +119,7 @@ details[open]>summary .strz{transform:rotate(90deg)}
 </div>
 <script src="wspolne.js?v=22"></script>
 <script src="polandball.js?v=4"></script>
-<script src="karty.js?v=17"></script>
+<script src="karty.js?v=19"></script>
 <script>
 const {$}=ZP;
 let D=null,filtr="",WOJ_SVG={};
@@ -201,14 +202,30 @@ function podglad(g,otwarta,st){
   const d=document.createElement("div");d.className="kk-podglad";
   d.innerHTML='<button type="button" class="close-preview" aria-label="Zamknij podgląd">Zamknij ×</button>'
     +(otwarta?'<div class="kk-flip"><div class="kk-strona przod">'+Karty.karta(g,{tryb:"pelna",otwarta,bezSzczegolow:true})+'</div><div class="kk-strona tyl">'+Karty.tyl(g)+'</div></div>'
-      +'<div class="kk-pod">'+Karty.rekordyHTML(g,3)+'</div><div class="kk-przyciski"><button type="button" class="klocek odwroc">↻ Odwróć</button>'+Karty.linki(g)+'</div>'
+      +'<div class="kk-pod">'+Karty.rekordyHTML(g,0,true)+'</div><div class="kk-przyciski"><button type="button" class="klocek odwroc">↻ Odwróć</button>'+Karty.linki(g)+'</div>'
       :Karty.karta(g,{tryb:"pelna",otwarta,bezSzczegolow:true}))
     +'<p>'+(otwarta?""
     :"Zdobędziesz ją od razu w grze Kształt gminy albo trafiając ją "+Karty.prog(g)+" razy w grach gminnych (herby, Gdzie ta gmina?, Ciepło-zimno). Masz: "+pp+"/"+Karty.prog(g)+". Może też wypaść z paczki za monety.")+'</p>';
   d.onclick=e=>{if(e.target===d||e.target.closest(".close-preview"))d.remove();
     // odwracanie: przyciskiem albo stuknięciem w kartę; rekordy pod kartą tylko przy awersie
     else if(e.target.closest(".odwroc")||e.target.closest(".kk-flip")&&!e.target.closest(".kk-pb,a")){const f=d.querySelector(".kk-flip");if(f){f.classList.toggle("odwrocona");d.classList.toggle("tyl-widac");}}};
-  document.body.appendChild(d);Karty.holo(d.querySelector(".kk"));Karty.podepnijMapy(d);
+  document.body.appendChild(d);
+  // karta zmniejsza się tak, żeby pod nią zmieściły się wszystkie rekordy, bez przewijania
+  const f=d.querySelector(".kk-flip");
+  if(f){
+    const przod=()=>f.querySelector(".przod .kk"),H=d.clientHeight;
+    const zaj=[...d.children].filter(x=>x!==f).reduce((a,x)=>a+x.offsetHeight,0)+10*d.children.length+24;
+    f.style.setProperty("--w","300px");f.style.height="auto";
+    const r=przod().offsetHeight/300;   // wysokość karty rośnie razem z szerokością
+    const w=Math.max(170,Math.min(innerWidth*.8,330,(H-zaj)/r));
+    f.style.setProperty("--w",w+"px");f.style.height=przod().offsetHeight+"px";
+    // korekta: jeśli coś jeszcze wystaje, zmniejsz kartę o brakującą wysokość
+    let ww=w;
+    for(let i=0;i<5;i++){
+      const nad=d.scrollHeight-d.clientHeight;if(nad<=0||ww<=165)break;
+      ww=Math.max(165,ww-nad/(przod().offsetHeight/ww)-2);f.style.setProperty("--w",ww+"px");f.style.height=przod().offsetHeight+"px";
+    }
+  }Karty.holo(d.querySelector(".kk"));Karty.podepnijMapy(d);
 }
 Karty.styl();
 Promise.all([Karty.zaladuj(),Karty.geometrie(),fetch("woj.geojson?v=17").then(r=>r.json())]).then(([d,_,gj])=>{

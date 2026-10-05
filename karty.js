@@ -306,12 +306,15 @@ window.Karty=(function(){
     const s=STATY.find(x=>x.k===r.k),lepiejMniej=s&&s.t==='o';
     return (r.dir==='max')!==lepiejMniej?'plus':'minus';
   }
-  function rekordyHTML(g,limit){
+  // rekordy: zielone dobre, czerwone złe, złote neutralne; krajowe z flagą i większe
+  // kompakt: krótszy opis („1. w Polsce · najwięcej mieszkańców”), żeby wszystkie zmieściły się pod kartą
+  function rekordyHTML(g,limit,kompakt){
     if(!g.rekordy||!g.rekordy.length)return '';
     const l=limit?g.rekordy.slice(0,limit):g.rekordy;
-    return '<ul class="kk-rekordy">'+l.map(r=>{const z=znakRekordu(r),kraj=r.scope==='pl';
-      return '<li class="'+z+(kraj?' kraj':'')+'"><i>'+(kraj?'🇵🇱':'')+(z==='plus'?'▲':z==='minus'?'▼':'●')+'</i><span>'+esc(r.opis)+'</span></li>';}).join('')
-      +(limit&&g.rekordy.length>limit?'<li class="wiecej">+ '+(g.rekordy.length-limit)+' na odwrocie</li>':'')+'</ul>';
+    return '<ul class="kk-rekordy'+(kompakt?' kompakt'+(l.length>=5?' dwie':''):'')+'">'+l.map(r=>{const z=znakRekordu(r),kraj=r.scope==='pl';
+      const tekst=kompakt?(r.miejsce+'. '+(kraj?'w Polsce':'w woj.')+' · '+String(r.opis).split(': ').slice(1).join(': ')):r.opis;
+      return '<li class="'+z+(kraj?' kraj':'')+'"><i>'+(kraj?'🇵🇱':'')+(z==='plus'?'▲':z==='minus'?'▼':'●')+'</i><span>'+esc(tekst)+'</span></li>';}).join('')
+      +(limit&&g.rekordy.length>limit?'<li class="wiecej">+ '+(g.rekordy.length-limit)+' w albumie</li>':'')+'</ul>';
   }
   // odwrót karty: postęp ulepszeń, pozostałe wskaźniki i pozostałe rekordy
   function tyl(g){
@@ -326,6 +329,7 @@ window.Karty=(function(){
       +'<div class="kk-o-blok"><b>Ulepszenia</b>'+(m?'':pasek('Powiat',u.count,u.total))+pasek('Kontury',u.hits,40)
       +'<p>Premia <strong>+'+u.bonus+'</strong>'+(u.bonus===5?' · hologram':' · przy +5 hologram')+'</p></div>'
       +'<div class="kk-o-blok"><b>Pozostałe dane</b><div class="kk-o-st">'+reszta.map(s=>'<span>'+(IK[s.k]||IK.ludnosc)+'<em>'+s.n+'</em><strong>'+(g.oc&&g.oc[s.k]!=null?g.oc[s.k]:'–')+'</strong><i>'+wartosc(g,s.k)+'</i></span>').join('')+'</div></div>'
+      +'<div class="kk-o-blok"><b>Skąd OVR '+(ocenaOVR(g)??'?')+'</b><div class="kk-o-ovr-lista">'+STATY.filter(s=>s[g.grupa||'miasto']&&!wstrz.includes(s.k)).map(s=>'<span><em>'+s.n+' ×'+String(s[g.grupa||'miasto']).replace('.',',')+'</em><i><b style="width:'+(g.oc&&g.oc[s.k]!=null?g.oc[s.k]:0)+'%"></b></i><strong>'+(g.oc&&g.oc[s.k]!=null?g.oc[s.k]:'–')+'</strong></span>').join('')+'</div></div>'
       +(pol?'<p class="kk-o-pol">'+pol+'</p>':'')
       +'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
   }
@@ -383,9 +387,9 @@ window.Karty=(function(){
     s.textContent=`
 @media(prefers-reduced-motion:reduce){.pk *,.pk,.kk{animation:none!important;transition:none!important}}
 
-.kk{--x:50%;--y:50%;position:relative;aspect-ratio:5/8;container-type:inline-size;border-radius:6cqw;clip-path:inset(0 round 6cqw);background:var(--tlo);color:#14233A;filter:drop-shadow(0 6px 10px rgba(30,60,40,.16));cursor:pointer;transition:transform .15s;font-family:Rubik,system-ui,sans-serif}
+.kk{--x:50%;--y:50%;position:relative;aspect-ratio:5/8;container-type:inline-size;border-radius:6cqw;overflow:hidden;background:var(--tlo);color:#14233A;filter:drop-shadow(0 6px 10px rgba(30,60,40,.16));cursor:pointer;transition:transform .15s;font-family:Rubik,system-ui,sans-serif}
 .kk.kk-mini{aspect-ratio:5/7}
-.kk .kk-ramka{position:absolute;inset:3cqw;clip-path:inherit;border:.8cqw solid var(--ramka);pointer-events:none;z-index:3}
+.kk .kk-ramka{position:absolute;inset:3cqw;border-radius:4cqw;border:.8cqw solid var(--ramka);pointer-events:none;z-index:3}
 .kk .kk-lewa{position:absolute;left:7cqw;top:9cqw;width:22cqw;display:flex;flex-direction:column;align-items:center;gap:.6cqw;z-index:2}
 .kk .kk-ovr{font-family:"Barlow Condensed",Bungee,sans-serif;font-weight:800;font-size:19cqw;line-height:.85}
 .kk .kk-typ{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:5.4cqw;letter-spacing:.1cqw;white-space:nowrap}
@@ -412,10 +416,21 @@ window.Karty=(function(){
 .kk.kk-mini .kk-rz{top:113cqw;font-size:4.6cqw}
 .kk::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:4;mix-blend-mode:var(--mieszanie,soft-light);opacity:var(--blask,.6);background:var(--holo)}
 .kk.r-zwykla{--tlo:linear-gradient(160deg,#FBF6E8,#E2D6B8);--ramka:#9C8A62;--holo:none;--blask:0}
-.kk.r-braz{--tlo:linear-gradient(160deg,#F4DCC4,#C98B5C);--ramka:#7E4620;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,230,200,.8),transparent 45%)}
-.kk.r-srebro{--tlo:linear-gradient(160deg,#F7F9FB,#AEB9C4);--ramka:#5F6C78;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.95),transparent 42%),linear-gradient(115deg,transparent 30%,rgba(255,255,255,.6) 48%,transparent 60%)}
-.kk.r-zloto{--tlo:linear-gradient(160deg,#FFF3C2,#E0A812);--ramka:#7A5400;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,250,210,1),transparent 40%),repeating-linear-gradient(115deg,transparent 0 12px,rgba(255,255,255,.35) 12px 16px);--blask:.25}
-.kk.r-diament{--tlo:linear-gradient(160deg,#F2FBFF 0%,#BFE6FF 38%,#E6D6FF 70%,#BFE6FF 100%);--ramka:#3D6FD1;--mieszanie:soft-light;--blask:.3;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.95),transparent 30%),linear-gradient(calc(var(--kat,115) * 1deg),#ff6b6b33,#ffd93d55,#6bff9a44,#6bd5ff55,#c06bff44,#ff6b6b33)}
+.kk.r-braz{--tlo:linear-gradient(155deg,#F6D2AE 0%,#D99A62 28%,#F0BC8C 46%,#B8723E 70%,#E1A472 100%);--ramka:#6E3A14;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,226,196,.85),transparent 45%),linear-gradient(115deg,transparent 35%,rgba(255,236,214,.55) 48%,transparent 60%);--blask:.55}
+.kk.r-srebro{--tlo:linear-gradient(155deg,#FFFFFF 0%,#C9CED4 24%,#F1F3F5 44%,#A3ABB3 68%,#E2E6EA 86%,#B7BEC5 100%);--ramka:#5E6872;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,1),transparent 40%),linear-gradient(115deg,transparent 32%,rgba(255,255,255,.75) 47%,transparent 58%);--blask:.7}
+.kk.r-zloto{--tlo:linear-gradient(155deg,#FFF4B8 0%,#EDBE3A 26%,#FFE48A 46%,#C8901B 70%,#F6D368 88%,#B98212 100%);--ramka:#6E4A00;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,251,214,1),transparent 40%),linear-gradient(115deg,transparent 34%,rgba(255,248,200,.7) 48%,transparent 60%);--blask:.75}
+.kk.r-diament{--tlo:radial-gradient(circle at 30% 18%,rgba(255,255,255,.9),transparent 38%),linear-gradient(155deg,#F4FCFF 0%,#BFE7FF 30%,#E9F7FF 50%,#9ED3FF 72%,#E3D9FF 100%);--ramka:#2F6FD0;--mieszanie:screen;--blask:.55;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,255,255,.9),transparent 30%),linear-gradient(calc(var(--kat,115) * 1deg),transparent 30%,rgba(170,225,255,.6) 45%,rgba(230,210,255,.5) 55%,transparent 70%);filter:drop-shadow(0 0 7px rgba(110,190,255,.75)) drop-shadow(0 6px 10px rgba(30,60,40,.18))}
+.kk.r-diament.kk-pelna{animation:kkDiament 3.2s ease-in-out infinite}
+@keyframes kkDiament{50%{filter:drop-shadow(0 0 14px rgba(140,205,255,.95)) drop-shadow(0 6px 10px rgba(30,60,40,.18))}}
+.kk.r-legenda{--tlo:radial-gradient(circle at 50% 0%,rgba(255,255,255,.55),transparent 45%),linear-gradient(155deg,#FFF0A8 0%,#E0A417 24%,#FFDF73 44%,#B57A08 66%,#F2C94C 84%,#9E6A05 100%);--ramka:#5A3A00;--mieszanie:soft-light;--blask:.8;--holo:radial-gradient(circle at var(--x) var(--y),rgba(255,250,210,1),transparent 38%),repeating-linear-gradient(115deg,transparent 0 14px,rgba(255,245,190,.38) 14px 18px);filter:drop-shadow(0 0 10px rgba(255,196,40,.85)) drop-shadow(0 6px 10px rgba(60,40,0,.25))}
+.kk.r-legenda .kk-ramka{border-width:1cqw;box-shadow:inset 0 0 0 1cqw rgba(255,240,170,.85),inset 0 0 0 1.7cqw #6E4A00}
+.kk.r-legenda .kk-ramka::before,.kk.r-legenda .kk-ramka::after{content:"";position:absolute;width:11cqw;height:11cqw;background:radial-gradient(circle,#FFF3B0 0 18%,#B57A08 19% 30%,transparent 31%),conic-gradient(from 45deg,#FFE48A,#9E6A05,#FFE48A,#9E6A05,#FFE48A);-webkit-mask:radial-gradient(circle,#000 62%,transparent 64%);mask:radial-gradient(circle,#000 62%,transparent 64%)}
+.kk.r-legenda .kk-ramka::before{left:-4cqw;top:-4cqw}.kk.r-legenda .kk-ramka::after{right:-4cqw;bottom:-4cqw}
+.kk.r-legenda::after{background:var(--holo),radial-gradient(circle,rgba(255,255,230,.95) 0 1.2%,transparent 1.6%) 0 0/22% 18%,radial-gradient(circle,rgba(255,240,180,.8) 0 .9%,transparent 1.3%) 9% 7%/17% 23%;animation:kkIskry 9s linear infinite}
+@keyframes kkIskry{to{background-position:0 0,40% -60%,-30% 70%}}
+.kk.r-legenda.kk-pelna{animation:kkLegenda 2.6s ease-in-out infinite}
+@keyframes kkLegenda{50%{filter:drop-shadow(0 0 18px rgba(255,205,60,1)) drop-shadow(0 6px 10px rgba(60,40,0,.25))}}
+@media (prefers-reduced-motion:reduce){.kk.r-legenda,.kk.r-diament,.kk.r-legenda::after{animation:none!important}}
 .kk.zablokowana{--tlo:#2A2F3A!important;color:#8B93A6}.kk.zablokowana::after{display:none}.kk.zablokowana .kk-mapka{filter:grayscale(1) brightness(.35);border-color:#454C5C}.kk.zablokowana .kk-ramka{border-color:#454C5C}
 .kk .kk-pb{position:absolute;right:4cqw;top:56cqw;z-index:6;width:14cqw;height:14cqw;padding:0;border:none;background:none;cursor:pointer;animation:kkPbSkok 2.4s ease-in-out infinite;filter:drop-shadow(0 0 1.5cqw rgba(255,215,90,.9))}
 .kk .kk-pb svg{width:100%;height:100%;display:block}
@@ -464,7 +479,8 @@ window.Karty=(function(){
 .kk-tyl-st i{font-style:normal;grid-row:2;opacity:.75;font-size:10.5px}
 .kk-tyl-st strong{grid-row:1/3;grid-column:2;font-family:"Barlow Condensed",sans-serif;font-size:18px;align-self:center}
 .kk-tyl .kk-rekordy li{font-size:10.5px;padding:3px 7px}
-.kk.kk-odwrot{display:flex;flex-direction:column;gap:2.4cqw;padding:7cqw 6cqw 0;box-sizing:border-box}
+.kk.kk-odwrot::before{display:none!important}
+.kk.kk-odwrot{height:100%;aspect-ratio:auto!important;display:flex;flex-direction:column;justify-content:space-between;gap:2cqw;padding:7cqw 6cqw 0;box-sizing:border-box}
 .kk-odwrot .kk-o-gora{display:flex;align-items:center;justify-content:center;gap:3cqw;margin-top:1cqw}
 .kk-odwrot .kk-o-ovr{font-family:"Barlow Condensed",Bungee,sans-serif;font-weight:800;font-size:10cqw;line-height:1}
 .kk-odwrot .kk-o-nazwa{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:8.5cqw;text-transform:uppercase;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%}
@@ -482,7 +498,18 @@ window.Karty=(function(){
 .kk-odwrot .kk-o-st strong{grid-row:1/3;grid-column:3;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:6.4cqw;line-height:1}
 .kk-odwrot .kk-o-st i{font-style:normal;font-weight:700;font-size:2.8cqw;opacity:.75;white-space:nowrap}
 .kk-odwrot .kk-o-pol{margin:0;text-align:center;font-size:3.6cqw!important;font-weight:800;color:inherit!important;text-shadow:none!important}
-.kk-odwrot .kk-rz{position:static;margin-top:auto;padding-bottom:9cqw}
+.kk-odwrot .kk-rz{position:static;margin-top:0;padding-bottom:7cqw}
+.kk-odwrot .kk-o-ovr-lista{display:grid;gap:1.2cqw}
+.kk-odwrot .kk-o-ovr-lista span{display:grid;grid-template-columns:30cqw 1fr 8cqw;align-items:center;gap:2cqw}
+.kk-odwrot .kk-o-ovr-lista em{font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:3.5cqw;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kk-odwrot .kk-o-ovr-lista i{height:2.2cqw;border-radius:2cqw;background:rgba(58,42,20,.16);overflow:hidden}
+.kk-odwrot .kk-o-ovr-lista i b{display:block;height:100%;background:var(--ramka)}
+.kk-odwrot .kk-o-ovr-lista strong{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:4.6cqw;text-align:right}
+.kk-rekordy.kompakt{display:grid;grid-template-columns:1fr;gap:3px}
+.kk-rekordy.kompakt.dwie{grid-template-columns:1fr 1fr}
+.kk-rekordy.kompakt.dwie li{font-size:10.5px!important}
+.kk-rekordy.kompakt li{font-size:11px!important;padding:3px 8px!important;line-height:1.25}
+.kk-rekordy.kompakt li.kraj{font-size:12px!important;padding:4px 8px!important}
 .kk-panel{width:min(92vw,380px);background:#FFF6E0;color:#3A2A14;border:3px solid #3A2A14;border-radius:16px;box-shadow:0 4px 0 #3A2A14;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-family:Rubik,sans-serif}
 .kk-panel p{margin:0;font-weight:700;font-size:12.5px;color:#7A6440}
 .kk-panel .kk-pn{font-family:Bungee,sans-serif;font-weight:400;font-size:14px}

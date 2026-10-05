@@ -12,9 +12,15 @@
  function render(){const t=game.turn,k=game.metrics[game.round];$('turn').textContent=game.o.mode==='ai'?'Twój wybór':game.o.mode==='online'?'Twój wybór · pokój ze znajomym':'Gracz '+(t+1)+' wybiera';$('hint').disabled=(+localStorage.getItem('jokery')||0)<1;$('hint-info').textContent=hintMode?'Stuknij kartę, której wskaźnik chcesz odsłonić.':'Stuknij kartę, żeby zobaczyć jej wskaźniki i ją wybrać.';$('hint').innerHTML='<span class="ik">½</span> 50/50 · odsłoń kartę <b>× '+Math.max(0,+localStorage.getItem('jokery')||0)+'</b>';
   // kafelki: od razu widać całą rękę; pełną kartę z wskaźnikami pokazuje dopiero stuknięcie
   const TYP={'gmina miejska':'miasto','gmina wiejska':'wieś','gmina miejsko-wiejska':'miasto i gmina'};
-  $('choices').innerHTML=game.candidates[t].map(c=>{const odsl=game.hinted[t].has(c.k);
-    return '<button type="button" class="kafel r-'+c.rz+(c.borrowed?' borrowed':'')+(odsl?' revealed':'')+'" data-podglad="'+c.k+'"><span class="kafel-ovr">'+Z.ovr(c)+'</span><span class="kafel-txt"><b>'+escape(c.n)+'</b><small>'+(+c.k.slice(2,4)>=61?'miasto na prawach powiatu':TYP[c.typ]||'gmina')+' · '+escape(Karty.WS?Karty.WS[c.woj]||c.woj:c.woj)+'</small>'+(c.bonus?'<small class="kafel-premia">premia +'+c.bonus+'</small>':'')+(c.borrowed?'<small class="kafel-premia">pożyczona</small>':'')+'</span>'+(odsl?'<span class="kafel-wart">'+Z.value(c,k,game.o.records)+'</span>':'<span class="kafel-oko">›</span>')+'</button>';}).join('');
-  $('choices').querySelectorAll('[data-podglad]').forEach(b=>b.onclick=()=>podgladKarty(b.dataset.podglad));
+  // karty leżą na stole: widać nazwę, OVR i typ; stuknięcie odwraca kartę i pokazuje jej wskaźniki
+  const obrot=[-3,2,-1.5,3,-2.5,1.5,-1,2.5,-2,1];
+  $('choices').innerHTML=game.candidates[t].map((c,n)=>{const odsl=game.hinted[t].has(c.k);
+    return '<button type="button" class="stol-karta r-'+c.rz+(c.borrowed?' borrowed':'')+(odsl?' revealed':'')+'" style="--obr:'+obrot[n%obrot.length]+'deg" data-podglad="'+c.k+'">'
+     +'<span class="sk-gora"><span class="sk-ovr">'+Z.ovr(c)+'</span><span class="sk-typ">'+(+c.k.slice(2,4)>=61?'MNP':c.typ==='gmina wiejska'?'WIEŚ':c.typ==='gmina miejska'?'MIASTO':'M-W')+'</span></span>'
+     +'<b class="sk-nazwa" style="font-size:'+(Math.max(...c.n.split(/[ -]/).map(x=>x.length))>11?11:Math.max(...c.n.split(/[ -]/).map(x=>x.length))>8?13:15)+'px">'+escape(c.n).replace(/-/g,'-<wbr>')+'</b>'
+     +'<small class="sk-woj">'+escape(Karty.WS?Karty.WS[c.woj]||c.woj:c.woj)+(c.bonus?' · +'+c.bonus:'')+(c.borrowed?' · pożyczona':'')+'</small>'
+     +(odsl?'<span class="sk-wart">'+Z.value(c,k,game.o.records)+'</span>':'')+'</button>';}).join('');
+  $('choices').querySelectorAll('[data-podglad]').forEach(b=>b.onclick=()=>{b.classList.add('odkrywa');setTimeout(()=>{b.classList.remove('odkrywa');podgladKarty(b.dataset.podglad);},260);});
  }
  function podgladKarty(id){
   const t=game.turn,k=game.metrics[game.round],c=game.candidates[t].find(x=>x.k===id);if(!c)return;

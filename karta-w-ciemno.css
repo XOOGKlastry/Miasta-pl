@@ -90,3 +90,24 @@
 .kwc-przyciski{display:flex;gap:10px}
 .kwc-przyciski button{min-height:50px;padding:0 18px;border:3px solid #3A2A14;border-radius:14px;box-shadow:0 4px 0 #3A2A14;font:900 15px Rubik,sans-serif;color:#3A2A14;background:#FFF6E0;cursor:pointer}
 .kwc-przyciski .kwc-wybierz,.kwc-przyciski .kwc-odslon{background:#F5B82E}
+
+/* stół z kartami */
+.kwc .blind-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px 8px!important;padding:12px 10px;border-radius:20px;border:5px solid #6B4423;box-shadow:inset 0 0 0 2px #A6763F,inset 0 6px 18px rgba(0,0,0,.35),0 4px 0 #3A2A14;background:radial-gradient(ellipse at 50% 30%,#3F8F55,#25633A 70%,#1D4F2E)}
+@media(min-width:560px){.kwc .blind-grid{grid-template-columns:repeat(5,minmax(0,1fr))!important}}
+.kwc button.stol-karta{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:3px;min-height:112px;padding:6px 6px 7px;border:2.5px solid #3A2A14;border-radius:10px;box-shadow:0 3px 0 rgba(0,0,0,.35),0 6px 10px rgba(0,0,0,.25);transform:rotate(var(--obr));transition:transform .25s;font:inherit;color:#2E2010;text-align:center;background:linear-gradient(160deg,#FBF6E8,#E2D6B8)}
+.kwc button.stol-karta:active{transform:rotate(0) scale(.97)}
+.kwc button.stol-karta.odkrywa{transform:rotateY(90deg) scale(1.06);transition:transform .25s ease-in}
+.kwc button.stol-karta.r-braz{background:linear-gradient(155deg,#F6D2AE,#D99A62 45%,#B8723E)}
+.kwc button.stol-karta.r-srebro{background:linear-gradient(155deg,#FFFFFF,#C9CED4 40%,#A3ABB3 75%,#E2E6EA)}
+.kwc button.stol-karta.r-zloto{background:linear-gradient(155deg,#FFF4B8,#EDBE3A 40%,#C8901B 75%,#F6D368)}
+.kwc button.stol-karta.r-diament{background:linear-gradient(155deg,#F4FCFF,#BFE7FF 45%,#9ED3FF 75%,#E3D9FF);box-shadow:0 0 10px rgba(120,195,255,.8),0 3px 0 rgba(0,0,0,.35)}
+.kwc button.stol-karta.r-legenda{background:linear-gradient(155deg,#FFF0A8,#E0A417 40%,#B57A08 72%,#F2C94C);box-shadow:0 0 12px rgba(255,200,50,.9),0 3px 0 rgba(0,0,0,.35)}
+.kwc button.stol-karta.borrowed{filter:grayscale(.85)}
+.sk-gora{display:flex;justify-content:space-between;align-items:baseline}
+.sk-ovr{font-family:"Barlow Condensed",Bungee,sans-serif;font-weight:800;font-size:24px;line-height:1}
+.sk-typ{font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:11px;letter-spacing:.3px}
+.sk-nazwa{flex:1;display:flex;align-items:center;justify-content:center;font-family:"Barlow Condensed",Rubik,sans-serif;font-weight:800;font-size:15px;line-height:1.05;text-transform:uppercase;overflow-wrap:normal;word-break:keep-all;hyphens:none}
+.sk-woj{font-size:10px;font-weight:800;opacity:.75}
+.sk-wart{position:absolute;right:-6px;top:-8px;background:#FFE27A;border:2px solid #3A2A14;border-radius:999px;padding:1px 7px;font-weight:900;font-size:12px}
+.kwc button.stol-karta.revealed{outline:3px solid #FFE27A;outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.kwc button.stol-karta{transform:none}}
