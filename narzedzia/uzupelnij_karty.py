@@ -74,9 +74,7 @@ NOWE=[
   # pole, frazy do wyszukania, wszystkie muszą wystąpić w opisie, żadne nie może, jak przeliczyć wartość
   ('mieszkanie_m2_os',['przeciętna powierzchnia użytkowa mieszkania na 1 osobę','powierzchnia użytkowa mieszkania na 1 osobę'],['na 1 osob'],['nowo','oddan','wiejsk','miast'],None),
   ('obciazenie_demograficzne',['ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym','wieku nieprodukcyjnym na 100'],['nieprodukcyjn','100'],['kobiet','mężczyzn','miast','wieś','wsi'],None),
-  ('drogi_na_100km2',['drogi gminne o nawierzchni twardej na 100 km2','o nawierzchni twardej na 100 km2'],['twardej','100 km'],['ulepszon','nieulepsz','gruntow','powiatow','wojew','krajow'],None),
   ('firmy_na_1000',['podmioty wpisane do rejestru REGON na 10 tys. ludności','rejestru regon na 10 tys'],['10 tys','regon'],['nowo','wyrejestr','osoby fizyczne','sektor'],lambda v:round(v/10,2)),
-  ('zadluzenie_na_mieszk',['zobowiązania ogółem na 1 mieszkańca','zadłużenie na 1 mieszkańca','zobowiązania ogółem'],['zobowiąz','ogółem'],['wymagaln','kraj','zagranic','powiat','wojew'],None),
 ]
 
 TEMATY={'drogi_na_100km2':['drogi publiczne gminne','drogi gminne','drogi publiczne'],
@@ -155,6 +153,15 @@ def main() -> None:
             nowe[pole]=({k:(przelicz(v) if przelicz else v) for k,v in dane.items()},rok)
             sources[pole]={'id':zid,'rok':rok,'url':BASE+f'/variables/{zid}','opis':meta}
         except Exception as exc:logging.warning('%s: %s',pole,exc)
+    drogi,drogi_rok={},None
+    for vid in (1703492,325):
+        try:
+            meta=request(f'/variables/{vid}?format=json');lata=[y for y in meta.get('years',[]) if y<=args.year]
+            if not lata:continue
+            drogi_rok=max(lata);drogi=download(vid,drogi_rok);sources['drogi_na_100km2']={'id':vid,'rok':drogi_rok,'url':BASE+f'/variables/{vid}','opis':meta}
+            logging.info('Drogi gminne twarde: zmienna %s, rok %s, gmin %s',vid,drogi_rok,len(drogi));break
+        except Exception as exc:logging.warning('Drogi %s: %s',vid,exc)
+    # zadłużenia gmin GUS nie publikuje (są w sprawozdaniach Rb-Z Ministerstwa Finansów), więc ten wskaźnik czeka
     result={};missing=[]
     for key,g in sorted(rows.items()):
         row={};years={}
@@ -168,11 +175,13 @@ def main() -> None:
             row['szkoly_na_1000']=round(szkoly[key]/g['ludnosc']*1000,3);years['szkoly_na_1000']=sz_rok
         for pole,(dane,rok) in nowe.items():
             if key in dane:row[pole]=round(dane[key],3);years[pole]=rok
+        if key in drogi and row.get('powierzchnia',0)>0:
+            row['drogi_na_100km2']=round(drogi[key]/row['powierzchnia']*100,2);years['drogi_na_100km2']=drogi_rok
         row['lata']=years;result[key]=row
         absent=[x for x in ['przyrost_naturalny','pit_na_mieszk','powierzchnia'] if x not in row]
         if absent:missing.append({'k':key,'pola':absent})
     status=('Szkoły podstawowe ogółem (publiczne i niepubliczne) na 1000 mieszkańców, GUS BDL, zmienna '+str(sz_id)+', rok '+str(sz_rok)+'.') if szkoly else 'Brak danych GUS o szkołach podstawowych. Waga szkół jest wstrzymana.'
-    artifact={'rok':'edycja 2026','pobrano':datetime.datetime.now(datetime.timezone.utc).isoformat(),'szkoly_status':status,'wstrzymane':[] if szkoly else ['szkoly_na_1000'],'zrodla':sources,'uwagi':'Pozostałe wskaźniki pochodzą z baza.json; rok ich obserwacji nie był zapisany. Edycja oznacza datę zestawu, nie jednolity rok wszystkich danych.','gminy':result,'braki':missing}
+    artifact={'rok':'edycja 2026','pobrano':datetime.datetime.now(datetime.timezone.utc).isoformat(),'szkoly_status':status,'wstrzymane':(['zadluzenie_na_mieszk'] if not any('zadluzenie_na_mieszk' in r for r in result.values()) else [])+([] if szkoly else ['szkoly_na_1000']),'zrodla':sources,'uwagi':'Pozostałe wskaźniki pochodzą z baza.json; rok ich obserwacji nie był zapisany. Edycja oznacza datę zestawu, nie jednolity rok wszystkich danych.','gminy':result,'braki':missing}
     target=ROOT/'karty-dane.json';temp=target.with_suffix('.tmp');temp.write_text(json.dumps(artifact,ensure_ascii=False,separators=(',',':')),encoding='utf-8');temp.replace(target)
     logging.info('Zapis: %s gmin, %s z brakami',len(result),len(missing))
 if __name__=='__main__':main()
