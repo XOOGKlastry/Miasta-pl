@@ -1,191 +1,41 @@
-2026-10-04 18:55:21,884 Cecha 450551: strona 11/40
-2026-10-04 18:55:26,482 HTTP 429, próba 1; zachowano cache
-2026-10-04 18:55:26,972 HTTP 429, próba 1; zachowano cache
-2026-10-04 18:55:27,111 HTTP 429, próba 1; zachowano cache
-2026-10-04 18:55:37,094 HTTP 429, próba 2; zachowano cache
-2026-10-04 18:55:37,355 HTTP 429, próba 2; zachowano cache
-2026-10-04 18:55:37,504 HTTP 429, próba 2; zachowano cache
-2026-10-04 18:55:57,465 HTTP 429, próba 3; zachowano cache
-2026-10-04 18:55:57,724 HTTP 429, próba 3; zachowano cache
-2026-10-04 18:55:57,864 HTTP 429, próba 3; zachowano cache
-2026-10-04 18:56:27,814 HTTP 429, próba 4; zachowano cache
-2026-10-04 18:56:28,126 HTTP 429, próba 4; zachowano cache
-2026-10-04 18:56:28,269 HTTP 429, próba 4; zachowano cache
-2026-10-04 18:57:08,184 HTTP 429, próba 5; zachowano cache
-2026-10-04 18:57:08,498 HTTP 429, próba 5; zachowano cache
-2026-10-04 18:57:08,627 HTTP 429, próba 5; zachowano cache
-2026-10-04 18:57:58,534 HTTP 429, próba 6; zachowano cache
-2026-10-04 18:57:58,882 HTTP 429, próba 6; zachowano cache
-2026-10-04 18:57:59,018 HTTP 429, próba 6; zachowano cache
-2026-10-04 18:58:58,902 HTTP 429, próba 7; zachowano cache
-2026-10-04 18:58:59,294 HTTP 429, próba 7; zachowano cache
-2026-10-04 18:58:59,391 HTTP 429, próba 7; zachowano cache
-2026-10-04 18:59:59,526 HTTP 429, próba 8; zachowano cache
-2026-10-04 18:59:59,952 HTTP 429, próba 8; zachowano cache
-2026-10-04 18:59:59,961 HTTP 429, próba 8; zachowano cache
-2026-10-04 19:01:00,164 HTTP 429, próba 9; zachowano cache
-2026-10-04 19:01:00,321 HTTP 429, próba 9; zachowano cache
-2026-10-04 19:01:00,454 HTTP 429, próba 9; zachowano cache
-2026-10-04 19:02:00,771 HTTP 429, próba 10; zachowano cache
-2026-10-04 19:02:00,794 HTTP 429, próba 10; zachowano cache
-2026-10-04 19:02:01,114 HTTP 429, próba 10; zachowano cache
-2026-10-04 19:03:01,144 HTTP 429, próba 11; zachowano cache
-2026-10-04 19:03:01,409 HTTP 429, próba 11; zachowano cache
-2026-10-04 19:03:01,715 HTTP 429, próba 11; zachowano cache
-2026-10-04 19:04:01,752 HTTP 429, próba 12; zachowano cache
-2026-10-04 19:04:01,919 HTTP 429, próba 12; zachowano cache
-2026-10-04 19:04:02,362 HTTP 429, próba 12; zachowano cache
-2026-10-04 19:05:02,496 HTTP 429, próba 13; zachowano cache
-2026-10-04 19:05:02,499 HTTP 429, próba 13; zachowano cache
-2026-10-04 19:05:02,981 HTTP 429, próba 13; zachowano cache
-2026-10-04 19:06:05,164 Cecha 450551: strona 21/40
-2026-10-04 19:06:08,562 Cecha 450551: strona 31/40
-2026-10-04 19:06:11,666 Cecha 450551: 2479 gmin
-2026-10-04 19:06:22,444 Cecha 76046: strona 11/40
-2026-10-04 19:06:27,326 Cecha 76046: strona 21/40
-2026-10-04 19:06:32,535 Cecha 76046: strona 31/40
-2026-10-04 19:06:37,126 Cecha 76046: 2479 gmin
-2026-10-04 19:06:42,951 Cecha 1: strona 11/40
-2026-10-04 19:06:47,408 Cecha 1: strona 21/40
-2026-10-04 19:06:53,514 Cecha 1: strona 31/40
-2026-10-04 19:06:56,405 Cecha 1: 2479 gmin
-2026-10-04 19:07:02,039 Cecha 838: strona 11/40
-2026-10-04 19:07:06,441 Cecha 838: strona 21/40
-2026-10-04 19:07:10,477 Cecha 838: strona 31/40
-2026-10-04 19:07:14,313 Cecha 838: 2477 gmin
-2026-10-04 19:07:14,716 kandydat 60573 | przeciętna powierzchnia użytkowa mieszkania na 1 osobę     m2 | poziom 6
-2026-10-04 19:07:15,443 WYBRANO 60573 rok 2025: przeciętna powierzchnia użytkowa mieszkania na 1 osobę     m2
-2026-10-04 19:07:21,022 Cecha 60573: strona 11/40
-2026-10-04 19:07:24,019 Cecha 60573: strona 21/40
-2026-10-04 19:07:27,004 Cecha 60573: strona 31/40
-2026-10-04 19:07:30,152 Cecha 60573: 2479 gmin
-2026-10-04 19:07:30,527 kandydat 60563 | ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym     osoba | poziom 6
-2026-10-04 19:07:30,926 WYBRANO 60563 rok 2025: ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym     osoba
-2026-10-04 19:07:37,787 Cecha 60563: strona 11/40
-2026-10-04 19:07:41,112 Cecha 60563: strona 21/40
-2026-10-04 19:07:44,228 Cecha 60563: strona 31/40
-2026-10-04 19:07:46,686 Cecha 60563: 2479 gmin
-2026-10-04 19:07:53,019 temat G208 | DROGI PUBLICZNE GMINNE | zmienne False
-2026-10-04 19:07:53,019 temat P1635 | Drogi publiczne gminne | zmienne True
-2026-10-04 19:07:53,831   zmienna 324 | ogółem     km | poziom 6
-2026-10-04 19:07:53,831   zmienna 325 | o nawierzchni twardej     km | poziom 6
-2026-10-04 19:07:53,831   zmienna 326 | o nawierzchni twardej ulepszonej     km | poziom 6
-2026-10-04 19:07:53,831   zmienna 10503 | o nawierzchni gruntowej     km | poziom 6
-2026-10-04 19:07:53,831   zmienna 327 | remonty dróg     km | poziom 6
-2026-10-04 19:07:53,831 temat P1710 | Drogi publiczne gminne - lokalne miejskie | zmienne True
-2026-10-04 19:07:54,670   zmienna 328 | ogółem     km | poziom 6
-2026-10-04 19:07:54,670   zmienna 329 | o nawierzchni twardej     km | poziom 6
-2026-10-04 19:07:54,670   zmienna 330 | o nawierzchni twardej ulepszonej     km | poziom 6
-2026-10-04 19:07:54,670   zmienna 331 | remonty dróg     km | poziom 6
-2026-10-04 19:07:54,670 temat P1634 | Drogi publiczne gminne wg lokalizacji | zmienne True
-2026-10-04 19:07:57,567   zmienna 2225 | zamiejskie ogółem    km | poziom 6
-2026-10-04 19:07:57,567   zmienna 2226 | zamiejskie o nawierzchni twardej    km | poziom 6
-2026-10-04 19:07:57,567   zmienna 2227 | zamiejskie o nawierzchni twardej ulepszonej    km | poziom 6
-2026-10-04 19:07:57,567   zmienna 2228 | zamiejskie remonty dróg    km | poziom 6
-2026-10-04 19:07:57,567   zmienna 2229 | w granicach administracyjnych miast ogółem    km | poziom 6
-2026-10-04 19:07:57,567   zmienna 2230 | w granicach administracyjnych miast o nawierzchni twardej    km | poziom 6
-2026-10-04 19:07:57,567   zmienna 2231 | w granicach administracyjnych miast o nawierzchni twardej ulepszonej    km | poziom 6
-2026-10-04 19:07:57,567   zmienna 2232 | w granicach administracyjnych miast remonty dróg    km | poziom 6
-2026-10-04 19:07:58,518 temat P1636 | Drogi gminne w powiecie | zmienne True
-2026-10-04 19:07:59,284   zmienna 7720 | o nawierzchni twardej     km | poziom 5
-2026-10-04 19:07:59,284   zmienna 7721 | o nawierzchni twardej ulepszonej     km | poziom 5
-2026-10-04 19:07:59,284   zmienna 7722 | o nawierzchni gruntowej     km | poziom 5
-2026-10-04 19:07:59,284 temat P4347 | Drogi gminne wg typu nawierzchni | zmienne True
-2026-10-04 19:08:00,309   zmienna 1746949 | ogółem     km | poziom 6
-2026-10-04 19:08:00,309   zmienna 1703492 | o nawierzchni twardej     km | poziom 6
-2026-10-04 19:08:00,309   zmienna 1703493 | o nawierzchni twardej ulepszonej     km | poziom 6
-2026-10-04 19:08:00,309   zmienna 1703494 | o nawierzchni gruntowej     km | poziom 6
-2026-10-04 19:08:01,324 temat G213 | DROGI PUBLICZNE | zmienne False
-2026-10-04 19:08:01,324 temat G208 | DROGI PUBLICZNE GMINNE | zmienne False
-2026-10-04 19:08:01,324 temat P1635 | Drogi publiczne gminne | zmienne True
-2026-10-04 19:08:01,325   zmienna 324 | ogółem     km | poziom 6
-2026-10-04 19:08:01,325   zmienna 325 | o nawierzchni twardej     km | poziom 6
-2026-10-04 19:08:01,325   zmienna 326 | o nawierzchni twardej ulepszonej     km | poziom 6
-2026-10-04 19:08:01,325   zmienna 10503 | o nawierzchni gruntowej     km | poziom 6
-2026-10-04 19:08:01,325   zmienna 327 | remonty dróg     km | poziom 6
-2026-10-04 19:08:01,325 temat P1710 | Drogi publiczne gminne - lokalne miejskie | zmienne True
-2026-10-04 19:08:01,325   zmienna 328 | ogółem     km | poziom 6
-2026-10-04 19:08:01,325   zmienna 329 | o nawierzchni twardej     km | poziom 6
-2026-10-04 19:08:01,325   zmienna 330 | o nawierzchni twardej ulepszonej     km | poziom 6
-2026-10-04 19:08:01,325   zmienna 331 | remonty dróg     km | poziom 6
-2026-10-04 19:08:01,325 temat P1634 | Drogi publiczne gminne wg lokalizacji | zmienne True
-2026-10-04 19:08:01,325   zmienna 2225 | zamiejskie ogółem    km | poziom 6
-2026-10-04 19:08:01,325   zmienna 2226 | zamiejskie o nawierzchni twardej    km | poziom 6
-2026-10-04 19:08:01,325   zmienna 2227 | zamiejskie o nawierzchni twardej ulepszonej    km | poziom 6
-2026-10-04 19:08:01,325   zmienna 2228 | zamiejskie remonty dróg    km | poziom 6
-2026-10-04 19:08:01,325   zmienna 2229 | w granicach administracyjnych miast ogółem    km | poziom 6
-2026-10-04 19:08:01,325   zmienna 2230 | w granicach administracyjnych miast o nawierzchni twardej    km | poziom 6
-2026-10-04 19:08:01,325   zmienna 2231 | w granicach administracyjnych miast o nawierzchni twardej ulepszonej    km | poziom 6
-2026-10-04 19:08:01,325   zmienna 2232 | w granicach administracyjnych miast remonty dróg    km | poziom 6
-2026-10-04 19:08:01,325 temat P1715 | Drogi publiczne krajowe | zmienne True
-2026-10-04 19:08:02,066   zmienna 4604 | ogółem ogółem    km | poziom 3
-2026-10-04 19:08:02,066   zmienna 4605 | ogółem o nawierzchni twardej    km | poziom 3
-2026-10-04 19:08:02,066   zmienna 4606 | ogółem o nawierzchni twardej ulepszonej    km | poziom 3
-2026-10-04 19:08:02,066   zmienna 4607 | ogółem dwujezdniowe    km | poziom 3
-2026-10-04 19:08:02,066   zmienna 4608 | ogółem ekspresowe    km | poziom 3
-2026-10-04 19:08:02,066   zmienna 4609 | ogółem autostrady    km | poziom 3
-2026-10-04 19:08:02,066   zmienna 4610 | w granicach administracyjnych miast ogółem    km | poziom 3
-2026-10-04 19:08:02,067   zmienna 4611 | w granicach administracyjnych miast o nawierzchni twardej    km | poziom 3
-2026-10-04 19:08:02,067   zmienna 4612 | w granicach administracyjnych miast o nawierzchni twardej ulepszonej    km | poziom 3
-2026-10-04 19:08:02,067   zmienna 4613 | w granicach administracyjnych miast dwujezdniowe    km | poziom 3
-2026-10-04 19:08:02,067   zmienna 4614 | w granicach administracyjnych miast ekspresowe    km | poziom 3
-2026-10-04 19:08:02,067   zmienna 4615 | w granicach administracyjnych miast autostrady    km | poziom 3
-2026-10-04 19:08:02,067   zmienna 4616 | zamiejskie ogółem    km | poziom 3
-2026-10-04 19:08:02,067   zmienna 4617 | zamiejskie o nawierzchni twardej    km | poziom 3
-2026-10-04 19:08:02,067   zmienna 4618 | zamiejskie o nawierzchni twardej ulepszonej    km | poziom 3
-2026-10-04 19:08:02,067   zmienna 4619 | zamiejskie dwujezdniowe    km | poziom 3
-2026-10-04 19:08:02,067   zmienna 4620 | zamiejskie ekspresowe    km | poziom 3
-2026-10-04 19:08:02,067   zmienna 4621 | zamiejskie autostrady    km | poziom 3
-2026-10-04 19:08:02,067 temat P2655 | Drogi publiczne ogółem | zmienne True
-2026-10-04 19:08:02,824   zmienna 77237 | ogółem     km | poziom 3
-2026-10-04 19:08:02,825   zmienna 77238 | autostrady     km | poziom 3
-2026-10-04 19:08:02,825   zmienna 77239 | inne drogi     km | poziom 3
-2026-10-04 19:08:02,825 temat G209 | DROGI PUBLICZNE POWIATOWE | zmienne False
-2026-10-04 19:08:02,825 temat P1637 | Drogi publiczne powiatowe wg lokalizacji | zmienne True
-2026-10-04 19:08:03,730   zmienna 3329 | powiat - zamiejskie ogółem    km | poziom 5
-2026-10-04 19:08:03,730   zmienna 3330 | powiat - zamiejskie o nawierzchni twardej    km | poziom 5
-2026-10-04 19:08:03,730   zmienna 3331 | powiat - zamiejskie o nawierzchni twardej ulepszonej    km | poziom 5
-2026-10-04 19:08:03,730   zmienna 3332 | powiat - zamiejskie dwujezdniowe    km | poziom 5
-2026-10-04 19:08:03,730   zmienna 3333 | powiat - w granicach administracyjnych miast (w km) ogółem    km | poziom 5
-2026-10-04 19:08:03,730   zmienna 3334 | powiat - w granicach administracyjnych miast (w km) o nawierzchni twardej    km | poziom 5
-2026-10-04 19:08:03,731   zmienna 3335 | powiat - w granicach administracyjnych miast (w km) o nawierzchni twardej ulepszonej    km | poziom 5
-2026-10-04 19:08:03,731   zmienna 3336 | powiat - w granicach administracyjnych miast (w km) dwujezdniowe    km | poziom 5
-2026-10-04 19:08:03,731   zmienna 3337 | powiat - w granicach administracyjnych miast (w tys. m2) ogółem    tys.m2 | poziom 5
-2026-10-04 19:08:03,731   zmienna 3338 | powiat - w granicach administracyjnych miast (w tys. m2) o nawierzchni twardej    tys.m2 | poziom 5
-2026-10-04 19:08:03,731   zmienna 3339 | powiat - w granicach administracyjnych miast (w tys. m2) o nawierzchni twardej ulepszonej    tys.m2 | poziom 5
-2026-10-04 19:08:03,731   zmienna 3340 | powiat - w granicach administracyjnych miast (w tys. m2) dwujezdniowe    tys.m2 | poziom 5
-2026-10-04 19:08:03,731   zmienna 3364 | miasto na prawach powiatu (w km) ogółem    km | poziom 5
-2026-10-04 19:08:03,731   zmienna 3365 | miasto na prawach powiatu (w km) o nawierzchni twardej    km | poziom 5
-2026-10-04 19:08:03,731   zmienna 3366 | miasto na prawach powiatu (w km) o nawierzchni twardej ulepszonej    km | poziom 5
-2026-10-04 19:08:03,731   zmienna 3367 | miasto na prawach powiatu (w km) dwujezdniowe    km | poziom 5
-2026-10-04 19:08:03,731   zmienna 3368 | miasto na prawach powiatu (w tys. m2) ogółem    tys.m2 | poziom 5
-2026-10-04 19:08:03,731   zmienna 3369 | miasto na prawach powiatu (w tys. m2) o nawierzchni twardej    tys.m2 | poziom 5
-2026-10-04 19:08:03,731   zmienna 3370 | miasto na prawach powiatu (w tys. m2) o nawierzchni twardej ulepszonej    tys.m2 | poziom 5
-2026-10-04 19:08:03,731   zmienna 3371 | miasto na prawach powiatu (w tys. m2) dwujezdniowe    tys.m2 | poziom 5
-2026-10-04 19:08:03,731 temat P1712 | Drogi publiczne wojewódzkie | zmienne True
-2026-10-04 19:08:04,835   zmienna 4547 | ogółem ogółem    km | poziom 3
-2026-10-04 19:08:04,835   zmienna 4548 | ogółem o nawierzchni twardej    km | poziom 3
-2026-10-04 19:08:04,835   zmienna 4549 | ogółem o nawierzchni twardej ulepszonej    km | poziom 3
-2026-10-04 19:08:04,835   zmienna 4550 | ogółem dwujezdniowe    km | poziom 3
-2026-10-04 19:08:04,835   zmienna 4551 | w granicach administracyjnych miast ogółem    km | poziom 3
-2026-10-04 19:08:04,835   zmienna 4552 | w granicach administracyjnych miast o nawierzchni twardej    km | poziom 3
-2026-10-04 19:08:04,835   zmienna 4553 | w granicach administracyjnych miast o nawierzchni twardej ulepszonej    km | poziom 3
-2026-10-04 19:08:04,835   zmienna 4554 | w granicach administracyjnych miast dwujezdniowe    km | poziom 3
-2026-10-04 19:08:04,835   zmienna 4555 | zamiejskie ogółem    km | poziom 3
-2026-10-04 19:08:04,835   zmienna 4556 | zamiejskie o nawierzchni twardej    km | poziom 3
-2026-10-04 19:08:04,835   zmienna 4557 | zamiejskie o nawierzchni twardej ulepszonej    km | poziom 3
-2026-10-04 19:08:04,835   zmienna 4558 | zamiejskie dwujezdniowe    km | poziom 3
-2026-10-04 19:08:04,835 temat P3305 | Udział wydatków na drogi publiczne w wydatkach ogółem | zmienne True
-2026-10-04 19:08:05,676   zmienna 396043 | gminy łącznie z miastami na prawach powiatu     % | poziom 6
-2026-10-04 19:08:05,676   zmienna 396044 | gminy bez miast na prawach powiatu     % | poziom 6
-2026-10-04 19:08:05,676   zmienna 396045 | miasta na prawach powiatu     % | poziom 6
-2026-10-04 19:08:05,676   zmienna 453431 | powiaty     % | poziom 5
-2026-10-04 19:08:05,676 Nie znaleziono zmiennej dla drogi_na_100km2
-2026-10-04 19:08:06,166 kandydat 60530 | podmioty wpisane do rejestru regon na 10 tys. ludności     - | poziom 6
-2026-10-04 19:08:07,086 WYBRANO 60530 rok 2025: podmioty wpisane do rejestru regon na 10 tys. ludności     -
-2026-10-04 19:08:15,904 Cecha 60530: strona 11/40
-2026-10-04 19:08:19,821 Cecha 60530: strona 21/40
-2026-10-04 19:08:24,444 Cecha 60530: strona 31/40
-2026-10-04 19:08:28,700 Cecha 60530: 2479 gmin
-2026-10-04 19:08:33,419 Nie znaleziono zmiennej dla zadluzenie_na_mieszk
-2026-10-04 19:08:33,441 Zapis: 2479 gmin, 6 z brakami
+2026-10-05 04:42:47,748 Cecha 450551: strona 11/40
+2026-10-05 04:42:51,206 Cecha 450551: strona 21/40
+2026-10-05 04:42:57,343 Cecha 450551: strona 31/40
+2026-10-05 04:43:01,396 Cecha 450551: 2479 gmin
+2026-10-05 04:43:09,868 Cecha 76046: strona 11/40
+2026-10-05 04:43:13,768 Cecha 76046: strona 21/40
+2026-10-05 04:43:17,971 Cecha 76046: strona 31/40
+2026-10-05 04:43:22,961 Cecha 76046: 2479 gmin
+2026-10-05 04:43:29,460 Cecha 1: strona 11/40
+2026-10-05 04:43:34,850 Cecha 1: strona 21/40
+2026-10-05 04:43:38,244 Cecha 1: strona 31/40
+2026-10-05 04:43:42,088 Cecha 1: 2479 gmin
+2026-10-05 04:43:48,994 Cecha 838: strona 11/40
+2026-10-05 04:43:54,243 Cecha 838: strona 21/40
+2026-10-05 04:43:58,575 Cecha 838: strona 31/40
+2026-10-05 04:44:02,359 Cecha 838: 2477 gmin
+2026-10-05 04:44:05,467 kandydat 60573 | przeciętna powierzchnia użytkowa mieszkania na 1 osobę     m2 | poziom 6
+2026-10-05 04:44:06,126 WYBRANO 60573 rok 2025: przeciętna powierzchnia użytkowa mieszkania na 1 osobę     m2
+2026-10-05 04:44:12,585 Cecha 60573: strona 11/40
+2026-10-05 04:44:15,446 Cecha 60573: strona 21/40
+2026-10-05 04:44:19,425 Cecha 60573: strona 31/40
+2026-10-05 04:44:22,531 Cecha 60573: 2479 gmin
+2026-10-05 04:44:26,051 kandydat 60563 | ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym     osoba | poziom 6
+2026-10-05 04:44:26,794 WYBRANO 60563 rok 2025: ludność w wieku nieprodukcyjnym na 100 osób w wieku produkcyjnym     osoba
+2026-10-05 04:44:31,944 Cecha 60563: strona 11/40
+2026-10-05 04:44:35,802 Cecha 60563: strona 21/40
+2026-10-05 04:44:39,849 Cecha 60563: strona 31/40
+2026-10-05 04:44:43,445 Cecha 60563: 2479 gmin
+2026-10-05 04:44:46,450 kandydat 60530 | podmioty wpisane do rejestru regon na 10 tys. ludności     - | poziom 6
+2026-10-05 04:44:47,103 WYBRANO 60530 rok 2025: podmioty wpisane do rejestru regon na 10 tys. ludności     -
+2026-10-05 04:44:54,608 Cecha 60530: strona 11/40
+2026-10-05 04:44:58,332 Cecha 60530: strona 21/40
+2026-10-05 04:45:03,893 Cecha 60530: strona 31/40
+2026-10-05 04:45:07,592 Cecha 60530: 2479 gmin
+2026-10-05 04:45:09,128 Drogi 1703492: Za małe pokrycie cechy 1703492: 0
+2026-10-05 04:45:13,301 Cecha 325: strona 11/37
+2026-10-05 04:45:15,865 Cecha 325: strona 21/37
+2026-10-05 04:45:18,215 Cecha 325: strona 31/37
+2026-10-05 04:45:19,834 Cecha 325: 2478 gmin
+2026-10-05 04:45:19,834 Drogi gminne twarde: zmienna 325, rok 2004, gmin 2478
+2026-10-05 04:45:19,859 Zapis: 2479 gmin, 6 z brakami
