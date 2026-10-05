@@ -48,3 +48,14 @@
 .nagroda-info .paczka-drop{color:#B5121F}
 .ranking-stan{display:block;margin-top:4px;font-weight:800;color:var(--braz-2)}
 .kwc #reveal .klocek{margin-top:10px;width:100%;justify-content:center}
+
+.wyzwanie-info{background:var(--krem);border:4px solid var(--braz);border-radius:18px;box-shadow:0 5px 0 var(--braz);padding:14px;display:flex;flex-direction:column;gap:8px;color:var(--braz)}
+.wyzwanie-info h2{font-family:Bungee,sans-serif;font-weight:400;font-size:18px;margin:0}
+.wyzwanie-info p{margin:0;font-weight:700}
+.wyzwanie-info .licznik-czasu{font-family:Bungee,sans-serif;font-size:20px;color:#B5121F}
+.wyzwanie-info .wynik-duzy{font-family:Bungee,sans-serif;font-size:24px}
+.wyzwanie-info .ostrzezenie{color:#8A1F17;font-size:13px}
+.wyzwanie-info table{width:100%;border-collapse:collapse;font-size:13px}
+.wyzwanie-info td,.wyzwanie-info th{text-align:left;padding:6px 4px;border-bottom:2px dashed rgba(58,42,20,.25)}
+.wyzwanie-info td.lepsza{background:rgba(127,203,106,.3);font-weight:900}
+#reveal .klocek+.klocek{margin-top:8px}

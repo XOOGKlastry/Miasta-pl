@@ -84,6 +84,26 @@ details[open]>summary .strz{transform:rotate(90deg)}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 
 .szanse-panel{padding:14px 16px;border:1px solid #bfd0b1!important;box-shadow:0 3px 12px #28462910!important;border-radius:20px!important}.szanse-panel summary{font-size:15px;font-weight:700;cursor:pointer}.szanse-note{font-size:12px;line-height:1.5;color:#617257;margin:14px 0}.szanse-table{width:100%;border-collapse:collapse;font:13px/1.4 Rubik,system-ui,sans-serif}.szanse-table caption{text-align:left;font-size:12px;font-weight:700;color:#557049;padding:12px 0 6px}.szanse-table th{font-size:11px;color:#75826b;font-weight:500}.szanse-table th,.szanse-table td{text-align:left;padding:8px 0;border-bottom:1px solid #dce5d0}.szanse-table td:last-child,.szanse-table th:last-child{text-align:right;font-variant-numeric:tabular-nums}.drop-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:16px}.drop-tabs button{border:1px solid #c4d4b8;border-radius:10px;font:500 11px/1.2 Rubik,system-ui,sans-serif;color:#315238;background:#f7faef;min-height:38px;padding:5px 2px}.drop-tabs button[aria-pressed=true]{background:#d9e9ca;border-color:#759d65}.rarity-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;background:#819768}.dot-braz{background:#bb8559}.dot-srebro{background:#92a7b5}.dot-zloto{background:#e1b33e}.dot-diament{background:#a48bd8}.rzadkosci{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px!important}.rzadkosci>*{min-width:0!important;font-size:10px!important;padding:7px 2px!important;border-width:1px!important;box-shadow:none!important;border-radius:12px!important}.rzadkosci b{font-size:13px!important}.rzadkosci span{font-size:10px!important}.paczki{border-width:1px!important;box-shadow:0 3px 12px #28462910!important}
+/* podgląd karty: dwie strony, bez przewijania */
+.kk-podglad{overflow:hidden!important;justify-content:center!important;gap:8px!important}
+.kk-podglad .close-preview{flex:none}
+.kk-flip{--w:min(78vw,320px,calc((var(--app-h,100vh) - 300px) / 1.6));width:var(--w);height:calc(var(--w) * 1.6);position:relative;flex:none;perspective:1200px}
+.kk-strona{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;transition:transform .6s cubic-bezier(.3,1.2,.4,1)}
+.kk-strona.tyl{transform:rotateY(180deg)}
+.kk-flip.odwrocona .przod{transform:rotateY(-180deg)}
+.kk-flip.odwrocona .tyl{transform:rotateY(0)}
+.kk-flip .kk{width:100%!important;animation:none!important}
+.kk-pod{width:min(92vw,380px);flex:none;min-height:0}
+.tyl-widac .kk-pod{visibility:hidden}
+.kk-przyciski{display:flex;gap:6px;flex-wrap:nowrap;justify-content:center;flex:none;max-width:96vw}
+.kk-przyciski .kk-linki{display:contents}
+.kk-przyciski .kk-linki a{min-height:44px;padding:0 10px;font-size:13px;white-space:nowrap}
+.kk-tyl p{color:#3A2A14!important;text-shadow:none!important;font-size:12px!important;font-style:normal!important}
+.kk-pod .kk-rekordy{gap:4px}
+.kk-przyciski .klocek{min-height:44px;font-size:14px;padding:0 14px}
+.kk-podglad>p{flex:none;font-size:11px!important;margin:0}
+.kk-podglad>p:empty{display:none}
+@media (prefers-reduced-motion:reduce){.kk-strona{transition:none}}
 </style>
 </head>
 <body>
@@ -98,7 +118,7 @@ details[open]>summary .strz{transform:rotate(90deg)}
 </div>
 <script src="wspolne.js?v=22"></script>
 <script src="polandball.js?v=4"></script>
-<script src="karty.js?v=13"></script>
+<script src="karty.js?v=16"></script>
 <script>
 const {$}=ZP;
 let D=null,filtr="",WOJ_SVG={};
@@ -179,9 +199,16 @@ function otworzPaczke(){
 function podglad(g,otwarta,st){
   const pp=st.postep[g.k]?st.postep[g.k].size:0;
   const d=document.createElement("div");d.className="kk-podglad";
-  d.innerHTML='<button type="button" class="close-preview" aria-label="Zamknij podgląd">Zamknij ×</button>'+Karty.karta(g,{tryb:"pelna",otwarta,bezSzczegolow:true})+(otwarta?Karty.panel(g)+Karty.linki(g):"")+'<p>'+(otwarta?"Dane: GUS BDL, PRG · mapa © współtwórcy OpenStreetMap, OpenTopoMap · zamknij przyciskiem powyżej"
+  d.innerHTML='<button type="button" class="close-preview" aria-label="Zamknij podgląd">Zamknij ×</button>'
+    +(otwarta?'<div class="kk-flip"><div class="kk-strona przod">'+Karty.karta(g,{tryb:"pelna",otwarta,bezSzczegolow:true})+'</div><div class="kk-strona tyl">'+Karty.tyl(g)+'</div></div>'
+      +'<div class="kk-pod">'+Karty.rekordyHTML(g,3)+'</div><div class="kk-przyciski"><button type="button" class="klocek odwroc">↻ Odwróć</button>'+Karty.linki(g)+'</div>'
+      :Karty.karta(g,{tryb:"pelna",otwarta,bezSzczegolow:true}))
+    +'<p>'+(otwarta?""
     :"Zdobędziesz ją od razu w grze Kształt gminy albo trafiając ją "+Karty.prog(g)+" razy w grach gminnych (herby, Gdzie ta gmina?, Ciepło-zimno). Masz: "+pp+"/"+Karty.prog(g)+". Może też wypaść z paczki za monety.")+'</p>';
-  d.onclick=e=>{if(e.target===d||e.target.closest(".close-preview"))d.remove();};document.body.appendChild(d);Karty.holo(d.querySelector(".kk"));Karty.podepnijMapy(d);
+  d.onclick=e=>{if(e.target===d||e.target.closest(".close-preview"))d.remove();
+    // odwracanie: przyciskiem albo stuknięciem w kartę; rekordy pod kartą tylko przy awersie
+    else if(e.target.closest(".odwroc")||e.target.closest(".kk-flip")&&!e.target.closest(".kk-pb,a")){const f=d.querySelector(".kk-flip");if(f){f.classList.toggle("odwrocona");d.classList.toggle("tyl-widac");}}};
+  document.body.appendChild(d);Karty.holo(d.querySelector(".kk"));Karty.podepnijMapy(d);
 }
 Karty.styl();
 Promise.all([Karty.zaladuj(),Karty.geometrie(),fetch("woj.geojson?v=17").then(r=>r.json())]).then(([d,_,gj])=>{

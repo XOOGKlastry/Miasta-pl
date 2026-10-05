@@ -54,7 +54,7 @@ window.KartyModel=(()=>{
   firmy_na_1000:['najwięcej firm na 1000 os.','najmniej firm na 1000 os.'],zadluzenie_na_mieszk:['najbardziej zadłużona','najmniej zadłużona'],
   mieszkanie_m2_os:['najwięcej metrów mieszkania na osobę','najciaśniej w mieszkaniach'],obciazenie_demograficzne:['najstarsza demograficznie','najmłodsza demograficznie'],
   drogi_na_100km2:['najgęstsza sieć dróg','najrzadsza sieć dróg'],odleglosc_stolica:['najdalej od stolicy województwa','najbliżej stolicy województwa']};
- const TOP=5;
+ const TOP=3;   // podium: legendarna 1. w Polsce, diamentowa 2.–3. w Polsce, złota 1. w województwie, srebrna 2.–3. w województwie
  const scopes=[['pl',g],...Array.from(new Set(g.map(x=>x.woj)),w=>[w,g.filter(x=>x.woj===w)])];
  for(const [scope,z] of scopes)for(const s of STATY){
   if(s.bezRekordu||paused.includes(s.k))continue;
@@ -295,11 +295,29 @@ window.Karty=(function(){
     const s=STATY.find(x=>x.k===r.k),lepiejMniej=s&&s.t==='o';
     return (r.dir==='max')!==lepiejMniej?'plus':'minus';
   }
-  function rekordyHTML(g){
+  function rekordyHTML(g,limit){
     if(!g.rekordy||!g.rekordy.length)return '';
-    return '<ul class="kk-rekordy">'+g.rekordy.map(r=>{const z=znakRekordu(r);return '<li class="'+z+'"><i>'+(z==='plus'?'▲':z==='minus'?'▼':'●')+'</i><span>'+esc(r.opis)+'</span></li>';}).join('')+'</ul>';
+    const l=limit?g.rekordy.slice(0,limit):g.rekordy;
+    return '<ul class="kk-rekordy">'+l.map(r=>{const z=znakRekordu(r),kraj=r.scope==='pl';
+      return '<li class="'+z+(kraj?' kraj':'')+'"><i>'+(kraj?'🇵🇱':'')+(z==='plus'?'▲':z==='minus'?'▼':'●')+'</i><span>'+esc(r.opis)+'</span></li>';}).join('')
+      +(limit&&g.rekordy.length>limit?'<li class="wiecej">+ '+(g.rekordy.length-limit)+' na odwrocie</li>':'')+'</ul>';
   }
-  // panel informacji pod kartą w podglądzie: wszystko na jednym ekranie, bez rozwijania
+  // odwrót karty: postęp ulepszeń, pozostałe wskaźniki i pozostałe rekordy
+  function tyl(g){
+    const u=ulepszenie(g),m=+g.k.slice(2,4)>=61,wstrz=(DANE.meta&&DANE.meta.wstrzymane)||[];
+    const przod=new Set(Model.TWARZ[g.grupa||'miasto']);
+    const reszta=STATY.filter(s=>!przod.has(s.k)&&!wstrz.includes(s.k));
+    return '<div class="kk-tyl r-'+g.rz+'"><span class="kk-tyl-tytul">'+esc(g.n)+'</span>'
+      +'<div class="kk-tyl-sekcja"><b>Ulepszenia karty</b>'
+      +(m?'':'<label><span>Powiat</span><progress value="'+u.count+'" max="'+Math.max(1,u.total)+'"></progress><em>'+u.count+'/'+u.total+'</em></label>')
+      +'<label><span>Kontury</span><progress value="'+Math.min(40,u.hits)+'" max="40"></progress><em>'+Math.min(40,u.hits)+'/40</em></label>'
+      +'<p>Premia: <strong>+'+u.bonus+'</strong>'+(u.bonus===5?' · karta holograficzna':' · przy +5 karta staje się holograficzna')+'</p></div>'
+      +'<div class="kk-tyl-sekcja"><b>Pozostałe wskaźniki</b><div class="kk-tyl-st">'+reszta.map(s=>'<span><em>'+s.n+'</em><i>'+wartosc(g,s.k)+'</i><strong>'+(g.oc&&g.oc[s.k]!=null?g.oc[s.k]:'–')+'</strong></span>').join('')+'</div></div>'
+      +'<div class="kk-tyl-sekcja"><b>Położenie</b><p>'+(g.pozycjaWoj?'#'+g.pozycjaWoj+' w woj. '+esc(g.woj.replace(/ie$/,'im'))+'. ':'')
+      +(g.odleglosc_stolica!=null?(g.odleglosc_stolica<1?'Stolica województwa.':'Do stolicy: '+liczba(g.odleglosc_stolica,0)+' km ('+esc(g.najblizsza_stolica)+(g.inne_woj?', sąsiednie woj.':'')+').'):'')+'</p></div>'
+      +(g.rekordy&&g.rekordy.length>3?'<div class="kk-tyl-sekcja"><b>Pozostałe rekordy</b>'+rekordyHTML({rekordy:g.rekordy.slice(3)})+'</div>':'')
+      +'<small class="kk-tyl-zrodla">Dane: GUS BDL, PRG · mapa © OpenStreetMap, OpenTopoMap</small></div>';
+  }
   function panel(g){
     const u=ulepszenie(g),r=rekordyHTML(g),m=+g.k.slice(2,4)>=61;
     return '<div class="kk-panel">'
@@ -414,6 +432,26 @@ window.Karty=(function(){
 .kk-rekordy li.plus{background:#E1F5DA;border-color:#2E8B3D;color:#1E5E28}
 .kk-rekordy li.minus{background:#FDE2DE;border-color:#C7372B;color:#8A1F17}
 .kk-rekordy li.neutral{background:#FFF1C2;border-color:#B8860B;color:#6E5100}
+.kk-rekordy li.kraj{font-size:13px;border-width:2.5px;box-shadow:0 2px 0 rgba(58,42,20,.25)}
+.kk-rekordy li:not(.kraj){font-size:11.5px;padding:4px 8px}
+.kk-rekordy li.wiecej{border:none;background:none;color:#FFF6E0;font-size:11.5px;justify-content:center;padding:0}
+.kk-tyl{width:100%;height:100%;box-sizing:border-box;border-radius:5% / 3%;background:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 8px,transparent 8px 18px),#FFF6E0;border:4px solid #3A2A14;box-shadow:0 6px 0 #3A2A14;padding:12px;display:flex;flex-direction:column;gap:8px;overflow:hidden;color:#3A2A14;font-family:Rubik,sans-serif}
+.kk-tyl.r-legenda,.kk-tyl.r-diament{background:repeating-linear-gradient(135deg,rgba(255,255,255,.35) 0 8px,transparent 8px 18px),linear-gradient(160deg,#F2FBFF,#D6E9FF 50%,#EAD9FF)}
+.kk-tyl.r-zloto{background:repeating-linear-gradient(135deg,rgba(255,255,255,.3) 0 8px,transparent 8px 18px),linear-gradient(160deg,#FFF3C2,#F2CF5C)}
+.kk-tyl-zrodla{margin-top:auto;font-size:9.5px;font-weight:700;opacity:.7;text-align:center}
+.kk-tyl-tytul{font-family:"Barlow Condensed",Bungee,sans-serif;font-weight:800;font-size:22px;text-transform:uppercase;text-align:center}
+.kk-tyl-sekcja{background:rgba(255,255,255,.6);border:2px solid rgba(58,42,20,.35);border-radius:12px;padding:7px 9px;display:flex;flex-direction:column;gap:4px}
+.kk-tyl-sekcja b{font-family:Bungee,sans-serif;font-weight:400;font-size:12.5px}
+.kk-tyl-sekcja p{margin:0;font-size:12px;font-weight:700}
+.kk-tyl-sekcja label{display:grid;grid-template-columns:58px 1fr 40px;align-items:center;gap:6px;font-size:11.5px;font-weight:800}
+.kk-tyl-sekcja progress{width:100%;height:9px;accent-color:#27AE60}
+.kk-tyl-sekcja em{font-style:normal;text-align:right}
+.kk-tyl-st{display:grid;grid-template-columns:1fr 1fr;gap:4px 8px}
+.kk-tyl-st span{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:4px;font-size:11px}
+.kk-tyl-st em{font-style:normal;font-weight:800;text-transform:uppercase;font-size:10px;letter-spacing:.2px}
+.kk-tyl-st i{font-style:normal;grid-row:2;opacity:.75;font-size:10.5px}
+.kk-tyl-st strong{grid-row:1/3;grid-column:2;font-family:"Barlow Condensed",sans-serif;font-size:18px;align-self:center}
+.kk-tyl .kk-rekordy li{font-size:10.5px;padding:3px 7px}
 .kk-panel{width:min(92vw,380px);background:#FFF6E0;color:#3A2A14;border:3px solid #3A2A14;border-radius:16px;box-shadow:0 4px 0 #3A2A14;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-family:Rubik,sans-serif}
 .kk-panel p{margin:0;font-weight:700;font-size:12.5px;color:#7A6440}
 .kk-panel .kk-pn{font-family:Bungee,sans-serif;font-weight:400;font-size:14px}
@@ -578,5 +616,5 @@ window.Karty=(function(){
       if(n.length)setTimeout(()=>prezentacja(n,info),1200);else setTimeout(info,1200);
     }catch(e){}
   }
-  return {panel,rekordyHTML,komplet,ulepszenie,wynik,ocenaOVR,odznaki,archiwizuj,prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
+  return {tyl,panel,rekordyHTML,komplet,ulepszenie,wynik,ocenaOVR,odznaki,archiwizuj,prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
 })();
