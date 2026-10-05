@@ -153,14 +153,24 @@ def main() -> None:
             nowe[pole]=({k:(przelicz(v) if przelicz else v) for k,v in dane.items()},rok)
             sources[pole]={'id':zid,'rok':rok,'url':BASE+f'/variables/{zid}','opis':meta}
         except Exception as exc:logging.warning('%s: %s',pole,exc)
+    # drogi gminne o nawierzchni twardej: najnowszy rok z pełnym pokryciem gmin (nie starszy niż 2015);
+    # kolejno: temat P4347 (wg typu nawierzchni), suma zamiejskich i miejskich (P1634), temat P1635
     drogi,drogi_rok={},None
-    for vid in (1703492,325):
+    def lata_zm(vid):
+        meta=request(f'/variables/{vid}?format=json');return sorted([y for y in meta.get('years',[]) if 2015<=y<=args.year],reverse=True),meta
+    for warianty in ((1703492,),(2226,2230),(325,)):
+        if drogi:break
         try:
-            meta=request(f'/variables/{vid}?format=json');lata=[y for y in meta.get('years',[]) if y<=args.year]
-            if not lata:continue
-            drogi_rok=max(lata);drogi=download(vid,drogi_rok);sources['drogi_na_100km2']={'id':vid,'rok':drogi_rok,'url':BASE+f'/variables/{vid}','opis':meta}
-            logging.info('Drogi gminne twarde: zmienna %s, rok %s, gmin %s',vid,drogi_rok,len(drogi));break
-        except Exception as exc:logging.warning('Drogi %s: %s',vid,exc)
+            lata,meta=lata_zm(warianty[0])
+            for rok in lata:
+                try:
+                    czesci=[download(v,rok) for v in warianty]
+                    wspolne=set.intersection(*[set(c) for c in czesci]) if len(czesci)>1 else set(czesci[0])
+                    drogi={k:sum(c.get(k,0) for c in czesci) for k in wspolne};drogi_rok=rok
+                    sources['drogi_na_100km2']={'id':list(warianty),'rok':rok,'url':BASE+f'/variables/{warianty[0]}','opis':meta}
+                    logging.info('Drogi gminne twarde: zmienne %s, rok %s, gmin %s',warianty,rok,len(drogi));break
+                except Exception as exc:logging.info('Drogi %s rok %s: %s',warianty,rok,exc)
+        except Exception as exc:logging.warning('Drogi %s: %s',warianty,exc)
     # zadłużenia gmin GUS nie publikuje (są w sprawozdaniach Rb-Z Ministerstwa Finansów), więc ten wskaźnik czeka
     result={};missing=[]
     for key,g in sorted(rows.items()):
