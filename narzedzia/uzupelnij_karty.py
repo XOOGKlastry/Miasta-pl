@@ -185,7 +185,8 @@ def main() -> None:
             row['szkoly_na_1000']=round(szkoly[key]/g['ludnosc']*1000,3);years['szkoly_na_1000']=sz_rok
         for pole,(dane,rok) in nowe.items():
             if key in dane:row[pole]=round(dane[key],3);years[pole]=rok
-        if key in drogi and row.get('powierzchnia',0)>0:
+        # 0 km dróg twardych to w GUS zwykle brak sprawozdania, a nie brak dróg: traktujemy jako brak danych
+        if drogi.get(key,0)>0 and row.get('powierzchnia',0)>0:
             row['drogi_na_100km2']=round(drogi[key]/row['powierzchnia']*100,2);years['drogi_na_100km2']=drogi_rok
         row['lata']=years;result[key]=row
         absent=[x for x in ['przyrost_naturalny','pit_na_mieszk','powierzchnia'] if x not in row]
