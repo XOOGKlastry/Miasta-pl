@@ -9,11 +9,29 @@
  function start(o,seed,decks){const rng=Z.seeded(seed);o.records=o.records&&!o.equal;const wspolne=new Set();decks=[decks[0],decks[0]];game={o,seed,decks,round:0,metrics:(m=>{while(m.length&&m.length<Z.RUNDY)m.push(m[m.length%Math.max(1,m.length)]);return m.slice(0,Z.RUNDY);})(Z.shuffle(Z.WSPOLNE.filter(k=>decks[0].filter(c=>c.oc[k]!=null).length>=Z.TALIA),rng)),used:[wspolne,wspolne],totals:[0,0],turn:0,picks:[null,null],hinted:[new Set(),new Set()],over:false};if(o.mode==='wyzwanie'){game.rola=o.cudze?'odbiorca':'nadawca';game.moje=[];game.cudze=o.cudze||null;game.rundy=[];}$('setup').hidden=true;$('wyzwanie-info').hidden=true;$('match').hidden=false;status('');beginRound();}
  function beginRound(){game.picks=[null,null];game.hinted=[new Set(),new Set()];game.turn=game.o.mode==='online'?myIndex:0;net={};hintMode=false;const k=game.metrics[game.round];const lista=Z.rozdaj(game.decks[0],game.used[0],k,Z.seeded(game.seed+game.round*101),game.o.records);lista.forEach(c=>game.used[0].add(c.k));game.candidates=[lista,lista];$('round').textContent='Runda '+(game.round+1)+' / '+Z.RUNDY;$('score').textContent=game.totals.join(' : ');$('metric').textContent=Karty.STATY.find(s=>s.k===k).n;$('reveal').hidden=true;$('next').hidden=true;$('handoff').hidden=true;$('play-area').hidden=false;if(game.o.mode==='local')handoff(0);else render();}
  function handoff(player){$('play-area').hidden=true;$('choices').replaceChildren();$('handoff').hidden=false;$('handoff-text').textContent='Gracz '+(player+1)+' — wybierz kartę, nie pokazując jej rywalowi.';$('ready').onclick=()=>{game.turn=player;$('handoff').hidden=true;$('play-area').hidden=false;render();};}
- function render(){const t=game.turn,k=game.metrics[game.round];$('turn').textContent=game.o.mode==='ai'?'Twój wybór':game.o.mode==='online'?'Twój wybór · pokój ze znajomym':'Gracz '+(t+1)+' wybiera';$('hint').disabled=(+localStorage.getItem('jokery')||0)<1;$('hint-info').textContent=hintMode?'Stuknij „Odsłoń” przy wybranej karcie.':`Dostępne podpowiedzi: ${Math.max(0,+localStorage.getItem('jokery')||0)}. Wygrywa wyższa ocena, również przy bezrobociu.`;
-  $('choices').innerHTML=game.candidates[t].map(c=>'<article class="blind-choice '+(c.borrowed?'borrowed ':'')+(game.hinted[t].has(c.k)?'revealed':'')+'">'+Karty.karta(c,{tryb:'pelna',ukryj:k,rowna:true})+(c.bonus?'<small class="borrowed-label">Premia Twojej karty +'+c.bonus+'</small>':'')+(c.borrowed?'<small class="borrowed-label">KARTA POŻYCZONA · tylko ten mecz</small>':'')+(game.hinted[t].has(c.k)?'<div class="reveal-value">'+Z.value(c,k,game.o.records)+' pkt · '+Karty.wartosc(c,k)+'</div>':'')+'<button type="button" data-choice="'+c.k+'">'+(hintMode?'Odsłoń za 1 podpowiedź':'Wybieram tę kartę')+'</button></article>').join('');
-  // Oceny widocznych wskaźników i OVR uwzględniają premię tej konkretnej talii.
-  $('choices').querySelectorAll('.kk').forEach(el=>{const c=game.candidates[t].find(x=>x.k===el.dataset.k);el.querySelector('.kk-ovr').textContent=Z.ovr(c);el.querySelectorAll('.kk-st span').forEach(row=>{const stat=Karty.STATY.find(x=>x.k===row.dataset.k);if(!stat)return;if(stat.k!==k)row.querySelector('b').textContent=Z.value(c,stat.k,game.o.records)??'—';});});
-  $('choices').querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>choose(b.dataset.choice));Karty.podepnijMapy($('choices'));
+ function render(){const t=game.turn,k=game.metrics[game.round];$('turn').textContent=game.o.mode==='ai'?'Twój wybór':game.o.mode==='online'?'Twój wybór · pokój ze znajomym':'Gracz '+(t+1)+' wybiera';$('hint').disabled=(+localStorage.getItem('jokery')||0)<1;$('hint-info').textContent=hintMode?'Stuknij kartę, której wskaźnik chcesz odsłonić.':'Stuknij kartę, żeby zobaczyć jej wskaźniki i ją wybrać.';$('hint').innerHTML='<span class="ik">½</span> 50/50 · odsłoń kartę <b>× '+Math.max(0,+localStorage.getItem('jokery')||0)+'</b>';
+  // kafelki: od razu widać całą rękę; pełną kartę z wskaźnikami pokazuje dopiero stuknięcie
+  const TYP={'gmina miejska':'miasto','gmina wiejska':'wieś','gmina miejsko-wiejska':'miasto i gmina'};
+  $('choices').innerHTML=game.candidates[t].map(c=>{const odsl=game.hinted[t].has(c.k);
+    return '<button type="button" class="kafel r-'+c.rz+(c.borrowed?' borrowed':'')+(odsl?' revealed':'')+'" data-podglad="'+c.k+'"><span class="kafel-ovr">'+Z.ovr(c)+'</span><span class="kafel-txt"><b>'+escape(c.n)+'</b><small>'+(+c.k.slice(2,4)>=61?'miasto na prawach powiatu':TYP[c.typ]||'gmina')+' · '+escape(Karty.WS?Karty.WS[c.woj]||c.woj:c.woj)+'</small>'+(c.bonus?'<small class="kafel-premia">premia +'+c.bonus+'</small>':'')+(c.borrowed?'<small class="kafel-premia">pożyczona</small>':'')+'</span>'+(odsl?'<span class="kafel-wart">'+Z.value(c,k,game.o.records)+'</span>':'<span class="kafel-oko">›</span>')+'</button>';}).join('');
+  $('choices').querySelectorAll('[data-podglad]').forEach(b=>b.onclick=()=>podgladKarty(b.dataset.podglad));
+ }
+ function podgladKarty(id){
+  const t=game.turn,k=game.metrics[game.round],c=game.candidates[t].find(x=>x.k===id);if(!c)return;
+  const odsl=game.hinted[t].has(c.k);
+  const d=document.createElement('div');d.className='kwc-podglad';
+  d.innerHTML='<div class="kwc-karta">'+Karty.karta(c,{tryb:'pelna',ukryj:k,rowna:true,bezSzczegolow:true})+'</div>'
+   +(odsl?'<p class="kwc-odsl">'+escape(Karty.STATY.find(s=>s.k===k).n)+': '+Z.value(c,k,game.o.records)+' pkt · '+Karty.wartosc(c,k)+'</p>':'')
+   +'<div class="kwc-przyciski"><button type="button" class="kwc-wroc">‹ Wróć</button>'
+   +(hintMode&&!odsl?'<button type="button" class="kwc-odslon">Odsłoń za 1 podpowiedź</button>':'<button type="button" class="kwc-wybierz">Wybieram tę kartę</button>')+'</div>';
+  document.body.appendChild(d);
+  const el=d.querySelector('.kk');el.querySelector('.kk-ovr').textContent=Z.ovr(c);
+  el.querySelectorAll('.kk-st span').forEach(row=>{const stat=Karty.STATY.find(x=>x.k===row.dataset.k);if(stat&&stat.k!==k)row.querySelector('b').textContent=Z.value(c,stat.k,game.o.records)??'—';});
+  Karty.podepnijMapy(d);
+  const zamknij=()=>d.remove();
+  d.onclick=e=>{if(e.target===d||e.target.closest('.kwc-wroc'))zamknij();};
+  const w=d.querySelector('.kwc-wybierz');if(w)w.onclick=()=>{zamknij();choose(c.k);};
+  const o=d.querySelector('.kwc-odslon');if(o)o.onclick=()=>{zamknij();choose(c.k);};
  }
  function choose(id){const t=game.turn;if(game.over||game.picks[t])return;const c=game.candidates[t].find(x=>x.k===id);if(!c)return;if(hintMode){if(game.hinted[t].has(id)){status('Ta karta jest już odsłonięta.');return;}const n=+localStorage.getItem('jokery')||0;if(n<1)return;localStorage.setItem('jokery',String(n-1));localStorage.setItem('seria-globalna','0');game.hinted[t].add(id);hintMode=false;render();return;}
   game.picks[t]=c;$('choices').querySelectorAll('button').forEach(b=>b.disabled=true);

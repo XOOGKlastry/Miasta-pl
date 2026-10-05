@@ -59,3 +59,34 @@
 .wyzwanie-info td,.wyzwanie-info th{text-align:left;padding:6px 4px;border-bottom:2px dashed rgba(58,42,20,.25)}
 .wyzwanie-info td.lepsza{background:rgba(127,203,106,.3);font-weight:900}
 #reveal .klocek+.klocek{margin-top:8px}
+
+/* ręka jako kafelki: 10 kart od razu na ekranie */
+.blind-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;justify-items:stretch!important}
+@media(min-width:560px){.blind-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}}
+.kwc button.kafel{display:flex;align-items:center;gap:8px;min-height:64px;padding:6px 8px;text-align:left;border-radius:14px;box-shadow:0 3px 0 var(--braz);font:inherit;background:linear-gradient(160deg,#FBF6E8,#E2D6B8)}
+.kwc button.kafel.r-srebro{background:linear-gradient(160deg,#F7F9FB,#C3CCD5)}
+.kwc button.kafel.r-zloto{background:linear-gradient(160deg,#FFF3C2,#F2C744)}
+.kwc button.kafel.r-diament,.kwc button.kafel.r-legenda{background:linear-gradient(160deg,#F2FBFF,#C9E6FF 50%,#E6D6FF)}
+.kwc button.kafel.borrowed{filter:grayscale(1)}
+.kafel-ovr{flex:none;font-family:"Barlow Condensed",Bungee,sans-serif;font-weight:800;font-size:26px;line-height:1;min-width:30px}
+.kafel-txt{flex:1;min-width:0;display:flex;flex-direction:column}
+.kafel-txt b{font-size:14px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kafel-txt small{font-size:10.5px;font-weight:700;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kafel-txt .kafel-premia{color:#1E5E28}
+.kafel-oko{flex:none;font-size:20px;font-weight:900;opacity:.6}
+.kafel-wart{flex:none;background:#FFE27A;border:2px solid var(--braz);border-radius:8px;padding:2px 6px;font-weight:900}
+.kwc button.kafel.revealed{outline:3px solid var(--zolt);outline-offset:1px}
+.kwc #hint{background:var(--krem);display:flex;align-items:center;justify-content:center;gap:8px;width:100%;font-size:14px}
+.kwc #hint .ik{width:26px;height:26px;border-radius:50%;border:2px solid var(--braz);background:linear-gradient(135deg,#F5B82E 50%,#FFF6E0 50%);display:grid;place-items:center;font-size:13px}
+.kwc #hint b{background:#fff;border:2px solid var(--braz);border-radius:999px;padding:0 7px}
+.kwc #hint:disabled{opacity:.5}
+.kwc #hint-info{text-align:center;color:var(--krem)!important;text-shadow:0 1px 0 var(--braz);font-size:13px!important}
+/* podgląd karty przed wyborem */
+.kwc-podglad{position:fixed;inset:0;z-index:60;background:rgba(40,28,10,.78);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:12px;animation:kwcWej .2s both}
+@keyframes kwcWej{from{opacity:0}}
+.kwc-karta{width:min(80vw,320px,calc((var(--app-h,100vh) - 170px) / 1.6))}
+.kwc-karta .kk{width:100%}
+.kwc-odsl{margin:0;background:#FFE27A;border:3px solid #3A2A14;border-radius:12px;padding:6px 12px;font-weight:900;color:#3A2A14}
+.kwc-przyciski{display:flex;gap:10px}
+.kwc-przyciski button{min-height:50px;padding:0 18px;border:3px solid #3A2A14;border-radius:14px;box-shadow:0 4px 0 #3A2A14;font:900 15px Rubik,sans-serif;color:#3A2A14;background:#FFF6E0;cursor:pointer}
+.kwc-przyciski .kwc-wybierz,.kwc-przyciski .kwc-odslon{background:#F5B82E}

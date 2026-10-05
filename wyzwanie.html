@@ -232,7 +232,7 @@ svg path{fill-rule:evenodd}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="konto.js"></script>
-<script src="saga.js"></script>
+<script src="saga.js?v=3"></script>
 <script src="tablice-powiaty.js"></script>
 <script src="peerjs.min.js"></script>
 <script src="topojson-client.min.js?v=17"></script>
@@ -947,8 +947,8 @@ function podium(gr,matchId){
   lobby('<h2 style="text-align:center">'+(r[0].id===MULTI.ja.id?"Wygrywasz!":escH(r[0].nick)+" wygrywa")+'</h2><div class="mp-podium">'+pod+'</div>'+listaGraczy(true)
     +(MULTI.host?'<button class="big" id="mpRewanz">Rewanż</button>':'<div class="datastate">Gospodarz może zaproponować rewanż.</div>'));
   if(MeczZasady.zwyciezca(gr)?.id===MULTI.ja.id){setTimeout(ZP.fanfary,400);
-    const award=()=>Karty.nagrodaZa("mecz:"+matchId).then(g=>{if(g)Karty.prezentacja([g]);}).catch(()=>ZP.komunikat("Nie udało się zapisać nagrody."));
-    if(window.Karty)award();else{const s=document.createElement("script");s.src="karty.js?v=16";s.onload=award;document.head.append(s);}
+    const award=()=>Karty.nagrodaZa("mecz:"+matchId).then(g=>{if(g)ZP.komunikat("Paczka za mecz trafiła do albumu kart!",3600);}).catch(()=>ZP.komunikat("Nie udało się zapisać nagrody."));
+    if(window.Karty)award();else{const s=document.createElement("script");s.src="karty.js?v=17";s.onload=award;document.head.append(s);}
   }
   if(MULTI.host)$("mpRewanz").onclick=()=>{MULTI.gracze.forEach(g=>g.pts=0);rozeslijLobby();};
 }
@@ -960,7 +960,7 @@ function wynikSaga(){
   const suma=st.res.reduce((a,r)=>a+r.pts,0),max=st.res.length*1000,proc=Math.round(100*suma/Math.max(1,max));
   const gw=Saga.gwiazdki(proc),przed=Saga.stan(),bylOdbl=Saga.odblokowany(POZIOM.n+1,przed);
   const s=Saga.zapisz(POZIOM.n,gw,suma),teraz=POZIOM.n+1<Saga.ILE&&Saga.odblokowany(POZIOM.n+1,s);
-  if(gw===3){const sc=()=>Karty.nagrodaZa("poziom:"+POZIOM.n).then(g=>{if(g){ZP.komunikat("3 gwiazdki! Zdobywasz paczkę.");Karty.prezentacja([g]);}}).catch(()=>ZP.komunikat("Nie udało się odebrać nagrody. Spróbuj ponownie."));if(window.Karty)sc();else{const js=document.createElement("script");js.src="karty.js?v=16";js.onload=sc;document.head.append(js);}}
+  if(gw===3){const sc=()=>Karty.nagrodaZa("poziom:"+POZIOM.n).then(g=>{if(g){ZP.komunikat("3 gwiazdki! Paczka trafiła do albumu kart.",3600);}}).catch(()=>ZP.komunikat("Nie udało się odebrać nagrody. Spróbuj ponownie."));if(window.Karty)sc();else{const js=document.createElement("script");js.src="karty.js?v=17";js.onload=sc;document.head.append(js);}}
   const zal=gw>=POZIOM.progGwiazd;
   const w=$("wynik");
   w.innerHTML='<div class="saga-wynik"><div class="saga-gw">'+[1,2,3].map(i=>'<span class="'+(i<=gw?"zdobyta":"")+'" style="animation-delay:'+(0.3+i*0.35)+'s">★</span>').join("")+'</div>'

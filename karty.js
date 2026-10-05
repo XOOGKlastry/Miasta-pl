@@ -4,7 +4,7 @@ window.KartyModel=(()=>{
  const STATY=[
   {k:'ludnosc',n:'Ludność',t:'r',miasto:0,wies:0},
   {k:'powierzchnia',n:'Powierzchnia',t:'r',miasto:0,wies:0},
-  {k:'gestosc',n:'Gęstość',t:'o',miasto:0,wies:0},
+  {k:'gestosc',n:'Gęstość zaludnienia',t:'o',miasto:0,wies:0},
   {k:'saldo_migracji',n:'Migracja',t:'r',miasto:1.5,wies:1.5},
   {k:'przyrost_naturalny',n:'Przyrost naturalny',t:'r',miasto:0,wies:1.5},
   {k:'pit_na_mieszk',n:'Zarobki · PIT/os.',t:'r',miasto:2,wies:0},
@@ -147,7 +147,7 @@ window.Karty=(function(){
       else if(rodz==="herb")g=gminaPoNazwie(id);
       if(g)pkt[g.k]=(pkt[g.k]||0)+r.ok;
     });
-    Object.values(JSON.parse(localStorage.getItem("karty-nagrody-v1")||"{}")).forEach(r=>od.add(r.k));
+    Object.values(JSON.parse(localStorage.getItem("karty-nagrody-v1")||"{}")).forEach(r=>{if(r&&r.k)od.add(r.k);});
     const postep={};
     Object.entries(pkt).forEach(([k,v])=>{const limit=stare?(localStorage.getItem("karty-zasady")==="3"?DANE.PO_K[k]._staryProg:3):prog(DANE.PO_K[k]);if(v>=limit)od.add(k);postep[k]={size:Math.min(v,limit)};});
     return {mam:od,postep};
@@ -162,7 +162,9 @@ window.Karty=(function(){
     localStorage.setItem("karty-zasady","4");archiwizuj();
   }
   // paczki czekają na otwarcie; gracz otwiera je sam, po jednej
-  function liczbaPaczek(){return Math.floor(zetony()/PACZKA);}
+  function czekajace(){try{return JSON.parse(localStorage.getItem("karty-paczki-czekaja")||"[]");}catch(e){return [];}}
+  function dodajCzekajaca(id,kolor){const l=czekajace();l.push({id,kolor,od:Date.now()});localStorage.setItem("karty-paczki-czekaja",JSON.stringify(l));}
+  function liczbaPaczek(){return Math.floor(zetony()/PACZKA)+czekajace().length;}
   const PACZKI=[["zwykla",.80],["srebro",.16],["zloto",.035],["diament",.005]];
   const DROP={zwykla:[["legenda",.001],["diament",.009],["zloto",.04],["srebro",.15],["zwykla",.80]],srebro:[["legenda",.005],["diament",.025],["zloto",.17],["srebro",.55],["zwykla",.25]],zloto:[["legenda",.02],["diament",.08],["zloto",.60],["srebro",.30]],diament:[["legenda",.10],["diament",.50],["zloto",.30],["srebro",.10]]};
   function archiwizuj(){
@@ -182,6 +184,15 @@ window.Karty=(function(){
   async function otworzPaczke(){
     await zaladuj();migracja();
     const otworz=()=>{
+      // najpierw paczki z nagród (dziennych, za poziomy i mecze), potem paczki za monety
+      const cz=czekajace();
+      if(cz.length){
+        const p=cz.shift(),g=losowaKarta(p.kolor);if(!g)return null;
+        localStorage.setItem("karty-paczki-czekaja",JSON.stringify(cz));
+        localStorage.setItem("karty-paczki",JSON.stringify([...new Set(paczki().concat(g.k))]));
+        localStorage.setItem("karty-ogloszone",JSON.stringify([...new Set((ogloszone()||[]).concat(g.k))]));
+        return {...g,_paczka:true,_kolorPaczki:p.kolor,_joker:false};
+      }
       const z=zetony();if(z<PACZKA)return null;
       const kolor=losuj(PACZKI),g=losowaKarta(kolor);if(!g)return null;
       localStorage.setItem("karty-paczki",JSON.stringify([...new Set(paczki().concat(g.k))]));
@@ -199,11 +210,11 @@ window.Karty=(function(){
     await zaladuj();migracja();
     const przyznaj=()=>{
       const klucz=typ+":"+dzien,zapis=dzienne();if(zapis[klucz])return null;
-      const kolor=losuj(PACZKI),g=losowaKarta(kolor);if(!g)return null;
-      zapis[klucz]={k:g.k,kolor,przyznano:Date.now()};
+      const kolor=losuj(PACZKI);
+      zapis[klucz]={kolor,przyznano:Date.now(),czeka:true};
       localStorage.setItem("karty-dzienne-v1",JSON.stringify(zapis));
-      const og=ogloszone()||[];localStorage.setItem("karty-ogloszone",JSON.stringify([...new Set(og.concat(g.k))]));
-      return {...g,_paczka:true,_kolorPaczki:kolor,_joker:false};
+      dodajCzekajaca(klucz,kolor);
+      return {paczka:true,kolor};
     };
     // Dwie otwarte karty przeglądarki nie mogą naliczyć tej samej nagrody.
     if(typeof navigator!=="undefined"&&navigator.locks)return navigator.locks.request("polskoznawca-dzienna-nagroda",przyznaj);
@@ -214,11 +225,11 @@ window.Karty=(function(){
     const przyznaj=()=>{
       const zapis=JSON.parse(localStorage.getItem("karty-nagrody-v1")||"{}");
       if(zapis[id])return null;
-      const kolor=losuj(PACZKI),g=losowaKarta(kolor);if(!g)return null;
-      // Jeden rekord przechowuje zarówno własność, jak i identyfikator rozliczenia.
-      zapis[id]={k:g.k,kolor};localStorage.setItem("karty-nagrody-v1",JSON.stringify(zapis));
-      localStorage.setItem("karty-ogloszone",JSON.stringify([...new Set((ogloszone()||[]).concat(g.k))]));
-      return {...g,_paczka:!id.startsWith("mecz:"),_kolorPaczki:kolor};
+      const kolor=losuj(PACZKI);
+      // nagroda raz na zadanie; paczka czeka w albumie, aż gracz ją otworzy
+      zapis[id]={kolor,czeka:true};localStorage.setItem("karty-nagrody-v1",JSON.stringify(zapis));
+      dodajCzekajaca(id,kolor);
+      return {paczka:true,kolor};
     };
     return navigator.locks?navigator.locks.request("polskoznawca-nagroda",przyznaj):przyznaj();
   }
@@ -307,17 +318,18 @@ window.Karty=(function(){
     const u=ulepszenie(g),m=+g.k.slice(2,4)>=61,wstrz=(DANE.meta&&DANE.meta.wstrzymane)||[];
     const przod=new Set(Model.TWARZ[g.grupa||'miasto']);
     const reszta=STATY.filter(s=>!przod.has(s.k)&&!wstrz.includes(s.k));
-    return '<div class="kk-tyl r-'+g.rz+'"><span class="kk-tyl-tytul">'+esc(g.n)+'</span>'
-      +'<div class="kk-tyl-sekcja"><b>Ulepszenia karty</b>'
-      +(m?'':'<label><span>Powiat</span><progress value="'+u.count+'" max="'+Math.max(1,u.total)+'"></progress><em>'+u.count+'/'+u.total+'</em></label>')
-      +'<label><span>Kontury</span><progress value="'+Math.min(40,u.hits)+'" max="40"></progress><em>'+Math.min(40,u.hits)+'/40</em></label>'
-      +'<p>Premia: <strong>+'+u.bonus+'</strong>'+(u.bonus===5?' · karta holograficzna':' · przy +5 karta staje się holograficzna')+'</p></div>'
-      +'<div class="kk-tyl-sekcja"><b>Pozostałe wskaźniki</b><div class="kk-tyl-st">'+reszta.map(s=>'<span><em>'+s.n+'</em><i>'+wartosc(g,s.k)+'</i><strong>'+(g.oc&&g.oc[s.k]!=null?g.oc[s.k]:'–')+'</strong></span>').join('')+'</div></div>'
-      +'<div class="kk-tyl-sekcja"><b>Położenie</b><p>'+(g.pozycjaWoj?'#'+g.pozycjaWoj+' w woj. '+esc(g.woj.replace(/ie$/,'im'))+'. ':'')
-      +(g.odleglosc_stolica!=null?(g.odleglosc_stolica<1?'Stolica województwa.':'Do stolicy: '+liczba(g.odleglosc_stolica,0)+' km ('+esc(g.najblizsza_stolica)+(g.inne_woj?', sąsiednie woj.':'')+').'):'')+'</p></div>'
-      +(g.rekordy&&g.rekordy.length>3?'<div class="kk-tyl-sekcja"><b>Pozostałe rekordy</b>'+rekordyHTML({rekordy:g.rekordy.slice(3)})+'</div>':'')
-      +'<small class="kk-tyl-zrodla">Dane: GUS BDL, PRG · mapa © OpenStreetMap, OpenTopoMap</small></div>';
+    const pasek=(n,v,mx)=>'<label><span>'+n+'</span><i><b style="width:'+Math.round(100*Math.min(v,mx)/Math.max(1,mx))+'%"></b></i><em>'+Math.min(v,mx)+'/'+mx+'</em></label>';
+    const pol=(g.pozycjaWoj?'#'+g.pozycjaWoj+' w woj. '+esc(g.woj.replace(/ie$/,'im')):'')
+      +(g.odleglosc_stolica!=null?(g.pozycjaWoj?' · ':'')+(g.odleglosc_stolica<1?'stolica województwa':liczba(g.odleglosc_stolica,0)+' km do: '+esc(g.najblizsza_stolica)):'');
+    return '<div class="kk kk-pelna kk-odwrot r-'+g.rz+'"><span class="kk-ramka"></span>'
+      +'<div class="kk-o-gora"><span class="kk-o-ovr">'+(ocenaOVR(g)??'?')+'</span><span class="kk-o-nazwa">'+esc(g.n)+'</span></div>'
+      +'<div class="kk-o-blok"><b>Ulepszenia</b>'+(m?'':pasek('Powiat',u.count,u.total))+pasek('Kontury',u.hits,40)
+      +'<p>Premia <strong>+'+u.bonus+'</strong>'+(u.bonus===5?' · hologram':' · przy +5 hologram')+'</p></div>'
+      +'<div class="kk-o-blok"><b>Pozostałe dane</b><div class="kk-o-st">'+reszta.map(s=>'<span>'+(IK[s.k]||IK.ludnosc)+'<em>'+s.n+'</em><strong>'+(g.oc&&g.oc[s.k]!=null?g.oc[s.k]:'–')+'</strong><i>'+wartosc(g,s.k)+'</i></span>').join('')+'</div></div>'
+      +(pol?'<p class="kk-o-pol">'+pol+'</p>':'')
+      +'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
   }
+
   function panel(g){
     const u=ulepszenie(g),r=rekordyHTML(g),m=+g.k.slice(2,4)>=61;
     return '<div class="kk-panel">'
@@ -452,6 +464,25 @@ window.Karty=(function(){
 .kk-tyl-st i{font-style:normal;grid-row:2;opacity:.75;font-size:10.5px}
 .kk-tyl-st strong{grid-row:1/3;grid-column:2;font-family:"Barlow Condensed",sans-serif;font-size:18px;align-self:center}
 .kk-tyl .kk-rekordy li{font-size:10.5px;padding:3px 7px}
+.kk.kk-odwrot{display:flex;flex-direction:column;gap:2.4cqw;padding:7cqw 6cqw 0;box-sizing:border-box}
+.kk-odwrot .kk-o-gora{display:flex;align-items:center;justify-content:center;gap:3cqw;margin-top:1cqw}
+.kk-odwrot .kk-o-ovr{font-family:"Barlow Condensed",Bungee,sans-serif;font-weight:800;font-size:10cqw;line-height:1}
+.kk-odwrot .kk-o-nazwa{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:8.5cqw;text-transform:uppercase;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70%}
+.kk-odwrot .kk-o-blok{background:rgba(255,255,255,.38);border-radius:3cqw;padding:2cqw 3cqw;display:flex;flex-direction:column;gap:1.2cqw}
+.kk-odwrot .kk-o-blok>b{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:4.4cqw;text-transform:uppercase;letter-spacing:.3cqw;opacity:.8}
+.kk-odwrot label{display:grid;grid-template-columns:17cqw 1fr 11cqw;align-items:center;gap:2cqw;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:4.2cqw;text-transform:uppercase}
+.kk-odwrot label i{height:2.4cqw;border-radius:2cqw;background:rgba(58,42,20,.18);overflow:hidden}
+.kk-odwrot label i b{display:block;height:100%;background:#27AE60;border-radius:2cqw}
+.kk-odwrot label em{font-style:normal;text-align:right}
+.kk-odwrot .kk-o-blok p{margin:0;font-size:3.6cqw!important;font-weight:700;color:inherit!important;text-shadow:none!important}
+.kk-odwrot .kk-o-st{display:grid;grid-template-columns:1fr 1fr;column-gap:4cqw;row-gap:1.8cqw}
+.kk-odwrot .kk-o-st span{display:grid;grid-template-columns:4.4cqw minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:1.4cqw;align-items:center}
+.kk-odwrot .kk-o-st svg{grid-row:1/3;width:4.4cqw;height:4.4cqw}
+.kk-odwrot .kk-o-st em{font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:3.5cqw;text-transform:uppercase;line-height:1.05}
+.kk-odwrot .kk-o-st strong{grid-row:1/3;grid-column:3;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:6.4cqw;line-height:1}
+.kk-odwrot .kk-o-st i{font-style:normal;font-weight:700;font-size:2.8cqw;opacity:.75;white-space:nowrap}
+.kk-odwrot .kk-o-pol{margin:0;text-align:center;font-size:3.6cqw!important;font-weight:800;color:inherit!important;text-shadow:none!important}
+.kk-odwrot .kk-rz{position:static;margin-top:auto;padding-bottom:9cqw}
 .kk-panel{width:min(92vw,380px);background:#FFF6E0;color:#3A2A14;border:3px solid #3A2A14;border-radius:16px;box-shadow:0 4px 0 #3A2A14;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-family:Rubik,sans-serif}
 .kk-panel p{margin:0;font-weight:700;font-size:12.5px;color:#7A6440}
 .kk-panel .kk-pn{font-family:Bungee,sans-serif;font-weight:400;font-size:14px}
@@ -488,7 +519,8 @@ window.Karty=(function(){
 .pk-krok b{font-family:Bungee,"Barlow Condensed",sans-serif;font-weight:400;font-size:clamp(30px,10vw,52px);line-height:1;color:#FFF6E0;text-shadow:0 4px 0 #3A2A14}
 .pk-krok svg{width:110px;height:110px}.pk-krok svg path{fill:#F5B82E;stroke:#3A2A14;stroke-width:3;vector-effect:non-scaling-stroke;stroke-linejoin:round}
 .pk-krok .pk-ovr{font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:clamp(96px,32vw,160px);line-height:.9;color:var(--pk2);-webkit-text-stroke:3px #3A2A14;text-shadow:0 6px 0 #3A2A14}
-.pk-karta{width:min(80vw,340px);position:relative;z-index:2;opacity:0}
+.pk-rekordy{margin-top:8px}.pk-rekordy .kk-rekordy li{font-size:12px}
+.pk-karta{width:min(74vw,300px,calc((100vh - 270px) / 1.6));position:relative;z-index:2;opacity:0}
 .pk.faza4 .pk-karta{animation:pkKarta .9s cubic-bezier(.2,1.3,.3,1) both}
 @keyframes pkKarta{0%{opacity:0;transform:translateY(60px) rotateY(540deg) scale(.4)}100%{opacity:1;transform:none}}
 .pk-blysk{position:absolute;inset:0;background:#FFF6E0;opacity:0;pointer-events:none;z-index:3}
@@ -585,7 +617,7 @@ window.Karty=(function(){
         +'<div class="pk-krok k1"><small>WOJEWÓDZTWO</small>'+wo+'<b>'+esc(g.woj)+'</b></div>'
         +'<div class="pk-krok k2"><small>'+(mnp(g)?"MIASTO NA PRAWACH POWIATU":esc(g.typ.toUpperCase()))+'</small><b>'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</b><small style="letter-spacing:2px">'+esc(g.powiat)+'</small></div>'
         +'<div class="pk-krok k3"><small>'+RZ[g.rz].toUpperCase()+' KARTA</small><span class="pk-ovr">'+(g.ovr||"?")+'</span></div>'
-        +'<div class="pk-karta">'+karta(g,{tryb:"pelna"})+'</div>'
+        +'<div class="pk-karta">'+karta(g,{tryb:"pelna",bezSzczegolow:true})+'<div class="pk-rekordy">'+rekordyHTML(g,2)+'</div></div>'
         +'<div class="pk-dol">'+(i+1<karty.length?'<button class="glowny" data-a="dalej">Następna karta</button>':'<button class="glowny" data-a="koniec">Do kolekcji</button>')+'<a href="karty.html">Zobacz album</a></div>';
       if(!w.isConnected)document.body.appendChild(w);
       const kroki=[[".k1",150],[".k2",1100],[".k3",2050]],t=[];

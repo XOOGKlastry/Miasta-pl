@@ -310,7 +310,7 @@ function modulKart(){
   if(KARTY_MODUL)return KARTY_MODUL;
   KARTY_MODUL=new Promise((resolve,reject)=>{
     let sc=document.querySelector('script[src^="karty.js"]'),nowy=!sc;
-    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=15";}
+    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=17";}
     sc.addEventListener("load",()=>resolve(window.Karty),{once:true});
     sc.addEventListener("error",()=>{KARTY_MODUL=null;sc.remove();reject(Error("Nie wczytano kart"));},{once:true});
     if(nowy)document.head.appendChild(sc);
@@ -326,7 +326,7 @@ async function nagrodaDnia(typ,dzien,warunki){
   DZIENNA_W_TOKU=true;
   try{
     const k=await modulKart(),g=await k.nagrodaDnia(typ,dzien,warunki);
-    if(g){komunikat("Nagroda dnia: losowa paczka z gminą!",3200);await k.prezentacja([g]);}
+    if(g)komunikat("Nagroda dnia: paczka trafiła do albumu kart!",3600);
     return g;
   }catch(e){komunikat("Nie udało się odebrać paczki. Odśwież wynik, aby spróbować ponownie.",4000);return null;}
   finally{DZIENNA_W_TOKU=false;}
