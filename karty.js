@@ -206,7 +206,7 @@ window.Karty=(function(){
   // Rekord jest jednocześnie dowodem przyznania i własnością karty: jeden zapis.
   function dzienne(){try{return JSON.parse(localStorage.getItem("karty-dzienne-v1")||"{}");}catch(e){return {};}}
   async function nagrodaDnia(typ,dzien,{ukonczone=false,poddane=false}={}){
-    if(!ukonczone||poddane||!["wyzwanie","miasto","gmina"].includes(typ)||!/^\d{4}-\d{2}-\d{2}$/.test(dzien))return null;
+    if(!ukonczone||poddane||!["wyzwanie","miasto","gmina","lancuch"].includes(typ)||!/^\d{4}-\d{2}-\d{2}$/.test(dzien))return null;
     await zaladuj();migracja();
     const przyznaj=()=>{
       const klucz=typ+":"+dzien,zapis=dzienne();if(zapis[klucz])return null;

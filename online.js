@@ -39,6 +39,17 @@ window.Online=(()=>{
   await Karty.zaladuj();Karty.migracja();
   let d={};try{d=JSON.parse(localStorage.getItem('ciemno-ranking')||'{}');}catch(e){}return request('/rest/v1/rpc/publish_score',{p_nickname:n,p_visible:visible,p_points:points(),p_cards:Karty.zdobyte().mam.size,p_duel_points:Math.max(0,Number(d.pkt)||0),p_duel_wins:Math.max(0,Number(d.w)||0)},s.access_token);
  }
+ // ranking bez logowania: losowy identyfikator urządzenia i sekret zapisane tylko na tym telefonie
+ function urzadzenie(){
+  let u=null;try{u=JSON.parse(localStorage.getItem('ranking-urzadzenie')||'null');}catch(e){}
+  if(!u||!u.id||!u.sekret){const b=new Uint8Array(24);crypto.getRandomValues(b);u={id:crypto.randomUUID?crypto.randomUUID():'10000000-1000-4000-8000-100000000000'.replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)),sekret:Array.from(b,x=>x.toString(16).padStart(2,'0')).join('')};localStorage.setItem('ranking-urzadzenie',JSON.stringify(u));}
+  return u;
+ }
+ async function publishGuest(nick,visible){
+  const n=String(nick||'').trim();if(n.length<3||n.length>24)throw Error('Pseudonim musi mieć od 3 do 24 znaków.');
+  const u=urzadzenie();let d={};try{d=JSON.parse(localStorage.getItem('ciemno-ranking')||'{}');}catch(e){}
+  return request('/rest/v1/rpc/publish_guest_score',{p_device:u.id,p_token:u.sekret,p_nickname:n,p_visible:!!visible,p_points:points(),p_cards:Karty.zdobyte().mam.size,p_duel_points:Math.max(0,Number(d.pkt)||0),p_duel_wins:Math.max(0,Number(d.w)||0)});
+ }
  async function ranking(mode){return request('/rest/v1/rpc/leaderboard',{p_mode:mode});}
  async function gate(){
   if(!enabled()||!config().requireAccount)return;
@@ -46,5 +57,5 @@ window.Online=(()=>{
   if(await session())return;
   sessionStorage.setItem('login-return',location.pathname+location.search+location.hash);location.replace('logowanie.html');
  }
- return {providers,enabled,session,oauth,email,verify,callback,logout,points,publish,ranking,gate};
+ return {providers,enabled,session,oauth,email,verify,callback,logout,points,publish,publishGuest,ranking,gate};
 })();

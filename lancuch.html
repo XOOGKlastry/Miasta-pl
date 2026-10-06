@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Łańcuch dnia · PolskoZnawca</title>
+<meta name="theme-color" content="#FFF6E0" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="plansza.css?v=4" />
+<link rel="stylesheet" href="plansza-formularze.css?v=1" />
+<style>
+#gra:not([hidden]){display:flex;flex-direction:column;gap:10px}
+.lc-tryby{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lc-tryby button{min-height:44px;border:3px solid var(--braz);border-radius:14px;background:var(--krem);box-shadow:0 4px 0 var(--braz);font:900 14px Rubik,sans-serif;color:var(--braz)}
+.lc-tryby button[aria-pressed=true]{background:var(--zolt);transform:translateY(2px);box-shadow:0 2px 0 var(--braz)}
+.lc-gora{display:flex;gap:8px}
+.lc-gora .pole{flex:1;text-align:center;padding:6px 8px}
+.lc-gora b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:22px}
+.lc-gora span{font-size:11px;font-weight:900;color:var(--braz-2)}
+.lc-czas{height:12px;border:3px solid var(--braz);border-radius:8px;background:#fff;overflow:hidden}
+.lc-czas i{display:block;height:100%;background:var(--ziel);transition:width .25s linear}
+.lc-czas.malo i{background:var(--czer)}
+.lc-litera{text-align:center;color:var(--krem);text-shadow:0 2px 0 var(--braz);font-weight:900}
+.lc-litera b{display:inline-grid;place-items:center;width:52px;height:52px;margin:0 6px;border-radius:14px;background:var(--zolt);border:3px solid var(--braz);box-shadow:0 4px 0 var(--braz);font-family:Bungee,sans-serif;font-weight:400;font-size:28px;color:var(--braz);text-shadow:none;vertical-align:middle}
+.lc-wpis{display:flex;gap:8px}
+.lc-wpis input{flex:1;min-width:0}
+.lc-wpis button{flex:none;min-height:46px;padding:0 16px;border:3px solid var(--braz);border-radius:12px;background:var(--zolt);box-shadow:0 4px 0 var(--braz);font:900 15px Rubik,sans-serif;color:var(--braz)}
+.lc-komunikat{min-height:20px;text-align:center;font-weight:900;color:var(--krem);text-shadow:0 1px 0 var(--braz)}
+.lc-komunikat.zle{color:#FFD3CC}
+.lc-lista{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+.lc-lista span{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border:2.5px solid var(--braz);border-radius:999px;background:var(--krem);font-weight:900;font-size:13px;color:var(--braz);animation:lcWej .3s cubic-bezier(.3,1.6,.5,1)}
+.lc-lista span.start{background:#E4F2D8}
+.lc-lista span.rzadka{background:#FFE27A}
+.lc-lista span i{font-style:normal;opacity:.7;font-size:11px}
+.lc-lista em{font-style:normal;color:var(--krem);font-weight:900;align-self:center}
+@keyframes lcWej{from{transform:scale(.5);opacity:0}}
+.lc-koniec{padding:14px;display:flex;flex-direction:column;gap:10px;text-align:center}
+.lc-koniec h2{font-family:Bungee,sans-serif;font-weight:400;font-size:24px;margin:0}
+.lc-koniec .wynik{font-family:Bungee,sans-serif;font-size:40px;color:var(--braz)}
+.lc-koniec .klocek{justify-content:center}
+.lc-zasady p{margin:4px 0!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="gora"><a href="codzienne.html" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Łańcuch dnia<small>gmina na ostatnią literę</small></h1></header>
+  <main class="tresc" id="tresc">
+    <section id="start">
+      <div data-pb="Ułóż najdłuższy łańcuch gmin! Każda zaczyna się na ostatnią literę poprzedniej."></div>
+      <div class="lc-tryby" role="group" aria-label="Tryb"><button id="tDzien" aria-pressed="true">Łańcuch dnia</button><button id="tTrening" aria-pressed="false">Trening</button></div>
+      <section class="pole lc-zasady" style="padding:12px 14px;margin-top:12px">
+        <h2>Zasady</h2>
+        <p>Zaczynasz od gminy dnia (taka sama dla wszystkich). Wpisz gminę, której nazwa zaczyna się na ostatnią literę poprzedniej, np. Kalisz → Zabrze → Elbląg.</p>
+        <p>Masz 90 sekund, każda dobra gmina dodaje 5 s. Gminy się nie powtarzają. Polskie znaki możesz pomijać.</p>
+        <p>Gdy nazwa kończy się na literę, od której nie zaczyna się żadna gmina (np. „y” w Tychy), liczy się litera przedostatnia.</p>
+        <p>Małe gminy (poniżej 5 tys. mieszkańców) dają +1 punkt.</p>
+        <p id="stanDnia" style="font-weight:900;color:var(--braz)"></p>
+      </section>
+      <button class="klocek" id="graj" style="width:100%;justify-content:center;margin-top:12px">Start</button>
+    </section>
+    <section id="gra" hidden>
+      <div class="lc-gora"><div class="pole"><b id="ogniwa">0</b><span>ogniwa</span></div><div class="pole"><b id="pkt">0</b><span>punkty</span></div><div class="pole"><b id="sek">90</b><span>sekund</span></div></div>
+      <div class="lc-czas" id="czas"><i id="czasI" style="width:100%"></i></div>
+      <div class="lc-litera">Następna gmina na <b id="litera">A</b></div>
+      <form class="lc-wpis" id="forma" autocomplete="off"><input id="wpis" type="text" inputmode="text" autocapitalize="words" placeholder="Wpisz gminę…" aria-label="Nazwa gminy"><button>OK</button></form>
+      <div class="lc-komunikat" id="kom" role="status" aria-live="polite"></div>
+      <button class="klocek jasny" id="pas" style="justify-content:center">Nie wiem, zakończ</button>
+      <div class="lc-lista" id="lista"></div>
+    </section>
+    <section id="koniec" hidden></section>
+  </main>
+</div>
+<script src="wspolne.js?v=22"></script>
+<script>
+const {$,norm}=ZP;
+const CZAS=90,BONUS=5,PROG_MALA=5000;
+let GMINY=[],PO_NAZWIE={},LITERY=new Set(),tryb="dzien",gra=null,zegar=null;
+const DZIEN=(()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");})();
+const KLUCZ="lancuch-"+DZIEN;
+// litera do porównań: bez polskich znaków
+const lit=c=>norm(c).replace(/[^a-z]/g,"");
+function nastepnaLitera(nazwa){
+  const z=lit(nazwa);
+  for(let i=z.length-1;i>=0;i--){if(LITERY.has(z[i]))return z[i];}
+  return z[0];
+}
+function wylosujStart(seed){
+  const r=ZP.seeded(seed),pula=GMINY.filter(g=>g.ludnosc>15000&&LITERY.has(nastepnaLitera(g.n)));
+  return pula[Math.floor(r()*pula.length)];
+}
+function stanDnia(){try{return JSON.parse(localStorage.getItem(KLUCZ)||"null");}catch(e){return null;}}
+function odswiezStart(){
+  const s=stanDnia();
+  $("stanDnia").textContent=tryb==="dzien"&&s?"Dzisiejszy łańcuch już zagrany: "+s.ogniwa+" ogniw, "+s.pkt+" pkt. Możesz trenować.":"";
+  $("graj").textContent=tryb==="dzien"&&s?"Zobacz wynik":"Start";
+}
+$("tDzien").onclick=()=>{tryb="dzien";$("tDzien").setAttribute("aria-pressed","true");$("tTrening").setAttribute("aria-pressed","false");odswiezStart();};
+$("tTrening").onclick=()=>{tryb="trening";$("tTrening").setAttribute("aria-pressed","true");$("tDzien").setAttribute("aria-pressed","false");odswiezStart();};
+function start(){
+  if(tryb==="dzien"&&stanDnia())return pokazKoniec(stanDnia(),false);
+  const seed=tryb==="dzien"?Number(DZIEN.replace(/-/g,"")):Math.floor(Math.random()*1e9);
+  const g=wylosujStart(seed);
+  gra={lancuch:[g],uzyte:new Set([norm(g.n)]),pkt:0,koniec:Date.now()+CZAS*1000,litera:nastepnaLitera(g.n),start:g.n};
+  $("start").hidden=true;$("koniec").hidden=true;$("gra").hidden=false;
+  $("lista").innerHTML='<span class="start">'+g.n+' <i>start</i></span>';
+  pokazLitere();$("ogniwa").textContent=0;$("pkt").textContent=0;$("kom").textContent="";
+  $("wpis").value="";setTimeout(()=>$("wpis").focus(),50);
+  clearInterval(zegar);zegar=setInterval(tik,200);tik();
+}
+function pokazLitere(){$("litera").textContent=gra.litera.toUpperCase();}
+function tik(){
+  const z=Math.max(0,gra.koniec-Date.now());
+  $("sek").textContent=Math.ceil(z/1000);$("czasI").style.width=Math.min(100,z/(CZAS*10))+"%";$("czas").classList.toggle("malo",z<15000);
+  if(z<=0)zakoncz();
+}
+function komunikat(t,zle){const k=$("kom");k.textContent=t;k.classList.toggle("zle",!!zle);}
+$("forma").onsubmit=e=>{
+  e.preventDefault();if(!gra||gra.zakonczona)return;
+  const wpis=$("wpis").value.trim();if(!wpis)return;
+  const n=norm(wpis),kand=PO_NAZWIE[n];
+  if(!kand){komunikat("Nie ma takiej gminy: „"+wpis+"”",true);return;}
+  if(lit(kand[0].n)[0]!==gra.litera){komunikat("Ta gmina nie zaczyna się na „"+gra.litera.toUpperCase()+"”",true);return;}
+  if(gra.uzyte.has(n)){komunikat("Ta gmina już była w łańcuchu",true);return;}
+  // przy powtarzających się nazwach wybieramy najmniejszą gminę (najkorzystniej dla gracza)
+  const g=kand.slice().sort((a,b)=>(a.ludnosc||0)-(b.ludnosc||0))[0],mala=(g.ludnosc||1e9)<PROG_MALA;
+  gra.lancuch.push(g);gra.uzyte.add(n);gra.pkt+=1+(mala?1:0);gra.koniec+=BONUS*1000;gra.litera=nastepnaLitera(g.n);
+  $("lista").insertAdjacentHTML("beforeend",'<em>→</em><span'+(mala?' class="rzadka"':'')+'>'+g.n+(mala?' <i>+1</i>':'')+'</span>');
+  $("ogniwa").textContent=gra.lancuch.length-1;$("pkt").textContent=gra.pkt;pokazLitere();
+  komunikat(mala?"Brawo, mała gmina! +2":"Dobrze! +1");
+  ZP.zapisz("lancuch",g.n,true);
+  $("wpis").value="";$("wpis").focus();
+};
+$("pas").onclick=()=>zakoncz();
+function zakoncz(){
+  if(!gra||gra.zakonczona)return;gra.zakonczona=true;clearInterval(zegar);
+  const wynik={ogniwa:gra.lancuch.length-1,pkt:gra.pkt,lancuch:gra.lancuch.map(g=>g.n),start:gra.start};
+  if(tryb==="dzien"){
+    try{localStorage.setItem(KLUCZ,JSON.stringify(wynik));const rek=+(localStorage.getItem("lancuch-rekord")||0);if(wynik.pkt>rek)localStorage.setItem("lancuch-rekord",wynik.pkt);}catch(e){}
+  }
+  pokazKoniec(wynik,true);
+}
+function pokazKoniec(w,swiezy){
+  $("gra").hidden=true;$("start").hidden=true;
+  const rek=+(localStorage.getItem("lancuch-rekord")||0);
+  const tekst="Łańcuch dnia "+DZIEN.split("-").reverse().slice(0,2).join(".")+": "+w.ogniwa+" ogniw, "+w.pkt+" pkt 🔗\n"+w.lancuch.join(" → ");
+  $("koniec").innerHTML='<div class="pole lc-koniec"><h2>'+(tryb==="dzien"?"Łańcuch dnia":"Trening")+'</h2><div class="wynik">'+w.ogniwa+' 🔗</div>'
+    +'<b>'+w.pkt+' pkt'+(tryb==="dzien"?' · rekord '+rek+' pkt':'')+'</b>'
+    +'<div class="lc-lista" style="justify-content:center">'+w.lancuch.map((n,i)=>(i?'<em>→</em>':'')+'<span'+(i?'':' class="start"')+'>'+n+'</span>').join("")+'</div>'
+    +(tryb==="dzien"?'<button class="klocek" id="udostepnij">Udostępnij wynik</button>':'')
+    +'<button class="klocek jasny" id="trening">'+(tryb==="dzien"?"Trenuj dalej":"Jeszcze raz")+'</button><a class="klocek jasny" href="codzienne.html">Codzienne zagadki</a></div>';
+  $("koniec").hidden=false;
+  if($("udostepnij"))$("udostepnij").onclick=async()=>{try{if(navigator.share)await navigator.share({text:tekst});else{await navigator.clipboard.writeText(tekst);ZP.komunikat("Wynik skopiowany");}}catch(e){}};
+  $("trening").onclick=()=>{tryb="trening";start();};
+  if(swiezy&&tryb==="dzien"&&w.ogniwa>=5)ZP.nagrodaDnia&&ZP.nagrodaDnia("lancuch",DZIEN,{ukonczone:true,poddane:false});
+  if(swiezy&&w.ogniwa>=10)setTimeout(ZP.fanfary,200);
+}
+$("graj").onclick=start;
+fetch("baza.json").then(r=>r.json()).then(b=>{
+  GMINY=b.gminy.filter(g=>/[123]$/.test(g.k));
+  GMINY.forEach(g=>{const n=norm(g.n);(PO_NAZWIE[n]=PO_NAZWIE[n]||[]).push(g);LITERY.add(lit(g.n)[0]);});
+  odswiezStart();
+}).catch(()=>{$("stanDnia").textContent="Nie udało się wczytać listy gmin.";});
+ZP.fitViewport();ZP.registerSW();
+</script>
+</body>
+</html>

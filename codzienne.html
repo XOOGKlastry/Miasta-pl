@@ -22,6 +22,7 @@
 .dzien{position:relative;padding-right:96px}
 #d1{--ik:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23F5B82E' stroke='%233A2A14' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M7 3h10v5a5 5 0 0 1-10 0z'/%3E%3Cpath d='M7 5H4c0 3 1 5 3 5M17 5h3c0 3-1 5-3 5' fill='none'/%3E%3Cpath d='M10 14h4l1 4H9z'/%3E%3Crect x='7' y='18' width='10' height='3' rx='1'/%3E%3C/svg%3E")}
 #d2{--ik:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23E84A3C' stroke='%233A2A14' stroke-width='1.8'%3E%3Cpath d='M12 22s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z'/%3E%3Ccircle cx='12' cy='10' r='2.6' fill='%23fff'/%3E%3C/svg%3E")}
+#d4{--ik:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233A2A14' stroke-width='2' stroke-linecap='round'%3E%3Crect x='2' y='8' width='9' height='8' rx='4' fill='%23F5B82E'/%3E%3Crect x='13' y='8' width='9' height='8' rx='4' fill='%23F5B82E'/%3E%3Cpath d='M9 12h6'/%3E%3C/svg%3E")}
 #d3{--ik:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%237DB36B' stroke='%233A2A14' stroke-width='1.8' stroke-linejoin='round'%3E%3Cpath d='M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z'/%3E%3Cpath d='M9 4v14M15 6v14' fill='none'/%3E%3Ccircle cx='17' cy='9' r='2.4' fill='%23E84A3C'/%3E%3C/svg%3E")}
 .dzien .etyk{font-size:12px;font-weight:900;letter-spacing:1px;color:var(--braz-2);text-transform:uppercase}
 .dzien h2{font-family:Bungee,sans-serif;font-weight:400;font-size:17px;margin:0;line-height:1.1}
@@ -48,6 +49,7 @@
 <a class="pole dzien" href="wyzwanie.html" id="d1"><span class="etyk" id="d1e">Wyzwanie dnia</span><h2>Osiem pytań, jedna próba</h2><p id="d1p">Ten sam zestaw dla wszystkich.</p><div class="rzad"><span class="kratki" id="d1k"></span><span class="klocek" id="d1b">Graj</span></div></a>
 <a class="pole dzien" href="szostka.html" id="d2"><span class="etyk">Miasto dnia</span><h2>Do sześciu razy sztuka</h2><p id="d2p">Zgadnij miasto po konturze w sześciu próbach.</p><div class="rzad"><span class="kratki" id="d2k"></span><span class="klocek" id="d2b">Graj</span></div></a>
 <a class="pole dzien" href="cieplo.html" id="d3"><span class="etyk">Gmina dnia</span><h2>Ciepło-zimno</h2><p id="d3p">Szukaj gminy po kolorach: cieplej czy zimniej?</p><div class="rzad"><span class="kratki" id="d3k"></span><span class="klocek" id="d3b">Graj</span></div></a>
+<a class="pole dzien" href="lancuch.html" id="d4"><span class="etyk">Łańcuch dnia</span><h2>Gmina na ostatnią literę</h2><p id="d4p">Kalisz → Zabrze → Elbląg… Jak długi łańcuch ułożysz?</p><div class="rzad"><span class="kratki" id="d4k"></span><span class="klocek" id="d4b">Graj</span></div></a>
 <div class="odlicz" id="odlicz"></div></main>
   <nav class="dol">
   <a href="./" data-n="plansza"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20c0-4 3-4 3-8s-3-4-3-8"/><circle cx="16" cy="6" r="2.5"/><circle cx="16" cy="18" r="2.5"/><path d="M16 8.5v7"/></svg>Plansza</a>
@@ -70,6 +72,8 @@ if(ds&&ds.done){$("d1").classList.add("gotowe");const s=ds.res.reduce((a,r)=>a+r
 else if(ds&&ds.res&&ds.res.length){$("d1p").textContent="Zostało "+(8-ds.res.length)+" z 8 pytań.";$("d1b").textContent="Dokończ";}
 const sz=czytaj("szostka-"+K,null),szs=czytaj("szostka-stat",{});
 if(sz&&sz.proby&&sz.proby.length){if(szs.ost===K){$("d2").classList.add("gotowe");$("d2p").textContent="Rozwiązane w "+sz.proby.length+" z 6 prób.";$("d2b").textContent="Wynik";}else{$("d2p").textContent="Próba "+sz.proby.length+" z 6.";$("d2b").textContent="Dokończ";}}
+const lc=czytaj("lancuch-"+K,null);
+if(lc){$("d4").classList.add("gotowe");$("d4p").textContent="Twój łańcuch: "+lc.ogniwa+" ogniw, "+lc.pkt+" pkt.";$("d4b").textContent="Wynik";}
 const ci=czytaj("cieplo-"+K,null),cis=czytaj("cieplo-stat",{});
 if(ci&&ci.proby&&ci.proby.length){if(cis.ost===K){$("d3").classList.add("gotowe");$("d3p").textContent="Znaleziona w "+ci.proby.length+" próbach.";$("d3b").textContent="Wynik";}else{$("d3p").textContent=ci.proby.length+" prób do tej pory.";$("d3b").textContent="Dokończ";}}
 // ostatnie 7 dni
@@ -88,10 +92,10 @@ if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceW
 (function(){
   // po wyliczeniu stanu zagadek maskotka mówi, co dalej
   setTimeout(()=>{
-    const ile=["d1","d2","d3"].filter(id=>{const e=document.getElementById(id);return e&&e.classList.contains("gotowe");}).length;
+    const ile=["d1","d2","d3","d4"].filter(id=>{const e=document.getElementById(id);return e&&e.classList.contains("gotowe");}).length;
     const el=document.getElementById("pbDzien");if(!window.PB||!el)return;
-    if(ile===3)PB.powiedz(el,"Wszystkie codzienne wyzwania gotowe! Możesz trenować w zakładce Gry.","radosc");
-    else if(ile>0)PB.powiedz(el,"Świetnie! Zostało jeszcze "+(3-ile)+(3-ile===1?" wyzwanie":" wyzwania")+" na dziś.");
+    if(ile===4)PB.powiedz(el,"Wszystkie codzienne wyzwania gotowe! Możesz trenować w zakładce Gry.","radosc");
+    else if(ile>0)PB.powiedz(el,"Świetnie! Zostało jeszcze "+(4-ile)+(4-ile===1?" wyzwanie":" wyzwania")+" na dziś.");
   },300);
 })();
 </script>

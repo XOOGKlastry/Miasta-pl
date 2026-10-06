@@ -1,0 +1,4 @@
+-- Zastosowane w projekcie dhzjqxhoiaroauimoepq 6.10.2026.
+-- public.guest_scores: wyniki bez logowania (identyfikator urządzenia + skrót sekretu), RLS bez polityk.
+-- public.publish_guest_score(p_device, p_token, p_nickname, p_visible, p_points, p_cards, p_duel_points, p_duel_wins): SECURITY DEFINER, sprawdza sekret, limit 5 s.
+-- public.leaderboard(p_mode): łączy player_scores i guest_scores (tylko widoczne), SECURITY DEFINER zwracający wyłącznie miejsce, pseudonim i wartość.
