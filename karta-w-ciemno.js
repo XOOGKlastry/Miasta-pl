@@ -19,7 +19,7 @@
      +(Karty.herbSrc&&Karty.herbSrc(c)?'<img class="sk-herb" alt="" loading="lazy" onerror="this.remove()" src="'+Karty.herbSrc(c)+'">':'')
      +'<span class="sk-gora"><span class="sk-ovr">'+Z.ovr(c)+'</span><span class="sk-typ">'+(+c.k.slice(2,4)>=61?'MNP':c.typ==='gmina wiejska'?'WIEŚ':c.typ==='gmina miejska'?'MIASTO':'M-W')+'</span></span>'
      +'<b class="sk-nazwa" style="font-size:'+(Math.max(...c.n.split(/[ -]/).map(x=>x.length))>11?11:Math.max(...c.n.split(/[ -]/).map(x=>x.length))>8?13:15)+'px">'+escape(c.n).replace(/-/g,'-<wbr>')+'</b>'
-     +'<small class="sk-woj">woj. '+escape(c.woj)+(c.bonus?' · +'+c.bonus:'')+(c.borrowed?' · pożyczona':'')+'</small>'
+     +'<small class="sk-woj">'+(+c.k.slice(2,4)>=61?'':escape(String(c.powiat||'').replace(/^powiat /,'pow. '))+'<br>')+'woj. '+escape(c.woj)+(c.bonus?' · +'+c.bonus:'')+(c.borrowed?' · pożyczona':'')+'</small>'
      +(odsl?'<span class="sk-wart">'+Z.value(c,k,game.o.records)+'</span>':'')+'</button>';}).join('');
   $('choices').querySelectorAll('[data-podglad]').forEach(b=>b.onclick=()=>{b.classList.add('odkrywa');setTimeout(()=>{b.classList.remove('odkrywa');podgladKarty(b.dataset.podglad);},260);});
  }

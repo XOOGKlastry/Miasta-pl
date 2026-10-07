@@ -708,10 +708,12 @@ async function podkladWektorowy(map,opcje){
   const fc=l=>({type:"FeatureCollection",features:l.map(x=>x.f)});
   L.geoJSON(fc(woj),{style:{stroke:false,fill:true,fillColor:K.lad,fillOpacity:1},interactive:false}).addTo(map);
   if(pw.length)L.geoJSON(fc(pw),{style:{color:K.pow,weight:.7,opacity:.9,fill:false},interactive:false}).addTo(map);
-  // rzeki (te same przebiegi co w grze „Nad jaką rzeką?”)
-  fetch("rzeki-geo.json").then(r=>r.ok?r.json():{}).then(g=>{
-    const linie=[];Object.values(g).forEach(l=>l.forEach(x=>linie.push(x.map(([lo,la])=>[la,lo]))));
-    if(linie.length)L.polyline(linie,{color:K.rz,weight:1.3,opacity:.75,interactive:false}).addTo(map);
+  // drogi zamiast rzek: autostrady i ekspresowe na czerwono, główne na pomarańczowo (OpenStreetMap)
+  fetch("drogi.json?v=1").then(r=>r.ok?r.json():{}).then(d=>{
+    const ll=l=>l.map(([lo,la])=>[la,lo]);
+    if(d.g)L.polyline(d.g.map(ll),{color:"#F08A2C",weight:1.4,opacity:.9,interactive:false}).addTo(map);
+    if(d.z){L.polyline(d.z.map(ll),{color:"#fff",weight:3.6,opacity:.8,interactive:false}).addTo(map);
+      L.polyline(d.z.map(ll),{color:"#D9332B",weight:2.2,opacity:.95,interactive:false}).addTo(map);}
   }).catch(()=>{});
   L.geoJSON(fc(woj),{style:{color:K.woj,weight:1.8,opacity:.95,fill:false},interactive:false}).addTo(map);
   return woj;

@@ -297,7 +297,7 @@ window.Karty=(function(){
       +'<div class="kk-mapka" data-m="'+g.k+'"></div>'
       +(ot&&CIEK[g.k]?'<button type="button" class="kk-pb" data-c="'+g.k+'" aria-label="Ciekawostki">'+KULA+'</button>':'')
       +'<div class="kk-nazwa">'+(ot?esc(g.n):"???")+'</div>'
-      +'<div class="kk-jedn">'+(ot?(mnp(g)?"miasto na prawach powiatu<br>woj. "+g.woj:g.typ+(pelna?"<br>"+esc(g.powiat)+" · woj. "+g.woj:"")):(o.postep?"postęp "+o.postep+"/"+prog(g)+" fragmentów":"woj. "+g.woj))+'</div>'
+      +'<div class="kk-jedn">'+(ot?(mnp(g)?"miasto na prawach powiatu<br>woj. "+g.woj:g.typ+(pelna?"<br>"+esc(g.powiat)+" · woj. "+g.woj:"<br>"+esc(String(g.powiat).replace(/^powiat /,"pow. ")))):(o.postep?"postęp "+o.postep+"/"+prog(g)+" fragmentów":"woj. "+g.woj))+'</div>'
       +st+(pelna&&ot&&!o.ukryj&&!o.bezSzczegolow?szczegoly(g,u,o):'')+'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
   }
   // rekord dobry (zielony), zły (czerwony) albo neutralny (złoty)

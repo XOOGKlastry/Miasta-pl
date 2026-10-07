@@ -29,6 +29,9 @@
 .lc-wpis{display:flex;gap:8px}
 .lc-wpis input{flex:1;min-width:0}
 .lc-wpis button{flex:none;min-height:46px;padding:0 16px;border:3px solid var(--braz);border-radius:12px;background:var(--zolt);box-shadow:0 4px 0 var(--braz);font:900 15px Rubik,sans-serif;color:var(--braz)}
+.lc-wpis .mik{padding:0 12px;background:var(--krem)}
+.lc-wpis .mik.slucha{background:#E84A3C;color:#fff;animation:lcMik 1.2s ease-in-out infinite}
+@keyframes lcMik{50%{box-shadow:0 4px 0 var(--braz),0 0 0 8px rgba(232,74,60,.25)}}
 .lc-komunikat{min-height:20px;text-align:center;font-weight:900;color:var(--krem);text-shadow:0 1px 0 var(--braz)}
 .lc-komunikat.zle{color:#FFD3CC}
 .lc-lista{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
@@ -55,7 +58,7 @@
       <section class="pole lc-zasady" style="padding:12px 14px;margin-top:12px">
         <h2>Zasady</h2>
         <p>Zaczynasz od gminy dnia (taka sama dla wszystkich). Wpisz gminę, której nazwa zaczyna się na ostatnią literę poprzedniej, np. Kalisz → Zabrze → Elbląg.</p>
-        <p>Masz 90 sekund, każda dobra gmina dodaje 5 s. Gminy się nie powtarzają. Polskie znaki możesz pomijać.</p>
+        <p>Masz 90 sekund, każda dobra gmina dodaje 5 s. Gminy się nie powtarzają. Polskie znaki możesz pomijać, wystarczy też pierwszy człon nazwy (np. „Maków”), a gra sama przyjmie poprawną gminę bez klikania OK.</p><p>🎤 Możesz też mówić: stuknij mikrofon, a gra będzie słuchać do końca łańcucha.</p>
         <p>Gdy nazwa kończy się na literę, od której nie zaczyna się żadna gmina (np. „y” w Tychy), liczy się litera przedostatnia.</p>
         <p>Małe gminy (poniżej 5 tys. mieszkańców) dają +1 punkt.</p>
         <p id="stanDnia" style="font-weight:900;color:var(--braz)"></p>
@@ -66,7 +69,7 @@
       <div class="lc-gora"><div class="pole"><b id="ogniwa">0</b><span>ogniwa</span></div><div class="pole"><b id="pkt">0</b><span>punkty</span></div><div class="pole"><b id="sek">90</b><span>sekund</span></div></div>
       <div class="lc-czas" id="czas"><i id="czasI" style="width:100%"></i></div>
       <div class="lc-litera">Następna gmina na <b id="litera">A</b></div>
-      <form class="lc-wpis" id="forma" autocomplete="off"><input id="wpis" type="text" inputmode="text" autocapitalize="words" placeholder="Wpisz gminę…" aria-label="Nazwa gminy"><button>OK</button></form>
+      <form class="lc-wpis" id="forma" autocomplete="off"><input id="wpis" type="text" inputmode="text" autocapitalize="words" placeholder="Wpisz albo powiedz gminę…" aria-label="Nazwa gminy"><button type="button" id="mik" class="mik" aria-label="Mów nazwę gminy" hidden>🎤</button><button>OK</button></form>
       <div class="lc-komunikat" id="kom" role="status" aria-live="polite"></div>
       <button class="klocek jasny" id="pas" style="justify-content:center">Nie wiem, zakończ</button>
       <div class="lc-lista" id="lista"></div>
@@ -74,7 +77,7 @@
     <section id="koniec" hidden></section>
   </main>
 </div>
-<script src="wspolne.js?v=22"></script>
+<script src="wspolne.js?v=23"></script>
 <script>
 const {$,norm}=ZP;
 const CZAS=90,BONUS=5,PROG_MALA=5000;
@@ -118,25 +121,83 @@ function tik(){
   if(z<=0)zakoncz();
 }
 function komunikat(t,zle){const k=$("kom");k.textContent=t;k.classList.toggle("zle",!!zle);}
-$("forma").onsubmit=e=>{
-  e.preventDefault();if(!gra||gra.zakonczona)return;
-  const wpis=$("wpis").value.trim();if(!wpis)return;
-  const n=norm(wpis),kand=PO_NAZWIE[n];
-  if(!kand){komunikat("Nie ma takiej gminy: „"+wpis+"”",true);return;}
-  if(lit(kand[0].n)[0]!==gra.litera){komunikat("Ta gmina nie zaczyna się na „"+gra.litera.toUpperCase()+"”",true);return;}
-  if(gra.uzyte.has(n)){komunikat("Ta gmina już była w łańcuchu",true);return;}
-  // przy powtarzających się nazwach wybieramy najmniejszą gminę (najkorzystniej dla gracza)
-  const g=kand.slice().sort((a,b)=>(a.ludnosc||0)-(b.ludnosc||0))[0],mala=(g.ludnosc||1e9)<PROG_MALA;
+/* dopasowanie „na luzie”: bez polskich znaków, wystarczy pierwszy człon nazwy, drobne literówki i błędy mowy */
+function odl(a,b){const m=a.length,n=b.length;if(Math.abs(m-n)>2)return 9;const d=Array.from({length:m+1},(_,i)=>[i]);for(let j=1;j<=n;j++)d[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));return d[m][n];}
+function dopasuj(tekst){
+  const t=norm(tekst).trim();if(t.length<2)return null;
+  const wolne=GMINY.filter(g=>lit(g.n)[0]===gra.litera&&!gra.uzyte.has(norm(g.n)));
+  let najl=null;
+  for(const g of wolne){
+    const n=norm(g.n),czlony=g.n.split(/[\s-]+/).map(norm);let w=0;
+    if(n===t)w=100;
+    else if(czlony[0]===t)w=85;                                   // „Maków” → Maków Podhalański
+    else if(t.length>=4&&czlony.length>1&&n.startsWith(t)&&czlony.slice(0,2).join("").startsWith(t))w=80;
+    else if(t.length>=5&&odl(n,t)<=(t.length>=8?2:1))w=70-odl(n,t);  // literówka albo błąd rozpoznawania mowy
+    else if(t.length>=5&&odl(czlony[0],t)<=1)w=60;
+    if(w&&(!najl||w>najl.w||(w===najl.w&&(g.ludnosc||0)<(najl.g.ludnosc||0))))najl={g,w};
+  }
+  return najl;
+}
+function przyjmij(g){
+  const n=norm(g.n),mala=(g.ludnosc||1e9)<PROG_MALA;
   gra.lancuch.push(g);gra.uzyte.add(n);gra.pkt+=1+(mala?1:0);gra.koniec+=BONUS*1000;gra.litera=nastepnaLitera(g.n);
   $("lista").insertAdjacentHTML("beforeend",'<em>→</em><span'+(mala?' class="rzadka"':'')+'>'+g.n+(mala?' <i>+1</i>':'')+'</span>');
   $("ogniwa").textContent=gra.lancuch.length-1;$("pkt").textContent=gra.pkt;pokazLitere();
-  komunikat(mala?"Brawo, mała gmina! +2":"Dobrze! +1");
+  komunikat((mala?"Brawo, mała gmina! +2":"Dobrze! +1")+" · "+g.n);
   ZP.zapisz("lancuch",g.n,true);
-  $("wpis").value="";$("wpis").focus();
-};
+  $("wpis").value="";
+}
+function sprobuj(tekst,zRecznie){
+  if(!gra||gra.zakonczona)return false;
+  const t=norm(tekst).trim();if(!t)return false;
+  if(gra.uzyte.has(t)){if(zRecznie)komunikat("Ta gmina już była w łańcuchu",true);return false;}
+  const d=dopasuj(tekst);
+  if(d&&(zRecznie||d.w>=60)){przyjmij(d.g);return true;}
+  if(zRecznie){
+    if(PO_NAZWIE[t]&&lit(PO_NAZWIE[t][0].n)[0]!==gra.litera)komunikat("Ta gmina nie zaczyna się na „"+gra.litera.toUpperCase()+"”",true);
+    else komunikat("Nie ma takiej gminy: „"+tekst+"”",true);
+  }
+  return false;
+}
+// samo przyjęcie: gdy wpis to pełna nazwa i nie ma dłuższej gminy o tym początku, bez czekania;
+// gdy dłuższa istnieje (np. „Nowa” i „Nowa Sól”), po krótkiej przerwie w pisaniu
+let czekaj=0;
+$("wpis").addEventListener("input",()=>{
+  clearTimeout(czekaj);if(!gra||gra.zakonczona)return;
+  const t=norm($("wpis").value).trim();if(t.length<3)return;
+  const d=dopasuj(t);if(!d||d.w<100)return;
+  const dluzsze=GMINY.some(g=>{const n=norm(g.n);return n!==t&&n.startsWith(t)&&lit(g.n)[0]===gra.litera&&!gra.uzyte.has(n);});
+  if(!dluzsze)sprobuj(t,false);else czekaj=setTimeout(()=>sprobuj(t,false),1100);
+});
+$("forma").onsubmit=e=>{e.preventDefault();const w=$("wpis").value.trim();if(w)sprobuj(w,true);$("wpis").focus();};
+/* mikrofon: rozpoznawanie mowy po polsku, słucha bez przerwy do końca łańcucha */
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;let rozp=null,slucha=false;
+if(SR){$("mik").hidden=false;
+  $("mik").onclick=()=>{if(slucha)stopMik();else startMik();};}
+function startMik(){
+  if(!SR||!gra||gra.zakonczona)return;
+  rozp=new SR();rozp.lang="pl-PL";rozp.continuous=true;rozp.interimResults=true;rozp.maxAlternatives=5;
+  rozp.onresult=e=>{
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const r=e.results[i],alternatywy=[...r].map(a=>a.transcript.trim());
+      $("wpis").value=alternatywy[0];
+      if(r.isFinal){
+        // każdą z alternatyw rozpoznawania sprawdzamy po kolei, także słowa wypowiedziane osobno
+        const proby=alternatywy.flatMap(a=>[a,...a.split(/\s+/)]);
+        if(!proby.some(a=>sprobuj(a,false)))komunikat("Nie rozpoznano gminy na „"+gra.litera.toUpperCase()+"”: „"+alternatywy[0]+"”",true);
+        $("wpis").value="";
+      }
+    }
+  };
+  rozp.onend=()=>{if(slucha&&gra&&!gra.zakonczona)try{rozp.start();}catch(e){}else stopMik();};
+  rozp.onerror=e=>{if(e.error==="not-allowed"){komunikat("Brak zgody na mikrofon",true);stopMik();}};
+  try{rozp.start();slucha=true;$("mik").classList.add("slucha");komunikat("Słucham… powiedz nazwę gminy");}catch(e){}
+}
+function stopMik(){slucha=false;$("mik").classList.remove("slucha");try{rozp&&rozp.stop();}catch(e){}}
 $("pas").onclick=()=>zakoncz();
 function zakoncz(){
-  if(!gra||gra.zakonczona)return;gra.zakonczona=true;clearInterval(zegar);
+  if(!gra||gra.zakonczona)return;gra.zakonczona=true;clearInterval(zegar);stopMik();
   const wynik={ogniwa:gra.lancuch.length-1,pkt:gra.pkt,lancuch:gra.lancuch.map(g=>g.n),start:gra.start};
   if(tryb==="dzien"){
     try{localStorage.setItem(KLUCZ,JSON.stringify(wynik));const rek=+(localStorage.getItem("lancuch-rekord")||0);if(wynik.pkt>rek)localStorage.setItem("lancuch-rekord",wynik.pkt);}catch(e){}
