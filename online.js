@@ -49,9 +49,10 @@ window.Online=(()=>{
  const zapiszJa=id=>{if(typeof id==='string'&&/^[0-9a-f-]{36}$/.test(id))localStorage.setItem('ranking-ja',id);return id;};
  const ja=()=>localStorage.getItem('ranking-ja')||'';
  // nowe parametry (statystyki, wiadomości); gdy baza ma jeszcze starą wersję funkcji, zapis idzie bez nich
+ // nowe funkcje mają końcówkę „2”; stare zostają w bazie jako zapas
  async function rpcZapasowo(fn,pelne,podstawowe,token){
-  try{return await request('/rest/v1/rpc/'+fn,pelne,token);}
-  catch(e){if(/function|p_stats|p_dm_open|schema cache/i.test(e.message))return request('/rest/v1/rpc/'+fn,podstawowe,token);throw e;}
+  try{return await request('/rest/v1/rpc/'+fn+'2',pelne,token);}
+  catch(e){if(/function|schema cache|not find/i.test(e.message))return request('/rest/v1/rpc/'+fn,podstawowe,token);throw e;}
  }
  async function publish(nick,visible,dm){
   const s=await session();if(!s)throw Error('Zaloguj się, aby zapisać wynik.');
@@ -87,8 +88,8 @@ window.Online=(()=>{
  async function skrzynka(){const l=await rpcGracza('inbox',{});if(l&&l[0]&&l[0].me)zapiszJa(l[0].me);return l||[];}
  async function nieprzeczytane(){if(!enabled()||!dolaczony())return 0;try{return +(await rpcGracza('unread_count',{}))||0;}catch(e){return 0;}}
  async function przeczytane(inny){return rpcGracza('mark_read',{p_other:inny});}
- async function zablokuj(inny,zglos,odblokuj){return rpcGracza('block_player',{p_other:inny,p_block:!odblokuj,p_report:!!zglos});}
- async function ranking(mode){return request('/rest/v1/rpc/leaderboard',{p_mode:mode});}
+ async function zablokuj(inny,zglos){return rpcGracza('block_player',{p_other:inny,p_report:!!zglos});}
+ async function ranking(mode){try{return await request('/rest/v1/rpc/leaderboard2',{p_mode:mode});}catch(e){if(/function|schema cache|not find/i.test(e.message))return request('/rest/v1/rpc/leaderboard',{p_mode:mode});throw e;}}
  async function gate(){
   if(!enabled()||!config().requireAccount)return;
   if(['logowanie.html','ranking.html','profil.html','karty.html','encyklopedia.html','statystyki.html','admin.html'].includes(location.pathname.split('/').pop()))return;

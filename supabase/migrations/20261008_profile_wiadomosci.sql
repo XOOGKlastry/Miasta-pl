@@ -1,6 +1,9 @@
 -- Profile graczy, wiadomości i wyzwania prosto z rankingu.
 -- Gracz jest rozpoznawany po koncie (auth.uid()) albo po urządzeniu (identyfikator + sekret, jak w guest_scores).
 -- Na zewnątrz widać tylko public_id: losowy identyfikator, który nie zdradza ani konta, ani urządzenia.
+-- Zastosowane 8.10.2026 w czterech krokach, bez usuwania czegokolwiek: nowe wersje funkcji rankingu mają końcówkę 2
+-- (publish_score2, publish_guest_score2, leaderboard2), stare zostają jako zapas dla starszych wersji gry.
+-- Stare wiadomości (ponad 60 dni) są ukrywane w inbox/unread_count; blokady są tylko dodawane.
 
 alter table public.player_scores add column if not exists public_id uuid not null default gen_random_uuid();
 alter table public.guest_scores  add column if not exists public_id uuid not null default gen_random_uuid();
@@ -78,8 +81,7 @@ $$;
 revoke all on function public._gracze() from public, anon, authenticated;
 
 -- zapis wyniku: teraz także statystyki profilu i zgoda na wiadomości; zwraca public_id
-drop function if exists public.publish_score(text, boolean, bigint, integer, bigint, integer);
-create function public.publish_score(p_nickname text, p_visible boolean, p_points bigint, p_cards integer,
+create or replace function public.publish_score2(p_nickname text, p_visible boolean, p_points bigint, p_cards integer,
   p_duel_points bigint default null, p_duel_wins integer default null, p_stats jsonb default null, p_dm_open boolean default null)
 returns uuid language plpgsql security definer set search_path = '' as $$
 declare v uuid;
@@ -100,11 +102,10 @@ begin
   returning public_id into v;
   return v;
 end $$;
-revoke all on function public.publish_score(text, boolean, bigint, integer, bigint, integer, jsonb, boolean) from public, anon;
-grant execute on function public.publish_score(text, boolean, bigint, integer, bigint, integer, jsonb, boolean) to authenticated;
+revoke all on function public.publish_score2(text, boolean, bigint, integer, bigint, integer, jsonb, boolean) from public, anon;
+grant execute on function public.publish_score2(text, boolean, bigint, integer, bigint, integer, jsonb, boolean) to authenticated;
 
-drop function if exists public.publish_guest_score(uuid, text, text, boolean, bigint, integer, bigint, integer);
-create function public.publish_guest_score(p_device uuid, p_token text, p_nickname text, p_visible boolean, p_points bigint, p_cards integer,
+create or replace function public.publish_guest_score2(p_device uuid, p_token text, p_nickname text, p_visible boolean, p_points bigint, p_cards integer,
   p_duel_points bigint default 0, p_duel_wins integer default 0, p_stats jsonb default null, p_dm_open boolean default null)
 returns uuid language plpgsql security definer set search_path = '' as $$
 declare
@@ -135,11 +136,10 @@ begin
   returning public_id into v_id;
   return v_id;
 end $$;
-grant execute on function public.publish_guest_score(uuid, text, text, boolean, bigint, integer, bigint, integer, jsonb, boolean) to anon, authenticated;
+grant execute on function public.publish_guest_score2(uuid, text, text, boolean, bigint, integer, bigint, integer, jsonb, boolean) to anon, authenticated;
 
 -- ranking: dodatkowo public_id, żeby można było otworzyć profil
-drop function if exists public.leaderboard(text);
-create function public.leaderboard(p_mode text)
+create or replace function public.leaderboard2(p_mode text)
 returns table(place bigint, nickname text, value bigint, public_id uuid)
 language sql stable security definer set search_path = '' as $$
   select rank() over(order by v.val desc), v.nickname, v.val, v.public_id
@@ -150,7 +150,7 @@ language sql stable security definer set search_path = '' as $$
   ) v
   order by 3 desc, v.nickname limit 100;
 $$;
-grant execute on function public.leaderboard(text) to anon, authenticated;
+grant execute on function public.leaderboard2(text) to anon, authenticated;
 
 -- profil gracza widoczny w rankingu
 create or replace function public.player_profile(p_id uuid)
@@ -188,7 +188,6 @@ begin
   if p_payload is not null and (jsonb_typeof(p_payload) <> 'object' or pg_column_size(p_payload) >= 8000) then raise exception 'Za duże wyzwanie'; end if;
   if exists(select 1 from public.player_messages m where m.from_id = v_me and m.created_at > now() - interval '3 seconds') then raise exception 'Za szybko. Odczekaj chwilę.'; end if;
   if (select count(*) from public.player_messages m where m.from_id = v_me and m.created_at > now() - interval '1 day') >= 100 then raise exception 'Dzienny limit wiadomości wyczerpany'; end if;
-  delete from public.player_messages where created_at < now() - interval '60 days';   -- stare wiadomości znikają same
   insert into public.player_messages(from_id, to_id, kind, body, payload) values (v_me, p_to, p_kind, v_body, p_payload) returning id into v_id;
   return v_id;
 end $$;
@@ -208,6 +207,7 @@ begin
       v_me
     from public.player_messages m
     where (m.to_id = v_me or m.from_id = v_me)
+      and m.created_at > now() - interval '60 days'
       and not exists(select 1 from public.player_blocks b where b.owner_id = v_me and b.blocked_id = case when m.from_id = v_me then m.to_id else m.from_id end)
     order by m.created_at desc limit 200;
 end $$;
@@ -219,6 +219,7 @@ declare v_me uuid := public._ja(p_device, p_token);
 begin
   if v_me is null then return 0; end if;
   return (select count(*) from public.player_messages m where m.to_id = v_me and m.read_at is null
+    and m.created_at > now() - interval '60 days'
     and not exists(select 1 from public.player_blocks b where b.owner_id = v_me and b.blocked_id = m.from_id));
 end $$;
 grant execute on function public.unread_count(uuid, text) to anon, authenticated;
@@ -232,21 +233,17 @@ begin
 end $$;
 grant execute on function public.mark_read(uuid, text, uuid) to anon, authenticated;
 
-create or replace function public.block_player(p_device uuid, p_token text, p_other uuid, p_block boolean default true, p_report boolean default false)
+create or replace function public.block_player(p_device uuid, p_token text, p_other uuid, p_report boolean default false)
 returns void language plpgsql security definer set search_path = '' as $$
 declare v_me uuid := public._ja(p_device, p_token);
 begin
   if v_me is null then raise exception 'Najpierw zapisz swój pseudonim w rankingu.'; end if;
   if p_other is null or p_other = v_me then return; end if;
-  if p_block then
-    insert into public.player_blocks(owner_id, blocked_id) values (v_me, p_other) on conflict do nothing;
-  else
-    delete from public.player_blocks where owner_id = v_me and blocked_id = p_other;
-  end if;
+  insert into public.player_blocks(owner_id, blocked_id) values (v_me, p_other) on conflict do nothing;
   if p_report then
     insert into public.player_reports(reporter_id, reported_id, message_id, body)
     select v_me, p_other, m.id, m.body from public.player_messages m
     where m.from_id = p_other and m.to_id = v_me order by m.created_at desc limit 5;
   end if;
 end $$;
-grant execute on function public.block_player(uuid, text, uuid, boolean, boolean) to anon, authenticated;
+grant execute on function public.block_player(uuid, text, uuid, boolean) to anon, authenticated;
