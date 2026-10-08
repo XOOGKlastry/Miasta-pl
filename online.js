@@ -33,11 +33,33 @@ window.Online=(()=>{
  async function verify(email,token){return save(await request('/auth/v1/verify',{email,token,type:'email'}));}
  async function logout(){const s=await session();if(s)await request('/auth/v1/logout',{},s.access_token);localStorage.removeItem('online-session');}
  function points(){try{return Object.values(JSON.parse(localStorage.getItem('nauka-v1')||'{}')).reduce((a,r)=>a+Math.max(0,Number(r.ok)||0)*10,0);}catch{return 0;}}
- async function publish(nick,visible){
+ // statystyki do profilu w rankingu: same liczby i kody kart (wygląd kart odtwarza telefon oglądającego)
+ async function statystyki(){
+  await Karty.zaladuj();Karty.migracja();
+  const D=Karty.dane(),mam=Karty.zdobyte().mam,KOL=Karty.KOLEJ,rz={},woj={},l=[];KOL.forEach(r=>rz[r]=0);
+  for(const k of mam){const g=D.PO_K[k];if(!g)continue;rz[g.rz]++;woj[g.woj]=(woj[g.woj]||0)+1;l.push(g);}
+  const naj=l.filter(g=>g.ovr!=null).sort((a,b)=>KOL.indexOf(a.rz)-KOL.indexOf(b.rz)||b.ovr-a.ovr).slice(0,3).map(g=>g.k);
+  const nw=Object.keys(woj).sort((a,b)=>woj[b]-woj[a])[0];
+  const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||'null')||d;}catch(e){return d;}};
+  const kd=czytaj('ciemno-ranking',{}),saga=czytaj('saga-v1',{gw:{}}),gw=Object.values(saga.gw||{}).map(Number).filter(x=>x>0);
+  return {v:1,rz,naj,woj:nw?{n:nw,ile:woj[nw],z:D.g.filter(g=>g.woj===nw).length}:null,kd:{w:+kd.w||0,r:+kd.r||0,p:+kd.p||0},
+   poz:gw.length,gw:gw.reduce((a,b)=>a+b,0),lan:+localStorage.getItem('lancuch-rekord')||0,ser:(czytaj('dzis-seria',{n:0}).n)||0,odz:Object.keys(Karty.odznaki()).length};
+ }
+ function profilLokalny(){try{return JSON.parse(localStorage.getItem('ranking-profile')||'{}');}catch(e){return {};}}
+ const zapiszJa=id=>{if(typeof id==='string'&&/^[0-9a-f-]{36}$/.test(id))localStorage.setItem('ranking-ja',id);return id;};
+ const ja=()=>localStorage.getItem('ranking-ja')||'';
+ // nowe parametry (statystyki, wiadomości); gdy baza ma jeszcze starą wersję funkcji, zapis idzie bez nich
+ async function rpcZapasowo(fn,pelne,podstawowe,token){
+  try{return await request('/rest/v1/rpc/'+fn,pelne,token);}
+  catch(e){if(/function|p_stats|p_dm_open|schema cache/i.test(e.message))return request('/rest/v1/rpc/'+fn,podstawowe,token);throw e;}
+ }
+ async function publish(nick,visible,dm){
   const s=await session();if(!s)throw Error('Zaloguj się, aby zapisać wynik.');
   const n=nick.trim();if(n.length<3||n.length>24)throw Error('Pseudonim musi mieć od 3 do 24 znaków.');
   await Karty.zaladuj();Karty.migracja();
-  let d={};try{d=JSON.parse(localStorage.getItem('ciemno-ranking')||'{}');}catch(e){}return request('/rest/v1/rpc/publish_score',{p_nickname:n,p_visible:visible,p_points:points(),p_cards:Karty.zdobyte().mam.size,p_duel_points:Math.max(0,Number(d.pkt)||0),p_duel_wins:Math.max(0,Number(d.w)||0)},s.access_token);
+  let d={};try{d=JSON.parse(localStorage.getItem('ciemno-ranking')||'{}');}catch(e){}
+  const baza={p_nickname:n,p_visible:visible,p_points:points(),p_cards:Karty.zdobyte().mam.size,p_duel_points:Math.max(0,Number(d.pkt)||0),p_duel_wins:Math.max(0,Number(d.w)||0)};
+  return zapiszJa(await rpcZapasowo('publish_score',{...baza,p_stats:await statystyki(),p_dm_open:dm!==false},baza,s.access_token));
  }
  // ranking bez logowania: losowy identyfikator urządzenia i sekret zapisane tylko na tym telefonie
  function urzadzenie(){
@@ -45,11 +67,27 @@ window.Online=(()=>{
   if(!u||!u.id||!u.sekret){const b=new Uint8Array(24);crypto.getRandomValues(b);u={id:crypto.randomUUID?crypto.randomUUID():'10000000-1000-4000-8000-100000000000'.replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16)),sekret:Array.from(b,x=>x.toString(16).padStart(2,'0')).join('')};localStorage.setItem('ranking-urzadzenie',JSON.stringify(u));}
   return u;
  }
- async function publishGuest(nick,visible){
+ async function publishGuest(nick,visible,dm){
   const n=String(nick||'').trim();if(n.length<3||n.length>24)throw Error('Pseudonim musi mieć od 3 do 24 znaków.');
+  await Karty.zaladuj();Karty.migracja();
   const u=urzadzenie();let d={};try{d=JSON.parse(localStorage.getItem('ciemno-ranking')||'{}');}catch(e){}
-  return request('/rest/v1/rpc/publish_guest_score',{p_device:u.id,p_token:u.sekret,p_nickname:n,p_visible:!!visible,p_points:points(),p_cards:Karty.zdobyte().mam.size,p_duel_points:Math.max(0,Number(d.pkt)||0),p_duel_wins:Math.max(0,Number(d.w)||0)});
+  const baza={p_device:u.id,p_token:u.sekret,p_nickname:n,p_visible:!!visible,p_points:points(),p_cards:Karty.zdobyte().mam.size,p_duel_points:Math.max(0,Number(d.pkt)||0),p_duel_wins:Math.max(0,Number(d.w)||0)};
+  return zapiszJa(await rpcZapasowo('publish_guest_score',{...baza,p_stats:await statystyki(),p_dm_open:dm!==false},baza));
  }
+ // zapis profilu tym sposobem, jakim gracz dołączył (konto albo telefon)
+ async function odswiezProfil(){
+  const p=profilLokalny();if(!p.nick)return null;
+  return (await session())?publish(p.nick,p.visible!==false,p.dm):publishGuest(p.nick,p.visible!==false,p.dm);
+ }
+ const dolaczony=()=>!!profilLokalny().nick;
+ // wiadomości i wyzwania: rozpoznanie gracza po koncie albo po sekrecie urządzenia
+ async function rpcGracza(fn,body){const s=await session(),u=urzadzenie();return request('/rest/v1/rpc/'+fn,{p_device:u.id,p_token:u.sekret,...body},s&&s.access_token);}
+ async function profil(id){const r=await request('/rest/v1/rpc/player_profile',{p_id:id});return r&&r[0]||null;}
+ async function wyslij(do_,tresc,rodzaj,dane){return rpcGracza('send_message',{p_to:do_,p_body:String(tresc||'').slice(0,200),p_kind:rodzaj||'msg',p_payload:dane||null});}
+ async function skrzynka(){const l=await rpcGracza('inbox',{});if(l&&l[0]&&l[0].me)zapiszJa(l[0].me);return l||[];}
+ async function nieprzeczytane(){if(!enabled()||!dolaczony())return 0;try{return +(await rpcGracza('unread_count',{}))||0;}catch(e){return 0;}}
+ async function przeczytane(inny){return rpcGracza('mark_read',{p_other:inny});}
+ async function zablokuj(inny,zglos,odblokuj){return rpcGracza('block_player',{p_other:inny,p_block:!odblokuj,p_report:!!zglos});}
  async function ranking(mode){return request('/rest/v1/rpc/leaderboard',{p_mode:mode});}
  async function gate(){
   if(!enabled()||!config().requireAccount)return;
@@ -57,5 +95,5 @@ window.Online=(()=>{
   if(await session())return;
   sessionStorage.setItem('login-return',location.pathname+location.search+location.hash);location.replace('logowanie.html');
  }
- return {providers,enabled,session,oauth,email,verify,callback,logout,points,publish,publishGuest,ranking,gate};
+ return {providers,enabled,session,oauth,email,verify,callback,logout,points,publish,publishGuest,ranking,gate,statystyki,odswiezProfil,dolaczony,profilLokalny,ja,profil,wyslij,skrzynka,nieprzeczytane,przeczytane,zablokuj,urzadzenie};
 })();

@@ -32,14 +32,15 @@ Właściciel: Dawid (specjalista GIS). Rozmawiamy po polsku. W odpowiedziach nie
 - OVR osobno dla miast i M-W (zarobki PIT ×2, bezrobocie ×2 mniej=lepiej, firmy ×1,5, migracja ×1,5, mieszkanie na osobę ×1, obciążenie demograficzne ×1 mniej=lepiej) i dla wsi (lesistość ×2, przyrost ×1,5, migracja ×1,5, bezrobocie ×1, obciążenie ×1, drogi ×1, szkoły ×1, odległość od stolicy ×1 mniej=lepiej). Wodociągi i kanalizacja tylko informacyjnie.
 - Rzadkość z podium: legendarna = 1. miejsce w Polsce, diamentowa = 2.–3. w Polsce, złota = 1. w województwie, srebrna = 2.–3. w województwie, reszta zwykła. Rekordy w obie strony, zielone dobre, czerwone złe, złote neutralne.
 - Stolice województw nie mają wskaźnika „Do stolicy woj.”. Miasta na prawach powiatu nie dostają premii za komplet powiatu i nie pokazują powiatu.
-- Paczki z nagród trafiają do albumu, otwiera je gracz. 25 monet = paczka.
+- Paczki z nagród trafiają do albumu, otwiera je gracz. 25 monet = paczka. Sześć rodzajów paczek: zwykła 2 karty, brązowa 3, srebrna 4, złota 5, diamentowa 6, legendarna 7 (`PACZKI`, `KART_W_PACZCE`, `DROP` w `karty.js`). Od srebrnej wzwyż gwarancja jednej karty tej rzadkości. Duplikat = 2 monety. Po kilku kartach prezentacja kończy się podsumowaniem całej paczki.
 
 ## Supabase
 - Projekt `dhzjqxhoiaroauimoepq` (w panelu nazywa się „vesna_legal”; do ustalenia, czy to osobna aplikacja).
 - Tabele: `player_scores` (konta), `guest_scores` (ranking bez logowania: identyfikator urządzenia + skrót sekretu). Funkcje: `publish_score`, `publish_guest_score`, `leaderboard(p_mode)` z trybami `points`, `cards`, `duels`. Migracje opisane w `supabase/migrations/`.
+- Społeczność (migracja `supabase/migrations/20261008_profile_wiadomosci.sql`): `public_id` gracza (jedyny identyfikator widoczny publicznie), `stats` (jsonb z profilu: rzadkości, 3 najlepsze karty, ulubione województwo, plansza, łańcuch, seria), `dm_open`; tabele `player_messages` (msg/challenge/result, znikają po 60 dniach, bez linków), `player_blocks`, `player_reports`; funkcje `player_profile`, `send_message`, `inbox`, `unread_count`, `mark_read`, `block_player`. Gracz rozpoznawany po koncie albo sekrecie urządzenia (`_ja`). UI: `ranking-spolecznosc.{js,css}`; wyzwanie z rankingu: `karta-w-ciemno.html?rywal=<public_id>&rn=<nick>`, odpowiedź `?w=...&od=<public_id>` odsyła wynik wiadomością.
 - Logowanie Google włączone (aplikacja OAuth w Google jest w trybie testowym: przed udostępnieniem trzeba ją opublikować). E-mail czeka na SMTP (`emailReady:false`).
 
 ## Otwarte sprawy
 - Dawid przygotuje w QGIS/OSM dane do nowych wskaźników (Żabki, Biedronki, Lidle, paczkomaty, apteki, stacje PKP, ścieżki rowerowe) jako CSV `teryt;...` (wartości bezwzględne, przeliczenie robimy w grze).
-- Pomysły do zrobienia: Odkrywca (mapa Polski we mgle, kroki dziennie, znaleziska, paszport z pieczątkami), gra „zaznacz drogę” (potrzebne numery dróg `ref` z OSM), wyzwania w Karcie w ciemno przez bazę zamiast linków.
+- Pomysły do zrobienia: Odkrywca (mapa Polski we mgle, kroki dziennie, znaleziska, paszport z pieczątkami), gra „zaznacz drogę” (potrzebne numery dróg `ref` z OSM), wyzwania w Karcie w ciemno przez bazę są (z rankingu), link zostaje jako zapas.
 - Lepsze tła planszy: wersje ilustracji bez narysowanych pól (wtedy wystarczy podmienić pliki w `narzedzia/plansza-zrodla/` i uruchomić `narzedzia/plansza_tla.py`).

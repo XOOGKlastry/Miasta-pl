@@ -8,7 +8,8 @@
     const s=document.createElement("style");s.id="zp-ng-styl";
     s.textContent=".zp-ng{position:relative;flex:none;margin-left:6px;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:#F5B82E;border:3px solid #3A2A14;box-shadow:0 3px 0 #3A2A14;text-decoration:none}"
       +".zp-ng.puchar{background:#FFF6E0}.zp-ng:active{transform:translateY(3px);box-shadow:0 0 0 #3A2A14}"
-      +".zp-ng[aria-current=page]{outline:3px solid #fff;outline-offset:1px}";
+      +".zp-ng[aria-current=page]{outline:3px solid #fff;outline-offset:1px}"
+      +".zp-ng .zp-wiad{position:absolute;right:-8px;top:-8px;min-width:20px;height:20px;padding:0 4px;border-radius:999px;background:#E84A3C;color:#fff;border:2px solid #3A2A14;font:900 11px/16px Rubik,sans-serif;text-align:center;box-sizing:border-box}";
     document.head.appendChild(s);
   }
   function dodaj(){
@@ -22,6 +23,31 @@
     if(!k&&!album){k=document.createElement("a");k.className="zp-ng";k.href="karty.html";k.setAttribute("aria-label","Kolekcja kart");k.title="Kolekcja kart";k.innerHTML=KARTY;h.appendChild(k);}
     if(k)h.insertBefore(p,k);else h.appendChild(p);
   }
-  window.ZPNaglowek={dodaj};
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",dodaj);else dodaj();
+  // czerwona kropka z liczbą nieprzeczytanych wiadomości i wyzwań na pucharze
+  function odznaka(n){
+    const p=document.querySelector(".zp-ng.puchar");if(!p)return;
+    let b=p.querySelector(".zp-wiad");
+    if(!n){if(b)b.remove();p.setAttribute("aria-label","Ranking");return;}
+    if(!b){b=document.createElement("span");b.className="zp-wiad";p.appendChild(b);}
+    b.textContent=n>9?"9+":n;p.setAttribute("aria-label","Ranking, nowe wiadomości: "+n);
+    p.href="ranking.html?wiadomosci";
+  }
+  async function sprawdzWiadomosci(){
+    try{
+      if(/ranking\.html/.test(location.pathname))return;
+      const prof=JSON.parse(localStorage.getItem("ranking-profile")||"{}"),u=JSON.parse(localStorage.getItem("ranking-urzadzenie")||"null");
+      if(!prof.nick||!u||!u.id)return;
+      const c=JSON.parse(sessionStorage.getItem("wiad-nieprz")||"null");
+      if(c&&Date.now()-c.t<90000){odznaka(c.n);return;}
+      if(!window.ONLINE_CONFIG)await new Promise(ok=>{const s=document.createElement("script");s.src="online-config.js";s.onload=s.onerror=ok;document.head.appendChild(s);});
+      const cfg=window.ONLINE_CONFIG||{};if(!cfg.url||!cfg.key)return;
+      let tok=null;try{const s=JSON.parse(localStorage.getItem("online-session")||"null");if(s&&s.expires_at>Date.now()+60000)tok=s.access_token;}catch(e){}
+      const r=await fetch(cfg.url+"/rest/v1/rpc/unread_count",{method:"POST",headers:{apikey:cfg.key,"Content-Type":"application/json",...(tok?{Authorization:"Bearer "+tok}:{})},body:JSON.stringify({p_device:u.id,p_token:u.sekret})});
+      if(!r.ok)return;const n=+(await r.json())||0;
+      sessionStorage.setItem("wiad-nieprz",JSON.stringify({n,t:Date.now()}));odznaka(n);
+    }catch(e){}
+  }
+  window.ZPNaglowek={dodaj,odznaka};
+  const start=()=>{dodaj();setTimeout(sprawdzWiadomosci,1500);};
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
 })();

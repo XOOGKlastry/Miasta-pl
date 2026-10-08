@@ -129,7 +129,7 @@ window.Karty=(function(){
   /* zdobyte karty:
      1. Kształt gminy: trafiona gmina to od razu karta,
      2. gry gminne (herby, Gdzie ta gmina, Ciepło-zimno, Kształt gminy): 3–7 trafień tej samej gminy to karta,
-     3. wszystkie inne gry dają żetony; 25 żetonów to paczka z jedną losową nową kartą. */
+     3. wszystkie inne gry dają monety; 25 monet to paczka z 2–7 kartami (zależnie od rodzaju paczki). */
   const PACZKA=25;
   const SZANSE=[["legenda",.001],["diament",.009],["zloto",.04],["srebro",.15],["zwykla",.80]];
   function paczki(){try{return JSON.parse(localStorage.getItem("karty-paczki")||"[]");}catch(e){return [];}}
@@ -161,12 +161,18 @@ window.Karty=(function(){
     }catch(e){}
     localStorage.setItem("karty-zasady","4");archiwizuj();
   }
-  // paczki czekają na otwarcie; gracz otwiera je sam, po jednej
+  // paczki czekają na otwarcie; gracz otwiera je sam, po jednej (w środku 2–7 kart)
   function czekajace(){try{return JSON.parse(localStorage.getItem("karty-paczki-czekaja")||"[]");}catch(e){return [];}}
   function dodajCzekajaca(id,kolor){const l=czekajace();l.push({id,kolor,od:Date.now()});localStorage.setItem("karty-paczki-czekaja",JSON.stringify(l));}
   function liczbaPaczek(){return Math.floor(zetony()/PACZKA)+czekajace().length;}
-  const PACZKI=[["zwykla",.80],["srebro",.16],["zloto",.035],["diament",.005]];
-  const DROP={zwykla:[["legenda",.001],["diament",.009],["zloto",.04],["srebro",.15],["zwykla",.80]],srebro:[["legenda",.005],["diament",.025],["zloto",.17],["srebro",.55],["zwykla",.25]],zloto:[["legenda",.02],["diament",.08],["zloto",.60],["srebro",.30]],diament:[["legenda",.10],["diament",.50],["zloto",.30],["srebro",.10]]};
+  // sześć rodzajów paczek: im lepsza paczka, tym więcej kart i rzadsze karty w środku
+  const PACZKI=[["zwykla",.50],["braz",.27],["srebro",.14],["zloto",.06],["diament",.025],["legenda",.005]];
+  const KART_W_PACZCE={zwykla:2,braz:3,srebro:4,zloto:5,diament:6,legenda:7};
+  const NAZWA_PACZKI={zwykla:"Zwykła",braz:"Brązowa",srebro:"Srebrna",zloto:"Złota",diament:"Diamentowa",legenda:"Legendarna"};
+  // gwarancja: w paczce od srebrnej wzwyż co najmniej jedna karta tej rzadkości lub lepsza
+  const GWARANCJA={srebro:"srebro",zloto:"zloto",diament:"diament",legenda:"legenda"};
+  const DUPLIKAT=2;   // monety za kartę, którą już masz
+  const DROP={zwykla:[["legenda",.001],["diament",.009],["zloto",.04],["srebro",.15],["zwykla",.80]],braz:[["legenda",.002],["diament",.013],["zloto",.065],["srebro",.24],["zwykla",.68]],srebro:[["legenda",.005],["diament",.025],["zloto",.17],["srebro",.55],["zwykla",.25]],zloto:[["legenda",.02],["diament",.08],["zloto",.60],["srebro",.30]],diament:[["legenda",.10],["diament",.50],["zloto",.30],["srebro",.10]],legenda:[["legenda",.30],["diament",.45],["zloto",.20],["srebro",.05]]};
   function archiwizuj(){
     const owned=zdobyte().mam,records=JSON.parse(localStorage.getItem("karty-rekordy-v1")||"{}"),badges=odznaki();
     for(const k of owned){const g=DANE.PO_K[k];if(g?.rekordy.length&&!records[k+":"+DANE.edycja])records[k+":"+DANE.edycja]={rz:g.rz,rekordy:g.rekordy};}
@@ -174,31 +180,37 @@ window.Karty=(function(){
     localStorage.setItem("karty-rekordy-v1",JSON.stringify(records));localStorage.setItem("karty-zestawy-v1",JSON.stringify(badges));
   }
   function losuj(tabela,r=Math.random()){for(const [k,p]of tabela){if(r<p)return k;r-=p;}return tabela.at(-1)[0];}
-  function losowaKarta(kolor){
-    const rz=losuj(DROP[kolor]),mam=zdobyte().mam;
-    let pula=DANE.g.filter(g=>g.rz===rz&&!mam.has(g.k));
-    if(!pula.length)pula=DANE.g.filter(g=>g.rz===rz);
-    if(!pula.length)pula=DANE.g;
+  function losowaKarta(kolor,bez=new Set(),rz=losuj(DROP[kolor]||DROP.zwykla)){
+    const mam=zdobyte().mam;
+    let pula=DANE.g.filter(g=>g.rz===rz&&!mam.has(g.k)&&!bez.has(g.k));
+    if(!pula.length)pula=DANE.g.filter(g=>g.rz===rz&&!bez.has(g.k));
+    if(!pula.length)pula=DANE.g.filter(g=>!bez.has(g.k));
     return pula[Math.floor(Math.random()*pula.length)];
+  }
+  // cała zawartość paczki: 2–7 różnych kart, posortowanych od najsłabszej (najlepsza na koniec)
+  function zawartoscPaczki(kolor){
+    const n=KART_W_PACZCE[kolor]||2,bez=new Set(),l=[];
+    for(let i=0;i<n;i++){const g=losowaKarta(kolor,bez);if(!g)break;bez.add(g.k);l.push(g);}
+    const min=GWARANCJA[kolor];
+    if(min&&l.length&&!l.some(g=>KOLEJ.indexOf(g.rz)<=KOLEJ.indexOf(min))){
+      bez.delete(l[0].k);const g=losowaKarta(kolor,bez,min);if(g)l[0]=g;
+    }
+    return l.sort((a,b)=>KOLEJ.indexOf(b.rz)-KOLEJ.indexOf(a.rz)||(a.ovr||0)-(b.ovr||0));
   }
   async function otworzPaczke(){
     await zaladuj();migracja();
     const otworz=()=>{
       // najpierw paczki z nagród (dziennych, za poziomy i mecze), potem paczki za monety
-      const cz=czekajace();
-      if(cz.length){
-        const p=cz.shift(),g=losowaKarta(p.kolor);if(!g)return null;
-        localStorage.setItem("karty-paczki-czekaja",JSON.stringify(cz));
-        localStorage.setItem("karty-paczki",JSON.stringify([...new Set(paczki().concat(g.k))]));
-        localStorage.setItem("karty-ogloszone",JSON.stringify([...new Set((ogloszone()||[]).concat(g.k))]));
-        return {...g,_paczka:true,_kolorPaczki:p.kolor,_joker:false};
-      }
-      const z=zetony();if(z<PACZKA)return null;
-      const kolor=losuj(PACZKI),g=losowaKarta(kolor);if(!g)return null;
-      localStorage.setItem("karty-paczki",JSON.stringify([...new Set(paczki().concat(g.k))]));
-      localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)-PACZKA));
-      localStorage.setItem("karty-ogloszone",JSON.stringify([...new Set((ogloszone()||[]).concat(g.k))]));
-      return {...g,_paczka:true,_kolorPaczki:kolor,_joker:false};
+      const cz=czekajace(),zNagrody=cz.length>0;let kolor;
+      if(zNagrody)kolor=cz.shift().kolor;
+      else{if(zetony()<PACZKA)return null;kolor=losuj(PACZKI);}
+      const karty=zawartoscPaczki(kolor);if(!karty.length)return null;
+      const mam=zdobyte().mam,dupl=karty.filter(g=>mam.has(g.k)).length;
+      if(zNagrody)localStorage.setItem("karty-paczki-czekaja",JSON.stringify(cz));
+      localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)-(zNagrody?0:PACZKA)+dupl*DUPLIKAT));
+      localStorage.setItem("karty-paczki",JSON.stringify([...new Set(paczki().concat(karty.map(g=>g.k)))]));
+      localStorage.setItem("karty-ogloszone",JSON.stringify([...new Set((ogloszone()||[]).concat(karty.map(g=>g.k)))]));
+      return karty.map(g=>({...g,_paczka:true,_kolorPaczki:kolor,_duplikat:mam.has(g.k),_joker:false}));
     };
     return navigator.locks?navigator.locks.request("polskoznawca-paczka",otworz):otworz();
   }
@@ -561,6 +573,15 @@ window.Karty=(function(){
 .pk-dol .glowny{background:#F5B82E}
 .pk-pomin{position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:5;background:#FFF6E0;border:3px solid #3A2A14;color:#3A2A14;border-radius:10px;padding:5px 12px;font:900 12px Rubik,sans-serif;box-shadow:0 3px 0 #3A2A14}
 .pk-licznik{position:absolute;left:14px;top:calc(env(safe-area-inset-top,0px) + 14px);z-index:5;font:900 12px Rubik,sans-serif;letter-spacing:2px;color:#3A2A14;background:#F5B82E;border:3px solid #3A2A14;border-radius:10px;padding:4px 10px}
+.pk-sum{position:relative;z-index:2;width:min(94vw,440px);max-height:calc(var(--app-h,100vh) - 150px);overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;align-items:center;gap:10px;padding:4px 2px 8px}
+.pk-sum h2{margin:0;font:400 clamp(20px,6vw,28px)/1.1 Bungee,sans-serif;color:#FFF6E0;text-shadow:0 3px 0 #3A2A14;text-align:center}
+.pk-sum h2 small{display:block;font:800 12px Rubik,sans-serif;letter-spacing:2px;color:#FFE7A3;margin-top:4px}
+.pk-siatka{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px;width:100%}
+.pk-siatka>div{position:relative;min-width:0;animation:pkMini .5s cubic-bezier(.2,1.3,.3,1) both}
+@keyframes pkMini{from{opacity:0;transform:translateY(30px) scale(.7)}}
+.pk-siatka .pk-znak{position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);z-index:6;white-space:nowrap;font:900 10px Rubik,sans-serif;letter-spacing:1px;padding:2px 7px;border-radius:8px;border:2px solid #3A2A14;background:#E84A3C;color:#fff}
+.pk-siatka .pk-znak.dup{background:#FFF6E0;color:#3A2A14}
+.pk.podsum .pk-dol{opacity:1}
 .kd-plecak{position:fixed;right:14px;top:calc(env(safe-area-inset-top,0px) + 12px);z-index:6100;width:52px;height:52px;border-radius:14px;background:#F5B82E;border:3px solid #3A2A14;box-shadow:0 4px 0 #3A2A14;display:grid;place-items:center}
 .kd-plecak.bum{animation:kdBum .35s}@keyframes kdBum{50%{transform:scale(1.3)}}
 @media (prefers-reduced-motion:reduce){.pk *,.pk,.pk-kula svg{animation:none!important}.pk-karta,.pk-dol{opacity:1!important}}
@@ -624,42 +645,56 @@ window.Karty=(function(){
     await zaladuj();
     try{await geometrie();}catch(e){}
     let i=0;
+    const wiele=karty.length>1,kolorP=karty[0]._kolorPaczki;
     const w=document.createElement("div");
     const pl=document.createElement("a");pl.className="kd-plecak";pl.href="karty.html";pl.innerHTML=IKONA;pl.style.display="none";
     document.body.appendChild(pl);
     const zakoncz=()=>{
       // karta odlatuje do kolekcji w prawym górnym rogu
-      const k=w.querySelector(".pk-karta");pl.style.display="";
+      const k=w.querySelector(".pk-karta,.pk-siatka");pl.style.display="";
       if(k){const r=k.getBoundingClientRect(),c=pl.getBoundingClientRect();
         k.animate([{transform:"none",opacity:1},{transform:"translate("+(c.left+26-r.left-r.width/2)+"px,"+(c.top+26-r.top-r.height/2)+"px) scale(.1) rotate(20deg)",opacity:.5}],{duration:650,easing:"cubic-bezier(.5,0,.75,0)",fill:"forwards"});}
       w.animate([{opacity:1},{opacity:0}],{duration:600,delay:300,fill:"forwards"});
       setTimeout(()=>{pl.classList.add("bum");},650);
       setTimeout(()=>{w.remove();},950);setTimeout(()=>{pl.remove();naKoniec&&naKoniec();},2000);
     };
+    // po kilku kartach z paczki: wszystkie naraz na stole
+    const podsumowanie=()=>{
+      const naj=karty.reduce((a,g)=>KOLEJ.indexOf(g.rz)<KOLEJ.indexOf(a.rz)?g:a,karty[0]);
+      const dupl=karty.filter(g=>g._duplikat).length;
+      w.className="pk podsum r-"+naj.rz;
+      w.innerHTML='<div class="pk-sum"><h2>'+(kolorP?esc(NAZWA_PACZKI[kolorP]||"")+" paczka":"Nowe karty")+'<small>'+karty.length+' '+(karty.length<5?"KARTY":"KART")+(dupl?" · DUPLIKATY: +"+dupl*DUPLIKAT+" MONET":"")+'</small></h2>'
+        +'<div class="pk-siatka">'+karty.map((g,n)=>'<div style="animation-delay:'+(n*.08).toFixed(2)+'s">'+karta(g,{tryb:"mini"})+'<span class="pk-znak'+(g._duplikat?' dup">JUŻ MASZ':'">NOWA')+'</span></div>').join("")+'</div></div>'
+        +'<div class="pk-dol"><button class="glowny" data-a="koniec">Do kolekcji</button><a href="karty.html">Zobacz album</a></div>';
+      w.querySelectorAll(".pk-siatka .kk").forEach(el=>holo(el));podepnijMapy(w);
+      w.querySelector("[data-a=koniec]").onclick=e=>{e.stopPropagation();zakoncz();};
+    };
     const pokaz=()=>{
       const g=karty[i],pelne=g.rz==="legenda"||g.rz==="diament"||g.rz==="zloto";
+      // w paczce z wieloma kartami pełne odsłanianie (województwo, typ, OVR) tylko dla rzadkich kart
+      const szybko=wiele&&!pelne;
       w.className="pk r-"+g.rz;
       const wo=WOJ&&WOJ[g.woj]?WOJ[g.woj]:"";
       let iskry="";for(let n=0;n<(pelne?40:18);n++)iskry+='<i style="left:'+(Math.random()*100).toFixed(1)+'%;animation-duration:'+(3+Math.random()*4).toFixed(1)+'s;animation-delay:'+(-Math.random()*6).toFixed(1)+'s"></i>';
       w.innerHTML='<div class="pk-iskry">'+iskry+'</div><div class="pk-kula"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="pkK"><circle cx="50" cy="50" r="44"/></clipPath></defs><g clip-path="url(#pkK)" transform="rotate(-8 50 50)"><rect width="100" height="50" fill="#F4F4F2"/><rect y="50" width="100" height="50" fill="#DC1E35"/><ellipse cx="36" cy="27" rx="14" ry="6" fill="#fff" opacity=".7"/></g><circle cx="50" cy="50" r="44" fill="none" stroke="#3A2A14" stroke-width="4"/><ellipse cx="38" cy="40" rx="8" ry="10" fill="#fff" stroke="#3A2A14" stroke-width="3"/><ellipse cx="64" cy="40" rx="8" ry="10" fill="#fff" stroke="#3A2A14" stroke-width="3"/></svg></div><div class="pk-blysk"></div>'
-        +'<span class="pk-licznik">'+(g._paczka?"KARTA Z PACZKI":"NOWA KARTA")+(karty.length>1?" "+(i+1)+" / "+karty.length:"")+(g._joker?" · +1 PODPOWIEDŹ 50/50":"")+'</span>'+'<button class="pk-pomin">Pomiń ›</button>'
+        +'<span class="pk-licznik">'+(g._paczka?"Z PACZKI":"NOWA KARTA")+(wiele?" "+(i+1)+" / "+karty.length:"")+(g._duplikat?" · JUŻ MASZ +"+DUPLIKAT+" 🪙":"")+(g._joker?" · +1 PODPOWIEDŹ 50/50":"")+'</span>'+'<button class="pk-pomin">'+(wiele?"Wszystkie ›":"Pomiń ›")+'</button>'
         +'<div class="pk-krok k1"><small>WOJEWÓDZTWO</small>'+wo+'<b>'+esc(g.woj)+'</b></div>'
         +'<div class="pk-krok k2"><small>'+(mnp(g)?"MIASTO NA PRAWACH POWIATU":esc(g.typ.toUpperCase()))+'</small><b>'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</b><small style="letter-spacing:2px">'+esc(g.powiat)+'</small></div>'
         +'<div class="pk-krok k3"><small>'+RZ[g.rz].toUpperCase()+' KARTA</small><span class="pk-ovr">'+(g.ovr||"?")+'</span></div>'
         +'<div class="pk-karta">'+karta(g,{tryb:"pelna",bezSzczegolow:true})+'<div class="pk-rekordy">'+rekordyHTML(g,2)+'</div></div>'
-        +'<div class="pk-dol">'+(i+1<karty.length?'<button class="glowny" data-a="dalej">Następna karta</button>':'<button class="glowny" data-a="koniec">Do kolekcji</button>')+'<a href="karty.html">Zobacz album</a></div>';
+        +'<div class="pk-dol">'+(i+1<karty.length?'<button class="glowny" data-a="dalej">Następna karta</button>':wiele?'<button class="glowny" data-a="podsum">Cała paczka</button>':'<button class="glowny" data-a="koniec">Do kolekcji</button>')+'<a href="karty.html">Zobacz album</a></div>';
       if(!w.isConnected)document.body.appendChild(w);
-      const kroki=[[".k1",150],[".k2",1100],[".k3",2050]],t=[];
+      const kroki=szybko?[]:[[".k1",150],[".k2",1100],[".k3",2050]],t=[];
       w.classList.remove("faza2","faza4","faza5");
       setTimeout(()=>w.classList.add("faza2"),80);
       kroki.forEach(([s,ms])=>t.push(setTimeout(()=>{w.querySelectorAll(".pk-krok").forEach(x=>x.classList.remove("widac"));w.querySelector(s).classList.add("widac");if(navigator.vibrate)try{navigator.vibrate(s===".k3"?[30,40,60]:15);}catch(e){}},ms)));
       const odslon=()=>{t.forEach(clearTimeout);w.querySelectorAll(".pk-krok").forEach(x=>x.classList.remove("widac"));w.classList.add("faza4");
         const el=w.querySelector(".pk-karta .kk");holo(el);podepnijMapy(w);
-        setTimeout(()=>w.classList.add("faza5"),700);
+        setTimeout(()=>w.classList.add("faza5"),szybko?350:700);
         if(pelne&&window.ZP&&ZP.fanfary)setTimeout(ZP.fanfary,250);};
-      t.push(setTimeout(odslon,matchMedia("(prefers-reduced-motion: reduce)").matches?0:3100));
-      w.querySelector(".pk-pomin").onclick=e=>{e.stopPropagation();if(!w.classList.contains("faza4"))odslon();else zakoncz();};
-      w.querySelectorAll(".pk-dol [data-a]").forEach(b=>b.onclick=e=>{e.stopPropagation();if(b.dataset.a==="dalej"){i++;pokaz();}else zakoncz();});
+      t.push(setTimeout(odslon,szybko||matchMedia("(prefers-reduced-motion: reduce)").matches?60:3100));
+      w.querySelector(".pk-pomin").onclick=e=>{e.stopPropagation();t.forEach(clearTimeout);if(wiele)podsumowanie();else if(!w.classList.contains("faza4"))odslon();else zakoncz();};
+      w.querySelectorAll(".pk-dol [data-a]").forEach(b=>b.onclick=e=>{e.stopPropagation();const a=b.dataset.a;if(a==="dalej"){i++;pokaz();}else if(a==="podsum")podsumowanie();else zakoncz();});
     };
     // kontury województw do pierwszego kroku prezentacji
     if(!WOJ){try{const gj=await fetch("woj.geojson?v=17").then(r=>r.json());WOJ={};
@@ -677,5 +712,5 @@ window.Karty=(function(){
       if(n.length)setTimeout(()=>prezentacja(n,info),1200);else setTimeout(info,1200);
     }catch(e){}
   }
-  return {herbSrc,tyl,panel,rekordyHTML,komplet,ulepszenie,wynik,ocenaOVR,odznaki,archiwizuj,prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
+  return {herbSrc,tyl,panel,rekordyHTML,komplet,ulepszenie,wynik,ocenaOVR,odznaki,archiwizuj,prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,zawartoscPaczki,czekajace,KART_W_PACZCE,NAZWA_PACZKI,DUPLIKAT,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
 })();

@@ -1,0 +1,86 @@
+/* Ranking: profil gracza, wiadomości, wyzwania. Styl planszy: kremowe pola, brązowe obrysy, żółte przyciski. */
+.wiad-przycisk{position:relative;width:100%;justify-content:center;gap:10px;min-height:48px;font-size:15px}
+.wiad-przycisk svg{width:22px;height:22px;fill:#FFF6E0;stroke:var(--braz);stroke-width:2;stroke-linejoin:round;flex:none}
+.odznaka{min-width:24px;height:24px;padding:0 6px;border-radius:999px;background:var(--czer);color:#fff;border:2px solid var(--braz);font:900 12px/20px Rubik,sans-serif;text-align:center}
+.ranking-table tr.klik{cursor:pointer}
+.ranking-table tr.klik td:nth-child(2)::after{content:" ›";color:var(--braz-2);font-weight:900}
+.ranking-table tr.klik:active td{background:rgba(245,184,46,.35)}
+.ranking-table tr.moj td{background:rgba(125,179,107,.28)}
+.ty{display:inline-block;vertical-align:middle;font:900 10px/1 Rubik,sans-serif;letter-spacing:.5px;padding:3px 6px;border-radius:7px;background:var(--ziel);color:#fff;border:2px solid var(--braz)}
+.podpowiedz-tabeli{font-size:12px!important;text-align:center;padding:6px 8px 8px;color:var(--braz-2)!important}
+
+/* arkusz wysuwany od dołu */
+body.arkusz-otwarty{overflow:hidden}
+.arkusz{position:fixed;inset:0;z-index:7000;display:flex;align-items:flex-end;justify-content:center}
+.arkusz[hidden]{display:none}
+.arkusz-tlo{position:absolute;inset:0;background:rgba(40,28,10,.55);opacity:0;transition:opacity .22s}
+.arkusz.widac .arkusz-tlo{opacity:1}
+.arkusz-pole{position:relative;width:min(100%,520px);max-height:calc(var(--app-h,100vh) - 24px);overflow-y:auto;overflow-x:hidden;background:var(--krem);border:4px solid var(--braz);border-bottom:none;border-radius:22px 22px 0 0;box-shadow:0 -6px 0 rgba(58,42,20,.25);padding:16px 14px calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateY(100%);transition:transform .25s cubic-bezier(.3,1.1,.4,1);display:flex;flex-direction:column;gap:12px;box-sizing:border-box}
+.arkusz.widac .arkusz-pole{transform:none}
+.ark-zamknij{position:absolute;right:10px;top:10px;width:38px;height:38px;border-radius:12px;border:3px solid var(--braz);background:#fff;box-shadow:0 3px 0 var(--braz);font:900 20px/1 Rubik,sans-serif;color:var(--braz);cursor:pointer;z-index:2}
+#ark-tresc{display:flex;flex-direction:column;gap:12px;min-width:0}
+.ark-glowa{display:flex;align-items:center;gap:12px;padding-right:44px;min-width:0}
+.ark-glowa>div{min-width:0}
+.ark-glowa h2{margin:0!important;font:400 20px/1.15 Bungee,sans-serif;color:var(--braz);overflow-wrap:anywhere}
+.ark-glowa small{display:block;font-weight:700;color:var(--braz-2);font-size:12px;margin-top:2px}
+.awatar{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--a);color:#fff;font:400 20px Bungee,sans-serif;border:3px solid var(--braz);box-shadow:inset 0 -8px 0 rgba(0,0,0,.15);text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.wstecz{flex:none;width:36px;height:36px;border-radius:10px;border:3px solid var(--braz);background:#fff;font:900 20px/1 Rubik,sans-serif;color:var(--braz);cursor:pointer}
+.link{background:none;border:none;padding:0;font:inherit;color:var(--nieb);text-decoration:underline;cursor:pointer}
+
+.miejsca{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.miejsce{background:#fff;border:3px solid var(--braz);border-radius:14px;padding:6px 4px;text-align:center;box-shadow:0 3px 0 var(--braz)}
+.miejsce b{display:block;font:400 18px/1.2 Bungee,sans-serif;color:var(--braz)}
+.miejsce span{font-size:11px;font-weight:900;color:var(--braz-2)}
+.staty{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.staty>div{background:var(--krem-2);border:2px solid var(--braz);border-radius:14px;padding:8px 10px;min-width:0}
+.staty b{display:block;font:400 22px/1.1 Bungee,sans-serif;color:var(--braz);overflow-wrap:anywhere}
+.staty span{display:block;font-size:12px;font-weight:900;color:var(--braz-2)}
+.vs{display:inline-block;margin-top:4px;font-size:11px;font-weight:900;padding:1px 6px;border-radius:6px;background:#fff;color:var(--braz-2)}
+.vs.lepiej{background:#D6F0C9;color:#1E6B34}.vs.gorzej{background:#FBD9D2;color:#9B2A1E}
+.rz-pasek{display:flex;height:12px;border-radius:999px;overflow:hidden;border:2px solid var(--braz);background:#fff}
+.rz-pasek i{display:block;height:100%}
+.chipy{display:flex;flex-wrap:wrap;gap:6px;margin-top:-4px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:900;color:var(--braz);background:#fff;border:2px solid var(--braz);border-radius:999px;padding:2px 9px}
+.chip i{width:10px;height:10px;border-radius:50%;border:1px solid var(--braz)}
+#ark-tresc h3{margin:2px 0 -4px;font:400 15px Bungee,sans-serif;color:var(--braz)}
+.naj-karty{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.naj-karty .kk{width:100%}
+.dodatki{margin:0;display:flex;flex-direction:column;gap:6px}
+.dodatki>div{display:flex;justify-content:space-between;gap:10px;border-bottom:2px dashed rgba(58,42,20,.25);padding:4px 0}
+.dodatki dt{font-size:13px;font-weight:700;color:var(--braz-2)}
+.dodatki dd{margin:0;font-size:13px;font-weight:900;color:var(--braz);text-align:right}
+.akcje{display:grid;grid-template-columns:1fr;gap:10px}
+.akcje .klocek{width:100%;justify-content:center;min-height:50px;font-size:16px;text-decoration:none}
+.male-linki{text-align:center;font-size:12px!important}
+.male-linki button{background:none;border:none;font:700 12px Rubik,sans-serif;color:var(--braz-2);text-decoration:underline;cursor:pointer;padding:4px}
+#ark-tresc .uwaga{font-size:13px;color:var(--braz-2);font-weight:700;text-align:center}
+.dolacz-info{background:var(--krem-2);border:3px solid var(--braz);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.dolacz-info .klocek{width:100%;justify-content:center}
+
+/* lista rozmów */
+.rozmowy{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.rozmowy button{width:100%;display:flex;align-items:center;gap:10px;text-align:left;background:#fff;border:3px solid var(--braz);border-radius:16px;box-shadow:0 3px 0 var(--braz);padding:8px 10px;cursor:pointer;font-family:Rubik,sans-serif;min-width:0}
+.rozmowy .awatar{width:40px;height:40px;font-size:17px}
+.r-tekst{flex:1;min-width:0}
+.r-tekst b{display:block;color:var(--braz);font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.r-tekst small{display:block;color:var(--braz-2);font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.r-czas{flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-size:11px;font-weight:700;color:var(--braz-2)}
+.r-czas em{font-style:normal;min-width:20px;height:20px;border-radius:999px;background:var(--czer);color:#fff;font:900 11px/20px Rubik,sans-serif;text-align:center;padding:0 5px}
+
+/* rozmowa */
+.watek{display:flex;flex-direction:column;gap:8px;min-height:160px;max-height:calc(var(--app-h,100vh) - 330px);overflow-y:auto;overflow-x:hidden;padding:8px;background:repeating-linear-gradient(45deg,rgba(58,42,20,.04) 0 6px,transparent 6px 12px),var(--krem-2);border:3px solid var(--braz);border-radius:16px}
+.dymek{max-width:82%;display:flex;flex-direction:column;gap:4px;padding:8px 11px;border-radius:16px;border:2px solid var(--braz);font-size:14px;font-weight:700;color:var(--braz);overflow-wrap:anywhere}
+.dymek.jego{align-self:flex-start;background:#fff;border-bottom-left-radius:4px}
+.dymek.moj{align-self:flex-end;background:#FCE7A6;border-bottom-right-radius:4px}
+.dymek.specjalny{max-width:92%;border-width:3px;box-shadow:0 3px 0 var(--braz)}
+.dymek.specjalny b{font:400 13px Bungee,sans-serif}
+.dymek .klocek{min-height:42px;font-size:14px;justify-content:center;text-decoration:none;margin-top:2px}
+.dymek small{font-size:12px;color:var(--braz-2)}
+.dymek time{font-size:10px;font-weight:700;color:var(--braz-2);opacity:.8;align-self:flex-end}
+.watek .blad{align-self:center;background:var(--czer);color:#fff!important;border:2px solid var(--braz);border-radius:10px;padding:4px 10px;font-size:12px!important}
+.szybkie{display:flex;flex-wrap:wrap;gap:6px}
+.szybkie button{border:2px solid var(--braz);border-radius:999px;background:#fff;font:700 13px Rubik,sans-serif;color:var(--braz);padding:6px 11px;cursor:pointer;white-space:nowrap}
+.pisz{display:flex;gap:8px;min-width:0}
+.pisz input{flex:1;min-width:0;min-height:46px;border:3px solid var(--braz);border-radius:14px;padding:0 12px;font:700 15px Rubik,sans-serif;color:var(--braz);background:#fff}
+.pisz .klocek{flex:none;width:52px!important;min-height:46px;padding:0;justify-content:center;font-size:18px}
+@media (prefers-reduced-motion:reduce){.arkusz-pole,.arkusz-tlo{transition:none}}
