@@ -61,7 +61,10 @@
  // UTF-8 ⇄ base64url bez globalnych escape/unescape (tu „escape” to funkcja HTML)
  const b64=o=>{let t='';new TextEncoder().encode(JSON.stringify(o)).forEach(x=>t+=String.fromCharCode(x));return btoa(t).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
  const z64=s=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0))));
- function mojNick(){try{const p=JSON.parse(localStorage.getItem('profil-v1')||'{}');return (p.nick||localStorage.getItem('nick')||'Znajomy').slice(0,24);}catch(e){return 'Znajomy';}}
+ function mojNick(){try{const r=JSON.parse(localStorage.getItem('ranking-profile')||'{}'),p=JSON.parse(localStorage.getItem('profil-v1')||'{}');return (r.nick||p.nick||localStorage.getItem('nick')||'Znajomy').slice(0,24);}catch(e){return 'Znajomy';}}
+ // wyzwanie wysłane prosto z rankingu: karta-w-ciemno.html?rywal=<public_id>&rn=<pseudonim>
+ const Q=new URLSearchParams(location.search),RYWAL=/^[0-9a-f-]{36}$/.test(Q.get('rywal')||'')?{id:Q.get('rywal'),n:(Q.get('rn')||'Rywal').slice(0,24)}:null;
+ const online=()=>window.Online&&Online.enabled();
  function pokazWyborNadawcy(c){
   $('play-area').hidden=true;$('choices').replaceChildren();$('reveal').hidden=false;$('turn').textContent='Wybór zapisany';
   $('reveal').innerHTML='<h2>Wybrałeś: '+escape(c.n)+'</h2><p class="nagroda-info">Wynik tej rundy zobaczysz, gdy znajomy odpowie na wyzwanie.</p>';
@@ -75,16 +78,38 @@
   $('next').hidden=true;$('round').textContent='Koniec meczu';
   if(game.rola==='nadawca'){
    const dane={v:1,e:data.edycja,s:game.seed,o:{region:game.o.region,equal:!!game.o.equal},d:manifest(game.decks[0]),p:game.moje,n:mojNick(),t:Date.now()};
-   const url=location.origin+location.pathname+'?w='+b64(dane);
+   const kod=b64(dane),url=location.origin+location.pathname+'?w='+kod;
    $('metric').textContent='Wyzwanie gotowe!';$('turn').textContent='';
-   $('reveal').innerHTML='<h2>Wyślij wyzwanie znajomemu</h2><p class="nagroda-info">Znajomy zagra te same rundy z tymi samymi kartami. Ma <b>24 godziny</b> na odpowiedź. Gdy skończy, odeśle Ci link z wynikiem.</p><button class="klocek" id="wyslij">Wyślij link</button><a class="klocek" href="karta-w-ciemno.html" style="background:var(--krem)">Nowa gra</a>';
+   if(RYWAL){
+    $('reveal').innerHTML='<h2>Wyzwanie dla '+escape(RYWAL.n)+'</h2><p class="nagroda-info">'+escape(RYWAL.n)+' zagra te same rundy z tymi samymi kartami i ma <b>24 godziny</b> na odpowiedź. Wynik przyjdzie do Ciebie w wiadomościach w rankingu.</p><button class="klocek" id="wyslij">Wyślij wyzwanie do '+escape(RYWAL.n)+'</button><button class="klocek" id="wyslij-link" style="background:var(--krem)">Wyślij linkiem</button><a class="klocek" href="karta-w-ciemno.html" style="background:var(--krem)">Nowa gra</a>';
+    $('wyslij-link').onclick=()=>udostepnij(url,mojNick()+' wyzywa Cię na pojedynek w Karcie w ciemno! Masz 24 godziny.');
+    $('wyslij').onclick=async()=>{
+     const b=$('wyslij');b.disabled=true;
+     try{
+      if(!online())throw Error('Brak połączenia z rankingiem. Wyślij wyzwanie linkiem.');
+      if(!Online.dolaczony())throw Error('Najpierw zapisz swój pseudonim w rankingu, potem wyślij wyzwanie.');
+      await Online.wyslij(RYWAL.id,mojNick()+' wyzywa Cię na pojedynek w Karcie w ciemno! Masz 24 godziny.','challenge',{w:kod,t:dane.t});
+      b.textContent='Wyzwanie wysłane ✓';status('Wyzwanie wysłane. Odpowiedź zobaczysz w wiadomościach w rankingu.');
+      $('reveal').insertAdjacentHTML('beforeend','<a class="klocek" href="ranking.html?wiadomosci" style="background:var(--krem)">Przejdź do wiadomości</a>');
+     }catch(e){b.disabled=false;status(e.message);}
+    };
+    return;
+   }
+   $('reveal').innerHTML='<h2>Wyślij wyzwanie znajomemu</h2><p class="nagroda-info">Znajomy zagra te same rundy z tymi samymi kartami. Ma <b>24 godziny</b> na odpowiedź. Gdy skończy, odeśle Ci link z wynikiem. Możesz też wyzwać gracza prosto z rankingu.</p><button class="klocek" id="wyslij">Wyślij link</button><a class="klocek" href="ranking.html" style="background:var(--krem)">Wybierz gracza z rankingu</a><a class="klocek" href="karta-w-ciemno.html" style="background:var(--krem)">Nowa gra</a>';
    $('wyslij').onclick=()=>udostepnij(url,mojNick()+' wyzywa Cię na pojedynek w Karcie w ciemno! Masz 24 godziny.');
    return;
   }
   const [a,b]=game.totals,n=escape(game.cudze.n);
   $('metric').textContent=a===b?'Remis!':a>b?'Wygrywasz z '+n+'!':n+' wygrywa';$('turn').textContent='Wynik końcowy '+a+' : '+b+'.';
   const wynik={v:1,n:game.cudze.n,o:mojNick(),a:b,b:a,r:game.rundy,t:Date.now()};
-  const url=location.origin+location.pathname+'?wynik='+b64(wynik);
+  const kodW=b64(wynik),url=location.origin+location.pathname+'?wynik='+kodW;
+  const opis=mojNick()+' '+a+' : '+b+' '+game.cudze.n+(a>b?' · wygrywa '+mojNick():a<b?' · wygrywa '+game.cudze.n:' · remis');
+  if(game.cudze.od&&online()&&Online.dolaczony()){
+   // wyzwanie z rankingu: wynik wraca do nadawcy wiadomością, bez kopiowania linków
+   $('reveal').insertAdjacentHTML('beforeend','<p class="nagroda-info" id="wynik-info">Wysyłam wynik do '+n+'…</p><a class="klocek" href="ranking.html?wiadomosci">Wiadomości</a><a class="klocek" href="karta-w-ciemno.html?rywal='+encodeURIComponent(game.cudze.od)+'&rn='+encodeURIComponent(game.cudze.n)+'" style="background:var(--krem)">Rewanż: wyzwij '+n+'</a>');
+   Online.wyslij(game.cudze.od,opis,'result',{wynik:kodW}).then(()=>{$('wynik-info').textContent='Wynik wysłany do '+game.cudze.n+'.';}).catch(e=>{$('wynik-info').textContent='Nie udało się wysłać wyniku ('+e.message+'). Odeślij go linkiem.';$('reveal').insertAdjacentHTML('beforeend','<button class="klocek" id="odeslij">Odeślij wynik linkiem</button>');$('odeslij').onclick=()=>udostepnij(url,'Odpowiedziałem na Twoje wyzwanie w Karcie w ciemno: '+b+' : '+a+'.');});
+   return;
+  }
   $('reveal').insertAdjacentHTML('beforeend','<p class="nagroda-info">Odeślij wynik, żeby '+n+' zobaczył, jak poszło.</p><button class="klocek" id="odeslij">Odeślij wynik</button><a class="klocek" href="karta-w-ciemno.html" style="background:var(--krem)">Zagraj własne wyzwanie</a>');
   $('odeslij').onclick=()=>udostepnij(url,'Odpowiedziałem na Twoje wyzwanie w Karcie w ciemno: '+b+' : '+a+'.');
  }
@@ -105,7 +130,7 @@
   const h=Math.floor(zostalo/3600000),m=Math.floor(zostalo%3600000/60000);
   box.innerHTML='<h2>'+escape(w.n)+' wyzywa Cię na pojedynek!</h2><p>Zagrasz te same 5 rund z tymi samymi kartami. Po każdej rundzie zobaczysz, co wybrał '+escape(w.n)+'.</p><p class="licznik-czasu">Zostało '+h+' h '+m+' min</p>'+(w.e!==data.edycja?'<p class="ostrzezenie">Uwaga: dane kart zmieniły się od wysłania wyzwania, oceny mogą się trochę różnić.</p>':'')+'<button class="klocek" id="przyjmij">Przyjmij wyzwanie</button>';
   box.hidden=false;$('setup').hidden=true;
-  $('przyjmij').onclick=()=>{try{const o={mode:'wyzwanie',rodzaj:'trening',region:w.o.region,equal:!!w.o.equal,records:false,level:'normal',cudze:{n:w.n,p:w.p}};start(o,w.s,[validateDeck(w.d,o,w.s)]);}catch(e){fail(e);}};
+  $('przyjmij').onclick=()=>{try{const od=/^[0-9a-f-]{36}$/.test(q.get('od')||'')?q.get('od'):null;const o={mode:'wyzwanie',rodzaj:'trening',region:w.o.region,equal:!!w.o.equal,records:false,level:'normal',cudze:{n:w.n,p:w.p,od}};start(o,w.s,[validateDeck(w.d,o,w.s)]);}catch(e){fail(e);}};
  }
  function nagrody(a,b){
   if(game.o.rodzaj!=='ranking'){$('reveal').insertAdjacentHTML('beforeend','<p class="nagroda-info">Trening: bez nagród i bez punktów rankingu.</p>');return;}
@@ -138,5 +163,5 @@
  }
  $('create-room').onclick=()=>{closeRoom();host=true;myIndex=0;peer=new Peer('pz-ciemno-'+Array.from(crypto.getRandomValues(new Uint8Array(5)),x=>(x%36).toString(36)).join(''));peer.on('open',id=>{$('room-info').textContent='Kod pokoju: '+id.replace('pz-ciemno-','')+' · czekam na drugą osobę';$('cancel-room').hidden=false;});peer.on('connection',c=>{if(conn){c.close();return;}attach(c);});peer.on('error',fail);timeout();};
  $('join-room').onclick=()=>{const code=$('room-code').value.trim().toLowerCase();if(!/^[a-z0-9]{5}$/.test(code)){fail(Error('Wpisz pięcioznakowy kod pokoju.'));return;}closeRoom();host=false;peer=new Peer();peer.on('open',()=>attach(peer.connect('pz-ciemno-'+code,{reliable:true})));peer.on('error',fail);$('cancel-room').hidden=false;timeout();};$('cancel-room').onclick=closeRoom;window.addEventListener('pagehide',closeRoom);
- Karty.styl();Karty.zaladuj().then(d=>{data=d;Karty.migracja();$('region').innerHTML=[...new Set(d.g.map(g=>g.woj))].sort((a,b)=>a.localeCompare(b,'pl')).map(w=>'<option>'+escape(w)+'</option>').join('');try{const mam=Karty.zdobyte().mam,ile={};d.g.forEach(g=>{if(mam.has(g.k))ile[g.woj]=(ile[g.woj]||0)+1;});const naj=Object.keys(ile).sort((x,y)=>ile[y]-ile[x])[0];if(naj)$('region').value=naj;}catch(e){}$('setup').hidden=false;$('mode').onchange&&$('mode').onchange();wejscieZLinku();$('start').disabled=false;status('');}).catch(fail);
+ Karty.styl();Karty.zaladuj().then(d=>{data=d;Karty.migracja();$('region').innerHTML=[...new Set(d.g.map(g=>g.woj))].sort((a,b)=>a.localeCompare(b,'pl')).map(w=>'<option>'+escape(w)+'</option>').join('');try{const mam=Karty.zdobyte().mam,ile={};d.g.forEach(g=>{if(mam.has(g.k))ile[g.woj]=(ile[g.woj]||0)+1;});const naj=Object.keys(ile).sort((x,y)=>ile[y]-ile[x])[0];if(naj)$('region').value=naj;}catch(e){}$('setup').hidden=false;if(RYWAL){$('mode').value='wyzwanie';const box=$('wyzwanie-info');box.innerHTML='<h2>Wyzwanie dla '+escape(RYWAL.n)+'</h2><p>Najpierw grasz Ty: 5 rund, wybierasz karty. Potem '+escape(RYWAL.n)+' dostanie wyzwanie w wiadomościach i ma 24 godziny na odpowiedź.</p>';box.hidden=false;}$('mode').onchange&&$('mode').onchange();wejscieZLinku();$('start').disabled=false;status('');}).catch(fail);
 })();

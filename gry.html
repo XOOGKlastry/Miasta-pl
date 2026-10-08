@@ -65,6 +65,6 @@ const GMINNE=["herb.html","ksztalt.html?rodzaj=g","slepa.html?tryb=g","cieplo.ht
 document.querySelectorAll("a.pole.gra").forEach(a=>{const h=a.getAttribute("href")||"";if(/encyklopedia|profil|codzienne|karta-w-ciemno|gry\.html/.test(h))return;
   const z=document.createElement("small");const g=GMINNE.indexOf(h)>=0;z.className=g?"znak-k":"znak-z";z.textContent=g?"🃏 karty gmin":"🪙 monety";a.querySelector("b").after(z);});
 </script>
-<script src="naglowek.js?v=1"></script>
+<script src="naglowek.js?v=2"></script>
 </body>
 </html>

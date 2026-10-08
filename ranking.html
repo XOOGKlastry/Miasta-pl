@@ -9,9 +9,10 @@
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="plansza.css?v=4" />
 <link rel="stylesheet" href="plansza-formularze.css?v=1" />
+<link rel="stylesheet" href="ranking-spolecznosc.css?v=1" />
 </head>
 <body>
 <div class="wrap">
@@ -22,6 +23,7 @@
       <div class="pole"><b id="local-points">–</b><span>Twoje punkty</span></div>
       <div class="pole"><b id="local-cards">–</b><span>Twoje karty</span></div>
     </section>
+    <button type="button" class="klocek wiad-przycisk" id="skrzynka" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M4 7l8 6 8-6"/></svg>Wiadomości i wyzwania<span class="odznaka" id="nieprz" hidden>0</span></button>
     <div class="przelacznik trzy" role="group" aria-label="Rodzaj rankingu">
       <button id="points" aria-pressed="true">Punkty</button>
       <button id="cards" aria-pressed="false">Kolekcja</button>
@@ -30,6 +32,7 @@
     <p id="status" class="stan" role="status" aria-live="polite"></p>
     <section class="pole tabela">
       <table class="ranking-table"><thead><tr><th>Miejsce</th><th>Odkrywca</th><th id="value">Punkty</th></tr></thead><tbody id="rows"></tbody></table>
+      <p class="podpowiedz-tabeli">Stuknij gracza: zobaczysz jego karty i statystyki, napiszesz albo wyzwiesz go na pojedynek.</p>
     </section>
     <section class="pole formularz">
       <div id="sign-in"><h2>Dołącz do rankingu</h2><p>Bez logowania: wpisz pseudonim, a Twój wynik zapisze się pod tym telefonem. Konto (później) przeniesie wynik na inne urządzenia.</p></div>
@@ -37,11 +40,13 @@
         <h2 id="publish-tytul">Twój pseudonim</h2>
         <label>Pseudonim<input id="nick" minlength="3" maxlength="24" autocomplete="nickname" required></label>
         <label class="check-label"><input id="visible" type="checkbox" checked><span>Pokaż mój pseudonim i wynik w rankingu</span></label>
+        <label class="check-label"><input id="dm" type="checkbox" checked><span>Przyjmuj wiadomości od innych graczy (wyzwania na pojedynek przychodzą zawsze)</span></label>
         <button class="klocek">Zapisz aktualny wynik</button>
       </form>
     </section>
-    <p class="drobne">Każde trafienie to 10 punktów. Ranking rekreacyjny: wyniki pochodzą z urządzenia gracza, a e-mail pozostaje prywatny.</p>
+    <p class="drobne">Każde trafienie to 10 punktów. Ranking rekreacyjny: wyniki pochodzą z urządzenia gracza, a e-mail pozostaje prywatny. Wiadomości bez linków, znikają po 60 dniach. Kogoś, kto przeszkadza, możesz zablokować.</p>
   </main>
+  <div class="arkusz" id="arkusz" hidden><div class="arkusz-tlo" data-zamknij></div><section class="arkusz-pole" role="dialog" aria-modal="true" aria-labelledby="ark-tytul"><button type="button" class="ark-zamknij" data-zamknij aria-label="Zamknij">×</button><div id="ark-tresc"></div></section></div>
   <nav class="dol">
   <a href="./" data-n="plansza"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20c0-4 3-4 3-8s-3-4-3-8"/><circle cx="16" cy="6" r="2.5"/><circle cx="16" cy="18" r="2.5"/><path d="M16 8.5v7"/></svg>Plansza</a>
   <a href="codzienne.html" data-n="codzienne"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Codzienne</a>
@@ -52,11 +57,5 @@
 </div>
 <script>(function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();</script>
 <script src="polandball.js?v=4"></script>
-<script src="naglowek.js?v=1"></script>
-<script src="karty.js?v=21"></script><script src="online-config.js"></script><script src="online.js"></script><script>
-let mode='points',sequence=0;const status=document.getElementById('status'),rows=document.getElementById('rows');
-async function load(){const id=++sequence;document.getElementById('value').textContent=mode==='points'?'Punkty':mode==='cards'?'Karty':'Pkt pojedynków';for(const x of ['points','cards','duels'])document.getElementById(x).setAttribute('aria-pressed',String(x===mode));rows.replaceChildren();if(!Online.enabled()){status.textContent='Ranking online jest niedostępny. Twój postęp pozostaje na urządzeniu.';return;}status.textContent='Wczytywanie…';try{const data=await Online.ranking(mode);if(id!==sequence)return;status.textContent=data.length?'':'Bądź pierwszym odkrywcą w rankingu.';for(const r of data){const tr=document.createElement('tr');for(const val of [r.place<=3?['🥇','🥈','🥉'][r.place-1]:r.place,r.nickname,Number(r.value).toLocaleString('pl-PL')]){const td=document.createElement('td');td.textContent=val;tr.append(td);}if(r.place<=3)tr.className='podium';rows.append(tr);}}catch(e){if(id===sequence)status.textContent=/fetch|network|sieć/i.test(e.message)?'Brak połączenia z rankingiem. Sprawdź internet i spróbuj ponownie.':e.message;}}
-for(const x of ['points','cards','duels'])document.getElementById(x).onclick=()=>{mode=x;load();};
-document.getElementById('publish').onsubmit=async e=>{e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;try{const nick=document.getElementById('nick').value,visible=document.getElementById('visible').checked;const s=await Online.session();if(s)await Online.publish(nick,visible);else await Online.publishGuest(nick,visible);localStorage.setItem('ranking-profile',JSON.stringify({nick,visible}));await load();status.textContent=visible?'Profil zapisany w rankingu.':'Wynik zapisany prywatnie.';}catch(e){status.textContent=e.message;}finally{b.disabled=false;}};
-(async()=>{document.getElementById('local-points').textContent=Online.points().toLocaleString('pl-PL');try{await Karty.zaladuj();Karty.migracja();document.getElementById('local-cards').textContent=Karty.zdobyte().mam.size;}catch(e){status.textContent=e.message;}const s=await Online.session();document.getElementById('sign-in').hidden=!!s;document.getElementById('publish-tytul').textContent=s?'Twój profil':'Twój pseudonim';try{const pr=JSON.parse(localStorage.getItem('profil-v1')||'{}');if(pr.nick&&!document.getElementById('nick').value)document.getElementById('nick').value=pr.nick;}catch(e){}try{const p=JSON.parse(localStorage.getItem('ranking-profile')||'{}');document.getElementById('nick').value=p.nick||'';document.getElementById('visible').checked=p.visible!==false;}catch{}await load();})();
-</script></body></html>
+<script src="naglowek.js?v=2"></script>
+<script src="karty.js?v=22"></script><script src="online-config.js"></script><script src="online.js?v=2"></script><script src="ranking-spolecznosc.js?v=1"></script></body></html>
