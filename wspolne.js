@@ -961,4 +961,4 @@ window.ZP={$,nagrodaDnia,IKONA_5050,jokery,dodajJoker,jokerCel,seria,zeton,karty
 })();
 
 // Konfiguracja i kontrola kont po załadowaniu strony.
-(async()=>{try{for(const src of ["online-config.js","online.js?v=2"]){await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src=src;s.onload=resolve;s.onerror=reject;document.head.append(s);});}await Online.gate();}catch(e){console.warn("Nie wczytano kont online",e);}})();
+(async()=>{try{for(const src of ["online-config.js","online.js?v=3"]){await new Promise((resolve,reject)=>{const s=document.createElement("script");s.src=src;s.onload=resolve;s.onerror=reject;document.head.append(s);});}await Online.gate();}catch(e){console.warn("Nie wczytano kont online",e);}})();
