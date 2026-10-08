@@ -9,26 +9,34 @@
  /* ---------- tabela rankingu ---------- */
  async function load(){
   const id=++sequence;
-  $('value').textContent=mode==='points'?'Punkty':mode==='cards'?'Karty':'Pkt pojedynków';
+  $('value').textContent=mode==='points'?'Punkty':mode==='cards'?'Karty':'Ranking walk';
   for(const x of ['points','cards','duels'])$(x).setAttribute('aria-pressed',String(x===mode));
   rows.replaceChildren();
   if(!Online.enabled()){status.textContent='Ranking online jest niedostępny. Twój postęp pozostaje na urządzeniu.';return;}
   status.textContent='Wczytywanie…';
   try{
    const data=await Online.ranking(mode);if(id!==sequence)return;
-   status.textContent=data.length?'':'Bądź pierwszym odkrywcą w rankingu.';
+   status.textContent=data.length?'':mode==='duels'?'Nikt jeszcze nie walczył na żywo. Wyzwij kogoś z rankingu punktów!':'Bądź pierwszym odkrywcą w rankingu.';
    const ja=Online.ja();
    for(const r of data){
     const tr=document.createElement('tr'),ty=r.public_id&&r.public_id===ja;
     [r.place<=3?['🥇','🥈','🥉'][r.place-1]:r.place,r.nickname,liczba(r.value)].forEach((val,i)=>{const td=document.createElement('td');td.textContent=val;if(i===1&&ty){const b=document.createElement('span');b.className='ty';b.textContent='Ty';td.append(' ',b);}tr.append(td);});
     if(r.place<=3)tr.classList.add('podium');
     if(ty)tr.classList.add('moj');
-    if(r.public_id){tr.classList.add('klik');tr.tabIndex=0;tr.setAttribute('role','button');tr.setAttribute('aria-label','Profil gracza '+r.nickname);
+    if(r.public_id){tr.dataset.id=r.public_id;tr.classList.add('klik');tr.tabIndex=0;tr.setAttribute('role','button');tr.setAttribute('aria-label','Profil gracza '+r.nickname);
      const otworz=()=>pokazProfil(r.public_id,r.nickname);tr.onclick=otworz;tr.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();otworz();}};}
     rows.append(tr);
    }
+   kropkiOnline();
   }catch(e){if(id===sequence)status.textContent=/fetch|network|sieć/i.test(e.message)?'Brak połączenia z rankingiem. Sprawdź internet i spróbuj ponownie.':e.message;}
  }
+ // zielona kropka przy graczach, którzy są teraz w grze (można ich wyzwać na żywo)
+ async function kropkiOnline(){
+  try{const l=await Online.walka.online(),on=new Set((l||[]).map(x=>x.public_id||x));
+   rows.querySelectorAll('tr').forEach(tr=>{const id=tr.dataset.id;const td=tr.children[1];if(!td||!id)return;const b=td.querySelector('.online');if(on.has(id)&&!b)td.insertAdjacentHTML('afterbegin','<i class="online" title="W grze teraz"></i>');if(!on.has(id)&&b)b.remove();});
+  }catch(e){}
+ }
+ setInterval(()=>{if(!document.hidden)kropkiOnline();},30000);
  for(const x of ['points','cards','duels'])$(x).onclick=()=>{mode=x;load();};
 
  $('publish').onsubmit=async e=>{
@@ -55,8 +63,8 @@
 
  async function pokazProfil(id,nick){
   otworzArkusz('<div class="ark-glowa">'+awatar(id,nick)+'<div><h2 id="ark-tytul">'+esc(nick)+'</h2><small>wczytywanie profilu…</small></div></div>');
-  let p;
-  try{p=await Online.profil(id);}catch(e){tresc.querySelector('small').textContent=/function|player_profile/i.test(e.message)?'Profile graczy jeszcze się uruchamiają. Spróbuj za chwilę.':e.message;return;}
+  let p,lp=null;
+  try{[p,lp]=await Promise.all([Online.profil(id),Online.walka.profil(id).catch(()=>null)]);}catch(e){tresc.querySelector('small').textContent=/function|player_profile/i.test(e.message)?'Profile graczy jeszcze się uruchamiają. Spróbuj za chwilę.':e.message;return;}
   if(!p){tresc.querySelector('small').textContent='Ten gracz ukrył swój profil.';return;}
   const st=p.stats||{},D=Karty.dane(),RZ=Karty.RZ,KOL=Karty.KOLEJ,ja=id===Online.ja();
   const mojeKarty=Karty.zdobyte().mam.size,mojePkt=Online.points();
@@ -67,13 +75,13 @@
   const kd=st.kd||{},gier=(kd.w||0)+(kd.r||0)+(kd.p||0);
   const miejsce=(n,t)=>'<div class="miejsce"><b>'+(n<=3?['🥇','🥈','🥉'][n-1]:'#'+n)+'</b><span>'+t+'</span></div>';
   const porownaj=(jego,moje)=>ja?'':'<small class="vs '+(moje>jego?'lepiej':moje<jego?'gorzej':'')+'">Ty: '+liczba(moje)+'</small>';
-  let h='<div class="ark-glowa">'+awatar(id,p.nickname)+'<div><h2 id="ark-tytul">'+esc(p.nickname)+(ja?' <span class="ty">Ty</span>':'')+'</h2><small>aktywny '+kiedy(p.updated_at)+'</small></div></div>'
+  let h='<div class="ark-glowa">'+awatar(id,p.nickname)+'<div><h2 id="ark-tytul">'+esc(p.nickname)+(ja?' <span class="ty">Ty</span>':'')+'</h2><small>'+(lp&&lp.online?'<i class="online"></i> w grze teraz':'aktywny '+kiedy(p.updated_at))+'</small></div></div>'
    +'<div class="miejsca">'+miejsce(p.place_points,'punkty')+miejsce(p.place_cards,'kolekcja')+miejsce(p.place_duels,'pojedynki')+'</div>'
    +'<div class="staty">'
    +'<div><b>'+liczba(p.cards)+'</b><span>kart z '+liczba(D?D.g.length:2479)+'</span>'+porownaj(p.cards,mojeKarty)+'</div>'
    +'<div><b>'+liczba(p.points)+'</b><span>punktów</span>'+porownaj(p.points,mojePkt)+'</div>'
-   +'<div><b>'+liczba(p.duel_points)+'</b><span>pkt pojedynków</span></div>'
-   +'<div><b>'+(gier?liczba(kd.w||0)+'/'+liczba(gier):liczba(p.duel_wins))+'</b><span>'+(gier?'wygrane mecze':'wygrane pojedynki')+'</span></div>'
+   +'<div><b>'+(lp&&lp.games?liczba(lp.rating):'–')+'</b><span>ranking walk</span></div>'
+   +'<div><b>'+(lp&&lp.games?lp.wins+' / '+lp.games:'0')+'</b><span>wygrane walki na żywo</span></div>'
    +'</div>';
   if(chipy)h+='<div class="rz-pasek" aria-hidden="true">'+pasek+'</div><div class="chipy">'+chipy+'</div>';
   if(naj.length)h+='<h3>Najlepsze karty</h3><div class="naj-karty">'+naj.map(g=>Karty.karta(g,{tryb:'mini'})).join('')+'</div>';
@@ -85,7 +93,10 @@
   if(st.odz)dod.push(['Odznaki rekordzistek',st.odz]);
   if(dod.length)h+='<dl class="dodatki">'+dod.map(([a,b])=>'<div><dt>'+a+'</dt><dd>'+b+'</dd></div>').join('')+'</dl>';
   if(!st.v)h+='<p class="uwaga">Gracz nie odświeżył jeszcze profilu w nowej wersji gry, więc część statystyk jest ukryta.</p>';
-  if(!ja)h+='<div class="akcje"><a class="klocek" href="karta-w-ciemno.html?rywal='+encodeURIComponent(id)+'&rn='+encodeURIComponent(p.nickname)+'">⚔️ Wyzwij na pojedynek</a>'
+  if(!ja)h+='<div class="akcje">'
+   +(lp&&lp.online?'<div class="walcz"><button type="button" class="klocek" data-walka="quiz">⚔️ Quiz na żywo</button><button type="button" class="klocek" data-walka="mapa">📍 Wyścig na mapie</button></div><p class="uwaga" id="walka-info">'+esc(p.nickname)+' jest teraz w grze. Walka na żywo liczy się do rankingu.</p>'
+     :'<p class="uwaga">Walka na żywo, gdy '+esc(p.nickname)+' będzie w grze (zielona kropka). Teraz możesz wysłać wyzwanie na 24 h.</p>')
+   +'<a class="klocek'+(lp&&lp.online?' jasny':'')+'" href="karta-w-ciemno.html?rywal='+encodeURIComponent(id)+'&rn='+encodeURIComponent(p.nickname)+'">🃏 Karta w ciemno · 24 h</a>'
    +(p.dm_open?'<button type="button" class="klocek jasny" id="napisz">✉️ Napisz</button>':'<p class="uwaga">Ten gracz nie przyjmuje wiadomości, ale wyzwanie możesz wysłać.</p>')+'</div>'
    +'<p class="male-linki"><button type="button" id="zablokuj">Zablokuj</button> · <button type="button" id="zglos">Zgłoś</button></p>';
   else h+='<p class="uwaga">Tak widzą Cię inni gracze. Statystyki odświeżają się, gdy wchodzisz do rankingu.</p>';
@@ -93,6 +104,12 @@
   tresc.querySelectorAll('.naj-karty .kk').forEach(el=>{try{Karty.holo(el);}catch(e){}});
   try{Karty.podepnijMapy(tresc);}catch(e){}
   if($('napisz'))$('napisz').onclick=()=>pokazWatek(id,p.nickname);
+  tresc.querySelectorAll('[data-walka]').forEach(b=>b.onclick=async()=>{
+   if(!Online.dolaczony()){$('walka-info').textContent='Najpierw zapisz swój pseudonim w rankingu (formularz pod tabelą).';return;}
+   tresc.querySelectorAll('[data-walka]').forEach(x=>x.disabled=true);$('walka-info').textContent='Wysyłam zaproszenie…';
+   try{const m=await Online.walka.zapros(id,b.dataset.walka,'w1');location.href='wyzwanie.html?tryb=walka&mecz='+encodeURIComponent(m);}
+   catch(e){$('walka-info').textContent=e.message;tresc.querySelectorAll('[data-walka]').forEach(x=>x.disabled=false);}
+  });
   if($('zablokuj'))$('zablokuj').onclick=()=>blokuj(id,p.nickname,false);
   if($('zglos'))$('zglos').onclick=()=>blokuj(id,p.nickname,true);
  }
