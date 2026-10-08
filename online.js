@@ -88,6 +88,17 @@ window.Online=(()=>{
  async function skrzynka(){const l=await rpcGracza('inbox',{});if(l&&l[0]&&l[0].me)zapiszJa(l[0].me);return l||[];}
  async function nieprzeczytane(){if(!enabled()||!dolaczony())return 0;try{return +(await rpcGracza('unread_count',{}))||0;}catch(e){return 0;}}
  async function przeczytane(inny){return rpcGracza('mark_read',{p_other:inny});}
+ // walki na żywo: serwer liczy czas i obrażenia, telefon odpytuje stan
+ const walka={
+  ping:()=>rpcGracza('live_ping',{}),
+  online:()=>request('/rest/v1/rpc/live_online',{}),
+  profil:id=>request('/rest/v1/rpc/live_profile',{p_id:id}).then(r=>r&&r[0]||null),
+  zapros:(do_,tryb,edycja)=>rpcGracza('live_invite',{p_to:do_,p_mode:tryb,p_edition:edycja||null}),
+  odpowiedz:(id,tak)=>rpcGracza('live_respond',{p_id:id,p_accept:!!tak}),
+  stan:id=>rpcGracza('live_state',{p_id:id}),
+  strzal:(id,runda,pts)=>rpcGracza('live_answer',{p_id:id,p_round:runda,p_pts:Math.round(pts)}),
+  opusc:id=>rpcGracza('live_leave',{p_id:id})
+ };
  async function zablokuj(inny,zglos){return rpcGracza('block_player',{p_other:inny,p_report:!!zglos});}
  async function ranking(mode){try{return await request('/rest/v1/rpc/leaderboard2',{p_mode:mode});}catch(e){if(/function|schema cache|not find/i.test(e.message))return request('/rest/v1/rpc/leaderboard',{p_mode:mode});throw e;}}
  async function gate(){
@@ -96,5 +107,5 @@ window.Online=(()=>{
   if(await session())return;
   sessionStorage.setItem('login-return',location.pathname+location.search+location.hash);location.replace('logowanie.html');
  }
- return {providers,enabled,session,oauth,email,verify,callback,logout,points,publish,publishGuest,ranking,gate,statystyki,odswiezProfil,dolaczony,profilLokalny,ja,profil,wyslij,skrzynka,nieprzeczytane,przeczytane,zablokuj,urzadzenie};
+ return {providers,enabled,session,oauth,email,verify,callback,logout,points,publish,publishGuest,ranking,gate,statystyki,odswiezProfil,dolaczony,profilLokalny,ja,profil,wyslij,skrzynka,nieprzeczytane,przeczytane,zablokuj,urzadzenie,walka};
 })();

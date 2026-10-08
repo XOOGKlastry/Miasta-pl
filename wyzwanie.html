@@ -237,11 +237,11 @@ svg path{fill-rule:evenodd}
 <script src="peerjs.min.js"></script>
 <script src="topojson-client.min.js?v=17"></script>
 <script src="efekty.js?v=17"></script>
-<script src="multiplayer-zasady.js"></script><script src="wspolne.js?v=24"></script>
+<script src="multiplayer-zasady.js"></script><script src="wspolne.js?v=24"></script><script src="online-config.js"></script><script src="online.js?v=4"></script><script src="walka.js?v=2"></script>
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
-const TRYB=["turniej","pojedynek","saga","kostka"].indexOf(URLP.get("tryb"))>=0?URLP.get("tryb"):"dzien";
+const TRYB=["turniej","pojedynek","saga","kostka","walka"].indexOf(URLP.get("tryb"))>=0?URLP.get("tryb"):"dzien";
 const MULTI=TRYB==="pojedynek"?{host:false,conns:{},gracze:[],ja:{id:"",nick:localStorage.getItem("nick")||"",aw:(window.Konto?Konto.profil().awatar:"🦊")},peer:null,kod:"",gra:null}:null;
 // wyzwanie od znajomego: te same pytania (ziarno i ustawienia w linku) i jego wynik do pobicia
 let RYWAL=URLP.get("od")?{nick:URLP.get("od").slice(0,20),wynik:+URLP.get("wynik")||0,nr:+URLP.get("nr")||0}:null;
@@ -354,6 +354,7 @@ function krainaStart(){
 }
 async function init(){
   if(TRYB==="saga"||TRYB==="kostka"){krainaStart();$("stanDanych").textContent="Wczytywanie…";await laduj();$("stanDanych").textContent="";$("zaczynam").disabled=false;$("zaczynam").textContent="Graj";return;}
+  if(TRYB==="walka"){Walka.start();return;}
   if(MULTI){$("tytul").textContent="Kto pierwszy, ten lepszy";document.title="Kto pierwszy, ten lepszy · PolskoZnawca";lobbyStart();laduj();return;}
   if(TRYB==="turniej"){
     $("tytul").textContent="Turniej";
@@ -430,7 +431,8 @@ function wpisz(nazwy,poprawne,opcje){
   if(!POLE)POLE=ZP.poleWpisu($("wpis"),()=>st.nazwy,v=>odpWpis(v),{poprawne:()=>st.poprawne,pokazEtykieta:"Pokaż podpowiedzi<br><small>połowa punktów</small>",pokaz:()=>{st.podp=true;pokazOpcje();}});
   st.nazwy=nazwy;st.poprawne=poprawne;st.opcje=opcje;
   $("wpis").classList.remove("hidden");POLE.wyczysc();POLE.wylacz(false);
-  if(TRYB==="saga"){pokazOpcje();$("wpis").classList.add("bez-podp");}else POLE.focus();
+  // plansza i walka na żywo: od razu odpowiedzi do wyboru (szybciej na telefonie)
+  if(TRYB==="saga"||TRYB==="walka"){pokazOpcje();$("wpis").classList.add("bez-podp");}else POLE.focus();
 }
 ZP.jokerCel(()=>{const q=Q[st.i];if(!q)return [];if(q.t==="v")return [q.woj];if(q.t==="p")return [q.pw.label];return st.poprawne||[];});
 function pokazOpcje(){
@@ -662,6 +664,11 @@ function wynikRundy(pts,ok,naglowek){
   ZP.dopiszEncykl(fb,cel);
   $("nextBtn").textContent=st.i+1>=Q.length?"Wynik":"Dalej";$("nextBtn").onclick=nastepne;
   fb.classList.remove("hidden");
+  if(TRYB==="walka"){
+    $("nextBtn").remove();
+    fb.querySelector(".txt").insertAdjacentHTML("beforeend",'<div class="mp-stan" id="mpStan">Czekam na rywala…</div>');
+    Walka.odpowiedz(st.i,pts);
+  }
   if(MULTI){
     $("nextBtn").remove();
     fb.querySelector(".txt").insertAdjacentHTML("beforeend",'<div class="mp-stan" id="mpStan">Czekamy na innych…</div>');
