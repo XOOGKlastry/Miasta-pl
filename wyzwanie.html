@@ -232,11 +232,11 @@ svg path{fill-rule:evenodd}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="konto.js"></script>
-<script src="saga.js?v=3"></script>
+<script src="saga.js?v=4"></script>
 <script src="tablice-powiaty.js"></script>
 <script src="topojson-client.min.js?v=17"></script>
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=24"></script><script src="online-config.js"></script><script src="online.js?v=4"></script><script src="walka.js?v=2"></script>
+<script src="wspolne.js?v=24"></script><script src="online-config.js"></script><script src="online.js?v=5"></script><script src="walka.js?v=2"></script>
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
@@ -335,13 +335,13 @@ function krainaStart(){
   // poziom planszy przygód albo rzut kostką: gotowa konfiguracja, bez konfiguratora
   const reszta=gry=>gry.concat(WSZYSTKIE.filter(t=>!gry.some(g=>g.t===t)).map(t=>({t,ile:0})));
   if(TRYB==="saga"){
-    POZIOM=Saga.poziom(Math.max(0,Math.min(Saga.ILE-1,+(URLP.get("poziom")||0))));
-    KONFIG={preset:"",gry:reszta(POZIOM.gry),kolej:"przeplatane",czas:0,podp:true,premia:false,wielk:POZIOM.nrWSwiecie<=2?"ds":"dsm",obszar:[POZIOM.woj]};
+    POZIOM=Saga.poziom(Math.max(0,Math.min(Saga.ILE-1,+(URLP.get("poziom")||0))),URLP.get("sezon")==="2"?2:1);
+    KONFIG={preset:"",gry:reszta(POZIOM.gry),kolej:"przeplatane",czas:POZIOM.czas||0,podp:POZIOM.podp,premia:false,wielk:POZIOM.wielk,obszar:[POZIOM.woj]};
     $("tytul").textContent="Poziom "+(POZIOM.n+1);document.title="Poziom "+(POZIOM.n+1)+" · PolskoZnawca";
-    $("odznaka").textContent=POZIOM.kraina.nazwa+" · poziom "+(POZIOM.nrWSwiecie+1)+" z "+Saga.NA_SWIAT;
+    $("odznaka").textContent=(POZIOM.sezon===2?"Szlak Mistrzów · ":"")+POZIOM.kraina.nazwa+" · poziom "+(POZIOM.nrWSwiecie+1)+" z "+Saga.NA_SWIAT+(Saga.wTygodniu(POZIOM.n)?" · 🔥 podwójne nagrody":"");
     $("startTytul").innerHTML=(POZIOM.boss?"Stolica regionu:<br>"+POZIOM.kraina.stolica:POZIOM.nazwa);
-    const s=Saga.stan(),gw=s.gw[POZIOM.n]||0;
-    $("startOpis").innerHTML=POZIOM.pytan+" pytań z województwa "+POZIOM.woj+". "+(POZIOM.boss?"Potrzebujesz 2 gwiazdek, żeby wyruszyć do kolejnej krainy.":"Zdobądź choć jedną gwiazdkę, żeby iść dalej.")+(gw?"<br>Twój rekord: "+"★".repeat(gw)+"☆".repeat(3-gw):"");
+    const s=Saga.stan(POZIOM.sezon),gw=s.gw[POZIOM.n]||0;
+    $("startOpis").innerHTML=POZIOM.pytan+" pytań z województwa "+POZIOM.woj+(POZIOM.czas?", "+POZIOM.czas+" s na pytanie":"")+(POZIOM.podp?"":", bez podpowiedzi")+". "+(POZIOM.boss?"Potrzebujesz 2 gwiazdek, żeby wyruszyć do kolejnej krainy.":"Zdobądź choć jedną gwiazdkę, żeby iść dalej.")+(gw?"<br>Twój rekord: "+"★".repeat(gw)+"☆".repeat(3-gw):"");
   }else{
     const f=Saga.KOSTKA.find(k=>k.id===URLP.get("kat"))||Saga.KOSTKA[0];
     KONFIG={preset:"",gry:reszta(f.gry.map(([t,ile])=>({t,ile}))),kolej:"losowo",czas:0,podp:true,premia:false,wielk:"dsm",obszar:[]};
@@ -430,7 +430,8 @@ function wpisz(nazwy,poprawne,opcje){
   st.nazwy=nazwy;st.poprawne=poprawne;st.opcje=opcje;
   $("wpis").classList.remove("hidden");POLE.wyczysc();POLE.wylacz(false);
   // plansza i walka na żywo: od razu odpowiedzi do wyboru (szybciej na telefonie)
-  if(TRYB==="saga"||TRYB==="walka"){pokazOpcje();$("wpis").classList.add("bez-podp");}else POLE.focus();
+  if(TRYB==="walka"||(TRYB==="saga"&&POZIOM.podp)){pokazOpcje();$("wpis").classList.add("bez-podp");}
+  else{if(TRYB==="saga")$("wpis").classList.add("bez-podp");POLE.focus();}
 }
 ZP.jokerCel(()=>{const q=Q[st.i];if(!q)return [];if(q.t==="v")return [q.woj];if(q.t==="p")return [q.pw.label];return st.poprawne||[];});
 function pokazOpcje(){
@@ -785,18 +786,18 @@ function czasMinal(cicho){
 function wynikSaga(){
   schowaj();["segmenty","gora","pytanie","stage","start"].forEach(id=>$(id).classList.add("hidden"));
   const suma=st.res.reduce((a,r)=>a+r.pts,0),max=st.res.length*1000,proc=Math.round(100*suma/Math.max(1,max));
-  const gw=Saga.gwiazdki(proc),przed=Saga.stan(),bylOdbl=Saga.odblokowany(POZIOM.n+1,przed);
-  const s=Saga.zapisz(POZIOM.n,gw,suma),teraz=POZIOM.n+1<Saga.ILE&&Saga.odblokowany(POZIOM.n+1,s);
-  if(gw===3){const sc=()=>Karty.nagrodaZa("poziom:"+POZIOM.n).then(g=>{if(g){ZP.komunikat("3 gwiazdki! Paczka trafiła do albumu kart.",3600);}}).catch(()=>ZP.komunikat("Nie udało się odebrać nagrody. Spróbuj ponownie."));if(window.Karty)sc();else{const js=document.createElement("script");js.src="karty.js?v=22";js.onload=sc;document.head.append(js);}}
-  const zal=gw>=POZIOM.progGwiazd;
+  const gw=Saga.gwiazdki(proc);
+  // zapis, paczka za 3 gwiazdki i wydarzenie tygodnia: wspólne z osobnymi grami planszy (saga.js)
+  const r=Saga.zakoncz({n:POZIOM.n,sezon:POZIOM.sezon,gw,wynik:suma,proc}),zal=r.zal,bylOdbl=r.bylOdbl,teraz=r.teraz;
   const w=$("wynik");
   w.innerHTML='<div class="saga-wynik"><div class="saga-gw">'+[1,2,3].map(i=>'<span class="'+(i<=gw?"zdobyta":"")+'" style="animation-delay:'+(0.3+i*0.35)+'s">★</span>').join("")+'</div>'
     +'<h2>'+(gw===3?"Perfekcyjnie!":gw===2?"Świetnie!":gw===1?"Zaliczone!":"Tym razem nie")+'</h2>'
     +'<p>'+fmt(suma)+' pkt · '+proc+'% · '+POZIOM.kraina.nazwa+', poziom '+(POZIOM.nrWSwiecie+1)+'</p>'
     +(zal&&!bylOdbl&&teraz?'<div class="saga-odbl">'+(POZIOM.boss?'Nowa kraina odblokowana: <b>'+Saga.SWIATY[POZIOM.swiat+1].nazwa+'</b>':'Odblokowany poziom '+(POZIOM.n+2))+'</div>':'')
     +(!zal?'<div class="saga-odbl nie">'+(POZIOM.boss?"Stolica regionu wymaga 2 gwiazdek.":"Potrzebujesz choć jednej gwiazdki.")+'</div>':'')
-    +'<div class="btnrow">'+(teraz?'<a class="big" href="wyzwanie.html?tryb=saga&poziom='+(POZIOM.n+1)+'">Następny poziom</a>':'')
-    +'<a class="ghost" href="wyzwanie.html?tryb=saga&poziom='+POZIOM.n+'">Jeszcze raz</a></div>'
+    +(r.wyd?'<div class="saga-odbl">🔥 Wydarzenie tygodnia: '+r.wyd.suma+' pkt'+(r.nagrody.length?' · '+r.nagrody.join(", "):'')+'</div>':'')
+    +'<div class="btnrow">'+(teraz?'<a class="big" href="'+r.nastepny+'">Następny poziom</a>':'')
+    +'<a class="ghost" href="'+Saga.adres(POZIOM.n,POZIOM.sezon)+'">Jeszcze raz</a></div>'
     +'<a class="ghost" href="./#poziom='+(teraz?POZIOM.n+1:POZIOM.n)+'" style="display:grid;place-items:center;text-decoration:none;color:inherit">Wróć na planszę</a><div class="rows"></div></div>';
   const rows=w.querySelector(".rows");
   st.res.forEach((r,i)=>{const q=Q[i];if(!q)return;const d=document.createElement("div");d.className="r";

@@ -113,6 +113,24 @@
 .malowana-tryb .wezel.boss .kolo{width:70px;height:70px}
 .malowana-tryb .wezel .gwiazdki{margin-top:3px;background:#FFF6E0;border:2px solid #3A2A14;border-radius:999px;padding:1px 5px;font-size:13px;text-shadow:none;color:#C9BFA0;filter:none}
 .malowana-tryb .wezel .gwiazdki .z{color:#F5B82E;text-shadow:0 1px 0 #3A2A14}
+/* pasek nad planszą: wybór planszy i wydarzenie tygodnia */
+.plansza-pasek{flex:none;display:flex;align-items:center;gap:8px;padding:6px 10px;background:#5f8a55;border-bottom:3px solid var(--braz);min-width:0}
+.plansza-pasek .sezony{display:flex;gap:4px;flex:none}
+.plansza-pasek button{min-height:34px;border:2px solid var(--braz);border-radius:12px;background:var(--krem);box-shadow:0 3px 0 var(--braz);font:900 12px Rubik,sans-serif;color:var(--braz);padding:0 9px;cursor:pointer;white-space:nowrap}
+.plansza-pasek button[aria-pressed=true]{background:var(--zolt)}
+.plansza-pasek button.zamk{opacity:.75}
+.plansza-pasek .wyd{margin-left:auto;min-width:0;overflow:hidden;text-overflow:ellipsis;background:#FFE3DD;border-color:#E84A3C;box-shadow:0 3px 0 #9B2A1E;color:#9B2A1E}
+.baner.wydarzenie{border-color:#E84A3C!important;box-shadow:0 3px 0 #9B2A1E,0 0 0 4px rgba(232,74,60,.25)!important}
+.baner.wydarzenie small{color:#C0392B;font-weight:900}
+.wezel .kolo .spec{font-size:22px;line-height:1}.wezel .kolo .nr{position:absolute;right:-6px;bottom:-4px;min-width:20px;height:20px;border-radius:999px;background:var(--krem);border:2px solid var(--braz);font:900 10px/16px Rubik,sans-serif;color:var(--braz);text-align:center}
+.wezel.specjalny .kolo{position:relative}
+.wezel.zamkniety .kolo .spec{filter:grayscale(1) opacity(.5)}
+.arkusz .wyd-info{background:#FFE3DD;border:2px solid #E84A3C;border-radius:12px;padding:6px 10px;font-size:13px}
+/* druga plansza: Szlak Mistrzów, wieczorne światło i fioletowe pola */
+body.sezon2 .malowany{filter:saturate(1.15) sepia(.18) hue-rotate(-12deg) brightness(.93)}
+body.sezon2 .wezel.zrobiony .kolo{background:#B9A3E8;border-color:#4E3A7A;box-shadow:0 4px 0 #4E3A7A,inset 0 2px 0 #E2D6FF;color:#2C1E4A}
+body.sezon2 .separator{background:linear-gradient(#55507a,#67618f 40%,#55507a)}
+body.sezon2 .plansza-pasek{background:#55507a}
 </style>
 <link rel="stylesheet" href="malowana-plansza.css?v=2">
 </head>
@@ -126,6 +144,7 @@
     <span class="zeton" title="Podpowiedzi 50/50" style="gap:3px"><svg class="ik5050" width="18" height="18" viewBox="0 0 40 40" aria-hidden="true"><defs><clipPath id="c5050"><circle cx="20" cy="20" r="17"/></clipPath></defs><g clip-path="url(#c5050)"><path d="M0 0H40L0 40Z" fill="#F5B82E"/><path d="M40 0V40H0Z" fill="#FFF6E0"/></g><path d="M8 32L32 8" stroke="#3A2A14" stroke-width="2.6" stroke-linecap="round"/><circle cx="20" cy="20" r="17" fill="none" stroke="#3A2A14" stroke-width="3"/><text x="14.5" y="19" text-anchor="middle" style="font:900 10.5px Rubik,Arial,sans-serif;fill:#3A2A14">50</text><text x="25.5" y="31" text-anchor="middle" style="font:900 10.5px Rubik,Arial,sans-serif;fill:#3A2A14">50</text></svg><span id="jokery">0</span></span>
   <a class="kolekcja" href="karty.html" aria-label="Kolekcja kart" title="Kolekcja kart"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3A2A14" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="11" height="16" rx="2" fill="#B9E3FF" transform="rotate(-10 8 12)"/><rect x="10" y="4" width="11" height="16" rx="2" fill="#FFF6E0" transform="rotate(8 15 12)"/></svg><span class="znacz hidden" id="kolNowe">0</span></a></header>
   <div class="instaluj hidden" id="instaluj"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3A2A14" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 7v7M9 11l3 3 3-3"/></svg><span><b>Zainstaluj grę</b><small>ikona na ekranie, pełny ekran, działa bez internetu</small></span><button class="klocek" id="instBtn">Zainstaluj</button><button class="zamknij" id="instX" aria-label="Zamknij">✕</button></div>
+  <div class="plansza-pasek" id="planszaPasek"></div>
   <div class="mapa" id="mapa"><div class="plotno" id="plotno"></div></div>
   <div class="mgla" id="mgla"></div>
   <a class="dzis-btn" href="codzienne.html" id="dzisBtn"><i></i><span id="dzisTxt">Wyzwanie dnia czeka</span></a>
@@ -142,7 +161,7 @@
 <script src="efekty.js?v=17"></script>
 <script src="instaluj.js"></script>
 <script src="konto.js"></script>
-<script src="saga.js?v=3"></script>
+<script src="saga.js?v=4"></script>
 <script src="polandball.js?v=4"></script>
 <script src="krainy.js?v=5"></script>
 <script>
@@ -152,7 +171,9 @@ const IKK={mapa:'<path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><
   symbole:'<path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/>',granice:'<path d="M5 4l9 2 5 6-3 8-9-1-3-7z"/>',liczby:'<path d="M12 3v18M5 21h14M4 8h16M7 8l-3 7h6zM17 8l-3 7h6z"/>',woda:'<path d="M3 8c3-3 6 3 9 0s6 3 9 0M3 15c3-3 6 3 9 0s6 3 9 0"/>'};
 const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}catch(e){return d;}};
 const STEP=96,BANER=110,GORA=140,DOL=150;
-let WOJ={},stan=Saga.stan(),biez=Saga.biezacy(stan),PASY=[],MGLA=null,HPL=0;
+// dwie plansze: 1 „Odkrywca”, 2 „Szlak Mistrzów” (po ukończeniu pierwszej)
+const SEZON=Saga.sezon(),TYDZ=Saga.tydzien();
+let WOJ={},stan=Saga.stan(SEZON),biez=Saga.biezacy(stan,SEZON),PASY=[],MGLA=null,HPL=0;
 
 // malowane krainy (grafiki/plansza): pola leżą tam, gdzie na ilustracji, a nasze pola zakrywają narysowane
 let MALOWANA=null;
@@ -162,7 +183,18 @@ function ukladMalowany(W){
   const panele=Saga.SWIATY.map(sw=>{const r=reg[MAL_ID[sw.woj]];return {r,h:W*r.h/r.w};});
   const H=GORA+DOL+panele.reduce((a,p)=>a+p.h+BANER_M,0);
   const pts=[],top=[];let y=H-DOL;
-  panele.forEach((p,s)=>{y-=BANER_M;const t=y-p.h;top.push(t);p.r.levels.forEach(l=>pts.push({x:W*l.x/100,y:t+p.h*l.y/100}));y=t;});
+  panele.forEach((p,s)=>{y-=BANER_M;const t=y-p.h;top.push(t);
+    const kr=p.r.levels.map(l=>({x:W*l.x/100,y:t+p.h*l.y/100}));
+    // narysowanych pól już nie ma na ilustracji, więc nasze pola można rozsunąć: na wąskim ekranie nachodziły na siebie
+    for(let i=1;i<kr.length;i++){
+      const a=kr[i-1],b=kr[i],min=(i===kr.length-1?112:100);
+      let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1;
+      if(d>=min)continue;
+      b.x=a.x+dx/d*min;b.y=a.y+dy/d*min;
+      if(b.y<t+46){b.y=t+46;const zost=Math.sqrt(Math.max(0,min*min-(a.y-b.y)**2));b.x=a.x+(a.x>W/2?-1:1)*zost;}
+      b.x=Math.max(44,Math.min(W-44,b.x));
+    }
+    kr.forEach(q=>pts.push(q));y=t;});
   return {pts,H,panele,top};
 }
 const BANER_M=96;
@@ -184,18 +216,20 @@ function rysujMalowana(W,uk,pl){
   Saga.SWIATY.forEach((sw,s)=>{
     const t=top[s],ph=panele[s].h;
     PASY.push({s,top:t,bottom:t+ph+BANER_M});
-    h+='<div class="malowany" data-s="'+s+'" style="top:'+t+'px;height:'+ph.toFixed(1)+'px;background-image:url(grafiki/plansza/'+panele[s].r.id+'.webp?v=1)"></div>';
-    const gw=[...Array(Saga.NA_SWIAT)].reduce((a,_,i)=>a+(stan.gw[s*Saga.NA_SWIAT+i]||0),0),otw=Saga.odblokowany(s*Saga.NA_SWIAT,stan);
+    h+='<div class="malowany" data-s="'+s+'" style="top:'+t+'px;height:'+ph.toFixed(1)+'px;background-image:url(grafiki/plansza/'+panele[s].r.id+'.webp?v=2)"></div>';
+    const gw=[...Array(Saga.NA_SWIAT)].reduce((a,_,i)=>a+(stan.gw[s*Saga.NA_SWIAT+i]||0),0),otw=Saga.odblokowany(s*Saga.NA_SWIAT,stan,SEZON);
     h+='<div class="separator" style="top:'+(t+ph)+'px;height:'+BANER_M+'px"></div>';
-    h+='<div class="baner pole'+(otw?"":" zamk")+'" style="top:'+(t+ph+(BANER_M-66)/2)+'px">'+(WOJ[sw.woj]||'<svg class="woj"></svg>')+'<div><b>'+sw.nazwa+'</b><small>Kraina '+(s+1)+' · stolica: '+sw.stolica+'</small></div><span class="ile">★ '+gw+'/'+(Saga.NA_SWIAT*3)+'</span></div>';
+    const wyd=s===TYDZ.kraina;
+    h+='<div class="baner pole'+(otw?"":" zamk")+(wyd?" wydarzenie":"")+'" data-s="'+s+'" style="top:'+(t+ph+(BANER_M-66)/2)+'px">'+(WOJ[sw.woj]||'<svg class="woj"></svg>')+'<div><b>'+sw.nazwa+'</b><small>'+(wyd?'🔥 wydarzenie tygodnia · podwójne nagrody':'Kraina '+(s+1)+' · stolica: '+sw.stolica)+'</small></div><span class="ile">★ '+gw+'/'+(Saga.NA_SWIAT*3)+'</span></div>';
   });
   pts.forEach((p,n)=>{
-    const poz=Saga.poziom(n),g=stan.gw[n]||0,otw=Saga.odblokowany(n,stan);
+    const poz=Saga.poziom(n,SEZON),g=stan.gw[n]||0,otw=Saga.odblokowany(n,stan,SEZON);
     const kl=(n===biez?"teraz":otw?"zrobiony":"zamkniety")+(poz.boss?" boss":"");
     const tresc=!otw?'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#8A7F62" stroke-width="2.6"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
-      :poz.boss?'<svg width="30" height="26" viewBox="0 0 34 30"><path d="M3 26 L3 8 L10 15 L17 3 L24 15 L31 8 L31 26 Z" fill="'+(n===biez?"#fff":"#E84A3C")+'" stroke="#3A2A14" stroke-width="2.5" stroke-linejoin="round"/></svg>':(n+1);
+      :poz.boss?'<svg width="30" height="26" viewBox="0 0 34 30"><path d="M3 26 L3 8 L10 15 L17 3 L24 15 L31 8 L31 26 Z" fill="'+(n===biez?"#fff":"#E84A3C")+'" stroke="#3A2A14" stroke-width="2.5" stroke-linejoin="round"/></svg>'
+      :poz.specjalna?'<span class="spec">'+Saga.GRY[poz.specjalna].ikona+'</span><span class="nr">'+(n+1)+'</span>':(n+1);
     // gwiazdki zawsze widoczne (puste też), żeby zakryć gwiazdki narysowane na ilustracji
-    h+='<button class="wezel '+kl+'" data-n="'+n+'" style="left:'+p.x.toFixed(0)+'px;top:'+p.y.toFixed(0)+'px"><span class="kolo">'+tresc+'</span><span class="gwiazdki">'+gwiazdkiHtml(g)+'</span></button>';
+    h+='<button class="wezel '+kl+(poz.specjalna?" specjalny":"")+'" data-n="'+n+'" style="left:'+p.x.toFixed(0)+'px;top:'+p.y.toFixed(0)+'px"><span class="kolo">'+tresc+'</span><span class="gwiazdki">'+gwiazdkiHtml(g)+'</span></button>';
   });
   h+='<div class="pionek" id="pionek">'+(window.PB?PB.svg("zwykla"):"")+'</div>';
   pl.innerHTML=h;
@@ -231,12 +265,12 @@ function rysuj(){
   Saga.SWIATY.forEach((sw,s)=>{
     const y=H-DOL-s*(Saga.NA_SWIAT*STEP+BANER)-BANER+18;
     const gw=[...Array(Saga.NA_SWIAT)].reduce((a,_,i)=>a+(stan.gw[s*Saga.NA_SWIAT+i]||0),0);
-    const otw=Saga.odblokowany(s*Saga.NA_SWIAT,stan);
+    const otw=Saga.odblokowany(s*Saga.NA_SWIAT,stan,SEZON);
     h+='<div class="baner pole'+(otw?"":" zamk")+'" style="top:'+y+'px">'+(WOJ[sw.woj]||'<svg class="woj"></svg>')+'<div><b>'+sw.nazwa+'</b><small>Kraina '+(s+1)+' · stolica: '+sw.stolica+'</small></div><span class="gw">★ '+gw+'/'+(Saga.NA_SWIAT*3)+'</span></div>';
   });
   // węzły
   pts.forEach((p,n)=>{
-    const poz=Saga.poziom(n),g=stan.gw[n]||0,otw=Saga.odblokowany(n,stan);
+    const poz=Saga.poziom(n,SEZON),g=stan.gw[n]||0,otw=Saga.odblokowany(n,stan,SEZON);
     const kl=(n===biez?"teraz":otw?"zrobiony":"zamkniety")+(poz.boss?" boss":"");
     const tresc=!otw?'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8A7F62" stroke-width="2.6"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'
       :poz.boss?'<svg width="34" height="30" viewBox="0 0 34 30"><path d="M3 26 L3 8 L10 15 L17 3 L24 15 L31 8 L31 26 Z" fill="'+(n===biez?"#fff":"#E84A3C")+'" stroke="#3A2A14" stroke-width="2.5" stroke-linejoin="round"/></svg>':String(n+1);
@@ -251,7 +285,7 @@ function rysuj(){
 // PolandBall wita gracza dymkiem przy pionku
 function powitanie(p,n){
   if(!window.PB||!p)return;
-  const poz=Saga.poziom(n),nowa=n%Saga.NA_SWIAT===0;
+  const poz=Saga.poziom(n,SEZON),nowa=n%Saga.NA_SWIAT===0;
   let dzisGotowe=false;try{const d=new Date(),k="dzis-"+d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");dzisGotowe=!!(JSON.parse(localStorage.getItem(k)||"null")||{}).done;}catch(e){}
   const teksty=n===0&&!(stan.gw[0])?["Hej! Odkryjmy Polskę!"]:!dzisGotowe&&Math.random()<.4?["Wyzwanie dnia czeka!"]:nowa?["Witaj: "+poz.kraina.nazwa+"!"]:poz.boss?["Czas na stolicę: "+poz.kraina.stolica+"!"]:["Każda podróż ma swój początek!","Gramy dalej?","Do dzieła!","Następny przystanek!"];
   const d=document.createElement("div");d.className="pb-powitanie";PB.styl();
@@ -265,12 +299,14 @@ function powitanie(p,n){
 }
 function pionekNa(p,natychmiast){const pn=$("pionek");if(natychmiast)pn.style.transition="none";pn.style.left=p.x+"px";pn.style.top=(p.y-34)+"px";if(natychmiast){void pn.offsetWidth;pn.style.transition="";}}
 function arkusz(n){
-  const poz=Saga.poziom(n),otw=Saga.odblokowany(n,stan),g=stan.gw[n]||0;
+  const poz=Saga.poziom(n,SEZON),otw=Saga.odblokowany(n,stan,SEZON),g=stan.gw[n]||0;
   const w=$("warstwa");
-  w.innerHTML='<div class="cien" id="cien"></div><div class="arkusz pole"><h2>'+(poz.boss?"Stolica: "+poz.kraina.stolica:"Poziom "+(n+1))+'</h2>'
-    +'<p>'+poz.kraina.nazwa+' · '+(poz.boss?"poziom mistrzowski":poz.nazwa)+' · '+poz.pytan+' pytań</p>'
-    +'<div class="gry">'+poz.gry.map(x=>'<span>'+TYPY[x.t]+(x.ile>1?" ×"+x.ile:"")+'</span>').join("")+'</div>'
-    +'<div class="rzad"><span class="rek">'+gwiazdkiHtml(g)+'</span>'+(otw?'<a class="klocek" href="wyzwanie.html?tryb=saga&poziom='+n+'">Graj</a>':'<span style="font-weight:700;font-size:14px">Zdobądź '+(Saga.poziom(n-1).boss?"2 gwiazdki":"gwiazdkę")+' na poziomie '+n+', żeby tu wejść.</span>')+'</div></div>';
+  const G=poz.specjalna?Saga.GRY[poz.specjalna]:null;
+  w.innerHTML='<div class="cien" id="cien"></div><div class="arkusz pole"><h2>'+(poz.boss?"Stolica: "+poz.kraina.stolica:G?G.ikona+" "+poz.nazwa:"Poziom "+(n+1))+'</h2>'
+    +'<p>'+(SEZON===2?"Szlak Mistrzów · ":"")+poz.kraina.nazwa+' · '+(poz.boss?"poziom mistrzowski":G?"poziom "+(n+1)+": "+G.opis:poz.nazwa)+(poz.pytan?' · '+poz.pytan+' pytań':'')+(poz.czas?' · '+poz.czas+' s na pytanie':'')+(poz.podp?'':' · bez podpowiedzi')+'</p>'
+    +(Saga.wTygodniu(n)?'<p class="wyd-info">🔥 Wydarzenie tygodnia: dodatkowe monety i paczka za 3 gwiazdki, wynik w rankingu tygodnia.</p>':'')
+    +(poz.gry.length?'<div class="gry">'+poz.gry.map(x=>'<span>'+TYPY[x.t]+(x.ile>1?" ×"+x.ile:"")+'</span>').join("")+'</div>':'')
+    +'<div class="rzad"><span class="rek">'+gwiazdkiHtml(g)+'</span>'+(otw?'<a class="klocek" href="'+Saga.adres(n,SEZON)+'">Graj</a>':'<span style="font-weight:700;font-size:14px">Zdobądź '+(n===0?"wszystkie poziomy pierwszej planszy":(Saga.poziom(n-1,SEZON).boss?"2 gwiazdki":"gwiazdkę")+' na poziomie '+n)+', żeby tu wejść.</span>')+'</div></div>';
   $("cien").onclick=()=>{w.innerHTML="";};
 }
 function kostka(){
@@ -306,8 +342,31 @@ $("instX").onclick=()=>{localStorage.setItem("instaluj-ukryj","1");pokazInstaluj
   $("jokery").textContent=localStorage.getItem("jokery")||0;
   if(ds&&ds.done){$("dzisTxt").textContent="Dzisiejsze zrobione";$("dzisBtn").querySelector("i").style.background="#27AE60";$("dzisBtn").querySelector("i").style.animation="none";}
   $("sumaGw").textContent=Saga.sumaGwiazd(stan)+"/"+Saga.ILE*3;
-  $("kraina").textContent=Saga.poziom(biez).kraina.nazwa+" · poziom "+(biez+1);
+  $("kraina").textContent=(SEZON===2?"Szlak Mistrzów · ":"")+Saga.poziom(biez,SEZON).kraina.nazwa+" · poziom "+(biez+1);
+  pasekPlanszy();
 })();
+/* pasek planszy: przełącznik planszy (druga po ukończeniu pierwszej) i wydarzenie tygodnia */
+function pasekPlanszy(){
+  document.body.classList.toggle("sezon2",SEZON===2);
+  const odbl=Saga.ukonczona(1),dni=Math.max(1,Math.ceil((TYDZ.koniec-Date.now())/864e5));
+  $("planszaPasek").innerHTML='<div class="sezony" role="group" aria-label="Plansza"><button data-sz="1" aria-pressed="'+(SEZON===1)+'">Plansza 1</button><button data-sz="2" aria-pressed="'+(SEZON===2)+'"'+(odbl?'':' class="zamk"')+'>'+(odbl?'':'🔒 ')+'Szlak Mistrzów</button></div>'
+    +'<button class="wyd" id="wydBtn">🔥 '+Saga.SWIATY[TYDZ.kraina].nazwa+' · '+dni+' '+(dni===1?'dzień':'dni')+'</button>';
+  $("planszaPasek").querySelectorAll("[data-sz]").forEach(b=>b.onclick=()=>{
+    const z=+b.dataset.sz;if(z===SEZON)return;
+    if(z===2&&!odbl){
+      const w=$("warstwa");
+      w.innerHTML='<div class="cien" id="cien"></div><div class="arkusz pole"><h2>Szlak Mistrzów</h2><p>Druga plansza: te same krainy, trudniejsze pytania (bez podpowiedzi, 15 s na pytanie, także małe miejscowości) i nowe gry w poziomach.</p><p>Odblokujesz ją, gdy ukończysz pierwszą planszę: <b>'+Saga.ukonczonych(1)+' / '+Saga.ILE+'</b> poziomów.</p><div class="rzad"><button class="klocek" id="szOk">Gram dalej</button></div></div>';
+      $("cien").onclick=$("szOk").onclick=()=>{w.innerHTML="";};return;
+    }
+    Saga.ustawSezon(z);location.reload();
+  });
+  $("wydBtn").onclick=()=>{
+    const w=$("warstwa"),T=TYDZ,suma=Saga.wydarzenieSuma(T.klucz),kr=Saga.SWIATY[T.kraina];
+    w.innerHTML='<div class="cien" id="cien"></div><div class="arkusz pole"><h2>🔥 Wydarzenie tygodnia</h2><p>Kraina tygodnia: <b>'+kr.nazwa+'</b>. Do poniedziałku jej poziomy dają podwójne nagrody: 5 monet za pierwsze zaliczenie każdego poziomu i dodatkową paczkę za 3 gwiazdki.</p><p>Twój wynik tygodnia: <b>'+suma+' pkt</b> (za każdy poziom: 100 pkt za gwiazdkę i do 100 pkt za wynik). Tabela jest w rankingu, w zakładce „Tydzień”.</p><div class="rzad"><button class="klocek" id="wydIdz">Pokaż krainę</button><a class="klocek jasny" href="ranking.html?tydzien">Ranking</a></div></div>';
+    $("cien").onclick=()=>{w.innerHTML="";};
+    $("wydIdz").onclick=()=>{w.innerHTML="";const b=document.querySelector('.baner[data-s="'+T.kraina+'"]');if(b)$("mapa").scrollTo({top:b.offsetTop-$("mapa").clientHeight*0.75,behavior:"smooth"});};
+  };
+}
 /* chmury: miękkie obłoki nad zablokowanymi krainami; aktywna kraina zostaje odsłonięta */
 function chmury(){
   document.querySelectorAll(".chmury").forEach(e=>e.remove());
@@ -345,7 +404,7 @@ function obserwujWidok(){
 }
 function zamkniete(){
   // mgła wisi nad krainami, których pierwszy poziom jest jeszcze zamknięty (oprócz świeżo otwartej, ta rozwieje się na oczach gracza)
-  return PASY.filter(p=>!Saga.odblokowany(p.s*Saga.NA_SWIAT,stan)||p.s===NOWA_KRAINA);
+  return PASY.filter(p=>!Saga.odblokowany(p.s*Saga.NA_SWIAT,stan,SEZON)||p.s===NOWA_KRAINA);
 }
 let NOWA_KRAINA=-1;
 function start(){
@@ -382,7 +441,7 @@ fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
 }).catch(()=>{}).finally(()=>{
   // opcjonalne malowane grafiki krain (krainy-grafiki.json); bez nich rysujemy wektory
   // malowana plansza; gdy jej nie ma, zostaje dotychczasowy rysowany krajobraz
-  fetch("grafiki/plansza/plansza.json?v=1").then(r=>r.ok?r.json():null).catch(()=>null).then(m=>{
+  fetch("grafiki/plansza/plansza.json?v=2").then(r=>r.ok?r.json():null).catch(()=>null).then(m=>{
     if(m&&m.regions&&m.regions.length===16){MALOWANA=m;start();return;}
     fetch("krainy-grafiki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({})).then(g=>{if(window.Krainy)return Krainy.zaladujGrafiki(g).then(start);start();});
   });

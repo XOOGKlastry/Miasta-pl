@@ -9,14 +9,15 @@
  /* ---------- tabela rankingu ---------- */
  async function load(){
   const id=++sequence;
-  $('value').textContent=mode==='points'?'Punkty':mode==='cards'?'Karty':'Ranking walk';
-  for(const x of ['points','cards','duels'])$(x).setAttribute('aria-pressed',String(x===mode));
+  $('value').textContent=mode==='points'?'Punkty':mode==='cards'?'Karty':mode==='week'?'Pkt tygodnia':'Ranking walk';
+  for(const x of ['points','cards','duels','week'])$(x).setAttribute('aria-pressed',String(x===mode));
   rows.replaceChildren();
   if(!Online.enabled()){status.textContent='Ranking online jest niedostępny. Twój postęp pozostaje na urządzeniu.';return;}
   status.textContent='Wczytywanie…';
   try{
-   const data=await Online.ranking(mode);if(id!==sequence)return;
-   status.textContent=data.length?'':mode==='duels'?'Nikt jeszcze nie walczył na żywo. Wyzwij kogoś z rankingu punktów!':'Bądź pierwszym odkrywcą w rankingu.';
+   const T=mode==='week'&&window.Saga?Saga.tydzien():null;
+   const data=mode==='week'?await Online.wydarzenie.ranking(T&&T.klucz):await Online.ranking(mode);if(id!==sequence)return;
+   status.textContent=mode==='week'&&T?'🔥 Kraina tygodnia: '+Saga.SWIATY[T.kraina].nazwa+(data.length?'':'. Nikt jeszcze nie grał, zagraj jej poziomy na planszy!'):data.length?'':mode==='duels'?'Nikt jeszcze nie walczył na żywo. Wyzwij kogoś z rankingu punktów!':'Bądź pierwszym odkrywcą w rankingu.';
    const ja=Online.ja();
    for(const r of data){
     const tr=document.createElement('tr'),ty=r.public_id&&r.public_id===ja;
@@ -37,7 +38,7 @@
   }catch(e){}
  }
  setInterval(()=>{if(!document.hidden)kropkiOnline();},30000);
- for(const x of ['points','cards','duels'])$(x).onclick=()=>{mode=x;load();};
+ for(const x of ['points','cards','duels','week'])$(x).onclick=()=>{mode=x;load();};
 
  $('publish').onsubmit=async e=>{
   e.preventDefault();const b=e.target.querySelector('button');b.disabled=true;
@@ -206,6 +207,7 @@
   licznikNieprzeczytanych();
   // wejście z linku: ranking.html?gracz=<id>&n=<pseudonim> albo ?wiadomosci
   const q=new URLSearchParams(location.search);
+  if(q.has('tydzien')){mode='week';load();}
   if(q.has('wiadomosci'))pokazSkrzynke();
   else if(q.get('gracz'))pokazProfil(q.get('gracz'),q.get('n')||'Gracz');
  })();

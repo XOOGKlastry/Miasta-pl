@@ -106,6 +106,7 @@ svg path{fill-rule:evenodd}
 
 <script src="topojson-client.min.js?v=17"></script>
 <script src="wspolne.js?v=24"></script>
+<script src="saga.js?v=4"></script><script src="poziom.js?v=1"></script>
 <script>
 const {$,shuffle,pick}=ZP;
 const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
@@ -114,6 +115,8 @@ let POW=[],WOJF=[],PL=null,game=null;
 Object.entries(WOJ_KOD).sort((a,b)=>a[1].localeCompare(b[1],"pl")).forEach(([k,n])=>{const o=document.createElement("option");o.value=k;o.textContent=n;$("area").appendChild(o);});
 
 let POWIATY=[],GMINY=null,LUD={};
+// poziom planszy (ksztalt.html?rodzaj=g&poziom=N): 6 gmin z krainy, na drugiej planszy bez podpowiedzi do wyboru
+const PG=window.PoziomGra&&PoziomGra.aktywny?PoziomGra:null;
 const RODZAJ=new URLSearchParams(location.search).get("rodzaj")==="g"?"g":"p";
 $("jedn").value=RODZAJ;
 document.title=(RODZAJ==="g"?"Kształt gminy":"Kształt powiatu")+" · PolskoZnawca";
@@ -164,16 +167,16 @@ async function startGame(){
     try{POW=await ladujGminy();}catch(e){$("datastate").textContent="Granice gmin jeszcze się budują. Spróbuj za kilka minut.";$("startBtn").disabled=false;return;}
     $("startBtn").disabled=false;$("datastate").textContent=POW.length+" gmin";
   }else POW=POWIATY;
-  const area=$("area").value,kind=$("kind").value;
+  const area=PG?Object.keys(WOJ_KOD).find(k=>WOJ_KOD[k]===PG.P.woj):$("area").value,kind=$("kind").value;
   const zakres=ZP.zakresStan($("scope"));
   POW.forEach(p=>{p.pop=popDo(p);});
-  let pool=POW.filter(p=>(!area||p.k.startsWith(area))&&ZP.wObszarze(p)&&(gminy||kind==="a"||!p.city)&&ZP.wZakresie(p,zakres));
+  let pool=PG?POW.filter(p=>p.k.startsWith(area)):POW.filter(p=>(!area||p.k.startsWith(area))&&ZP.wObszarze(p)&&(gminy||kind==="a"||!p.city)&&ZP.wZakresie(p,zakres));
   if(pool.length<4)pool=POW.filter(p=>(!area||p.k.startsWith(area))&&ZP.wObszarze(p)&&(gminy||kind==="a"||!p.city));
-  const n=Math.min(+$("rounds").value,pool.length);
+  const n=Math.min(PG?6:+$("rounds").value,pool.length);
   const rodzaj=gminy?"gmina":"powiat";
   $("pytanie").textContent=gminy?"Która to gmina?":"Który to powiat?";
   $("guess").placeholder=gminy?"Nazwa gminy":"Nazwa powiatu";
-  game={pool,rodzaj,wpis:$("odp").value==="t",qs:ZP.losujNauka(pool,rodzaj,p=>p.k,n,$("ucz").value==="1").map(p=>makeQuestion(p,pool)),i:-1,pts:0,hits:0,res:[]};
+  game={pool,rodzaj,wpis:PG?PG.sezon===2:$("odp").value==="t",qs:ZP.losujNauka(pool,rodzaj,p=>p.k,n,PG?false:$("ucz").value==="1").map(p=>makeQuestion(p,pool)),i:-1,pts:0,hits:0,res:[]};
   $("setup").classList.add("hidden");$("summary").classList.add("hidden");
   ["stats","stage"].forEach(id=>$(id).classList.remove("hidden"));
   $("answers").classList.toggle("hidden",game.wpis);
@@ -266,6 +269,12 @@ function answer(o,btn){
 }
 function endGame(){
   clearInterval(game.tick);
+  if(PG){
+    ["stage","answers","inputrow","tbar","feedback"].forEach(id=>$(id).classList.add("hidden"));
+    const max=game.qs.length*(game.wpis?3:2);
+    PG.koniec({proc:Math.round(100*game.pts/Math.max(1,max)),wynik:game.pts,opis:"Trafione "+game.hits+" z "+game.qs.length+" gmin · "+game.pts+" z "+max+" pkt"});
+    return;
+  }
   ["stage","answers","inputrow","tbar","feedback"].forEach(id=>$(id).classList.add("hidden"));
   $("round").textContent="";
   const k=bestKey(),best=+(localStorage.getItem(k)||0),rec=game.pts>best;
@@ -302,8 +311,15 @@ document.addEventListener("keydown",e=>{
   if(/^[1-4]$/.test(e.key)&&!game.answered){const b=$("answers").children[+e.key-1];if(b)b.click();}
   if(e.key==="Enter"&&game.answered&&$("nextBtn"))$("nextBtn").click();
 });
-ZP.kreatorGry({klucz:"ksztalt-"+RODZAJ,kroki:["pojedynek","obszar","wielkosc","rundy"]});
+if(!PG)ZP.kreatorGry({klucz:"ksztalt-"+RODZAJ,kroki:["pojedynek","obszar","wielkosc","rundy"]});
 ustawJedn();
+if(PG){
+  // od razu do gry: pasek z celem i start po wczytaniu granic gmin
+  $("setup").classList.add("hidden");
+  PG.pasek("rozpoznaj 6 gmin tej krainy"+(PG.sezon===2?" bez podpowiedzi":""),document.querySelector("main"));
+  $("tytul").textContent=PG.P.nazwa;
+  const czekaj=setInterval(()=>{if(!$("startBtn").disabled&&POWIATY.length){clearInterval(czekaj);startGame();}},150);
+}
 ZP.fitViewport();ZP.registerSW();
 </script>
 </body>
