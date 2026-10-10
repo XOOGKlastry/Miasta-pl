@@ -162,7 +162,18 @@ function ukladMalowany(W){
   const panele=Saga.SWIATY.map(sw=>{const r=reg[MAL_ID[sw.woj]];return {r,h:W*r.h/r.w};});
   const H=GORA+DOL+panele.reduce((a,p)=>a+p.h+BANER_M,0);
   const pts=[],top=[];let y=H-DOL;
-  panele.forEach((p,s)=>{y-=BANER_M;const t=y-p.h;top.push(t);p.r.levels.forEach(l=>pts.push({x:W*l.x/100,y:t+p.h*l.y/100}));y=t;});
+  panele.forEach((p,s)=>{y-=BANER_M;const t=y-p.h;top.push(t);
+    const kr=p.r.levels.map(l=>({x:W*l.x/100,y:t+p.h*l.y/100}));
+    // narysowanych pól już nie ma na ilustracji, więc nasze pola można rozsunąć: na wąskim ekranie nachodziły na siebie
+    for(let i=1;i<kr.length;i++){
+      const a=kr[i-1],b=kr[i],min=(i===kr.length-1?112:100);
+      let dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy)||1;
+      if(d>=min)continue;
+      b.x=a.x+dx/d*min;b.y=a.y+dy/d*min;
+      if(b.y<t+46){b.y=t+46;const zost=Math.sqrt(Math.max(0,min*min-(a.y-b.y)**2));b.x=a.x+(a.x>W/2?-1:1)*zost;}
+      b.x=Math.max(44,Math.min(W-44,b.x));
+    }
+    kr.forEach(q=>pts.push(q));y=t;});
   return {pts,H,panele,top};
 }
 const BANER_M=96;
@@ -184,7 +195,7 @@ function rysujMalowana(W,uk,pl){
   Saga.SWIATY.forEach((sw,s)=>{
     const t=top[s],ph=panele[s].h;
     PASY.push({s,top:t,bottom:t+ph+BANER_M});
-    h+='<div class="malowany" data-s="'+s+'" style="top:'+t+'px;height:'+ph.toFixed(1)+'px;background-image:url(grafiki/plansza/'+panele[s].r.id+'.webp?v=1)"></div>';
+    h+='<div class="malowany" data-s="'+s+'" style="top:'+t+'px;height:'+ph.toFixed(1)+'px;background-image:url(grafiki/plansza/'+panele[s].r.id+'.webp?v=2)"></div>';
     const gw=[...Array(Saga.NA_SWIAT)].reduce((a,_,i)=>a+(stan.gw[s*Saga.NA_SWIAT+i]||0),0),otw=Saga.odblokowany(s*Saga.NA_SWIAT,stan);
     h+='<div class="separator" style="top:'+(t+ph)+'px;height:'+BANER_M+'px"></div>';
     h+='<div class="baner pole'+(otw?"":" zamk")+'" style="top:'+(t+ph+(BANER_M-66)/2)+'px">'+(WOJ[sw.woj]||'<svg class="woj"></svg>')+'<div><b>'+sw.nazwa+'</b><small>Kraina '+(s+1)+' · stolica: '+sw.stolica+'</small></div><span class="ile">★ '+gw+'/'+(Saga.NA_SWIAT*3)+'</span></div>';
@@ -382,7 +393,7 @@ fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
 }).catch(()=>{}).finally(()=>{
   // opcjonalne malowane grafiki krain (krainy-grafiki.json); bez nich rysujemy wektory
   // malowana plansza; gdy jej nie ma, zostaje dotychczasowy rysowany krajobraz
-  fetch("grafiki/plansza/plansza.json?v=1").then(r=>r.ok?r.json():null).catch(()=>null).then(m=>{
+  fetch("grafiki/plansza/plansza.json?v=2").then(r=>r.ok?r.json():null).catch(()=>null).then(m=>{
     if(m&&m.regions&&m.regions.length===16){MALOWANA=m;start();return;}
     fetch("krainy-grafiki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({})).then(g=>{if(window.Krainy)return Krainy.zaladujGrafiki(g).then(start);start();});
   });

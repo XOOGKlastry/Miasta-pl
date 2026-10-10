@@ -1,7 +1,7 @@
 """Tła planszy z zaakceptowanych malowanych ilustracji (narzedzia/plansza-zrodla).
 
-Ilustracje mają narysowane numery pól, gwiazdki, kłódki, pionek przy polu 3 i przycisk GRAJ.
-Gra pokazuje prawdziwy postęp własnymi elementami, więc te narysowane stany są tu zamalowywane
+Ilustracje mają narysowane pola (numery, gwiazdki, kłódki), pionek przy polu 3 i przycisk GRAJ.
+Gra pokazuje prawdziwy postęp własnymi elementami, więc wszystkie te narysowane elementy są tu zamalowywane
 (inpainting OpenCV) i każde województwo trafia do osobnego pliku grafiki/plansza/<id>.webp,
 już przycięte: bez paska z nazwą u góry (10% wysokości), jak w paczce.
 Wynik: grafiki/plansza/plansza.json z pozycjami pól w procentach nowego kadru.
@@ -86,8 +86,8 @@ def main():
         # każdy narysowany element zastępujemy fragmentem ilustracji z sąsiedztwa (łata z miękką krawędzią),
         # wybraną tak, żeby kolory na obrzeżu pasowały; to wygląda naturalniej niż samo rozmywanie
         R = int(W * 0.078)
-        # narysowane pola (numery, gwiazdki, kłódki) zostają: gra kładzie na nich własne pola z prawdziwym postępem;
-        # usuwamy tylko pionek przy polu 3 i przycisk GRAJ, których nie da się przykryć
+        # narysowane pola (numery, gwiazdki, kłódki) też zamalowujemy: gra kładzie w tym miejscu własne pola,
+        # a narysowane prześwitywały spod nich jako drugi krążek i drugi pasek gwiazdek
         obiekty = []
         pola = np.zeros((H, W), np.uint8)
         for x, y in poprawione:
@@ -141,6 +141,65 @@ def main():
             zrodlo = cv2.warpAffine(czysty, np.float32([[1, 0, -ox], [0, 1, -oy]]), (W, H), flags=cv2.INTER_NEAREST, borderMode=cv2.BORDER_REFLECT)
             alfa = cv2.GaussianBlur(cv2.dilate(m, np.ones((9, 9), np.uint8)).astype(np.float32) / 255, (0, 0), 5)[..., None]
             czysty = (czysty * (1 - alfa) + zrodlo * alfa).astype(np.uint8)
+        # narysowane pola: łaty z tej samej ścieżki. Źródło bierzemy tylko z odcinków ścieżki między sąsiednimi
+        # polami (tam jest piasek), więc nie przenosi obcych obiektów (zamków, skał, wody). Pole łatamy małymi
+        # okrągłymi kawałkami, bo pola leżą gęsto i cała elipsa nie mieści się między sąsiadami.
+        rdzen = np.zeros((H, W), np.uint8)   # narysowane pola, których jeszcze nie zamalowano
+        for x, y in poprawione:
+            cv2.ellipse(rdzen, (int(x), int(y + R * .3)), (int(R * 1.15), int(R * 1.45)), 0, 0, 360, 255, -1)
+        kandydaci = []
+        pary = list(zip(poprawione, poprawione[1:]))
+        for (ax, ay), (bx, by) in pary:
+            dl = max(1.0, float(np.hypot(bx - ax, by - ay)))
+            nx, ny = -(by - ay) / dl, (bx - ax) / dl
+            for t in np.arange(.15, .86, .05):
+                for d in (-.5, -.3, -.15, 0, .15, .3, .5):
+                    kandydaci.append((ax + (bx - ax) * t + nx * d * R, ay + (by - ay) * t + ny * d * R))
+        # kolor ścieżki: mediana z punktów w połowie drogi między polami; łata musi być w tym kolorze (piasek, nie woda)
+        probki = [czysty[int(cy), int(cx)] for cx, cy in kandydaci if 0 <= int(cx) < W and 0 <= int(cy) < H]
+        sciezka = np.median(np.array(probki), axis=0)
+        rk = int(R * .6)
+        rng = np.random.default_rng(11)
+        for x, y in poprawione:
+            m_pole = np.zeros((H, W), np.uint8)
+            cv2.ellipse(m_pole, (int(x), int(y + R * .3)), (int(R * 1.15), int(R * 1.45)), 0, 0, 360, 255, -1)
+            for dy in (-.75, -.25, .25, .75, 1.2):
+                for dx in (-.55, 0, .55):
+                    tx, ty = int(x + dx * R), int(y + R * .3 + dy * R)
+                    if not (0 <= tx < W and 0 <= ty < H) or not m_pole[ty, tx]:
+                        continue
+                    m = np.zeros((H, W), np.uint8)
+                    cv2.circle(m, (tx, ty), rk, 255, -1)
+                    m &= cv2.dilate(m_pole, np.ones((7, 7), np.uint8))
+                    pierscien = cv2.dilate(m, np.ones((11, 11), np.uint8)) & ~m
+                    ys, xs = np.nonzero(pierscien)
+                    my, mx = np.nonzero(cv2.dilate(m, np.ones((7, 7), np.uint8)))
+                    best = None
+                    for cx, cy in kandydaci:
+                        ox, oy = int(cx - tx), int(cy - ty)
+                        if not (0 <= my.min() + oy and my.max() + oy < H and 0 <= mx.min() + ox and mx.max() + ox < W):
+                            continue
+                        if not (0 <= ys.min() + oy and ys.max() + oy < H and 0 <= xs.min() + ox and xs.max() + ox < W):
+                            continue
+                        if rdzen[my + oy, mx + ox].any():
+                            continue
+                        roznica = np.mean(np.abs(czysty[ys + oy, xs + ox].astype(int) - czysty[ys, xs].astype(int)))
+                        roznica += .7 * np.mean(np.abs(czysty[my + oy, mx + ox].mean(axis=0) - sciezka))
+                        if best is None or roznica < best[0]:
+                            best = (roznica, ox, oy)
+                    # brak dobrej łaty (np. pole w gęstych kwiatach): gładkie zamalowanie, i tak leży pod polem gry
+                    if best is None or best[0] > 45:
+                        # piasek w kolorze ścieżki z drobnym ziarnem farby
+                        ziarno = cv2.GaussianBlur(rng.normal(0, 9, (H, W)).astype(np.float32), (0, 0), 1.1)[..., None]
+                        piasek = np.clip(sciezka[None, None, :] + ziarno, 0, 255)
+                        alfa = cv2.GaussianBlur(cv2.dilate(m, np.ones((7, 7), np.uint8)).astype(np.float32) / 255, (0, 0), 4)[..., None]
+                        czysty = (czysty * (1 - alfa) + piasek * alfa).astype(np.uint8)
+                        continue
+                    _, ox, oy = best
+                    zrodlo = cv2.warpAffine(czysty, np.float32([[1, 0, -ox], [0, 1, -oy]]), (W, H), flags=cv2.INTER_NEAREST, borderMode=cv2.BORDER_REFLECT)
+                    alfa = cv2.GaussianBlur(cv2.dilate(m, np.ones((7, 7), np.uint8)).astype(np.float32) / 255, (0, 0), 4)[..., None]
+                    czysty = (czysty * (1 - alfa) + zrodlo * alfa).astype(np.uint8)
+            rdzen[m_pole > 0] = 0   # to pole jest już czyste, może służyć za źródło dla kolejnych
         gora = int(H * 0.10)
         czysty = czysty[gora:]
         cv2.imwrite(str(OUT / (r["id"] + ".webp")), czysty, [cv2.IMWRITE_WEBP_QUALITY, 82])

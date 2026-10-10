@@ -45,4 +45,4 @@ Właściciel: Dawid (specjalista GIS). Rozmawiamy po polsku. W odpowiedziach nie
 ## Otwarte sprawy
 - Dawid przygotuje w QGIS/OSM dane do nowych wskaźników (Żabki, Biedronki, Lidle, paczkomaty, apteki, stacje PKP, ścieżki rowerowe) jako CSV `teryt;...` (wartości bezwzględne, przeliczenie robimy w grze).
 - Pomysły do zrobienia: Odkrywca (mapa Polski we mgle, kroki dziennie, znaleziska, paszport z pieczątkami), gra „zaznacz drogę” (potrzebne numery dróg `ref` z OSM), wyzwania w Karcie w ciemno przez bazę są (z rankingu), link zostaje jako zapas.
-- Lepsze tła planszy: wersje ilustracji bez narysowanych pól (wtedy wystarczy podmienić pliki w `narzedzia/plansza-zrodla/` i uruchomić `narzedzia/plansza_tla.py`).
+- Tła planszy: `narzedzia/plansza_tla.py` zamalowuje narysowane pola łatami ze ścieżki (10.10.2026), a `index.html` rozsuwa pola gry, żeby nie nachodziły na siebie przy 360 px. Gdyby przyszły ilustracje bez narysowanych pól, wystarczy podmienić pliki w `narzedzia/plansza-zrodla/` i uruchomić skrypt.
