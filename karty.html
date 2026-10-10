@@ -125,8 +125,7 @@ details[open]>summary .strz{transform:rotate(90deg)}
     <div data-pb="Oto Twoja kolekcja! Zbieraj wszystkie gminy."></div>
     <section class="pole ap" aria-label="Porządek w albumie">
       <input id="szukajK" type="search" placeholder="Szukaj w kolekcji: gmina, powiat…" autocomplete="off" enterkeyhint="search">
-      <div class="ap-wiersz"><span>Układ</span><div class="ap-chipy" id="uklad" role="group" aria-label="Układ albumu"></div></div>
-      <div class="ap-wiersz"><span>Sortuj</span><div class="ap-chipy" id="sortuj" role="group" aria-label="Sortowanie kart"></div></div>
+      <div class="ap-chipy" id="rodzaj" role="group" aria-label="Rodzaj gminy"></div>
     </section>
     <details class="pole szanse-panel"><summary>Szanse paczek i kart</summary><div id="szanse"></div></details><section class="pole paczki" id="paczki"></section>
     <div id="sekcje" style="display:flex;flex-direction:column;gap:12px"></div>
@@ -134,28 +133,19 @@ details[open]>summary .strz{transform:rotate(90deg)}
 </div>
 <script src="wspolne.js?v=25"></script>
 <script src="polandball.js?v=4"></script>
-<script src="karty.js?v=23"></script>
+<script src="karty.js?v=24"></script>
 <script>
 const {$}=ZP;
 let D=null,filtr="",WOJ_SVG={},szukaj="",limitWsz=60;
-// układ i sortowanie albumu (zapamiętane na telefonie)
-const UKLADY=[["woj","Województwa"],["rz","Rzadkość"],["wsz","Wszystkie"]];
-const SORTY=[["ovr","Najlepsze OVR"],["rz","Rzadkość"],["nazwa","A–Ż"],["lud","Ludność"],["nowe","Najnowsze"]];
-let uklad="woj",sortK="ovr";
-try{const u=JSON.parse(localStorage.getItem("album-porzadek")||"{}");if(UKLADY.some(x=>x[0]===u.uklad))uklad=u.uklad;if(SORTY.some(x=>x[0]===u.sort))sortK=u.sort;}catch(e){}
+// album: karty zawsze od najwyższego OVR; do wyboru rodzaj gminy (zapamiętany na telefonie)
+const RODZAJE=[["","Wszystkie"],["wies","Wiejskie"],["mw","Miejsko-wiejskie"],["miasto","Miejskie"],["mnp","Na prawach powiatu"]];
+let rodzaj="";try{const r=localStorage.getItem("album-rodzaj")||"";if(RODZAJE.some(x=>x[0]===r))rodzaj=r;}catch(e){}
 const kolPL=new Intl.Collator("pl");
-function porownaj(){
-  const KOL=Karty.KOLEJ,w=Karty.widziane(),poz=k=>{const i=w.indexOf(k);return i<0?1e9:i;};
-  const ovr=g=>g.ovr==null?-1:Karty.ocenaOVR(g);
-  return {ovr:(a,b)=>ovr(b)-ovr(a)||KOL.indexOf(a.rz)-KOL.indexOf(b.rz)||kolPL.compare(a.n,b.n),
-    rz:(a,b)=>KOL.indexOf(a.rz)-KOL.indexOf(b.rz)||ovr(b)-ovr(a)||kolPL.compare(a.n,b.n),
-    nazwa:(a,b)=>kolPL.compare(a.n,b.n)||a.k.localeCompare(b.k),
-    lud:(a,b)=>(b.ludnosc||0)-(a.ludnosc||0)||kolPL.compare(a.n,b.n),
-    nowe:(a,b)=>poz(b.k)-poz(a.k)||kolPL.compare(a.n,b.n)}[sortK];
-}
-function chipy(id,lista,akt,ustaw){
-  $(id).innerHTML=lista.map(([v,t])=>'<button type="button" data-v="'+v+'"'+(v===akt?' class="akt" aria-pressed="true"':' aria-pressed="false"')+'>'+t+'</button>').join("");
-  $(id).querySelectorAll("button").forEach(b=>b.onclick=()=>{ustaw(b.dataset.v);try{localStorage.setItem("album-porzadek",JSON.stringify({uklad,sort:sortK}));}catch(e){}limitWsz=60;rysuj();});
+const mnp=g=>+g.k.slice(2,4)>=61;
+const rodzajGminy=g=>mnp(g)?"mnp":g.typ==="gmina wiejska"?"wies":g.typ==="gmina miejsko-wiejska"?"mw":"miasto";
+function chipyRodzaju(){
+  $("rodzaj").innerHTML=RODZAJE.map(([v,t])=>'<button type="button" data-v="'+v+'" aria-pressed="'+(v===rodzaj)+'"'+(v===rodzaj?' class="akt"':'')+'>'+t+'</button>').join("");
+  $("rodzaj").querySelectorAll("button").forEach(b=>b.onclick=()=>{rodzaj=b.dataset.v;try{localStorage.setItem("album-rodzaj",rodzaj);}catch(e){}limitWsz=60;rysuj();});
 }
 const otwarte=new Set(JSON.parse(localStorage.getItem("album-otwarte")||"[]"));
 const zapiszOtwarte=()=>localStorage.setItem("album-otwarte",JSON.stringify([...otwarte]));
@@ -174,40 +164,24 @@ function rysuj(){
   $("stan").textContent=mam.size?"stuknij kartę, żeby ją obejrzeć":"zbieraj karty, grając";
   $("rzadkosci").innerHTML=KOL.map(r=>'<button class="rz-'+r+(filtr===r?" akt":"")+'" data-r="'+r+'">'+RZ[r]+'<b>'+licz[r][0]+'/'+licz[r][1]+'</b></button>').join("");
   $("rzadkosci").querySelectorAll("button").forEach(b=>b.onclick=()=>{filtr=filtr===b.dataset.r?"":b.dataset.r;rysuj();});
-  chipy("uklad",UKLADY,uklad,v=>uklad=v);chipy("sortuj",SORTY,sortK,v=>sortK=v);
+  chipyRodzaju();
+  // OVR liczymy raz na kartę (z ulepszeniami), sortowanie korzysta z gotowych liczb
+  const OVR=new Map(),ovr=g=>{let v=OVR.get(g.k);if(v===undefined){v=g.ovr==null?-1:Karty.ocenaOVR(g);OVR.set(g.k,v);}return v;};
+  const sort=(a,b)=>ovr(b)-ovr(a)||KOL.indexOf(a.rz)-KOL.indexOf(b.rz)||kolPL.compare(a.n,b.n);
   const q=ZP.norm(szukaj.trim()),trafia=g=>!q||ZP.norm(g.n).includes(q)||ZP.norm(g.powiat||"").includes(q)||ZP.norm(g.woj||"").includes(q);
-  const pasuje=g=>(!filtr||g.rz===filtr)&&trafia(g),sort=porownaj();
+  const pasuje=g=>(!filtr||g.rz===filtr)&&(!rodzaj||rodzajGminy(g)===rodzaj)&&trafia(g);
   let h="";
   const ikNowe='<svg viewBox="0 0 24 24"><path d="M12 2l3 6.5 7 .8-5.2 4.8 1.4 7L12 17.6 5.8 21.1l1.4-7L2 9.3l7-.8z"/></svg>';
   if(nowe.length){const l=nowe.map(k=>D.PO_K[k]).filter(Boolean).sort(sort);
     h+=sekcja("nowe",ikNowe,"Nowe karty","od ostatniej wizyty",l.length,0,l.map(g=>Karty.karta(g,{nowa:true})).join(""),true);}
   const woj={};D.g.forEach(g=>{(woj[g.woj]=woj[g.woj]||{wsz:[],mam:[]}).wsz.push(g);if(mam.has(g.k))woj[g.woj].mam.push(g);});
   const mini=g=>Karty.karta(g,{nowa:nowe.indexOf(g.k)>=0});
-  if(q){
-    // wyszukiwanie: jedna sekcja z trafieniami z całej kolekcji
-    const l=D.g.filter(g=>mam.has(g.k)&&pasuje(g)).sort(sort),brak=D.g.filter(g=>!mam.has(g.k)&&pasuje(g)).length;
-    h+=sekcja("szukaj",ikNowe,"Wyniki: „"+szukaj.trim().replace(/[<>&"]/g,"").slice(0,30)+"”","w kolekcji "+l.length+(brak?" · jeszcze bez karty: "+brak:""),l.length,0,
-      l.map(mini).join("")||'<div class="puste">Nie masz jeszcze takiej karty'+(brak?" ("+brak+" do zdobycia)":"")+'.</div>',true);
-  }else if(uklad==="wsz"){
-    const l=D.g.filter(g=>mam.has(g.k)&&pasuje(g)).sort(sort);
-    h+=sekcja("wszystkie",ikNowe,"Wszystkie karty",SORTY.find(x=>x[0]===sortK)[1].toLowerCase(),l.length,0,
-      (l.slice(0,limitWsz).map(mini).join("")||'<div class="puste">Brak kart w tym filtrze.</div>')+(l.length>limitWsz?'<button type="button" class="klocek jasny wiecej-kart" id="wiecejKart">Pokaż kolejne ('+(l.length-limitWsz)+')</button>':''),true);
-  }else if(uklad==="rz"){
-    KOL.forEach(r=>{const wsz=D.g.filter(g=>g.rz===r),l=wsz.filter(g=>mam.has(g.k)&&pasuje(g)).sort(sort);if(filtr&&filtr!==r)return;
-      h+=sekcja("rz-"+r,'<span class="rz-'+r+'" style="display:block;width:28px;height:36px;border-radius:6px;border:2px solid var(--braz)"></span>',Karty.RZ[r],"zebrane: "+wsz.filter(g=>mam.has(g.k)).length+" z "+wsz.length,wsz.filter(g=>mam.has(g.k)).length,wsz.length,
-        l.map(mini).join("")||'<div class="puste">Jeszcze żadnej karty tej rzadkości.</div>',r==="legenda"||r==="diament");});
-  }else{
-    // województwa: najpierw te, w których masz najwięcej kart; w środku według wybranego sortowania
-    Object.keys(woj).sort((a,b)=>woj[b].mam.length-woj[a].mam.length||a.localeCompare(b,"pl")).forEach(n=>{
-      const x=woj[n],l=x.mam.filter(pasuje).sort(sort);
-      const blisko=x.wsz.filter(g=>!mam.has(g.k)&&st.postep[g.k]&&st.postep[g.k].size>=Karty.prog(g)-1&&pasuje(g)).slice(0,4);
-      const reszta=x.wsz.filter(g=>!mam.has(g.k)&&pasuje(g)).length-blisko.length;
-      const tresc=l.map(mini).join("")
-        +blisko.map(g=>Karty.karta(g,{otwarta:false,postep:st.postep[g.k].size})).join("")
-        +(reszta>0?'<div class="slot-reszta"><span><b>'+reszta+'</b>kart do zdobycia</span></div>':'');
-      h+=sekcja("w-"+n,WOJ_SVG[n]||"",n,x.mam.length?"zebrane karty: "+x.mam.length:"jeszcze żadnej karty",x.mam.length,x.wsz.length,tresc||'<div class="puste">Brak kart w tym filtrze.</div>',false);
-    });
-  }
+  const l=[...mam].map(k=>D.PO_K[k]).filter(g=>g&&pasuje(g)).sort(sort),wszystkich=D.g.filter(g=>pasuje(g)).length;
+  const ikKarty='<svg viewBox="0 0 24 24"><path d="M4 6l9-3 3 13-9 3z"/><path d="M14 4l6 2-3 13"/></svg>';
+  h+=sekcja("wszystkie",ikKarty,q?"Wyniki: „"+szukaj.trim().replace(/[<>&"]/g,"").slice(0,30)+"”":(RODZAJE.find(x=>x[0]===rodzaj)||RODZAJE[0])[1]==="Wszystkie"?"Twoje karty":"Gminy: "+RODZAJE.find(x=>x[0]===rodzaj)[1].toLowerCase(),
+    "od najwyższego OVR",l.length,wszystkich,
+    (l.slice(0,limitWsz).map(mini).join("")||'<div class="puste">'+(q?"Nie masz jeszcze takiej karty.":"Brak kart w tym wyborze.")+'</div>')
+    +(l.length>limitWsz?'<button type="button" class="klocek jasny wiecej-kart" id="wiecejKart">Pokaż kolejne ('+(l.length-limitWsz)+')</button>':''),true);
   const rzadkie=q?[]:D.g.filter(g=>!mam.has(g.k)&&(["legenda","diament","zloto"].includes(g.rz))&&pasuje(g)).sort(sort).slice(0,12);
   const ikDiam='<svg viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 12L2 9z"/></svg>';
   if(rzadkie.length)h+=sekcja("rzadkie",ikDiam,"Najrzadsze do zdobycia","legendarne, diamentowe i złote karty",rzadkie.length,0,rzadkie.map(g=>Karty.karta(g,{otwarta:false,postep:st.postep[g.k]?st.postep[g.k].size:0})).join(""),false);
