@@ -28,6 +28,15 @@
 .tr-mapa path.tak{fill:#27AE60}.tr-mapa path.blisko{fill:#F5B82E}.tr-mapa path.daleko{fill:#C9B8A6}
 .tr-mapa path.trasa{stroke:#3A2A14;stroke-width:2.4}
 .tr-mapa path.odkryta{fill:#A8DDA0}
+.tr-mapa #gD path{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
+.tr-mapa #gD .dr-g{stroke:#F08A2C;stroke-width:1.1;opacity:.85}
+.tr-mapa #gD .dr-zo{stroke:#fff;stroke-width:3.2;opacity:.8}
+.tr-mapa #gD .dr-z{stroke:#D9332B;stroke-width:1.8}
+.tr-mapa .mi circle{fill:#3A2A14;stroke:#FFF6E0}
+.tr-mapa .mi.r3 circle{fill:#E84A3C}
+.tr-mapa .mi text{font-family:Rubik,sans-serif;font-weight:800;fill:#3A2A14;dominant-baseline:central;paint-order:stroke;stroke:#FFF6E0}
+.tr-mapa .mi.r3 text{font-weight:900;text-transform:uppercase}
+.tr-mapa .mi{animation:miWej .4s ease-out both}@keyframes miWej{from{opacity:0}}
 .tr-mapa text{font:900 11px Rubik,sans-serif;fill:#3A2A14;text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#FFF6E0;stroke-width:3px;pointer-events:none}
 .tr-mapa text.duzy{font-size:12.5px}
 .tr-wpis{display:flex;gap:8px;min-width:0}
@@ -66,11 +75,11 @@
       <div class="tr-podp" id="podp"></div>
       <div class="tr-kom" id="kom" role="status" aria-live="polite"></div>
       <div class="tr-proby" id="proby"></div>
-      <div class="tr-przyciski"><button class="klocek jasny" id="podpowiedz" type="button">💡 Podpowiedź</button><button class="klocek jasny" id="poddaj" type="button">Poddaję się</button></div>
+      <button class="klocek jasny" id="poddaj" type="button" style="width:100%">Poddaję się, pokaż trasę</button>
     </section>
     <section id="koniec" hidden></section>
     <details class="pole" style="padding:10px 14px"><summary style="font:400 15px Bungee,sans-serif;cursor:pointer">Zasady</summary>
-      <p style="margin-top:8px">Połącz dwa powiaty, wpisując powiaty, przez które prowadzi trasa (każdy kolejny musi graniczyć z poprzednim). Zielony leży na najkrótszej trasie, żółty jest blisko niej, szary daleko. Wygrywasz, gdy wpisane powiaty połączą start z metą. Liczba prób jest ograniczona; podpowiedź odsłania jeden powiat z trasy i zużywa próbę.</p>
+      <p style="margin-top:8px">Połącz dwa powiaty, wpisując powiaty, przez które prowadzi trasa (każdy kolejny musi graniczyć z poprzednim). Zielony leży na najkrótszej trasie, żółty jest blisko niej, szary daleko. Wygrywasz, gdy wpisane powiaty połączą start z metą. Liczba prób jest ograniczona. Na mapie widać drogi krajowe i ekspresowe; po każdej odpowiedzi pojawiają się nazwy miast w wpisanym powiecie, a na końcu w całej okolicy.</p>
     </details>
   </main>
 </div>
@@ -82,7 +91,7 @@
 const {$,norm}=ZP,T=TrasaLogika;
 const URLP=new URLSearchParams(location.search),TRENING=URLP.has("trening");
 const DZIEN=ZP.dayKey(),KLUCZ="trasa-"+DZIEN,EMO={tak:"🟩",blisko:"🟨",daleko:"⬜"};
-let POW=[],PO=new Map(),Z=null,S=null,PROJ=null;
+let POW=[],PO=new Map(),Z=null,S=null,PROJ=null,OKNO=null,MIASTA=[];
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
 const czytaj=()=>{try{return JSON.parse(localStorage.getItem(KLUCZ)||"null");}catch(e){return null;}};
 const zapiszStan=()=>{if(!TRENING)try{localStorage.setItem(KLUCZ,JSON.stringify(S));}catch(e){}};
@@ -97,31 +106,67 @@ async function init(){
   $("nA").textContent=nazwa(Z.a);$("nB").textContent=nazwa(Z.b);
   $("infoMin").textContent="Najkrótsza trasa: "+Z.pomiedzy+" "+(Z.pomiedzy<5?"powiaty":"powiatów")+" pomiędzy";
   rysujMape();odswiez();
+  // drogi i nazwy miast dochodzą, gdy się wczytają (mapa działa i bez nich)
+  fetch("drogi.json?v=1").then(x=>x.ok?x.json():{}).then(rysujDrogi).catch(()=>{});
+  fetch("miasta-etykiety.json?v=1").then(x=>x.ok?x.json():[]).then(l=>{MIASTA=l;koloruj();}).catch(()=>{});
   if(S.koniec)koniec(false);else{$("gra").hidden=false;}
 }
 // mapa: start, meta i okolica najkrótszej trasy, bez nazw (nazwy pojawiają się po wpisaniu)
 function rysujMape(){
   const kl=[Z.a,Z.b,...Z.naTrasie],b=[1e9,1e9,-1e9,-1e9];
   kl.forEach(k=>{const p=PO.get(k);b[0]=Math.min(b[0],p.bb[0]);b[1]=Math.min(b[1],p.bb[1]);b[2]=Math.max(b[2],p.bb[2]);b[3]=Math.max(b[3],p.bb[3]);});
-  const pad=Math.max(.35,(b[2]-b[0])*.18),okno=[b[0]-pad,b[1]-pad*.7,b[2]+pad,b[3]+pad*.7];
+  const pad=Math.max(.35,(b[2]-b[0])*.18),okno=[b[0]-pad,b[1]-pad*.7,b[2]+pad,b[3]+pad*.7];OKNO=okno;
   const widac=POW.filter(p=>p.bb[2]>okno[0]&&p.bb[0]<okno[2]&&p.bb[3]>okno[1]&&p.bb[1]<okno[3]);
   PROJ=ZP.projection(widac.map(p=>p.f),500,4);
   // obcinamy widok do okna, żeby skrajne powiaty nie rozciągały mapy
   const x0=Math.max(0,PROJ.x(okno[0])),x1=Math.min(500,PROJ.x(okno[2])),y0=Math.max(0,PROJ.y(okno[3])),y1=Math.min(PROJ.H,PROJ.y(okno[1]));
   const svg=$("mapa");svg.setAttribute("viewBox",[x0,y0,x1-x0,y1-y0].map(v=>v.toFixed(1)).join(" "));
   svg.dataset.skala=((x1-x0)/500).toFixed(3);
-  svg.innerHTML='<g id="gP">'+widac.map(p=>'<path data-k="'+p.k+'" d="'+PROJ.path(p.f.geometry,.5)+'"/>').join("")+'</g><g id="gT"></g>';
+  svg.innerHTML='<g id="gP">'+widac.map(p=>'<path data-k="'+p.k+'" d="'+PROJ.path(p.f.geometry,.5)+'"/>').join("")+'</g><g id="gD"></g><g id="gM"></g><g id="gT"></g>';
+}
+// drogi z OpenStreetMap: ekspresowe i autostrady na czerwono z białą obwódką, główne na pomarańczowo
+function rysujDrogi(d){
+  const w=OKNO,wOknie=l=>l.some(([lo,la])=>lo>w[0]&&lo<w[2]&&la>w[1]&&la<w[3]);
+  const sciezka=ll=>ll.filter(wOknie).map(l=>"M"+l.map(([lo,la])=>PROJ.x(lo).toFixed(1)+" "+PROJ.y(la).toFixed(1)).join("L")).join("");
+  const g=d.g?sciezka(d.g):"",z=d.z?sciezka(d.z):"";
+  $("gD").innerHTML=(g?'<path class="dr-g" d="'+g+'"/>':'')+(z?'<path class="dr-zo" d="'+z+'"/><path class="dr-z" d="'+z+'"/>':'');
+}
+function wPowiecie(c,p){
+  const lon=c[2],lat=c[1];if(lon<p.bb[0]||lon>p.bb[2]||lat<p.bb[1]||lat>p.bb[3])return false;
+  const g=p.f.geometry,polys=g.type==="Polygon"?[g.coordinates]:g.coordinates;
+  return polys.some(q=>{let w=false;const r=q[0];for(let i=0,j=r.length-1;i<r.length;j=i++){const [xi,yi]=r[i],[xj,yj]=r[j];if(((yi>lat)!==(yj>lat))&&(lon<(xj-xi)*(lat-yi)/(yj-yi)+xi))w=!w;}return w;});
 }
 function koloruj(){
-  const svg=$("mapa"),pokazTrase=!!S.koniec,tr=pokazTrase?new Set(T.trasa(POW,Z,S.proby)):new Set(),sk=+svg.dataset.skala||1;
+  const svg=$("mapa"),pokazTrase=!!S.koniec,tr=pokazTrase?new Set(T.trasa(POW,Z,S.proby)):new Set(),vb=svg.viewBox.baseVal,sk=vb&&svg.clientWidth?vb.width/svg.clientWidth:+svg.dataset.skala||1;
   svg.querySelectorAll("#gP path").forEach(el=>{const k=el.dataset.k;el.setAttribute("class",k===Z.a?"a":k===Z.b?"b":S.proby.includes(k)?T.ocena(Z,k):pokazTrase&&tr.has(k)?"odkryta":"");if(pokazTrase&&tr.has(k))el.classList.add("trasa");});
   const etyk=[Z.a,Z.b,...S.proby,...(pokazTrase?[...tr]:[])];
-  $("gT").innerHTML=[...new Set(etyk)].map(k=>{const p=PO.get(k);return '<text class="'+(k===Z.a||k===Z.b?"duzy":"")+'" style="font-size:'+((k===Z.a||k===Z.b?12.5:11)*sk).toFixed(1)+'px;stroke-width:'+(3*sk).toFixed(2)+'px" x="'+PROJ.x(p.lon).toFixed(1)+'" y="'+PROJ.y(p.lat).toFixed(1)+'">'+esc(p.short)+'</text>';}).join("");
+  $("gT").innerHTML=[...new Set(etyk)].map(k=>{const p=PO.get(k);return '<text class="'+(k===Z.a||k===Z.b?"duzy":"")+'" style="font-size:'+((k===Z.a||k===Z.b?13:11.5)*sk).toFixed(2)+'px;stroke-width:'+(3*sk).toFixed(2)+'px" x="'+PROJ.x(p.lon).toFixed(1)+'" y="'+PROJ.y(p.lat).toFixed(1)+'">'+esc(p.short)+'</text>';}).join("");
+  miasta([...new Set(etyk)],sk,vb);
+}
+// nazwy miast: po każdej odpowiedzi w wpisanych powiatach, na końcu w całej okolicy; bez nachodzenia na siebie i na nazwy powiatów
+function miasta(nazwyPowiatow,sk,vb){
+  const box=$("gM");if(!MIASTA.length||!vb){box.innerHTML="";return;}
+  const zaj=nazwyPowiatow.map(k=>{const p=PO.get(k),x=PROJ.x(p.lon),y=PROJ.y(p.lat),w=p.short.length*11.5*.62*sk/2+3*sk,h=8*sk;return [x-w,y-h,x+w,y+h];});
+  const M=4*sk,kol=b=>b[0]<vb.x+M||b[1]<vb.y+M||b[2]>vb.x+vb.width-M||b[3]>vb.y+vb.height-M||zaj.some(z=>b[0]<z[2]&&b[2]>z[0]&&b[1]<z[3]&&b[3]>z[1]);
+  const gdzie=S.koniec?null:S.proby.map(k=>PO.get(k));
+  const kand=MIASTA.filter(c=>{const x=PROJ.x(c[2]),y=PROJ.y(c[1]);if(x<vb.x||x>vb.x+vb.width||y<vb.y||y>vb.y+vb.height)return false;return !gdzie||gdzie.some(p=>wPowiecie(c,p));})
+    .sort((a,b)=>b[3]*(b[4]===3?100:b[4]===2?2.5:1)-a[3]*(a[4]===3?100:a[4]===2?2.5:1));
+  const max=S.koniec?22:Math.min(22,3*S.proby.length);let out="",n=0;
+  for(const [nm,lat,lon,,rg] of kand){
+    if(n>=max)break;
+    const x=PROJ.x(lon),y=PROJ.y(lat),fs=(rg===3?11:rg===2?10:9.5)*sk,w=nm.length*fs*(rg===3?.7:.58)+2*sk,h=fs+2*sk,o=4*sk,dot=[x-3*sk,y-3*sk,x+3*sk,y+3*sk];
+    if(kol(dot))continue;
+    const opc=[["p",[x+o,y-h/2,x+o+w,y+h/2],x+o,y,"start"],["l",[x-o-w,y-h/2,x-o,y+h/2],x-o,y,"end"],["g",[x-w/2,y-o-h,x+w/2,y-o],x,y-o-h/2,"middle"],["d",[x-w/2,y+o,x+w/2,y+o+h],x,y+o+h/2,"middle"]];
+    const ok=opc.find(q=>!kol(q[1]));if(!ok)continue;
+    zaj.push(dot,ok[1]);n++;
+    out+='<g class="mi r'+rg+'"><circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="'+((rg===3?3.2:2.4)*sk).toFixed(2)+'" style="stroke-width:'+(1.2*sk).toFixed(2)+'px"/><text x="'+ok[2].toFixed(1)+'" y="'+ok[3].toFixed(1)+'" style="text-anchor:'+ok[4]+';font-size:'+fs.toFixed(2)+'px;stroke-width:'+(2.6*sk).toFixed(2)+'px">'+esc(nm)+'</text></g>';
+  }
+  box.innerHTML=out;
 }
 function odswiez(){
   koloruj();
   $("infoProby").textContent="Próby: "+S.proby.length+" / "+Z.limit;
-  $("proby").innerHTML=S.proby.map(k=>'<span class="'+T.ocena(Z,k)+'">'+EMO[T.ocena(Z,k)]+" "+esc(nazwa(k))+(S.podp.includes(k)?" 💡":"")+'</span>').join("");
+  $("proby").innerHTML=S.proby.map(k=>'<span class="'+T.ocena(Z,k)+'">'+EMO[T.ocena(Z,k)]+" "+esc(nazwa(k))+(S.podp&&S.podp.includes(k)?" 💡":"")+'</span>').join("");
 }
 function znajdz(t){
   const q=norm(String(t).replace(/^(powiat|m\.|miasto)\s+/i,"")).trim();if(!q)return [];
@@ -150,7 +195,6 @@ function zgadnij(k,podp){
 }
 $("forma").onsubmit=e=>{e.preventDefault();const l=znajdz($("wpis").value);if(l.length===1)zgadnij(l[0].k);else if(!l.length)$("kom").textContent="Nie znam takiego powiatu.";else $("kom").textContent="Wybierz jeden z podpowiedzianych.";};
 $("wpis").oninput=podpowiedziWpisu;
-$("podpowiedz").onclick=()=>{const k=T.podpowiedz(POW,Z,S.proby);if(k)zgadnij(k,true);};
 $("poddaj").onclick=()=>{if(S.koniec||!confirm("Pokazać trasę? Poddanie się nie daje paczki."))return;S.koniec="poddana";zapiszStan();odswiez();koniec(true);};
 function koniec(swiezy){
   $("gra").hidden=true;koloruj();
@@ -172,6 +216,7 @@ function koniec(swiezy){
   }
   if(swiezy&&w)setTimeout(ZP.fanfary,300);
 }
+addEventListener("resize",()=>{if(Z&&S)koloruj();});
 init().catch(e=>{$("infoMin").textContent="Nie udało się wczytać mapy powiatów.";console.error(e);});
 (function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();
 ZP.registerSW&&ZP.registerSW();
