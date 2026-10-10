@@ -99,6 +99,11 @@ window.Online=(()=>{
   strzal:(id,runda,pts)=>rpcGracza('live_answer',{p_id:id,p_round:runda,p_pts:Math.round(pts)}),
   opusc:id=>rpcGracza('live_leave',{p_id:id})
  };
+ // wydarzenie tygodnia na planszy: wynik (suma punktów krainy tygodnia) i tabela
+ const wydarzenie={
+  zapisz:(tydzien,pkt)=>rpcGracza('event_publish',{p_week:tydzien,p_score:Math.round(pkt)}),
+  ranking:tydzien=>request('/rest/v1/rpc/event_leaderboard',{p_week:tydzien||null})
+ };
  async function zablokuj(inny,zglos){return rpcGracza('block_player',{p_other:inny,p_report:!!zglos});}
  async function ranking(mode){try{return await request('/rest/v1/rpc/leaderboard2',{p_mode:mode});}catch(e){if(/function|schema cache|not find/i.test(e.message))return request('/rest/v1/rpc/leaderboard',{p_mode:mode});throw e;}}
  async function gate(){
@@ -107,5 +112,5 @@ window.Online=(()=>{
   if(await session())return;
   sessionStorage.setItem('login-return',location.pathname+location.search+location.hash);location.replace('logowanie.html');
  }
- return {providers,enabled,session,oauth,email,verify,callback,logout,points,publish,publishGuest,ranking,gate,statystyki,odswiezProfil,dolaczony,profilLokalny,ja,profil,wyslij,skrzynka,nieprzeczytane,przeczytane,zablokuj,urzadzenie,walka};
+ return {providers,enabled,session,oauth,email,verify,callback,logout,points,publish,publishGuest,ranking,gate,statystyki,odswiezProfil,dolaczony,profilLokalny,ja,profil,wyslij,skrzynka,nieprzeczytane,przeczytane,zablokuj,urzadzenie,walka,wydarzenie};
 })();

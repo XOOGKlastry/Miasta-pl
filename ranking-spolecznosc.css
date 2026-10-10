@@ -89,3 +89,6 @@ body.arkusz-otwarty{overflow:hidden}
 .walcz{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .walcz .klocek{min-height:54px;font-size:14px;padding:0 8px;justify-content:center;width:100%}
 @media (prefers-reduced-motion:reduce){.online{animation:none}}
+.przelacznik.cztery{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.przelacznik.cztery button{font-size:12.5px;padding:0 2px}
+.tresc>.stan{flex:none}

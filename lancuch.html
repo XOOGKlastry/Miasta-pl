@@ -78,10 +78,14 @@
   </main>
 </div>
 <script src="wspolne.js?v=24"></script>
+<script src="saga.js?v=4"></script><script src="poziom.js?v=1"></script>
 <script>
 const {$,norm}=ZP;
-const CZAS=90,BONUS=5,PROG_MALA=5000;
-let GMINY=[],PO_NAZWIE={},LITERY=new Set(),tryb="dzien",gra=null,zegar=null;
+// poziom planszy (lancuch.html?poziom=N): krótszy czas, start w gminie tej krainy, gwiazdki za ogniwa
+const PG=window.PoziomGra&&PoziomGra.aktywny?PoziomGra:null;
+const CZAS=PG?(PG.sezon===2?45:60):90,BONUS=5,PROG_MALA=5000;
+const PROGI_GW=PG&&PG.sezon===2?[6,10,14]:[4,8,12];
+let GMINY=[],PO_NAZWIE={},LITERY=new Set(),tryb=PG?"poziom":"dzien",gra=null,zegar=null,KOD_WOJ=null;
 const DZIEN=(()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");})();
 const KLUCZ="lancuch-"+DZIEN;
 // litera do porównań: bez polskich znaków
@@ -92,7 +96,9 @@ function nastepnaLitera(nazwa){
   return z[0];
 }
 function wylosujStart(seed){
-  const r=ZP.seeded(seed),pula=GMINY.filter(g=>g.ludnosc>15000&&LITERY.has(nastepnaLitera(g.n)));
+  const r=ZP.seeded(seed);
+  let pula=GMINY.filter(g=>g.ludnosc>15000&&LITERY.has(nastepnaLitera(g.n)));
+  if(tryb==="poziom"&&KOD_WOJ){const w=GMINY.filter(g=>g.k.slice(0,2)===KOD_WOJ&&g.ludnosc>6000&&LITERY.has(nastepnaLitera(g.n)));if(w.length)pula=w;}
   return pula[Math.floor(r()*pula.length)];
 }
 function stanDnia(){try{return JSON.parse(localStorage.getItem(KLUCZ)||"null");}catch(e){return null;}}
@@ -199,6 +205,12 @@ $("pas").onclick=()=>zakoncz();
 function zakoncz(){
   if(!gra||gra.zakonczona)return;gra.zakonczona=true;clearInterval(zegar);stopMik();
   const wynik={ogniwa:gra.lancuch.length-1,pkt:gra.pkt,lancuch:gra.lancuch.map(g=>g.n),start:gra.start};
+  if(tryb==="poziom"){
+    const o=wynik.ogniwa,gw=o>=PROGI_GW[2]?3:o>=PROGI_GW[1]?2:o>=PROGI_GW[0]?1:0;
+    $("gra").hidden=true;
+    PG.koniec({gw,proc:Math.min(100,Math.round(100*o/(PROGI_GW[2]+2))),wynik:wynik.pkt,opis:o+" ogniw, "+wynik.pkt+" pkt: "+wynik.lancuch.slice(0,6).join(" → ")+(wynik.lancuch.length>6?" …":"")});
+    return;
+  }
   if(tryb==="dzien"){
     try{localStorage.setItem(KLUCZ,JSON.stringify(wynik));const rek=+(localStorage.getItem("lancuch-rekord")||0);if(wynik.pkt>rek)localStorage.setItem("lancuch-rekord",wynik.pkt);}catch(e){}
   }
@@ -223,6 +235,15 @@ $("graj").onclick=start;
 fetch("baza.json").then(r=>r.json()).then(b=>{
   GMINY=b.gminy.filter(g=>/[123]$/.test(g.k));
   GMINY.forEach(g=>{const n=norm(g.n);(PO_NAZWIE[n]=PO_NAZWIE[n]||[]).push(g);LITERY.add(lit(g.n)[0]);});
+  if(PG){
+    KOD_WOJ=(b.wojewodztwa.find(w=>w.n===PG.P.woj)||{}).k||null;
+    document.querySelector(".lc-tryby").hidden=true;
+    document.querySelector("header h1").innerHTML=PG.P.nazwa+"<small>poziom planszy</small>";
+    document.querySelector("header a").href="./#poziom="+PG.n;
+    PG.pasek("ułóż łańcuch: "+PROGI_GW.map((x,i)=>"★".repeat(i+1)+" "+x).join(", ")+" ogniw w "+CZAS+" s",$("start"));
+    $("sek").textContent=CZAS;
+    document.querySelector(".lc-zasady p:nth-of-type(2)").textContent="Masz "+CZAS+" sekund, każda dobra gmina dodaje 5 s. Start w gminie z krainy "+PG.P.kraina.nazwa+".";
+  }
   odswiezStart();
 }).catch(()=>{$("stanDnia").textContent="Nie udało się wczytać listy gmin.";});
 ZP.fitViewport();ZP.registerSW();
