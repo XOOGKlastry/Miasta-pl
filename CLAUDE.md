@@ -15,9 +15,9 @@ Właściciel: Dawid (specjalista GIS). Rozmawiamy po polsku. W odpowiedziach nie
 - `index.html`: plansza przygód (16 krain × 6 poziomów). Tła z `grafiki/plansza/` (malowane ilustracje, przygotowane skryptem `narzedzia/plansza_tla.py` z oryginałów w `narzedzia/plansza-zrodla/`), pola z prawdziwym postępem nakładane na narysowane.
 - `saga.js`: poziomy planszy i przepisy gier w poziomach.
 - `wspolne.js` (obiekt `ZP`): wspólne narzędzia, zapis nauki (`ZP.zapisz`), monety, podpowiedzi 50/50, przycisk kolekcji, mapa wektorowa `podkladWektorowy` (powiaty, województwa, drogi z `drogi.json`).
-- `wyzwanie.html`: silnik pytań (wyzwanie dnia, plansza, Własna gra, pojedynki).
+- `wyzwanie.html`: silnik pytań (wyzwanie dnia, plansza, Własna gra, walka na żywo `?tryb=walka`). Pokoje PeerJS („Kto pierwszy, ten lepszy”, „Pokój ze znajomym”) usunięte 10.10.2026: zastąpiły je walki na żywo z rankingu; dolna nawigacja „Znajomi” prowadzi do rankingu.
 - `karty.js`: karty gmin (model OVR, rzadkość z rekordów, ulepszenia, paczki, prezentacja nowej karty, wygląd karty). `karty.html`: album (karta dwustronna).
-- `karta-w-ciemno*.{html,js,css}`: pojedynek kartami (12 kart na stole, trening/ranking, wyzwanie dla znajomego linkiem z 24 h).
+- `karta-w-ciemno*.{html,js,css}`: pojedynek kartami (12 kart na stole; wyzwanie dla znajomego na 24 h, gra sam, dwie osoby na jednym telefonie).
 - `lancuch.html`: Łańcuch dnia (gmina na ostatnią literę, mikrofon, luźne dopasowanie).
 - `polandball.js`: maskotka. `krainy.js`: stary rysowany krajobraz (zapas, gdy brak malowanych teł).
 - `admin.html`: panel admina (zdjęcia, rzeki, herby, kluby, ciekawostki); zapis przez GitHub API tokenem wpisanym w panelu.
