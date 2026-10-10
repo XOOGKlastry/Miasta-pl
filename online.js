@@ -104,6 +104,17 @@ window.Online=(()=>{
   zapisz:(tydzien,pkt)=>rpcGracza('event_publish',{p_week:tydzien,p_score:Math.round(pkt)}),
   ranking:tydzien=>request('/rest/v1/rpc/event_leaderboard',{p_week:tydzien||null})
  };
+ // Podbój Polski: powiaty na mapie, próby (ziarno pytań wydaje serwer), pojedynki o twierdze, handel
+ const podboj={
+  mapa:()=>request('/rest/v1/rpc/conq_mapa',{}),
+  ja:()=>rpcGracza('conq_ja',{}),
+  start:(k,rodzaj,pojedynek)=>rpcGracza('conq_start',{p_k:k,p_rodzaj:rodzaj,p_pojedynek:pojedynek||null}),
+  wynik:(id,dobre)=>rpcGracza('conq_wynik',{p_id:id,p_score:Math.round(dobre)}),
+  sprzedaz:(k,cena)=>rpcGracza('conq_sprzedaz',{p_k:k,p_cena:cena==null?null:Math.round(cena)}),
+  kup:(k,cena)=>rpcGracza('conq_kup',{p_k:k,p_cena:Math.round(cena)}),
+  odbierz:()=>rpcGracza('conq_odbierz',{}),
+  ranking:()=>request('/rest/v1/rpc/conq_ranking',{})
+ };
  async function zablokuj(inny,zglos){return rpcGracza('block_player',{p_other:inny,p_report:!!zglos});}
  async function ranking(mode){try{return await request('/rest/v1/rpc/leaderboard2',{p_mode:mode});}catch(e){if(/function|schema cache|not find/i.test(e.message))return request('/rest/v1/rpc/leaderboard',{p_mode:mode});throw e;}}
  async function gate(){
@@ -112,5 +123,5 @@ window.Online=(()=>{
   if(await session())return;
   sessionStorage.setItem('login-return',location.pathname+location.search+location.hash);location.replace('logowanie.html');
  }
- return {providers,enabled,session,oauth,email,verify,callback,logout,points,publish,publishGuest,ranking,gate,statystyki,odswiezProfil,dolaczony,profilLokalny,ja,profil,wyslij,skrzynka,nieprzeczytane,przeczytane,zablokuj,urzadzenie,walka,wydarzenie};
+ return {providers,enabled,session,oauth,email,verify,callback,logout,points,publish,publishGuest,ranking,gate,statystyki,odswiezProfil,dolaczony,profilLokalny,ja,profil,wyslij,skrzynka,nieprzeczytane,przeczytane,zablokuj,urzadzenie,walka,wydarzenie,podboj};
 })();

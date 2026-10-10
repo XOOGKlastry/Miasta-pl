@@ -1,0 +1,53 @@
+/* Podbój Polski: mapa powiatów w stylu planszy. */
+:root{--pd-moj:#27AE60;--pd-wolny-cel:#FFE27A}
+.tresc>*{flex:none}
+.pd-staty{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.pd-staty .pole{padding:8px 6px;text-align:center;min-width:0}
+.pd-staty b{display:block;font:400 24px/1.1 Bungee,sans-serif;color:var(--braz)}
+.pd-staty span{font-size:11.5px;font-weight:900;color:var(--braz-2)}
+.pd-komunikaty{display:flex;flex-direction:column;gap:10px}
+.pd-komunikaty:empty{display:none}
+.pd-alert{display:flex;align-items:center;gap:10px;padding:10px 12px;min-width:0}
+.pd-alert.pilne{background:#FFE0D6}
+.pd-alert.zloto{background:#FFE9A8}
+.pd-alert>div{flex:1;min-width:0}
+.pd-alert b{display:block;font:400 14px/1.2 Bungee,sans-serif;color:var(--braz);overflow-wrap:anywhere}
+.pd-alert small{display:block;font-size:12.5px;font-weight:700;color:var(--braz-2);overflow-wrap:anywhere}
+.pd-alert .klocek{flex:none;min-height:44px;padding:0 12px;font-size:13px}
+.pd-mapa-pole{padding:6px;overflow:hidden}
+.pd-mapa{position:relative;border-radius:10px;overflow:hidden;background:#BFE3F2;border:3px solid var(--braz)}
+#mapa{display:block;width:100%;height:auto;max-height:calc(var(--app-h,100vh) - 260px);touch-action:none;user-select:none;-webkit-user-select:none}
+#mapa path{stroke:var(--braz);stroke-width:.8;stroke-linejoin:round;cursor:pointer;vector-effect:non-scaling-stroke}
+#mapa path.cel{stroke:#B7860B;stroke-width:1.6}
+#mapa path.tw{stroke:var(--braz);stroke-width:2}
+#mapa path.wyb{stroke:#E84A3C;stroke-width:3}
+#mapa .ozn{font-family:Rubik,sans-serif;font-weight:900;fill:var(--braz);text-anchor:middle;dominant-baseline:central;pointer-events:none;paint-order:stroke;stroke:#FFF6E0;stroke-width:.14em}
+#mapa .woj{fill:none;stroke:var(--braz);stroke-width:1.4;pointer-events:none;vector-effect:non-scaling-stroke}
+.pd-laduje{position:absolute;inset:0;display:grid;place-items:center;font-weight:900;color:var(--braz-2);margin:0!important}
+.pd-laduje:empty{display:none}
+.pd-legenda{display:flex;flex-wrap:wrap;gap:4px 10px;padding:6px 4px 2px;font-size:11.5px;font-weight:900;color:var(--braz-2)}
+.pd-legenda span{display:inline-flex;align-items:center;gap:4px}
+.pd-legenda i{width:12px;height:12px;border-radius:3px;border:2px solid var(--braz)}
+.pd-legenda b{font-size:12px;color:var(--braz)}
+.pd-mapa .zoom-przyciski{position:absolute;right:6px;top:6px;z-index:2;display:flex;flex-direction:column;gap:4px}
+.pd-mapa .zoom-przyciski button{width:36px;height:36px;border-radius:10px;border:3px solid var(--braz);background:var(--krem);color:var(--braz);font:900 18px/1 Rubik,sans-serif;box-shadow:0 2px 0 var(--braz);padding:0}
+.pd-tytul{margin:6px 6px 0!important}
+.pd-zasady{padding:10px 14px}
+.pd-zasady summary{font:400 15px Bungee,sans-serif;cursor:pointer;color:var(--braz)}
+.pd-zasady ul{margin:8px 0 2px;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:13.5px;font-weight:700;color:var(--braz-2);line-height:1.4}
+/* arkusz powiatu */
+.pd-pasek{display:flex;gap:3px;margin-top:2px}
+.pd-pasek i{flex:1;height:12px;border-radius:4px;border:2px solid var(--braz);background:#fff}
+.pd-pasek i.pelne{background:var(--zolt)}
+.pd-pasek.moj i.pelne{background:var(--pd-moj)}
+.pd-wlasciciel{display:flex;align-items:center;gap:10px;background:#fff;border:3px solid var(--braz);border-radius:14px;padding:8px 10px;min-width:0}
+.pd-wlasciciel .awatar{width:38px;height:38px;font-size:16px}
+.pd-wlasciciel div{flex:1;min-width:0}
+.pd-wlasciciel b{display:block;color:var(--braz);overflow-wrap:anywhere}
+.pd-wlasciciel small{display:block;font-size:12px;font-weight:700;color:var(--braz-2)}
+.pd-cena{display:flex;gap:8px;min-width:0}
+.pd-cena input{flex:1;min-width:0;min-height:50px;border:3px solid var(--braz);border-radius:14px;padding:0 12px;font:700 16px Rubik,sans-serif;color:var(--braz);background:#fff}
+.pd-cena .klocek{flex:none;width:auto!important;padding:0 14px;font-size:14px}
+.akcje .klocek small{font:700 11px Rubik,sans-serif;display:block}
+.akcje .klocek.dwulinia{flex-direction:column;gap:0;line-height:1.15;padding-top:4px;padding-bottom:4px}
+.klocek[disabled]{opacity:.55;pointer-events:none}

@@ -135,7 +135,7 @@
   for(const m of l){const r=rozm[m.other_id]||(rozm[m.other_id]={id:m.other_id,nick:m.other_nick,ost:m,nowe:0,wyzw:0});if(!m.mine&&!m.read_at){r.nowe++;if(m.kind==='challenge')r.wyzw++;}}
   const lista=Object.values(rozm).sort((a,b)=>new Date(b.ost.created_at)-new Date(a.ost.created_at));
   tresc.innerHTML='<div class="ark-glowa"><h2 id="ark-tytul">Wiadomości</h2></div>'
-   +(lista.length?'<ul class="rozmowy">'+lista.map(r=>'<li><button type="button" data-id="'+esc(r.id)+'" data-nick="'+esc(r.nick)+'">'+awatar(r.id,r.nick)+'<span class="r-tekst"><b>'+esc(r.nick)+'</b><small>'+(r.ost.mine?'Ty: ':'')+(r.ost.kind==='challenge'?'⚔️ '+esc(r.ost.body):r.ost.kind==='result'?'🏁 '+esc(r.ost.body):esc(r.ost.body))+'</small></span><span class="r-czas">'+kiedy(r.ost.created_at)+(r.nowe?'<em>'+r.nowe+'</em>':'')+'</span></button></li>').join('')+'</ul>'
+   +(lista.length?'<ul class="rozmowy">'+lista.map(r=>'<li><button type="button" data-id="'+esc(r.id)+'" data-nick="'+esc(r.nick)+'">'+awatar(r.id,r.nick)+'<span class="r-tekst"><b>'+esc(r.nick)+'</b><small>'+(r.ost.mine?'Ty: ':'')+(r.ost.payload&&r.ost.payload.podboj?'🏴 ':r.ost.kind==='challenge'?'⚔️ '+esc(r.ost.body):r.ost.kind==='result'?'🏁 '+esc(r.ost.body):esc(r.ost.body))+'</small></span><span class="r-czas">'+kiedy(r.ost.created_at)+(r.nowe?'<em>'+r.nowe+'</em>':'')+'</span></button></li>').join('')+'</ul>'
     :'<p class="uwaga">Na razie pusto. Stuknij gracza w rankingu, żeby do niego napisać albo wyzwać go na pojedynek.</p>');
   tresc.querySelectorAll('.rozmowy button').forEach(b=>b.onclick=()=>pokazWatek(b.dataset.id,b.dataset.nick));
  }
@@ -172,6 +172,12 @@
   const kl='dymek '+(m.mine?'moj':'jego')+(m.kind!=='msg'?' specjalny':'');
   const czas='<time>'+kiedy(m.created_at)+'</time>';
   const d=m.payload||{};
+  // Podbój Polski: powiadomienia gry wysyłane w imieniu gracza, który wykonał ruch
+  if(d.podboj&&typeof d.podboj==='object'){
+   const k=String(d.podboj.k||'').replace(/[^0-9]/g,'').slice(0,4),wyzw=m.kind==='challenge'&&!m.mine;
+   return '<div class="'+kl+'"><b>🏴 Podbój Polski</b>'+(m.mine?'<small>Powiadomienie dla gracza '+esc(m.other_nick)+':</small>':'')+'<span>'+esc(m.body)+'</span>'
+    +'<a class="klocek'+(wyzw?'':' jasny')+'" href="podboj.html'+(k?'?k='+k:'')+'">'+(wyzw?'🛡️ Broń twierdzy':'Mapa Podboju')+'</a>'+czas+'</div>';
+  }
   if(m.kind==='challenge'){
    const zostalo=(+d.t||0)+86400000-Date.now(),wazne=zostalo>0&&typeof d.w==='string';
    const ile=wazne?Math.floor(zostalo/3600000)+' h '+Math.floor(zostalo%3600000/60000)+' min':'';
