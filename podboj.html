@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Podbój Polski · PolskoZnawca</title>
+<meta name="theme-color" content="#FFF6E0" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="plansza.css?v=4" />
+<link rel="stylesheet" href="plansza-formularze.css?v=1" />
+<link rel="stylesheet" href="ranking-spolecznosc.css?v=4" />
+<link rel="stylesheet" href="podboj.css?v=1" />
+</head>
+<body>
+<div class="wrap">
+  <header class="gora"><a href="gry.html" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Podbój Polski<small>zdobywaj powiaty, buduj twierdze</small></h1></header>
+  <main class="tresc">
+    <section class="pd-staty" aria-label="Twoje imperium">
+      <div class="pole"><b id="ileMoich">–</b><span>powiaty</span></div>
+      <div class="pole"><b id="ileTwierdz">–</b><span>twierdze</span></div>
+      <div class="pole"><b id="ileAtakow">–</b><span>ataki dziś</span></div>
+    </section>
+    <div id="komunikaty" class="pd-komunikaty"></div>
+    <section class="pole pd-mapa-pole">
+      <div class="pd-mapa" id="mapaBox"><svg id="mapa" role="img" aria-label="Mapa powiatów Polski z ich właścicielami"></svg><p class="pd-laduje" id="laduje">Wczytywanie mapy…</p></div>
+      <div class="pd-legenda" aria-hidden="true">
+        <span><i style="background:var(--pd-moj)"></i>Twoje</span>
+        <span><i style="background:var(--pd-wolny-cel)"></i>Do zdobycia</span>
+        <span><i style="background:var(--krem)"></i>Wolne</span>
+        <span><i style="background:linear-gradient(90deg,#E84A3C 50%,#2E86DE 50%)"></i>Rywale</span>
+        <span><b>★</b>Twierdza</span>
+        <span><b>🪙</b>Na sprzedaż</span>
+      </div>
+    </section>
+    <p id="status" class="stan" role="status" aria-live="polite"></p>
+    <section class="pole tabela">
+      <h2 class="pd-tytul">Najwięksi zdobywcy</h2>
+      <table class="ranking-table"><thead><tr><th>#</th><th>Gracz</th><th>Powiaty</th></tr></thead><tbody id="rows"></tbody></table>
+    </section>
+    <details class="pole pd-zasady">
+      <summary>Zasady Podboju</summary>
+      <ul>
+        <li>Stuknij powiat na mapie. Żeby go zdobyć, zagraj 8 pytań o ten powiat i okolice: granice, herby, z lotu ptaka, tablice, kształty i inne. Masz 20 sekund na każde.</li>
+        <li>Wolny powiat zdobywasz od 5 dobrych odpowiedzi. Pierwszy wybierasz dowolnie, kolejne muszą graniczyć z Twoimi.</li>
+        <li>Wynik to obrona powiatu. Sąsiad przejmie go, jeśli zdobędzie więcej. Swój powiat możesz umocnić lepszym wynikiem.</li>
+        <li>Powiat z wynikiem 8 z 8 to twierdza: zwykły atak już nie przejdzie. Zostaje pojedynek 24 h (te same pytania: obrońca ma dobę, żeby wyrównać wynik; jeśli nie zagra, traci twierdzę) albo zakup, jeśli właściciel ją wystawi.</li>
+        <li>Swój powiat możesz wystawić na sprzedaż za monety (5 do 500). Monety ze sprzedaży odbierasz tutaj.</li>
+        <li>Masz 10 ataków dziennie (pojedynki też się liczą). Umacnianie własnego powiatu to też atak.</li>
+      </ul>
+    </details>
+  </main>
+  <div class="arkusz" id="arkusz" hidden><div class="arkusz-tlo" data-zamknij></div><section class="arkusz-pole" role="dialog" aria-modal="true" aria-labelledby="ark-tytul"><button type="button" class="ark-zamknij" data-zamknij aria-label="Zamknij">×</button><div id="ark-tresc"></div></section></div>
+  <nav class="dol">
+  <a href="./" data-n="plansza"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20c0-4 3-4 3-8s-3-4-3-8"/><circle cx="16" cy="6" r="2.5"/><circle cx="16" cy="18" r="2.5"/><path d="M16 8.5v7"/></svg>Plansza</a>
+  <a href="codzienne.html" data-n="codzienne"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Codzienne</a>
+  <a href="ranking.html" data-n="znajomi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15 20c0-2.5 1.5-4.5 4-4.5"/></svg>Znajomi</a>
+  <a href="gry.html" class="akt" data-n="gry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Gry</a>
+  <a href="profil.html" data-n="profil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Profil</a>
+</nav>
+</div>
+<script>(function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();</script>
+<script src="topojson-client.min.js?v=17"></script>
+<script src="wspolne.js?v=24"></script>
+<script src="naglowek.js?v=3"></script>
+<script src="online-config.js"></script><script src="online.js?v=6"></script>
+<script src="podboj.js?v=1"></script>
+</body>
+</html>

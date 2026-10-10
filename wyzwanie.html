@@ -162,6 +162,10 @@ svg path{fill-rule:evenodd}
 .saga-wynik .btnrow a{flex:1;display:grid;place-items:center;text-decoration:none;min-height:54px;color:inherit}
 .saga-wynik>a.ghost{color:inherit}
 .saga-wynik .btnrow a.big{color:var(--gold-ink)}
+.pd-licznik{display:flex;justify-content:center;align-items:baseline;gap:6px;margin-top:8px}
+.pd-licznik b{font:400 64px/1 Bungee,"Fraunces",sans-serif;color:var(--gold,#F5B82E);text-shadow:0 4px 0 rgba(58,42,20,.35)}
+.pd-licznik span{font-size:20px;font-weight:900;color:var(--dim)}
+.podboj-ekran .klocek,.podboj-ekran>a,.podboj-ekran>button{min-height:52px;display:grid;place-items:center;text-decoration:none}
 .pojedynek-wynik{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:16px;padding:10px 14px;animation:wejscie .4s .3s both}
 .pojedynek-wynik div{text-align:center}.pojedynek-wynik small{display:block;color:var(--dim);font-size:12px}
 .pojedynek-wynik b{font-family:"Fraunces",serif;font-size:26px}
@@ -236,12 +240,12 @@ svg path{fill-rule:evenodd}
 <script src="tablice-powiaty.js"></script>
 <script src="topojson-client.min.js?v=17"></script>
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=24"></script><script src="online-config.js"></script><script src="online.js?v=5"></script><script src="walka.js?v=2"></script>
+<script src="wspolne.js?v=24"></script><script src="online-config.js"></script><script src="online.js?v=6"></script><script src="walka.js?v=2"></script><script src="podboj-pytania.js?v=1"></script><script src="podboj-gra.js?v=1"></script>
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
 if(new URLSearchParams(location.search).get("tryb")==="pojedynek")location.replace("ranking.html");
-const TRYB=["turniej","saga","kostka","walka"].indexOf(URLP.get("tryb"))>=0?URLP.get("tryb"):"dzien";
+const TRYB=["turniej","saga","kostka","walka","podboj"].indexOf(URLP.get("tryb"))>=0?URLP.get("tryb"):"dzien";
 // wyzwanie od znajomego: te same pytania (ziarno i ustawienia w linku) i jego wynik do pobicia
 let RYWAL=URLP.get("od")?{nick:URLP.get("od").slice(0,20),wynik:+URLP.get("wynik")||0,nr:+URLP.get("nr")||0}:null;
 let ZIARNO=URLP.get("seed")||"";
@@ -354,6 +358,7 @@ function krainaStart(){
 async function init(){
   if(TRYB==="saga"||TRYB==="kostka"){krainaStart();$("stanDanych").textContent="Wczytywanie…";await laduj();$("stanDanych").textContent="";$("zaczynam").disabled=false;$("zaczynam").textContent="Graj";return;}
   if(TRYB==="walka"){Walka.start();return;}
+  if(TRYB==="podboj"){Podboj.start();return;}
   if(TRYB==="turniej"){
     $("tytul").textContent="Turniej";
     document.title="Turniej · PolskoZnawca";
@@ -393,7 +398,9 @@ $("startBtn").onclick=()=>{ // kreator turnieju
   $("setup").classList.add("hidden");$("start").classList.remove("hidden");
 };
 $("zaczynam").onclick=()=>{
-  if(TRYB==="dzien"){
+  if(TRYB==="podboj"){
+    if(st)return;Q=Podboj.rozpocznij();st={i:-1,res:[]};
+  }else if(TRYB==="dzien"){
     Q=budujPytania(ZP.seeded("pz-dzien-"+DZIEN),8,null,KOLEJ_DZIEN);
     const s=zapisane();st={i:(s&&s.res?s.res.length:0)-1,res:(s&&s.res)||[]};
   }else{
@@ -430,7 +437,7 @@ function wpisz(nazwy,poprawne,opcje){
   st.nazwy=nazwy;st.poprawne=poprawne;st.opcje=opcje;
   $("wpis").classList.remove("hidden");POLE.wyczysc();POLE.wylacz(false);
   // plansza i walka na żywo: od razu odpowiedzi do wyboru (szybciej na telefonie)
-  if(TRYB==="walka"||(TRYB==="saga"&&POZIOM.podp)){pokazOpcje();$("wpis").classList.add("bez-podp");}
+  if(TRYB==="walka"||TRYB==="podboj"||(TRYB==="saga"&&POZIOM.podp)){pokazOpcje();$("wpis").classList.add("bez-podp");}
   else{if(TRYB==="saga")$("wpis").classList.add("bez-podp");POLE.focus();}
 }
 ZP.jokerCel(()=>{const q=Q[st.i];if(!q)return [];if(q.t==="v")return [q.woj];if(q.t==="p")return [q.pw.label];return st.poprawne||[];});
@@ -457,7 +464,7 @@ function rundaG(q){
   }
   warstwy.clearLayers();
   // na planszy przygód mapa startuje od razu na województwie, z którego jest pytanie
-  const wj=TRYB==="saga"&&D.woj.find(w=>w.name===POZIOM.woj);
+  const wj=(TRYB==="saga"||TRYB==="podboj")&&D.woj.find(w=>w.name===(TRYB==="saga"?POZIOM.woj:Podboj.powiat&&Podboj.powiat.woj));
   setTimeout(()=>{map.invalidateSize();if(wj)map.fitBounds(L.geoJSON(wj.f).getBounds().pad(0.08));else map.fitBounds([[49,14.1],[54.9,24.2]]);},30);
   $("okBtn").classList.remove("hidden");$("okBtn").disabled=true;
 }
@@ -647,6 +654,7 @@ function wynikRundy(pts,ok,naglowek){
   if(q.t!=="q")ZP.zapisz({z:"miasto",g:"miasto",k:"powiat",h:"herb",m:"miejsce",r:"rzeka",w:"ludnosc",t:"tablica",c:"klub",s:"powiat",v:"miasto",p:"miasto"}[q.t],q.t==="k"?q.p.k:q.t==="t"?q.p.kod:q.t==="s"?q.a.k:(q.c?q.c.n:q.a.n),ok);
   st.res.push({t:q.t,pts});
   if(TRYB==="dzien")localStorage.setItem(KLUCZ,JSON.stringify({res:st.res,done:false}));
+  if(TRYB==="podboj")Podboj.postep(st.res);
   segmenty();
   // licznik punktów
   const s0=st.res.slice(0,-1).reduce((a,r)=>a+r.pts,0),t0=performance.now();
@@ -811,6 +819,7 @@ function wynikSaga(){
 }
 function koniec(){
   if(TRYB==="saga")return wynikSaga();
+  if(TRYB==="podboj")return Podboj.koniec(st.res);
   const suma=st.res.reduce((a,r)=>a+r.pts,0);
   if(TRYB==="dzien"){
     localStorage.setItem(KLUCZ,JSON.stringify({res:st.res,done:true}));
