@@ -56,6 +56,21 @@
 .akcje a.big{color:var(--gold-ink)}
 .osadzona .app>header{display:none}
 .osadzona #zamknij{visibility:hidden}
+.app>header{min-width:0}.app>header h1{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.app>header .round{flex:none;white-space:nowrap}@media (max-width:440px){.app>header .round{display:none}}
+#wsk b{font-size:18px}
+.enc-karta{display:flex;flex-direction:column;align-items:center;gap:10px}
+.enc-karta .kk-pelna{width:min(84vw,320px)}
+.enc-karta .obrot{animation:encObrot .45s cubic-bezier(.3,1.3,.5,1) both}
+@keyframes encObrot{from{transform:rotateY(90deg) scale(.9)}}
+.enc-stan{font-size:13px;font-weight:700;color:var(--dim);text-align:center;max-width:340px}
+.enc-stan.mam{color:var(--ok)}
+.enc-przyciski{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.enc-przyciski button{min-height:44px;padding:0 16px;border-radius:12px;font-weight:700}
+.enc-karta .kk-pod{width:min(92vw,380px)}
+.enc-siatka{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px}
+@media (min-width:520px){.enc-siatka{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.enc-siatka .kk{cursor:pointer;width:100%}
+@media (prefers-reduced-motion:reduce){.enc-karta .obrot{animation:none}}
 .zamknij{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;background:var(--ink);padding:4px 0}
 </style>
 </head>
@@ -80,7 +95,8 @@
 <section class="karta" id="karta"><div class="wnetrze" id="kartaW"></div></section>
 
 <script src="topojson-client.min.js?v=17"></script>
-<script src="wspolne.js?v=24"></script>
+<script src="wspolne.js?v=25"></script>
+<script src="karty.js?v=23"></script>
 <script>
 const {$,fmt}=ZP;
 let B={w:[],p:[],g:[]},IDX={},RZEKI={},MIEJSCA={},HERBY={},zakladka="g";
@@ -183,7 +199,9 @@ async function otworz(id,bezHistorii){
     +'<div class="tytul">'+(herb?'<img alt="" src="'+herb+'">':'')+'<div><h2></h2><small>'+(x.typ||(x.rodzaj==="w"?"województwo":""))+'</small></div></div>'
     +'<div class="kafle"><div>Ludność'+(x.ludnosc_rok?" (GUS "+x.ludnosc_rok+")":"")+'<b>'+(x.ludnosc?fmt(x.ludnosc):"–")+'</b></div><div>Powierzchnia (PRG)<b id="kPow">'+(pow?fmt(pow)+" km²":"…")+'</b></div>'
     +'<div>Gęstość<b id="kGest">'+(pow&&x.ludnosc?fmt(x.ludnosc/pow)+" os./km²":"–")+'</b></div><div>Kod TERYT<b>'+kod+'</b></div>'
-    +wskazniki(x)+'</div>'
+    +'</div><div class="kafle" id="wsk">'+wskazniki(x)+'</div>'
+    +(x.rodzaj==="g"?'<div class="sekcja"><h3>Karta gminy</h3><div class="enc-karta" id="encKarta"><p class="enc-stan">Wczytywanie karty…</p></div></div>':'')
+    +(x.rodzaj==="p"?'<div class="sekcja"><h3>Karty gmin w powiecie</h3><div class="enc-siatka" id="encKarty"><p class="enc-stan">Wczytywanie kart…</p></div></div>':'')
     +'<div class="mapki"><svg class="ks" id="mKs" preserveAspectRatio="xMidYMid meet"></svg><svg class="pl" id="mPl" preserveAspectRatio="xMidYMid meet"></svg></div>'
     +'<div id="wGrach"></div><div class="sekcja" id="dzieci"></div>'
     +'<div class="akcje">'+(x.wiki?'<a class="big" target="_blank" rel="noopener" href="'+x.wiki+'">Wikipedia</a>':'<a class="ghost" target="_blank" rel="noopener" href="https://pl.wikipedia.org/w/index.php?search='+encodeURIComponent(x.pelna)+'">Szukaj w Wikipedii</a>')+'</div>';
@@ -207,6 +225,7 @@ async function otworz(id,bezHistorii){
   }
   $("zamknij").onclick=()=>{if(OSADZONA&&history.length<2){$("karta").classList.remove("otwarta");history.replaceState(null,"",location.pathname+location.search);}else history.back();};
   $("karta").classList.add("otwarta");$("karta").scrollTop=0;
+  kartyJednostki(x,id);
   // mapki
   const [f,woje]=await Promise.all([geometria(x),ZP.loadWoj()]);
   if(!f)return;
@@ -220,6 +239,38 @@ async function otworz(id,bezHistorii){
   }
   $("mPl").setAttribute("viewBox","0 0 300 "+PL.H.toFixed(0));$("mPl").innerHTML=s;
   if(!pow){const a=pole(f);$("kPow").textContent=fmt(a)+" km²";if(x.ludnosc)$("kGest").textContent=fmt(x.ludnosc/a)+" os./km²";}
+}
+/* ---------- karty gmin: wszystkie widoczne w encyklopedii, także te jeszcze niezdobyte ---------- */
+let KD=null;
+async function kartyJednostki(x,id){
+  if(x.rodzaj==="w"||!window.Karty)return;
+  try{if(!KD){Karty.styl();KD=await Karty.zaladuj();}}catch(e){const el=$("encKarta")||$("encKarty");if(el)el.innerHTML='<p class="enc-stan">Nie udało się wczytać kart.</p>';return;}
+  if(location.hash.slice(1)!==id&&!$("kartaW").innerHTML.includes(x.n))return;
+  const mam=Karty.zdobyte().mam;
+  if(x.rodzaj==="g"){
+    const g=KD.PO_K[x.k],box=$("encKarta");if(!box)return;
+    if(!g){box.innerHTML='<p class="enc-stan">Ta gmina nie ma karty w tej edycji.</p>';return;}
+    // wskaźniki: aktualne dane z edycji kart (GUS BDL) zamiast starego zestawu
+    const wstrz=(KD.meta&&KD.meta.wstrzymane)||[];
+    $("wsk").innerHTML=Karty.STATY.filter(st=>!["ludnosc","powierzchnia","gestosc"].includes(st.k)&&!wstrz.includes(st.k)&&g[st.k]!=null)
+      .map(st=>'<div>'+st.n+'<b>'+Karty.wartosc(g,st.k)+'</b></div>').join("")+(x.dochod_na_mieszk!=null?'<div>Dochód gminy na mieszkańca<b>'+Number(x.dochod_na_mieszk).toLocaleString("pl-PL",{maximumFractionDigits:0})+' zł</b></div>':'');
+    let tyl=false;
+    const rysuj=()=>{
+      box.innerHTML='<div class="obrot">'+(tyl?Karty.tyl(g):Karty.karta(g,{tryb:"pelna",bezSzczegolow:true}))+'</div>'
+        +'<p class="enc-stan'+(mam.has(g.k)?' mam':'')+'">'+(mam.has(g.k)?'✓ Ta karta jest w Twoim albumie.':'Tej karty jeszcze nie masz. Zdobędziesz ją w grze Kształt gminy, trafiając ją '+Karty.prog(g)+' razy w grach gminnych albo z paczki.')+'</p>'
+        +(tyl?'':'<div class="kk-pod">'+Karty.rekordyHTML(g,0,true)+'</div>')
+        +'<div class="enc-przyciski"><button type="button" class="ghost" id="encObroc">↻ '+(tyl?'Przód karty':'Tył karty')+'</button><a class="ghost" href="karty.html" style="display:grid;place-items:center;min-height:44px;padding:0 16px;border-radius:12px;text-decoration:none;color:inherit">Album</a></div>';
+      $("encObroc").onclick=()=>{tyl=!tyl;rysuj();};
+      Karty.podepnijMapy(box);const k=box.querySelector(".kk");if(k)Karty.holo(k);
+    };
+    rysuj();
+  }else{
+    const box=$("encKarty");if(!box)return;
+    const l=KD.g.filter(g=>g.k.slice(0,4)===x.k).sort((a,b)=>kol.compare(a.n,b.n));
+    box.innerHTML=l.map(g=>Karty.karta(g,{})).join("")||'<p class="enc-stan">Brak kart.</p>';
+    box.querySelectorAll(".kk").forEach(el=>el.onclick=()=>otworz("g"+el.dataset.k));
+    Karty.podepnijMapy(box);
+  }
 }
 window.addEventListener("popstate",()=>{if(location.hash.length>2)otworz(rozwiaz(location.hash.slice(1)),true);else $("karta").classList.remove("otwarta");});
 window.addEventListener("hashchange",()=>{if(OSADZONA&&location.hash.length>2)otworz(rozwiaz(location.hash.slice(1)),true);});

@@ -97,7 +97,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="topojson-client.min.js?v=17"></script>
-<script src="wspolne.js?v=24"></script>
+<script src="wspolne.js?v=25"></script>
 <script>
 const {$,shuffle,fmt}=ZP;
 let CITIES=[],P=null,game=null,base="";
@@ -110,7 +110,7 @@ map.fitBounds(PL_B);
 let wojWarstwa=null;
 const ov=L.layerGroup().addTo(map);
 const WOJ_STYL={color:"#6FA3AA",weight:1.2,opacity:.8,fill:true,fillColor:"#6FA3AA",fillOpacity:0};
-const SCORE=km=>Math.round(1000*Math.exp(-km/150));
+const etykiety=ZP.etykietyMiast(map);   // nazwy miast i siedzib po odpowiedzi
 
 ZP.loadCities(t=>$("datastate").textContent=t).then(async all=>{
   const cnt={};all.forEach(c=>{const k=ZP.norm(c.name);cnt[k]=(cnt[k]||0)+1;});
@@ -181,7 +181,7 @@ function next(){
   const kto=game.multi?"Gracz "+(game.i%2+1):"";
   $("tHint").textContent=[kto,$("hint").value==="1"?"woj. "+c.woj:""].filter(Boolean).join(" · ");
   if(game.multi)$("avg").textContent=Math.floor(game.i/2)+1+"/"+(game.qs.length/2);
-  ov.clearLayers();
+  ov.clearLayers();etykiety.ukryj();
   if(wojWarstwa)wojWarstwa.setStyle(f=>Object.assign({},WOJ_STYL,{fillOpacity:$("hint").value==="1"&&f.properties.nazwa===c.woj?.18:0}));
   map.invalidateSize({pan:false});map.flyToBounds(PL_B,{duration:.5});
   $("tip").classList.remove("hidden");
@@ -202,7 +202,7 @@ map.on("click",e=>{
 $("okBtn").onclick=()=>{
   if(!game||game.answered||!game.guess)return;
   game.answered=true;
-  const c=game.qs[game.i],g=game.guess,d=ZP.km(c,g),got=SCORE(d);
+  const c=game.qs[game.i],g=game.guess,d=ZP.km(c,g),oc=ZP.ocenaGdzie(d),got=oc.razem;
   ov.clearLayers();
   L.circle([c.lat,c.lon],{radius:50000,color:"#F2C14E",weight:1,opacity:.6,fill:false,interactive:false}).addTo(ov);
   L.polyline([[g.lat,g.lon],[c.lat,c.lon]],{color:"#F2C14E",weight:2,dashArray:"6 5",interactive:false}).addTo(ov);
@@ -210,6 +210,8 @@ $("okBtn").onclick=()=>{
   L.circleMarker([c.lat,c.lon],{radius:9,color:"#0A181B",weight:2,fillColor:"#F2C14E",fillOpacity:1}).addTo(ov)
     .bindTooltip(c.name,{permanent:true,direction:"top",className:"nazwa",offset:[0,-8]});
   map.flyToBounds(L.latLngBounds([[g.lat,g.lon],[c.lat,c.lon]]).pad(0.5),{maxZoom:9,duration:.6});
+  etykiety.pokaz([{ll:[c.lat,c.lon],n:c.name},{ll:[g.lat,g.lon]}]);
+  if(oc.dziesiatka&&ZP.fanfary)ZP.fanfary();
   const gr=game.multi?game.i%2:0;
   game.pts+=got;game.kms.push(d);game.res.push({c,d,got,g:gr});
   game.gr[gr]+=got;game.grKm[gr].push(d);
@@ -220,7 +222,7 @@ $("okBtn").onclick=()=>{
   clearInterval(game.tick);$("tbar").classList.add("hidden");
   const fb=$("feedback");
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
-  fb.querySelector("strong").textContent=(d<5?"W punkt! ":"")+"Błąd "+(d<10?d.toFixed(1):Math.round(d))+" km, +"+got+" pkt";
+  fb.querySelector("strong").textContent=oc.naglowek+" · +"+got+" pkt";fb.classList.toggle("trafione",oc.trafione);
   fb.querySelector("span").textContent=c.name+", woj. "+c.woj+(c.pop?", "+fmt(c.pop)+" mieszk.":"");
   ZP.dopiszEncykl(fb,{miasto:c.name,lat:c.lat,lon:c.lon,nazwa:c.name});
   $("nextBtn").textContent=game.i+1>=game.qs.length?"Wynik":"Dalej";
@@ -247,9 +249,9 @@ function endGame(){
     const d=document.createElement("div");d.className="r";
     d.innerHTML='<span class="nm"><b></b><small></small></span><span class="pt"></span>';
     d.querySelector("b").textContent=r.c.name;
-    d.querySelector("small").textContent=(game.multi?"gracz "+(r.g+1)+", ":"")+"woj. "+r.c.woj+", błąd "+Math.round(r.d)+" km";
+    d.querySelector("small").textContent=(game.multi?"gracz "+(r.g+1)+", ":"")+"woj. "+r.c.woj+", "+(r.d<=1?"w dziesiątkę":r.d<=5?"trafione":"błąd "+Math.round(r.d)+" km");
     d.querySelector(".pt").textContent="+"+r.got;
-    d.querySelector(".pt").classList.add(r.got>=600?"ok":r.got<200?"no":"x");
+    d.querySelector(".pt").classList.add(r.got>=600?"ok":r.got<200?"no":"x");if(r.d<=1)d.querySelector(".pt").textContent+=" 🎯";
     rows.appendChild(d);
   });
   s.classList.remove("hidden");

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+<title>Trasa dnia · PolskoZnawca</title>
+<meta name="theme-color" content="#FFF6E0" />
+<link rel="manifest" href="manifest.webmanifest" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="plansza.css?v=4" />
+<link rel="stylesheet" href="plansza-formularze.css?v=1" />
+<style>
+.tresc>*{flex:none}
+#gra{display:flex;flex-direction:column;gap:8px}#gra[hidden]{display:none}
+.tr-cel{padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.tr-trasa{display:flex;align-items:center;gap:8px;min-width:0}
+.tr-trasa span{flex:1;min-width:0;text-align:center;font:400 14px/1.15 Bungee,sans-serif;padding:7px 6px;border:3px solid var(--braz);border-radius:12px;color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.3);overflow-wrap:anywhere}
+.tr-trasa .a{background:#2E86DE}.tr-trasa .b{background:#E84A3C}
+.tr-trasa em{flex:none;font-style:normal;font-weight:900;font-size:20px;color:var(--braz)}
+.tr-info{display:flex;justify-content:space-between;gap:8px;font-size:12.5px;font-weight:900;color:var(--braz-2)}
+.tr-mapa{padding:6px}
+.tr-mapa svg{display:block;width:100%;height:auto;max-height:min(46vh,420px);background:#BFE3F2;border:3px solid var(--braz);border-radius:10px}
+.tr-mapa path{fill:#FFF6E0;stroke:#7A6A50;stroke-width:.8;vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.tr-mapa path.a{fill:#2E86DE}.tr-mapa path.b{fill:#E84A3C}
+.tr-mapa path.tak{fill:#27AE60}.tr-mapa path.blisko{fill:#F5B82E}.tr-mapa path.daleko{fill:#C9B8A6}
+.tr-mapa path.trasa{stroke:#3A2A14;stroke-width:2.4}
+.tr-mapa path.odkryta{fill:#A8DDA0}
+.tr-mapa text{font:900 11px Rubik,sans-serif;fill:#3A2A14;text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:#FFF6E0;stroke-width:3px;pointer-events:none}
+.tr-mapa text.duzy{font-size:12.5px}
+.tr-wpis{display:flex;gap:8px;min-width:0}
+.tr-wpis input{flex:1;min-width:0;min-height:50px;border:3px solid var(--braz);border-radius:14px;padding:0 12px;font:700 16px Rubik,sans-serif;color:var(--braz);background:#fff}
+.tr-wpis .klocek{flex:none;width:auto!important;padding:0 16px}
+.tr-podp{display:flex;flex-wrap:wrap;gap:6px;min-height:0}
+.tr-podp:empty{display:none}
+.tr-podp button{border:2px solid var(--braz);border-radius:999px;background:#fff;font:800 13px Rubik,sans-serif;color:var(--braz);padding:7px 11px;cursor:pointer;box-shadow:0 2px 0 var(--braz)}
+.tr-kom{min-height:20px;text-align:center;font-weight:900;color:var(--krem);text-shadow:0 1px 0 var(--braz);font-size:14px}
+.tr-proby{display:flex;flex-wrap:wrap;gap:6px}
+.tr-proby span{display:inline-flex;align-items:center;gap:5px;border:2px solid var(--braz);border-radius:10px;padding:4px 9px;font-weight:800;font-size:13px;background:#fff;color:var(--braz)}
+.tr-proby span.tak{background:#D6F0C9}.tr-proby span.blisko{background:#FFE9A8}.tr-proby span.daleko{background:#EFE3D3;color:var(--braz-2)}
+.tr-przyciski{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tr-przyciski .klocek{min-height:46px;font-size:14px;padding:0 8px}
+.tr-koniec{padding:14px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.tr-koniec h2{margin:0!important;font-size:22px!important}
+.tr-koniec .kratki{font-size:20px;letter-spacing:2px;overflow-wrap:anywhere}
+.tr-koniec .klocek{width:100%}
+.tr-legenda{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11.5px;font-weight:900;color:var(--braz-2);padding:4px 2px 0}
+.tr-legenda i{display:inline-block;width:11px;height:11px;border-radius:3px;border:2px solid var(--braz);vertical-align:-1px;margin-right:3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="gora"><a href="codzienne.html" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć" id="wroc">‹</a><h1 id="tytul">Trasa dnia<small>przez sąsiednie powiaty</small></h1></header>
+  <main class="tresc">
+    <section class="pole tr-cel">
+      <div class="tr-trasa"><span class="a" id="nA">…</span><em>→</em><span class="b" id="nB">…</span></div>
+      <div class="tr-info"><span id="infoMin">Wczytywanie…</span><span id="infoProby"></span></div>
+    </section>
+    <section class="pole tr-mapa"><svg id="mapa" role="img" aria-label="Mapa powiatów na trasie"></svg>
+      <div class="tr-legenda"><span><i style="background:#27AE60"></i>na najkrótszej trasie</span><span><i style="background:#F5B82E"></i>blisko trasy</span><span><i style="background:#C9B8A6"></i>daleko</span></div>
+    </section>
+    <section id="gra" hidden>
+      <form class="tr-wpis" id="forma" autocomplete="off"><input id="wpis" type="text" autocapitalize="none" spellcheck="false" placeholder="Wpisz powiat na trasie…" aria-label="Nazwa powiatu"><button class="klocek">OK</button></form>
+      <div class="tr-podp" id="podp"></div>
+      <div class="tr-kom" id="kom" role="status" aria-live="polite"></div>
+      <div class="tr-proby" id="proby"></div>
+      <div class="tr-przyciski"><button class="klocek jasny" id="podpowiedz" type="button">💡 Podpowiedź</button><button class="klocek jasny" id="poddaj" type="button">Poddaję się</button></div>
+    </section>
+    <section id="koniec" hidden></section>
+    <details class="pole" style="padding:10px 14px"><summary style="font:400 15px Bungee,sans-serif;cursor:pointer">Zasady</summary>
+      <p style="margin-top:8px">Połącz dwa powiaty, wpisując powiaty, przez które prowadzi trasa (każdy kolejny musi graniczyć z poprzednim). Zielony leży na najkrótszej trasie, żółty jest blisko niej, szary daleko. Wygrywasz, gdy wpisane powiaty połączą start z metą. Liczba prób jest ograniczona; podpowiedź odsłania jeden powiat z trasy i zużywa próbę.</p>
+    </details>
+  </main>
+</div>
+<script src="topojson-client.min.js?v=17"></script>
+<script src="wspolne.js?v=25"></script>
+<script src="trasa-logika.js?v=1"></script>
+<script src="polandball.js?v=4"></script>
+<script>
+const {$,norm}=ZP,T=TrasaLogika;
+const URLP=new URLSearchParams(location.search),TRENING=URLP.has("trening");
+const DZIEN=ZP.dayKey(),KLUCZ="trasa-"+DZIEN,EMO={tak:"🟩",blisko:"🟨",daleko:"⬜"};
+let POW=[],PO=new Map(),Z=null,S=null,PROJ=null;
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);
+const czytaj=()=>{try{return JSON.parse(localStorage.getItem(KLUCZ)||"null");}catch(e){return null;}};
+const zapiszStan=()=>{if(!TRENING)try{localStorage.setItem(KLUCZ,JSON.stringify(S));}catch(e){}};
+const nazwa=k=>{const p=PO.get(k);return p?p.label:k;};
+
+async function init(){
+  POW=await ZP.loadPowiaty();PO=new Map(POW.map(p=>[p.k,p]));
+  const ziarno=TRENING?(URLP.get("trening")||String(Date.now())):"trasa-"+DZIEN;
+  Z=T.zagadka(POW,ZP.seeded(ziarno));
+  if(TRENING){$("tytul").innerHTML="Trasa przez powiaty<small>trening, bez limitu dnia</small>";$("wroc").href="gry.html";document.title="Trasa przez powiaty · PolskoZnawca";}
+  S=(!TRENING&&czytaj())||{proby:[],podp:[],koniec:null};
+  $("nA").textContent=nazwa(Z.a);$("nB").textContent=nazwa(Z.b);
+  $("infoMin").textContent="Najkrótsza trasa: "+Z.pomiedzy+" "+(Z.pomiedzy<5?"powiaty":"powiatów")+" pomiędzy";
+  rysujMape();odswiez();
+  if(S.koniec)koniec(false);else{$("gra").hidden=false;}
+}
+// mapa: start, meta i okolica najkrótszej trasy, bez nazw (nazwy pojawiają się po wpisaniu)
+function rysujMape(){
+  const kl=[Z.a,Z.b,...Z.naTrasie],b=[1e9,1e9,-1e9,-1e9];
+  kl.forEach(k=>{const p=PO.get(k);b[0]=Math.min(b[0],p.bb[0]);b[1]=Math.min(b[1],p.bb[1]);b[2]=Math.max(b[2],p.bb[2]);b[3]=Math.max(b[3],p.bb[3]);});
+  const pad=Math.max(.35,(b[2]-b[0])*.18),okno=[b[0]-pad,b[1]-pad*.7,b[2]+pad,b[3]+pad*.7];
+  const widac=POW.filter(p=>p.bb[2]>okno[0]&&p.bb[0]<okno[2]&&p.bb[3]>okno[1]&&p.bb[1]<okno[3]);
+  PROJ=ZP.projection(widac.map(p=>p.f),500,4);
+  // obcinamy widok do okna, żeby skrajne powiaty nie rozciągały mapy
+  const x0=Math.max(0,PROJ.x(okno[0])),x1=Math.min(500,PROJ.x(okno[2])),y0=Math.max(0,PROJ.y(okno[3])),y1=Math.min(PROJ.H,PROJ.y(okno[1]));
+  const svg=$("mapa");svg.setAttribute("viewBox",[x0,y0,x1-x0,y1-y0].map(v=>v.toFixed(1)).join(" "));
+  svg.dataset.skala=((x1-x0)/500).toFixed(3);
+  svg.innerHTML='<g id="gP">'+widac.map(p=>'<path data-k="'+p.k+'" d="'+PROJ.path(p.f.geometry,.5)+'"/>').join("")+'</g><g id="gT"></g>';
+}
+function koloruj(){
+  const svg=$("mapa"),pokazTrase=!!S.koniec,tr=pokazTrase?new Set(T.trasa(POW,Z,S.proby)):new Set(),sk=+svg.dataset.skala||1;
+  svg.querySelectorAll("#gP path").forEach(el=>{const k=el.dataset.k;el.setAttribute("class",k===Z.a?"a":k===Z.b?"b":S.proby.includes(k)?T.ocena(Z,k):pokazTrase&&tr.has(k)?"odkryta":"");if(pokazTrase&&tr.has(k))el.classList.add("trasa");});
+  const etyk=[Z.a,Z.b,...S.proby,...(pokazTrase?[...tr]:[])];
+  $("gT").innerHTML=[...new Set(etyk)].map(k=>{const p=PO.get(k);return '<text class="'+(k===Z.a||k===Z.b?"duzy":"")+'" style="font-size:'+((k===Z.a||k===Z.b?12.5:11)*sk).toFixed(1)+'px;stroke-width:'+(3*sk).toFixed(2)+'px" x="'+PROJ.x(p.lon).toFixed(1)+'" y="'+PROJ.y(p.lat).toFixed(1)+'">'+esc(p.short)+'</text>';}).join("");
+}
+function odswiez(){
+  koloruj();
+  $("infoProby").textContent="Próby: "+S.proby.length+" / "+Z.limit;
+  $("proby").innerHTML=S.proby.map(k=>'<span class="'+T.ocena(Z,k)+'">'+EMO[T.ocena(Z,k)]+" "+esc(nazwa(k))+(S.podp.includes(k)?" 💡":"")+'</span>').join("");
+}
+function znajdz(t){
+  const q=norm(String(t).replace(/^(powiat|m\.|miasto)\s+/i,"")).trim();if(!q)return [];
+  const dokl=POW.filter(p=>norm(p.label)===q||norm(p.short)===q||norm(p.full)===q);
+  if(dokl.length)return dokl;
+  return POW.filter(p=>norm(p.label).startsWith(q)||norm(p.short).startsWith(q)).slice(0,6);
+}
+function podpowiedziWpisu(){
+  const l=$("wpis").value.trim().length>=2?znajdz($("wpis").value):[];
+  $("podp").innerHTML=l.slice(0,6).map(p=>'<button type="button" data-k="'+p.k+'">'+esc(p.label)+'</button>').join("");
+  $("podp").querySelectorAll("button").forEach(b=>b.onclick=()=>zgadnij(b.dataset.k));
+}
+function zgadnij(k,podp){
+  if(S.koniec)return;
+  if(k===Z.a||k===Z.b){$("kom").textContent="To start albo meta. Wpisz powiat pomiędzy.";return;}
+  if(S.proby.includes(k)){$("kom").textContent=nazwa(k)+" już jest na liście.";return;}
+  S.proby.push(k);if(podp)S.podp.push(k);
+  const o=T.ocena(Z,k);
+  if(!podp)ZP.zapisz("powiat",k,o==="tak",true);
+  $("kom").textContent=o==="tak"?"Tak! "+nazwa(k)+" leży na najkrótszej trasie.":o==="blisko"?nazwa(k)+": blisko, ale nie na najkrótszej trasie.":nazwa(k)+": to daleko od trasy.";
+  $("wpis").value="";podpowiedziWpisu();
+  if(T.polaczone(POW,Z,S.proby))S.koniec="wygrana";else if(S.proby.length>=Z.limit)S.koniec="przegrana";
+  S.kratki=S.proby.map(x=>EMO[T.ocena(Z,x)]).join("");
+  zapiszStan();odswiez();
+  if(S.koniec)koniec(true);
+}
+$("forma").onsubmit=e=>{e.preventDefault();const l=znajdz($("wpis").value);if(l.length===1)zgadnij(l[0].k);else if(!l.length)$("kom").textContent="Nie znam takiego powiatu.";else $("kom").textContent="Wybierz jeden z podpowiedzianych.";};
+$("wpis").oninput=podpowiedziWpisu;
+$("podpowiedz").onclick=()=>{const k=T.podpowiedz(POW,Z,S.proby);if(k)zgadnij(k,true);};
+$("poddaj").onclick=()=>{if(S.koniec||!confirm("Pokazać trasę? Poddanie się nie daje paczki."))return;S.koniec="poddana";zapiszStan();odswiez();koniec(true);};
+function koniec(swiezy){
+  $("gra").hidden=true;koloruj();
+  const w=S.koniec==="wygrana",tr=T.trasa(POW,Z,S.proby).slice(1,-1).map(nazwa);
+  const kratki=S.proby.map(k=>EMO[T.ocena(Z,k)]).join("");
+  const tekst="Trasa dnia "+DZIEN.split("-").reverse().slice(0,2).join(".")+": "+(w?"✅ "+S.proby.length+"/"+Z.limit:"❌")+"\n"+nazwa(Z.a)+" → "+nazwa(Z.b)+"\n"+kratki;
+  $("koniec").innerHTML='<div class="pole tr-koniec"><h2>'+(w?(S.proby.length<=Z.pomiedzy?"Idealna trasa!":"Dotarłeś do celu!"):S.koniec==="poddana"?"Oto trasa":"Zabrakło prób")+'</h2>'
+    +'<div class="kratki">'+(kratki||"–")+'</div>'
+    +'<p>'+(w?"Wpisane powiaty: "+S.proby.length+" (najkrócej się da: "+Z.pomiedzy+").":"")+' Najkrótsza trasa: '+esc(nazwa(Z.a))+' → '+tr.map(esc).join(" → ")+' → '+esc(nazwa(Z.b))+'.</p>'
+    +(!TRENING?'<button class="klocek" id="udostepnij">Udostępnij wynik</button>':'')
+    +'<a class="klocek jasny" href="trasa.html?trening='+Math.floor(Math.random()*1e9)+'">'+(TRENING?"Kolejna trasa":"Trening: losowa trasa")+'</a>'
+    +'<a class="klocek jasny" href="'+(TRENING?"gry.html":"codzienne.html")+'">'+(TRENING?"Inne gry":"Codzienne zagadki")+'</a></div>';
+  $("koniec").hidden=false;
+  if($("udostepnij"))$("udostepnij").onclick=async()=>{try{if(navigator.share)await navigator.share({text:tekst});else{await navigator.clipboard.writeText(tekst);ZP.komunikat("Wynik skopiowany");}}catch(e){}};
+  if(swiezy&&!TRENING){
+    let st={};try{st=JSON.parse(localStorage.getItem("trasa-stat")||"{}");}catch(e){}
+    if(st.ost!==DZIEN){st.gry=(st.gry||0)+1;if(w)st.wygrane=(st.wygrane||0)+1;st.ost=DZIEN;try{localStorage.setItem("trasa-stat",JSON.stringify(st));}catch(e){}}
+    if(w)ZP.nagrodaDnia("trasa",DZIEN,{ukonczone:true,poddane:false});
+  }
+  if(swiezy&&w)setTimeout(ZP.fanfary,300);
+}
+init().catch(e=>{$("infoMin").textContent="Nie udało się wczytać mapy powiatów.";console.error(e);});
+(function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();
+ZP.registerSW&&ZP.registerSW();
+</script>
+<script src="naglowek.js?v=3"></script>
+</body>
+</html>

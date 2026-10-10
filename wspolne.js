@@ -310,7 +310,7 @@ function modulKart(){
   if(KARTY_MODUL)return KARTY_MODUL;
   KARTY_MODUL=new Promise((resolve,reject)=>{
     let sc=document.querySelector('script[src^="karty.js"]'),nowy=!sc;
-    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=22";}
+    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=23";}
     sc.addEventListener("load",()=>resolve(window.Karty),{once:true});
     sc.addEventListener("error",()=>{KARTY_MODUL=null;sc.remove();reject(Error("Nie wczytano kart"));},{once:true});
     if(nowy)document.head.appendChild(sc);
@@ -335,6 +335,71 @@ async function nagrodaDnia(typ,dzien,warunki){
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",obserwujKoniec);else obserwujKoniec();
 
 /* ---- mapa „Gdzie to jest?”: ciemny podkład Esri bez podpisów, granice województw, przybliżanie ---- */
+/* ---- „Gdzie to jest?”: ocena odległości (do 5 km trafione, do 1 km premia) ---- */
+const TRAF_KM=5,PREMIA_KM=1,PREMIA_PKT=200;
+function ocenaGdzie(km,skala){
+  skala=skala||150;
+  const pts=km<=TRAF_KM?1000:Math.round(1000*Math.exp(-(km-TRAF_KM)/skala));
+  const dziesiatka=km<=PREMIA_KM,trafione=km<=TRAF_KM,premia=dziesiatka?PREMIA_PKT:0;
+  const odl=(km<10?km.toFixed(1).replace(".",","):String(Math.round(km)))+" km";
+  return {pts,premia,razem:pts+premia,trafione,dziesiatka,odl,
+    naglowek:dziesiatka?"W dziesiątkę! "+odl+" · premia +"+PREMIA_PKT:trafione?"Trafione! "+odl:"Błąd "+odl};
+}
+/* ---- podpisy miast na mapie po odpowiedzi: stolice województw, siedziby powiatów i większe miasta.
+   Kolejność ważności, podpis po prawej, lewej, nad albo pod kropką; bez nachodzenia na siebie i na znaczniki gry. ---- */
+let ETYK=null;
+function etykietyStyl(){
+  if(document.getElementById("zp-etyk-styl"))return;
+  const s=document.createElement("style");s.id="zp-etyk-styl";
+  s.textContent=".zp-etyk-ik{width:0!important;height:0!important;background:none;border:none}"
+    +".zp-etyk{position:absolute;left:0;top:0;pointer-events:none;animation:zpEtyk .45s ease-out both}"
+    +".zp-etyk i{position:absolute;left:-3.5px;top:-3.5px;width:7px;height:7px;border-radius:50%;background:#3A2A14;border:1.5px solid #FFF6E0;box-sizing:border-box}"
+    +".zp-etyk.r3 i{left:-5px;top:-5px;width:10px;height:10px;background:#E84A3C}"
+    +".zp-etyk b{position:absolute;white-space:nowrap;font:800 11px/1 Rubik,system-ui,sans-serif;color:#3A2A14;letter-spacing:.1px;"
+    +"text-shadow:0 0 2px #FFF6E0,0 0 2px #FFF6E0,1px 1px 0 #FFF6E0,-1px -1px 0 #FFF6E0,1px -1px 0 #FFF6E0,-1px 1px 0 #FFF6E0}"
+    +".zp-etyk.r2 b{font-size:12px}.zp-etyk.r3 b{font-size:13.5px;font-weight:900;text-transform:uppercase;letter-spacing:.6px}"
+    +".zp-etyk.p b{left:7px;top:0;transform:translateY(-50%)}.zp-etyk.l b{right:7px;top:0;transform:translateY(-50%)}"
+    +".zp-etyk.g b{left:0;bottom:7px;transform:translateX(-50%)}.zp-etyk.d b{left:0;top:7px;transform:translateX(-50%)}"
+    +"@keyframes zpEtyk{from{opacity:0;transform:scale(.85)}}@media (prefers-reduced-motion:reduce){.zp-etyk{animation:none}}";
+  document.head.appendChild(s);
+}
+function etykietyMiast(map){
+  etykietyStyl();
+  const warstwa=L.layerGroup().addTo(map);let cele=[],widac=false,nr=0;
+  const dane=()=>ETYK||(ETYK=fetch("miasta-etykiety.json?v=1").then(r=>r.ok?r.json():[]).catch(()=>[]));
+  const FS={1:11,2:12,3:13.5};
+  async function rysuj(){
+    const moj=++nr,l=await dane();if(!widac||moj!==nr)return;
+    warstwa.clearLayers();
+    const roz=map.getSize(),M=6,zaj=[];
+    const kolizja=b=>b[0]<M||b[1]<M||b[2]>roz.x-M||b[3]>roz.y-M||zaj.some(z=>b[0]<z[2]+3&&b[2]>z[0]-3&&b[1]<z[3]+3&&b[3]>z[1]-3);
+    // znaczniki gry: cel z podpisem nad nim i miejsce kliknięcia
+    cele.forEach(c=>{const p=map.latLngToContainerPoint(c.ll),w=c.n?c.n.length*7.5+20:0;zaj.push([p.x-Math.max(14,w/2),p.y-(c.n?40:14),p.x+Math.max(14,w/2),p.y+14]);});
+    const pomin=new Set(cele.filter(c=>c.n).map(c=>norm(c.n)));
+    const ile=Math.max(5,Math.min(24,Math.round(roz.x*roz.y/13000)));
+    const b=map.getBounds(),kand=l.filter(c=>b.contains([c[1],c[2]])&&!pomin.has(norm(c[0])))
+      .sort((x,y)=>y[3]*(y[4]===3?100:y[4]===2?2.5:1)-x[3]*(x[4]===3?100:x[4]===2?2.5:1));
+    let n=0;
+    for(const [nazwa,lat,lon,,r] of kand){
+      if(n>=ile)break;
+      const p=map.latLngToContainerPoint([lat,lon]),fs=FS[r],w=nazwa.length*fs*(r===3?.72:.6)+4,h=fs+4,kropka=[p.x-5,p.y-5,p.x+5,p.y+5];
+      if(kolizja(kropka))continue;
+      const opcje=[["p",[p.x+6,p.y-h/2,p.x+7+w,p.y+h/2]],["l",[p.x-7-w,p.y-h/2,p.x-6,p.y+h/2]],["g",[p.x-w/2,p.y-7-h,p.x+w/2,p.y-6]],["d",[p.x-w/2,p.y+6,p.x+w/2,p.y+7+h]]];
+      const ok=opcje.find(o=>!kolizja(o[1]));if(!ok)continue;
+      zaj.push(kropka,ok[1]);n++;
+      L.marker([lat,lon],{interactive:false,keyboard:false,icon:L.divIcon({className:"zp-etyk-ik",iconSize:[0,0],
+        html:'<span class="zp-etyk r'+r+' '+ok[0]+'" style="animation-delay:'+(n*25)+'ms"><i></i><b>'+nazwa.replace(/[<>&]/g,"")+'</b></span>'})}).addTo(warstwa);
+    }
+  }
+  let t=null;const pozniej=()=>{clearTimeout(t);t=setTimeout(rysuj,60);};
+  map.on("moveend zoomend resize",()=>{if(widac)pozniej();});
+  return {
+    // cele: [{ll:[lat,lon],n:"nazwa celu"}, {ll:[lat,lon]}]; podpisy pojawiają się po dolocie mapy
+    pokaz(c){cele=c||[];widac=true;dane();setTimeout(()=>{if(widac)rysuj();},950);},
+    ukryj(){widac=false;nr++;warstwa.clearLayers();}
+  };
+}
+
 function mapaGdzie(el){
   const PL_B=L.latLngBounds([48.9,13.9],[55.0,24.3]);
   const map=L.map(el,{zoomControl:true,attributionControl:true,minZoom:5,maxZoom:12,maxBounds:PL_B.pad(0.4),zoomSnap:0.25});
@@ -957,7 +1022,7 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,nagrodaDnia,IKONA_5050,jokery,dodajJoker,jokerCel,seria,zeton,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,ocenaGdzie,etykietyMiast,nagrodaDnia,IKONA_5050,jokery,dodajJoker,jokerCel,seria,zeton,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();
 
 // Konfiguracja i kontrola kont po załadowaniu strony.
