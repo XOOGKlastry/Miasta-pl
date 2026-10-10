@@ -120,7 +120,7 @@ window.Saga=(function(){
     const id=(sezon===2?"s2:":"")+n;
     const nagrody=[];
     const paczka=nazwa=>{const f=()=>Karty.nagrodaZa(nazwa).then(g=>{if(g&&window.ZP&&ZP.komunikat)ZP.komunikat("Paczka trafiła do albumu kart!",3200);}).catch(()=>{});
-      if(window.Karty)f();else{const sc=document.createElement("script");sc.src="karty.js?v=22";sc.onload=f;document.head.appendChild(sc);}};
+      if(window.Karty)f();else{const sc=document.createElement("script");sc.src="karty.js?v=23";sc.onload=f;document.head.appendChild(sc);}};
     if(gw===3){paczka("poziom:"+id);nagrody.push("paczka za 3 gwiazdki");}
     let wyd=null;
     if(wTygodniu(n)&&gw>0){

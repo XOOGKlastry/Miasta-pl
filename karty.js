@@ -4,19 +4,19 @@ window.KartyModel=(()=>{
  const STATY=[
   {k:'ludnosc',n:'Ludność',t:'r',miasto:0,wies:0},
   {k:'powierzchnia',n:'Powierzchnia',t:'r',miasto:0,wies:0},
-  {k:'gestosc',n:'Gęstość zaludnienia',t:'o',miasto:0,wies:0},
+  {k:'gestosc',n:'Niska gęstość',gra:'Niska gęstość zaludnienia',t:'o',miasto:0,wies:0},
   {k:'saldo_migracji',n:'Migracja',t:'r',miasto:1.5,wies:1.5},
   {k:'przyrost_naturalny',n:'Przyrost naturalny',t:'r',miasto:0,wies:1.5},
   {k:'pit_na_mieszk',n:'Zarobki · PIT/os.',t:'r',miasto:2,wies:0},
-  {k:'bezrobocie_proc',n:'Bezrobocie',t:'o',miasto:2,wies:1},
+  {k:'bezrobocie_proc',n:'Bezrobocie',gra:'Niskie bezrobocie',t:'o',miasto:2,wies:1},
   {k:'firmy_na_1000',n:'Firmy na 1000 os.',t:'r',miasto:1.5,wies:0},
-  {k:'zadluzenie_na_mieszk',n:'Zadłużenie gminy',t:'o',miasto:1,wies:0},
+  {k:'zadluzenie_na_mieszk',n:'Zadłużenie gminy',gra:'Niskie zadłużenie gminy',t:'o',miasto:1,wies:0},
   {k:'mieszkanie_m2_os',n:'Mieszkanie na osobę',t:'r',miasto:1,wies:0},
-  {k:'obciazenie_demograficzne',n:'Obciążenie demograficzne',t:'o',miasto:1,wies:1},
+  {k:'obciazenie_demograficzne',n:'Obciążenie demograficzne',gra:'Niskie obciążenie demograficzne',t:'o',miasto:1,wies:1},
   {k:'lesistosc_proc',n:'Lesistość',t:'r',miasto:0,wies:2},
   {k:'drogi_na_100km2',n:'Drogi twarde',t:'r',miasto:0,wies:1},
   {k:'szkoly_na_1000',n:'Szkoły podstawowe',t:'r',miasto:0,wies:1},
-  {k:'odleglosc_stolica',n:'Do stolicy woj.',t:'o',miasto:0,wies:1},
+  {k:'odleglosc_stolica',n:'Do stolicy woj.',gra:'Blisko stolicy województwa',t:'o',miasto:0,wies:1},
   {k:'wodociag_proc',n:'Wodociągi',t:'r',miasto:0,wies:0,bezRekordu:true},
   {k:'kanalizacja_proc',n:'Kanalizacja',t:'r',miasto:0,wies:0,bezRekordu:true}
  ];
@@ -117,6 +117,11 @@ window.Karty=(function(){
     DANE={g,PO_K,PO_N,edycja:extra.rok||"edycja 2026",meta:extra};przelicz();return DANE;
   }
   const STATY=Model.STATY;
+  // nazwa wskaźnika w grach: przy „mniej = lepiej” mówi wprost, co wygrywa (np. niska gęstość), plus podpowiedź kierunku
+  function nazwaGry(k){const s=STATY.find(x=>x.k===k);return s?(s.gra||s.n):k;}
+  function kierunek(k){const s=STATY.find(x=>x.k===k);if(!s)return '';
+    if(k==='gestosc')return 'Wygrywa gmina z najmniejszą liczbą mieszkańców na km²';
+    return s.t==='o'?'Mniej znaczy lepiej: wygrywa najniższa wartość':'Więcej znaczy lepiej: wygrywa najwyższa wartość';}
   function przelicz(){Model.calculate(DANE.g,DANE.edycja,DANE.meta.wstrzymane||[]);}
   function ulepszenie(g){let n={};try{n=JSON.parse(localStorage.getItem("nauka-v1")||"{}");}catch{}return Model.upgrade(g,DANE.g,zdobyte().mam,n);}
   function komplet(g){return g.ovr!=null;}
@@ -218,7 +223,7 @@ window.Karty=(function(){
   // Rekord jest jednocześnie dowodem przyznania i własnością karty: jeden zapis.
   function dzienne(){try{return JSON.parse(localStorage.getItem("karty-dzienne-v1")||"{}");}catch(e){return {};}}
   async function nagrodaDnia(typ,dzien,{ukonczone=false,poddane=false}={}){
-    if(!ukonczone||poddane||!["wyzwanie","miasto","gmina","lancuch"].includes(typ)||!/^\d{4}-\d{2}-\d{2}$/.test(dzien))return null;
+    if(!ukonczone||poddane||!["wyzwanie","miasto","gmina","lancuch","trasa"].includes(typ)||!/^\d{4}-\d{2}-\d{2}$/.test(dzien))return null;
     await zaladuj();migracja();
     const przyznaj=()=>{
       const klucz=typ+":"+dzien,zapis=dzienne();if(zapis[klucz])return null;
@@ -712,5 +717,5 @@ window.Karty=(function(){
       if(n.length)setTimeout(()=>prezentacja(n,info),1200);else setTimeout(info,1200);
     }catch(e){}
   }
-  return {herbSrc,tyl,panel,rekordyHTML,komplet,ulepszenie,wynik,ocenaOVR,odznaki,archiwizuj,prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,zawartoscPaczki,czekajace,KART_W_PACZCE,NAZWA_PACZKI,DUPLIKAT,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
+  return {nazwaGry,kierunek,herbSrc,tyl,panel,rekordyHTML,komplet,ulepszenie,wynik,ocenaOVR,odznaki,archiwizuj,prog,PROGI,PACZKI,DROP,losuj,nagrodaZa,nagrodaDnia,linki,ciekawostki,liczbaPaczek,otworzPaczke,zawartoscPaczki,czekajace,KART_W_PACZCE,NAZWA_PACZKI,DUPLIKAT,PACZKA,SZANSE,zetony,migracja,STATY,przelicz,zaladuj,zdobyte,nowe,liczbaNowych,widziane,doInwentarza,prezentacja,sprawdzPoGrze,karta,styl,podepnijMapy,geometrie,holo,wartosc,RZ,KOLEJ,PROG,gminaPoNazwie,dane:()=>DANE,IKONA,WS};
 })();

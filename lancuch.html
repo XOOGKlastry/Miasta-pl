@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Łańcuch dnia · PolskoZnawca</title>
+<title>Łańcuch gmin · PolskoZnawca</title>
 <meta name="theme-color" content="#FFF6E0" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icon-192.png" />
@@ -50,17 +50,17 @@
 </head>
 <body>
 <div class="wrap">
-  <header class="gora"><a href="codzienne.html" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Łańcuch dnia<small>gmina na ostatnią literę</small></h1></header>
+  <header class="gora"><a href="gry.html" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Łańcuch gmin<small>gmina na ostatnią literę</small></h1></header>
   <main class="tresc" id="tresc">
     <section id="start">
       <div data-pb="Ułóż najdłuższy łańcuch gmin! Każda zaczyna się na ostatnią literę poprzedniej."></div>
-      <div class="lc-tryby" role="group" aria-label="Tryb"><button id="tDzien" aria-pressed="true">Łańcuch dnia</button><button id="tTrening" aria-pressed="false">Trening</button></div>
+      
       <section class="pole lc-zasady" style="padding:12px 14px;margin-top:12px">
         <h2>Zasady</h2>
-        <p>Zaczynasz od gminy dnia (taka sama dla wszystkich). Wpisz gminę, której nazwa zaczyna się na ostatnią literę poprzedniej, np. Kalisz → Zabrze → Elbląg.</p>
+        <p>Zaczynasz od losowej gminy. Wpisz gminę, której nazwa zaczyna się na ostatnią literę poprzedniej, np. Kalisz → Zabrze → Elbląg.</p>
         <p>Masz 90 sekund, każda dobra gmina dodaje 5 s. Gminy się nie powtarzają. Polskie znaki możesz pomijać, wystarczy też pierwszy człon nazwy (np. „Maków”), a gra sama przyjmie poprawną gminę bez klikania OK.</p><p>🎤 Możesz też mówić: stuknij mikrofon, a gra będzie słuchać do końca łańcucha.</p>
         <p>Gdy nazwa kończy się na literę, od której nie zaczyna się żadna gmina (np. „y” w Tychy), liczy się litera przedostatnia.</p>
-        <p>Małe gminy (poniżej 5 tys. mieszkańców) dają +1 punkt.</p>
+        <p>Małe gminy (poniżej 5 tys. mieszkańców) dają +1 punkt. Co dwa ogniwa to moneta na paczkę z kartami.</p>
         <p id="stanDnia" style="font-weight:900;color:var(--braz)"></p>
       </section>
       <button class="klocek" id="graj" style="width:100%;justify-content:center;margin-top:12px">Start</button>
@@ -77,7 +77,7 @@
     <section id="koniec" hidden></section>
   </main>
 </div>
-<script src="wspolne.js?v=24"></script>
+<script src="wspolne.js?v=25"></script>
 <script src="saga.js?v=4"></script><script src="poziom.js?v=1"></script>
 <script>
 const {$,norm}=ZP;
@@ -85,9 +85,7 @@ const {$,norm}=ZP;
 const PG=window.PoziomGra&&PoziomGra.aktywny?PoziomGra:null;
 const CZAS=PG?(PG.sezon===2?45:60):90,BONUS=5,PROG_MALA=5000;
 const PROGI_GW=PG&&PG.sezon===2?[6,10,14]:[4,8,12];
-let GMINY=[],PO_NAZWIE={},LITERY=new Set(),tryb=PG?"poziom":"dzien",gra=null,zegar=null,KOD_WOJ=null;
-const DZIEN=(()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");})();
-const KLUCZ="lancuch-"+DZIEN;
+let GMINY=[],PO_NAZWIE={},LITERY=new Set(),tryb=PG?"poziom":"gra",gra=null,zegar=null,KOD_WOJ=null;
 // litera do porównań: bez polskich znaków
 const lit=c=>norm(c).replace(/[^a-z]/g,"");
 function nastepnaLitera(nazwa){
@@ -101,17 +99,13 @@ function wylosujStart(seed){
   if(tryb==="poziom"&&KOD_WOJ){const w=GMINY.filter(g=>g.k.slice(0,2)===KOD_WOJ&&g.ludnosc>6000&&LITERY.has(nastepnaLitera(g.n)));if(w.length)pula=w;}
   return pula[Math.floor(r()*pula.length)];
 }
-function stanDnia(){try{return JSON.parse(localStorage.getItem(KLUCZ)||"null");}catch(e){return null;}}
+// minigra bez limitu dnia (Łańcuch zszedł z codziennych zagadek 10.10.2026); rekord zostaje
 function odswiezStart(){
-  const s=stanDnia();
-  $("stanDnia").textContent=tryb==="dzien"&&s?"Dzisiejszy łańcuch już zagrany: "+s.ogniwa+" ogniw, "+s.pkt+" pkt. Możesz trenować.":"";
-  $("graj").textContent=tryb==="dzien"&&s?"Zobacz wynik":"Start";
+  const rek=+(localStorage.getItem("lancuch-rekord")||0);
+  $("stanDnia").textContent=!PG&&rek?"Twój rekord: "+rek+" pkt.":"";
 }
-$("tDzien").onclick=()=>{tryb="dzien";$("tDzien").setAttribute("aria-pressed","true");$("tTrening").setAttribute("aria-pressed","false");odswiezStart();};
-$("tTrening").onclick=()=>{tryb="trening";$("tTrening").setAttribute("aria-pressed","true");$("tDzien").setAttribute("aria-pressed","false");odswiezStart();};
 function start(){
-  if(tryb==="dzien"&&stanDnia())return pokazKoniec(stanDnia(),false);
-  const seed=tryb==="dzien"?Number(DZIEN.replace(/-/g,"")):Math.floor(Math.random()*1e9);
+  const seed=Math.floor(Math.random()*1e9);
   const g=wylosujStart(seed);
   gra={lancuch:[g],uzyte:new Set([norm(g.n)]),pkt:0,koniec:Date.now()+CZAS*1000,litera:nastepnaLitera(g.n),start:g.n};
   $("start").hidden=true;$("koniec").hidden=true;$("gra").hidden=false;
@@ -211,24 +205,21 @@ function zakoncz(){
     PG.koniec({gw,proc:Math.min(100,Math.round(100*o/(PROGI_GW[2]+2))),wynik:wynik.pkt,opis:o+" ogniw, "+wynik.pkt+" pkt: "+wynik.lancuch.slice(0,6).join(" → ")+(wynik.lancuch.length>6?" …":"")});
     return;
   }
-  if(tryb==="dzien"){
-    try{localStorage.setItem(KLUCZ,JSON.stringify(wynik));const rek=+(localStorage.getItem("lancuch-rekord")||0);if(wynik.pkt>rek)localStorage.setItem("lancuch-rekord",wynik.pkt);}catch(e){}
-  }
+  try{const rek=+(localStorage.getItem("lancuch-rekord")||0);wynik.rekord=wynik.pkt>rek;if(wynik.rekord)localStorage.setItem("lancuch-rekord",wynik.pkt);}catch(e){}
+  if(wynik.ogniwa>=2)ZP.zeton(Math.floor(wynik.ogniwa/2));
   pokazKoniec(wynik,true);
 }
 function pokazKoniec(w,swiezy){
   $("gra").hidden=true;$("start").hidden=true;
   const rek=+(localStorage.getItem("lancuch-rekord")||0);
-  const tekst="Łańcuch dnia "+DZIEN.split("-").reverse().slice(0,2).join(".")+": "+w.ogniwa+" ogniw, "+w.pkt+" pkt 🔗\n"+w.lancuch.join(" → ");
-  $("koniec").innerHTML='<div class="pole lc-koniec"><h2>'+(tryb==="dzien"?"Łańcuch dnia":"Trening")+'</h2><div class="wynik">'+w.ogniwa+' 🔗</div>'
-    +'<b>'+w.pkt+' pkt'+(tryb==="dzien"?' · rekord '+rek+' pkt':'')+'</b>'
+  const tekst="Łańcuch gmin w PolskoZnawcy: "+w.ogniwa+" ogniw, "+w.pkt+" pkt 🔗\n"+w.lancuch.join(" → ");
+  $("koniec").innerHTML='<div class="pole lc-koniec"><h2>'+(w.rekord?"Nowy rekord!":"Łańcuch gmin")+'</h2><div class="wynik">'+w.ogniwa+' 🔗</div>'
+    +'<b>'+w.pkt+' pkt · rekord '+rek+' pkt'+(w.ogniwa>=2?' · 🪙 +'+Math.floor(w.ogniwa/2):'')+'</b>'
     +'<div class="lc-lista" style="justify-content:center">'+w.lancuch.map((n,i)=>(i?'<em>→</em>':'')+'<span'+(i?'':' class="start"')+'>'+n+'</span>').join("")+'</div>'
-    +(tryb==="dzien"?'<button class="klocek" id="udostepnij">Udostępnij wynik</button>':'')
-    +'<button class="klocek jasny" id="trening">'+(tryb==="dzien"?"Trenuj dalej":"Jeszcze raz")+'</button><a class="klocek jasny" href="codzienne.html">Codzienne zagadki</a></div>';
+    +'<button class="klocek" id="trening">Jeszcze raz</button><button class="klocek jasny" id="udostepnij">Udostępnij wynik</button><a class="klocek jasny" href="gry.html">Inne gry</a></div>';
   $("koniec").hidden=false;
   if($("udostepnij"))$("udostepnij").onclick=async()=>{try{if(navigator.share)await navigator.share({text:tekst});else{await navigator.clipboard.writeText(tekst);ZP.komunikat("Wynik skopiowany");}}catch(e){}};
-  $("trening").onclick=()=>{tryb="trening";start();};
-  if(swiezy&&tryb==="dzien"&&w.ogniwa>=5)ZP.nagrodaDnia&&ZP.nagrodaDnia("lancuch",DZIEN,{ukonczone:true,poddane:false});
+  $("trening").onclick=()=>start();
   if(swiezy&&w.ogniwa>=10)setTimeout(ZP.fanfary,200);
 }
 $("graj").onclick=start;
@@ -237,7 +228,6 @@ fetch("baza.json").then(r=>r.json()).then(b=>{
   GMINY.forEach(g=>{const n=norm(g.n);(PO_NAZWIE[n]=PO_NAZWIE[n]||[]).push(g);LITERY.add(lit(g.n)[0]);});
   if(PG){
     KOD_WOJ=(b.wojewodztwa.find(w=>w.n===PG.P.woj)||{}).k||null;
-    document.querySelector(".lc-tryby").hidden=true;
     document.querySelector("header h1").innerHTML=PG.P.nazwa+"<small>poziom planszy</small>";
     document.querySelector("header a").href="./#poziom="+PG.n;
     PG.pasek("ułóż łańcuch: "+PROGI_GW.map((x,i)=>"★".repeat(i+1)+" "+x).join(", ")+" ogniw w "+CZAS+" s",$("start"));

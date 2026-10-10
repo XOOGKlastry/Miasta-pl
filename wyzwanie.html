@@ -240,7 +240,7 @@ svg path{fill-rule:evenodd}
 <script src="tablice-powiaty.js"></script>
 <script src="topojson-client.min.js?v=17"></script>
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=24"></script><script src="online-config.js"></script><script src="online.js?v=6"></script><script src="walka.js?v=2"></script><script src="podboj-pytania.js?v=1"></script><script src="podboj-gra.js?v=1"></script>
+<script src="wspolne.js?v=25"></script><script src="online-config.js"></script><script src="online.js?v=6"></script><script src="walka.js?v=2"></script><script src="podboj-pytania.js?v=1"></script><script src="podboj-gra.js?v=1"></script>
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
@@ -256,7 +256,7 @@ const TYPY={z:["🛰️","Z lotu ptaka"],g:["📍","Gdzie to jest?"],k:["🗺️
   t:["🚗","Tablice"],c:["⚽","Jaki to klub?"],s:["🤝","Graniczą czy nie?"],v:["🧭","Województwo"],p:["🏛️","Powiat"],q:["⚡","Szybki strzał"]};
 // kolejność konkurencji: wyzwanie dnia (8 pytań) i turniej (wszystkie gry po kolei)
 const KOLEJ_DZIEN=["z","g","m","h","t","w","r","k"],KOLEJ_TURNIEJ=["z","g","m","k","h","t","r","c","w","s","v"];
-const SCORE=km=>Math.round(1000*Math.exp(-km/(TRYB==="saga"?320:150)));
+let etykiety=null;   // nazwy miast po odpowiedzi w „Gdzie to jest?”
 const kolor=p=>p>=700?"g":p>=300?"y":"r";
 const RANGI=[[85,"Geograf roku"],[70,"Kartograf"],[50,"Przewodnik"],[30,"Krajoznawca"],[0,"Turysta"]];
 let D={},Q=[],st=null,map=null,warstwy=null,POLE=null,PL=null,baseSvg="",lotMap=null,lotZnacznik=null;
@@ -459,10 +459,10 @@ function rundaG(q){
     const PLB=L.latLngBounds([48.9,14.0],[55.0,24.3]);
     map=L.map("mapa",{zoomControl:true,attributionControl:true,minZoom:5,maxZoom:12,maxBounds:PLB.pad(0.4),zoomSnap:0.25});
     ZP.podkladWektorowy(map);
-    warstwy=L.layerGroup().addTo(map);
+    warstwy=L.layerGroup().addTo(map);etykiety=ZP.etykietyMiast(map);
     map.on("click",e=>{if(st.odp||Q[st.i].t!=="g")return;st.guess=e.latlng;warstwy.clearLayers();L.circleMarker(e.latlng,{radius:8,color:"#0A181B",weight:2,fillColor:"#E8F1EE",fillOpacity:1}).addTo(warstwy);$("okBtn").disabled=false;});
   }
-  warstwy.clearLayers();
+  warstwy.clearLayers();etykiety.ukryj();
   // na planszy przygód mapa startuje od razu na województwie, z którego jest pytanie
   const wj=(TRYB==="saga"||TRYB==="podboj")&&D.woj.find(w=>w.name===(TRYB==="saga"?POZIOM.woj:Podboj.powiat&&Podboj.powiat.woj));
   setTimeout(()=>{map.invalidateSize();if(wj)map.fitBounds(L.geoJSON(wj.f).getBounds().pad(0.08));else map.fitBounds([[49,14.1],[54.9,24.2]]);},30);
@@ -470,12 +470,14 @@ function rundaG(q){
 }
 $("okBtn").onclick=()=>{
   if(st.odp||!st.guess)return;
-  const q=Q[st.i],g={lat:st.guess.lat,lon:st.guess.lng},d=ZP.km(q.c,g);
+  const q=Q[st.i],g={lat:st.guess.lat,lon:st.guess.lng},d=ZP.km(q.c,g),oc=ZP.ocenaGdzie(d,TRYB==="saga"?320:150);
   L.polyline([[g.lat,g.lon],[q.c.lat,q.c.lon]],{color:"#F2C14E",weight:2,dashArray:"6 5"}).addTo(warstwy);
   L.circleMarker([q.c.lat,q.c.lon],{radius:9,color:"#0A181B",weight:2,fillColor:"#F2C14E",fillOpacity:1}).addTo(warstwy).bindTooltip(q.c.n,{permanent:true,direction:"top",className:"cel-lbl"});
   map.flyToBounds(L.latLngBounds([[g.lat,g.lon],[q.c.lat,q.c.lon]]).pad(0.5),{duration:.8,maxZoom:9});
   $("okBtn").classList.add("hidden");
-  wynikRundy(SCORE(d),d<=(TRYB==="saga"?45:30),"Błąd "+(d<10?d.toFixed(1):Math.round(d))+" km");
+  etykiety.pokaz([{ll:[q.c.lat,q.c.lon],n:q.c.n},{ll:[g.lat,g.lon]}]);
+  // premia za trafienie do 1 km; w walce na żywo serwer przyjmuje najwyżej 1000
+  wynikRundy(TRYB==="walka"?oc.pts:oc.razem,oc.trafione||d<=(TRYB==="saga"?45:30),oc.naglowek);
 };
 function rundaZ(q){
   // Z lotu ptaka: zdjęcie satelitarne bez podpisów, można je przesuwać i przybliżać
@@ -793,7 +795,7 @@ function czasMinal(cicho){
 /* ---------- wynik ---------- */
 function wynikSaga(){
   schowaj();["segmenty","gora","pytanie","stage","start"].forEach(id=>$(id).classList.add("hidden"));
-  const suma=st.res.reduce((a,r)=>a+r.pts,0),max=st.res.length*1000,proc=Math.round(100*suma/Math.max(1,max));
+  const suma=st.res.reduce((a,r)=>a+r.pts,0),max=st.res.length*1000,proc=Math.min(100,Math.round(100*suma/Math.max(1,max)));
   const gw=Saga.gwiazdki(proc);
   // zapis, paczka za 3 gwiazdki i wydarzenie tygodnia: wspólne z osobnymi grami planszy (saga.js)
   const r=Saga.zakoncz({n:POZIOM.n,sezon:POZIOM.sezon,gw,wynik:suma,proc}),zal=r.zal,bylOdbl=r.bylOdbl,teraz=r.teraz;
