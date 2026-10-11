@@ -1,10 +1,11 @@
 /* Reguły edycji kart. Ranking percentylowy z remisami, osobno dla miast i wsi. */
 window.KartyModel=(()=>{
- // t: 'r' więcej = lepiej, 'o' mniej = lepiej. miasto/wies: waga w OVR (miasta i gminy miejsko-wiejskie / gminy wiejskie).
+ // t: 'r' więcej = lepiej, 'o' mniej = lepiej, albo osobno dla grup {miasto,wies}. miasto/wies: waga w OVR (miasta i gminy miejsko-wiejskie / gminy wiejskie).
+ // Ludność i gęstość: w mieście więcej = lepiej, na wsi mniej = lepiej. Odległość do stolicy województwa to tylko informacja (bez OVR i rekordów).
  const STATY=[
-  {k:'ludnosc',n:'Ludność',t:'r',miasto:0,wies:0},
+  {k:'ludnosc',n:'Ludność',t:{miasto:'r',wies:'o'},miasto:1,wies:1},
   {k:'powierzchnia',n:'Powierzchnia',t:'r',miasto:0,wies:0},
-  {k:'gestosc',n:'Gęstość zaludnienia',t:'o',miasto:0,wies:0},
+  {k:'gestosc',n:'Gęstość zaludnienia',t:{miasto:'r',wies:'o'},miasto:1,wies:1},
   {k:'saldo_migracji',n:'Migracja',t:'r',miasto:1.5,wies:1.5},
   {k:'przyrost_naturalny',n:'Przyrost naturalny',t:'r',miasto:0,wies:1.5},
   {k:'pit_na_mieszk',n:'Zarobki · PIT/os.',t:'r',miasto:2,wies:0},
@@ -16,16 +17,17 @@ window.KartyModel=(()=>{
   {k:'lesistosc_proc',n:'Lesistość',t:'r',miasto:0,wies:2},
   {k:'drogi_na_100km2',n:'Drogi twarde',t:'r',miasto:0,wies:1},
   {k:'szkoly_na_1000',n:'Szkoły podstawowe',t:'r',miasto:0,wies:1},
-  {k:'odleglosc_stolica',n:'Do stolicy woj.',t:'o',miasto:0,wies:1},
+  {k:'odleglosc_stolica',n:'Do stolicy woj.',t:'o',miasto:0,wies:0,bezRekordu:true,info:true},
   {k:'wodociag_proc',n:'Wodociągi',t:'r',miasto:0,wies:0,bezRekordu:true},
   {k:'kanalizacja_proc',n:'Kanalizacja',t:'r',miasto:0,wies:0,bezRekordu:true}
  ];
  // przód karty: 10 wskaźników, inne dla miast i dla wsi; reszta w panelu „Pozostałe dane”
  const TWARZ={
   miasto:['ludnosc','gestosc','pit_na_mieszk','bezrobocie_proc','firmy_na_1000','saldo_migracji','zadluzenie_na_mieszk','mieszkanie_m2_os','obciazenie_demograficzne','przyrost_naturalny'],
-  wies:['ludnosc','gestosc','lesistosc_proc','przyrost_naturalny','saldo_migracji','bezrobocie_proc','obciazenie_demograficzne','drogi_na_100km2','szkoly_na_1000','odleglosc_stolica']};
+  wies:['ludnosc','gestosc','lesistosc_proc','przyrost_naturalny','saldo_migracji','bezrobocie_proc','obciazenie_demograficzne','drogi_na_100km2','szkoly_na_1000','kanalizacja_proc']};
 
  const grupa=g=>g.typ==='gmina wiejska'?'wies':'miasto';
+ const kier=(s,gr)=>s.t&&typeof s.t==='object'?s.t[gr]:s.t;   // 'r' albo 'o' dla grupy
  const valid=v=>typeof v==='number'&&Number.isFinite(v);
  const curve=p=>{const a=[[0,40],[.05,50],[.2,58],[.5,65],[.8,75],[.95,85],[.98,90],[1,94]];p=Math.max(0,Math.min(1,p));for(let i=1;i<a.length;i++)if(p<=a[i][0])return Math.round(a[i-1][1]+(a[i][1]-a[i-1][1])*(p-a[i-1][0])/(a[i][0]-a[i-1][0]));return 94;};
  // O(n log n). Remisy mają średnią pozycję, niezależną od kolejności wejścia.
@@ -37,7 +39,7 @@ window.KartyModel=(()=>{
   g.forEach(x=>{x.oc={};x.rekordy=[];x.grupa=grupa(x);if(valid(x.ludnosc)&&x.powierzchnia>0)x.gestosc=x.ludnosc/x.powierzchnia;});
   for(const group of ['miasto','wies']){
    const z=g.filter(x=>x.grupa===group);
-   STATY.forEach(s=>rank(z,x=>x[s.k],(x,v)=>x.oc[s.k]=v,s.t==='o'));
+   STATY.forEach(s=>rank(z,x=>x[s.k],(x,v)=>x.oc[s.k]=v,kier(s,group)==='o'));
    const brak=STATY.filter(s=>s[group]&&z.filter(x=>valid(x[s.k])).length<z.length*.8).map(s=>s.k);
    z.forEach(x=>{let sum=0,w=0,available=0;STATY.forEach(s=>{const weight=paused.includes(s.k)||brak.includes(s.k)?0:s[group];if(!weight)return;w+=weight;if(x.oc[s.k]!=null)available+=weight;sum+=weight*(x.oc[s.k]??65);});x.srednia=sum/w;x.pokrycie=available/w;});
    rank(z.filter(x=>x.pokrycie>=.75),x=>x.srednia,(x,v,p)=>{x.ovr=v;x.percentyl=p;});
@@ -78,7 +80,7 @@ window.KartyModel=(()=>{
   return {bonus:owned.has(g.k)?contour+powiat:0,powiat,contour,hits,count,total:county.length};
  }
  const score=(g,k,bonus=0,records=false)=>g.oc[k]==null?null:Math.min(99,g.oc[k]+bonus+(records&&g.rekordy.some(r=>r.k===k)?5:0));
- return {STATY,TWARZ,grupa,curve,rank,calculate,upgrade,score};
+ return {STATY,TWARZ,grupa,kier,curve,rank,calculate,upgrade,score};
 })();
 
 /* Karty gmin: wspólna logika dla albumu (karty.html), gier (animacja „do inwentarza”) i menu (przycisk Kolekcja).
@@ -119,10 +121,11 @@ window.Karty=(function(){
   const STATY=Model.STATY;
   // nazwa wskaźnika w grach (taka jak na karcie) i podpowiedź kierunku: przy gęstości wygrywa niska
   function nazwaGry(k){const s=STATY.find(x=>x.k===k);return s?(s.gra||s.n):k;}
-  function kierunek(k){const s=STATY.find(x=>x.k===k);if(!s)return '';
-    if(k==='gestosc')return 'Podpowiedź: wygrywa NISKA gęstość (najmniej mieszkańców na km²)';
-    if(k==='odleglosc_stolica')return 'Podpowiedź: wygrywa gmina najbliżej stolicy województwa';
-    return s.t==='o'?'Podpowiedź: mniej znaczy lepiej, wygrywa najniższa wartość':'Podpowiedź: więcej znaczy lepiej, wygrywa najwyższa wartość';}
+  function kierunek(k,gr){const s=STATY.find(x=>x.k===k);if(!s)return '';
+    if(typeof s.t==='object'&&!gr)return 'Podpowiedź: w miastach wygrywa WIĘCEJ, na wsi MNIEJ'+(k==='gestosc'?' (gęstość)':'')+'. Liczy się ocena gminy w jej grupie.';
+    const t=Model.kier(s,gr);
+    if(k==='gestosc')return t==='o'?'Podpowiedź: na wsi wygrywa NISKA gęstość':'Podpowiedź: w mieście wygrywa WYSOKA gęstość';
+    return t==='o'?'Podpowiedź: mniej znaczy lepiej, wygrywa najniższa wartość':'Podpowiedź: więcej znaczy lepiej, wygrywa najwyższa wartość';}
   function przelicz(){Model.calculate(DANE.g,DANE.edycja,DANE.meta.wstrzymane||[]);}
   // ulepszenia: kolekcja i nauka czytane raz na jedno rysowanie (album sortuje setki kart po OVR),
   // gminy powiatu z gotowego indeksu; pamięć znika w następnym obrocie pętli zdarzeń
@@ -318,7 +321,7 @@ window.Karty=(function(){
   // tryb: "mini" (album), "pelna" (podgląd i prezentacja)
   function karta(g,o){
     o=o||{};const ot=o.otwarta!==false,pelna=o.tryb==="pelna",u=o.rowna?{bonus:0,count:0,total:0,hits:0}:ulepszenie(g),oc=Object.fromEntries(Object.entries(g.oc||{}).map(([k,v])=>[k,Math.min(99,v+u.bonus)])),h=ot?herbSrc(g):"";
-    const st=pelna?'<span class="kk-linia"></span><div class="kk-st">'+Model.TWARZ[g.grupa||'miasto'].filter(k=>!(DANE&&DANE.meta&&(DANE.meta.wstrzymane||[]).includes(k))).map(k=>STATY.find(x=>x.k===k)).filter(Boolean).map(s=>'<span data-k="'+s.k+'">'+(IK[s.k]||IK.ludnosc)+'<em>'+s.n+'</em><b>'+(ot&&o.ukryj!==s.k&&oc[s.k]!=null?oc[s.k]:"?")+'</b><i>'+(ot&&o.ukryj!==s.k?wartosc(g,s.k):"")+'</i></span>').join("")+'</div>':'';
+    const st=pelna?'<span class="kk-linia"></span><div class="kk-st">'+Model.TWARZ[g.grupa||'miasto'].filter(k=>!(DANE&&DANE.meta&&(DANE.meta.wstrzymane||[]).includes(k))).map(k=>STATY.find(x=>x.k===k)).filter(Boolean).map(s=>{const kr=typeof s.t==='object'?Model.kier(s,g.grupa||'miasto'):null;return '<span data-k="'+s.k+'"'+(kr?' class="kier-'+(kr==='o'?'dol':'gora')+'" title="'+(kr==='o'?'Na wsi mniej = lepiej':'W mieście więcej = lepiej')+'"':'')+'>'+(IK[s.k]||IK.ludnosc)+'<em>'+(kr?'<u>'+(kr==='o'?'▼':'▲')+'</u>':'')+s.n+'</em><b>'+(ot&&o.ukryj!==s.k&&oc[s.k]!=null?oc[s.k]:"?")+'</b><i>'+(ot&&o.ukryj!==s.k?wartosc(g,s.k):"")+'</i></span>';}).join("")+'</div>':'';
     return '<div class="kk kk-'+(pelna?"pelna":"mini")+' r-'+g.rz+(u.bonus===5?' holograficzna':'')+(ot?"":" zablokowana")+'" data-k="'+g.k+'">'+(o.nowa?'<span class="kk-nowa">NOWA</span>':'')+'<span class="kk-ramka"></span>'
       +'<div class="kk-lewa"><button type="button" class="kk-ovr" data-ovr="'+g.k+'" aria-label="Dlaczego takie OVR?">'+(ot&&g.ovr!=null?Math.min(99,g.ovr+u.bonus):"?")+'</button>'+(ot&&u.bonus?'<small class="kk-premia">+'+u.bonus+'</small>':'')+'<span class="kk-typ">'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</span>'+(h?'<img class="kk-herb" alt="" loading="lazy" src="'+h+'">':'')+'<span class="kk-kres"></span><span class="kk-wojs">'+(WS[g.woj]||"")+'</span></div>'
       +'<div class="kk-mapka" data-m="'+g.k+'"></div>'
@@ -328,9 +331,9 @@ window.Karty=(function(){
       +st+(pelna&&ot&&!o.ukryj&&!o.bezSzczegolow?szczegoly(g,u,o):'')+'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
   }
   // rekord dobry (zielony), zły (czerwony) albo neutralny (złoty)
-  function znakRekordu(r){
-    if(r.k==='ludnosc'||r.k==='powierzchnia'||r.k==='gestosc')return 'neutral';
-    const s=STATY.find(x=>x.k===r.k),lepiejMniej=s&&s.t==='o';
+  function znakRekordu(r,g){
+    if(r.k==='powierzchnia')return 'neutral';
+    const s=STATY.find(x=>x.k===r.k),lepiejMniej=s&&Model.kier(s,(g&&g.grupa)||'miasto')==='o';
     return (r.dir==='max')!==lepiejMniej?'plus':'minus';
   }
   // rekordy: zielone dobre, czerwone złe, złote neutralne; krajowe z flagą i większe
@@ -338,7 +341,7 @@ window.Karty=(function(){
   function rekordyHTML(g,limit,kompakt){
     if(!g.rekordy||!g.rekordy.length)return '';
     const l=limit?g.rekordy.slice(0,limit):g.rekordy;
-    return '<ul class="kk-rekordy'+(kompakt?' kompakt'+(l.length>=5?' dwie':''):'')+'">'+l.map(r=>{const z=znakRekordu(r),kraj=r.scope==='pl';
+    return '<ul class="kk-rekordy'+(kompakt?' kompakt'+(l.length>=5?' dwie':''):'')+'">'+l.map(r=>{const z=znakRekordu(r,g),kraj=r.scope==='pl';
       const tekst=kompakt?(r.miejsce+'. '+(kraj?'w Polsce':'w woj.')+' · '+String(r.opis).split(': ').slice(1).join(': ')):r.opis;
       return '<li class="'+z+(kraj?' kraj':'')+'"><i>'+(kraj?'🇵🇱':'')+(z==='plus'?'▲':z==='minus'?'▼':'●')+'</i><span>'+esc(tekst)+'</span></li>';}).join('')
       +(limit&&g.rekordy.length>limit?'<li class="wiecej">+ '+(g.rekordy.length-limit)+' w albumie</li>':'')+'</ul>';
@@ -347,7 +350,7 @@ window.Karty=(function(){
   function tyl(g){
     const u=ulepszenie(g),m=+g.k.slice(2,4)>=61,wstrz=(DANE.meta&&DANE.meta.wstrzymane)||[];
     const przod=new Set(Model.TWARZ[g.grupa||'miasto']);
-    const reszta=STATY.filter(s=>!przod.has(s.k)&&!wstrz.includes(s.k)&&!(s.k==='odleglosc_stolica'&&g.stolicaWoj));
+    const reszta=STATY.filter(s=>!przod.has(s.k)&&!wstrz.includes(s.k)&&!s.info);
     const pasek=(n,v,mx)=>'<label><span>'+n+'</span><i><b style="width:'+Math.round(100*Math.min(v,mx)/Math.max(1,mx))+'%"></b></i><em>'+Math.min(v,mx)+'/'+mx+'</em></label>';
     const pol=(g.pozycjaWoj?'#'+g.pozycjaWoj+' w woj. '+esc(g.woj.replace(/ie$/,'im')):'')
       +(g.stolicaWoj?(g.pozycjaWoj?' · ':'')+'stolica województwa':g.odleglosc_stolica!=null?(g.pozycjaWoj?' · ':'')+(g.odleglosc_stolica<1?'stolica województwa':liczba(g.odleglosc_stolica,0)+' km do: '+esc(g.najblizsza_stolica)):'');
@@ -367,7 +370,7 @@ window.Karty=(function(){
       +(g.pozycjaWoj?'<p class="kk-poz">#'+g.pozycjaWoj+' w woj. '+esc(g.woj.replace(/ie$/,'im'))+' · '+(g.grupa==='wies'?'wśród wsi':'wśród miast i M-W')+'</p>':'')
       +(g.odleglosc_stolica!=null?'<p class="kk-poz">'+(g.odleglosc_stolica<1?'Stolica województwa':'Do stolicy województwa: '+liczba(g.odleglosc_stolica,0)+' km ('+esc(g.najblizsza_stolica)+(g.inne_woj?', sąsiednie województwo':'')+')')+'</p>':'')
       +(r?'<b class="kk-pn">Rekordy</b>'+r:'<p class="kk-brak">Bez rekordów w pierwszej piątce.</p>')
-      +'<b class="kk-pn">Pozostałe dane</b><div class="kk-reszta">'+STATY.filter(s=>!Model.TWARZ[g.grupa||'miasto'].includes(s.k)).map(s=>'<span>'+(IK[s.k]||'')+'<em>'+s.n+'</em><i>'+wartosc(g,s.k)+'</i><b>'+(g.oc[s.k]??'–')+'</b></span>').join('')+'</div>'
+      +'<b class="kk-pn">Pozostałe dane</b><div class="kk-reszta">'+STATY.filter(s=>!Model.TWARZ[g.grupa||'miasto'].includes(s.k)&&!s.info).map(s=>'<span>'+(IK[s.k]||'')+'<em>'+s.n+'</em><i>'+wartosc(g,s.k)+'</i><b>'+(g.oc[s.k]??'–')+'</b></span>').join('')+'</div>'
       +'<div class="kk-postep">'+(m?'':'<label><span>Powiat</span><progress value="'+u.count+'" max="'+Math.max(1,u.total)+'"></progress><em>'+u.count+'/'+u.total+'</em></label>')
       +'<label><span>Kontury</span><progress value="'+Math.min(40,u.hits)+'" max="40"></progress><em>'+Math.min(40,u.hits)+'/40</em></label></div>'
       +(u.bonus?'<p class="kk-bonus">Premia karty: +'+u.bonus+(u.bonus===5?' · karta holograficzna':'')+'</p>':'')
@@ -386,7 +389,7 @@ window.Karty=(function(){
   }
   function dlaczego(g){
     const u=ulepszenie(g),d=document.createElement('div');d.className='kk-ciek';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');d.setAttribute('aria-label','Wyjaśnienie OVR');
-    d.innerHTML='<div class="kk-ciek-pole"><div class="kk-ciek-gora"><div><b>Dlaczego '+(ocenaOVR(g)??'?')+'?</b><small>'+esc(g.n)+'</small></div><button aria-label="Zamknij">×</button></div><p>Porównanie: '+(g.grupa==='wies'?'gminy wiejskie':'miasta, MNP i gminy miejsko-wiejskie')+'.</p><ul>'+STATY.filter(s=>s[g.grupa]&&!DANE.meta.wstrzymane?.includes(s.k)).map(s=>'<li>'+s.n+': '+(g.oc[s.k]??'brak danych')+' × '+s[g.grupa]+'</li>').join('')+'</ul><p>Średnia ważona: '+(g.srednia==null?'brak danych':g.srednia.toFixed(2))+'. Pozycja tej średniej w grupie przechodzi przez krzywą 40–94 → OVR '+(g.ovr??'?')+'.</p><p>Powiat +'+u.powiat+', kontury +'+u.contour+'. Premia do OVR i każdego wskaźnika: +'+u.bonus+' (limit 99).</p><p>'+esc(DANE.meta.szkoly_status||'')+'</p><p>Brak danych nie oznacza zera. Niepełne karty nie mają OVR i nie uczestniczą w Karcie w ciemno.</p></div>';
+    d.innerHTML='<div class="kk-ciek-pole"><div class="kk-ciek-gora"><div><b>Dlaczego '+(ocenaOVR(g)??'?')+'?</b><small>'+esc(g.n)+'</small></div><button aria-label="Zamknij">×</button></div><p>Porównanie: '+(g.grupa==='wies'?'gminy wiejskie':'miasta, MNP i gminy miejsko-wiejskie')+'.</p><ul>'+STATY.filter(s=>s[g.grupa]&&!DANE.meta.wstrzymane?.includes(s.k)).map(s=>'<li>'+s.n+(Model.kier(s,g.grupa)==='o'?' (mniej = lepiej)':typeof s.t==='object'?' (więcej = lepiej)':'')+': '+(g.oc[s.k]??'brak danych')+' × '+s[g.grupa]+'</li>').join('')+'</ul><p>Średnia ważona: '+(g.srednia==null?'brak danych':g.srednia.toFixed(2))+'. Pozycja tej średniej w grupie przechodzi przez krzywą 40–94 → OVR '+(g.ovr??'?')+'.</p><p>Powiat +'+u.powiat+', kontury +'+u.contour+'. Premia do OVR i każdego wskaźnika: +'+u.bonus+' (limit 99).</p><p>'+esc(DANE.meta.szkoly_status||'')+'</p><p>Brak danych nie oznacza zera. Niepełne karty nie mają OVR i nie uczestniczą w Karcie w ciemno.</p></div>';
     const before=document.activeElement,close=()=>{d.remove();before?.focus();};d.onclick=e=>{if(e.target===d||e.target.closest('.kk-ciek-gora button'))close();};d.onkeydown=e=>{if(e.key==='Escape')close();};document.body.appendChild(d);d.querySelector('button').focus();
   }
   document.addEventListener('click',async e=>{
@@ -437,6 +440,11 @@ window.Karty=(function(){
 .kk .kk-st span{display:grid;grid-template-columns:4.6cqw minmax(0,1fr) auto;grid-template-rows:auto auto;column-gap:1.6cqw;align-items:center}
 .kk .kk-st svg{grid-row:1/3;width:4.6cqw;height:4.6cqw}
 .kk .kk-st em{font-style:normal;font-family:"Barlow Condensed",sans-serif;font-weight:700;font-size:3.6cqw;text-transform:uppercase;white-space:nowrap;line-height:1.05}
+.kk .kk-st span.kier-gora,.kk .kk-st span.kier-dol{margin:-.8cqw -1.2cqw;padding:.8cqw 1.2cqw;border-radius:2cqw}
+.kk .kk-st span.kier-gora{background:rgba(39,174,96,.24);box-shadow:inset 0 0 0 .5cqw #1E8A4C}
+.kk .kk-st span.kier-dol{background:rgba(230,126,34,.24);box-shadow:inset 0 0 0 .5cqw #C25E0B}
+.kk .kk-st em u{text-decoration:none;display:inline-block;margin-right:.8cqw;padding:0 .9cqw;border-radius:1cqw;color:#fff;font-size:3.2cqw;line-height:1.25;vertical-align:.2cqw}
+.kk .kk-st .kier-gora em u{background:#1E8A4C}.kk .kk-st .kier-dol em u{background:#C25E0B}
 .kk .kk-st b{grid-row:1/3;grid-column:3;font-family:"Barlow Condensed",sans-serif;font-weight:800;font-size:6.8cqw;line-height:1;text-align:right;min-width:7cqw}
 .kk .kk-st i{font-style:normal;font-weight:700;font-size:2.8cqw;opacity:.75;white-space:nowrap}
 .kk .kk-rz{position:absolute;left:0;right:0;top:143cqw;text-align:center;font-size:3.6cqw;font-weight:900;letter-spacing:.6cqw;color:var(--ramka)}
