@@ -33,7 +33,7 @@ window.CiemnoZasady=(()=>{
   const z=pool.filter(c=>value(c,k,records)!=null),nowe=shuffle(z.filter(c=>!pokazane.has(c.k)),rng),stare=shuffle(z.filter(c=>pokazane.has(c.k)),rng);
   return nowe.concat(stare).slice(0,TALIA);
  }
- // nagrody w grze rankingowej: monety, punkty rankingu pojedynków i szansa na paczkę
+ // nagrody w grze rankingowej: żetony na karty, punkty rankingu pojedynków i szansa na paczkę
  const NAGRODY={wygrana:{monety:5,pkt:20,paczka:.15},remis:{monety:2,pkt:5,paczka:.06},przegrana:{monety:1,pkt:-10,paczka:.03}};
  return {WSPOLNE,PULA,BEZ,rozdaj,TALIA,RUNDY,shuffle,seeded,value,ovr,compare,candidates,ai,resolve,deck,NAGRODY};
 })();

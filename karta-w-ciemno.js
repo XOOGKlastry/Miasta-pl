@@ -46,7 +46,7 @@
   if(game.o.mode==='wyzwanie'){if(game.rola==='nadawca'){game.moje.push(c.k);pokazWyborNadawcy(c);return;}const cudza=game.candidates[1].find(x=>x.k===game.cudze.p[game.round]);if(!cudza){fail(Error('Wyzwanie nie pasuje do tej wersji kart'));return;}game.picks[1]=cudza;}
   if(game.o.mode==='ai'){pokazOcene(c);return;}showResult();
  }
- // gra sama: bez wirtualnego rywala, tylko ocena wyboru i zwykłe punkty (10 pkt = moneta)
+ // gra sama: bez wirtualnego rywala, tylko ocena wyboru i zwykłe punkty (10 pkt = żeton)
  const PKT_MIEJSCE=[10,6,4];
  function wynikTekst(){return game.o.mode==='ai'?game.totals[0]+' pkt':game.totals.join(' : ');}
  function pokazOcene(c){
@@ -72,8 +72,8 @@
  }
  function next(){advance();}
  function advance(){if(game.round===Z.RUNDY-1){finish();return;}game.round++;beginRound();}
- function finish(){game.over=true;$('kierunek').hidden=true;if(game.o.mode==='wyzwanie'){koniecWyzwania();return;}if(game.o.mode==='ai'&&PG){const p=game.totals[0];monetyZaPunkty(p);$('next').hidden=true;PG.koniec({proc:Math.round(100*p/(10*Z.RUNDY)),wynik:p,opis:p+' pkt z '+(10*Z.RUNDY)+' · najlepsza karta '+(game.trafione||0)+' z '+Z.RUNDY+' razy'});return;}if(game.o.mode==='ai'){const p=game.totals[0],n=monetyZaPunkty(p);$('round').textContent='Koniec gry';$('metric').textContent=p+' pkt z '+(10*Z.RUNDY)+' możliwych';$('turn').textContent='Najlepsza karta wybrana '+(game.trafione||0)+' z '+Z.RUNDY+' razy.';$('next').hidden=true;$('reveal').insertAdjacentHTML('beforeend','<div class="nagroda-info"><b>'+(game.trafione>=4?'Świetne oko!':game.trafione>=2?'Nieźle!':'Następnym razem lepiej!')+'</b><span>'+(n?'🪙 +'+n+' '+(n===1?'moneta':n<5?'monety':'monet'):'🪙 punkty odłożone na monetę: '+(+localStorage.getItem('monety-pkt')||0)+' / 10')+'</span></div><a class="klocek" href="karta-w-ciemno.html">Zagraj jeszcze raz</a>');return;}const [a,b]=game.totals;$('round').textContent='Koniec meczu';$('kierunek').hidden=true;$('metric').textContent=a===b?'Remis!':game.o.mode==='ai'?(a>b?'Wygrywasz mecz!':'Komputer wygrywa mecz'):'Wygrywa gracz '+(a>b?1:2);$('turn').textContent='Wynik końcowy '+a+' : '+b+'. ';$('next').hidden=true;nagrody(a,b);$('reveal').insertAdjacentHTML('beforeend','<a class="klocek" href="karta-w-ciemno.html">Zagraj jeszcze raz</a>');}
- // gra rankingowa: monety (5 za wygraną, 2 za remis, 1 za przegraną), punkty rankingu pojedynków i szansa na paczkę
+ function finish(){game.over=true;$('kierunek').hidden=true;if(game.o.mode==='wyzwanie'){koniecWyzwania();return;}if(game.o.mode==='ai'&&PG){const p=game.totals[0];monetyZaPunkty(p);$('next').hidden=true;PG.koniec({proc:Math.round(100*p/(10*Z.RUNDY)),wynik:p,opis:p+' pkt z '+(10*Z.RUNDY)+' · najlepsza karta '+(game.trafione||0)+' z '+Z.RUNDY+' razy'});return;}if(game.o.mode==='ai'){const p=game.totals[0],n=monetyZaPunkty(p);$('round').textContent='Koniec gry';$('metric').textContent=p+' pkt z '+(10*Z.RUNDY)+' możliwych';$('turn').textContent='Najlepsza karta wybrana '+(game.trafione||0)+' z '+Z.RUNDY+' razy.';$('next').hidden=true;$('reveal').insertAdjacentHTML('beforeend','<div class="nagroda-info"><b>'+(game.trafione>=4?'Świetne oko!':game.trafione>=2?'Nieźle!':'Następnym razem lepiej!')+'</b><span>'+(n?'🎟️ +'+n+' '+(n===1?'żeton':n<5?'żetony':'żetonów'):'🎟️ punkty odłożone na żeton: '+(+localStorage.getItem('monety-pkt')||0)+' / 10')+'</span></div><a class="klocek" href="karta-w-ciemno.html">Zagraj jeszcze raz</a>');return;}const [a,b]=game.totals;$('round').textContent='Koniec meczu';$('kierunek').hidden=true;$('metric').textContent=a===b?'Remis!':game.o.mode==='ai'?(a>b?'Wygrywasz mecz!':'Komputer wygrywa mecz'):'Wygrywa gracz '+(a>b?1:2);$('turn').textContent='Wynik końcowy '+a+' : '+b+'. ';$('next').hidden=true;nagrody(a,b);$('reveal').insertAdjacentHTML('beforeend','<a class="klocek" href="karta-w-ciemno.html">Zagraj jeszcze raz</a>');}
+ // gra rankingowa: żetony na karty (5 za wygraną, 2 za remis, 1 za przegraną), punkty rankingu pojedynków i szansa na paczkę
  /* ---- wyzwanie dla znajomego: najpierw grasz Ty, znajomy ma 24 godziny na odpowiedź ---- */
  const DOBA=24*3600*1000;
  // UTF-8 ⇄ base64url bez globalnych escape/unescape (tu „escape” to funkcja HTML)
@@ -157,7 +157,7 @@
   r.pkt=Math.max(0,r.pkt+N.pkt);r[w==='wygrana'?'w':w==='remis'?'r':'p']++;
   const paczka=Math.random()<N.paczka,monety=N.monety+(paczka?25:0);
   try{localStorage.setItem('ciemno-ranking',JSON.stringify(r));localStorage.setItem('karty-zetony',String((+localStorage.getItem('karty-zetony')||0)+monety));}catch(e){}
-  $('reveal').insertAdjacentHTML('beforeend','<div class="nagroda-info"><b>Gra rankingowa: '+w+'</b><span>🪙 +'+N.monety+' monet</span><span>🏆 '+(N.pkt>0?'+':'')+N.pkt+' pkt rankingu (razem '+r.pkt+')</span>'
+  $('reveal').insertAdjacentHTML('beforeend','<div class="nagroda-info"><b>Gra rankingowa: '+w+'</b><span>🎟️ +'+N.monety+' żetonów na karty</span><span>🏆 '+(N.pkt>0?'+':'')+N.pkt+' pkt rankingu (razem '+r.pkt+')</span>'
    +(paczka?'<span class="paczka-drop">🎁 Wylosowana paczka! Otwórz ją w albumie kart.</span>':'')+'<small>Bilans: '+r.w+' wygranych · '+r.r+' remisów · '+r.p+' przegranych</small></div>');
  }
  $('hint').onclick=()=>{hintMode=!hintMode;render();};$('next').onclick=next;

@@ -5,7 +5,7 @@
 window.Walka=(()=>{
  'use strict';
  const ID=new URLSearchParams(location.search).get('mecz');
- const NAGRODA={wygrana:5,remis:2,przegrana:1};   // monety za walkę, poza punktami za każdą dobrą odpowiedź
+ const NAGRODA={wygrana:5,remis:2,przegrana:1};   // żetony na karty za walkę, poza punktami za każdą dobrą odpowiedź
  const TRYBY={quiz:{nazwa:'Quiz na żywo',ikona:'⚔️'},mapa:{nazwa:'Wyścig na mapie',ikona:'📍'}};
  const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  let S=null,off=0,offOk=false,runda=-1,wyslana=-1,przerobione=0,dane=false,pytania=false,stop=false,petla=null,koniecPokazany=false,ostatnioOdp=-1;
@@ -173,7 +173,7 @@ window.Walka=(()=>{
   if(koniecPokazany)return;koniecPokazany=true;
   const w=S.winner,moj=ja(),wynik=w==null?'remis':w===moj?'wygrana':'przegrana';
   const delta=moj===0?S.delta_a:S.delta_b,rating=(moj===0?S.rating_a:S.rating_b);
-  // monety raz za mecz
+  // żetony na karty raz za mecz
   let zapis={};try{zapis=JSON.parse(localStorage.getItem('walka-nagrody')||'{}');}catch(e){}
   if(!zapis[ID]){zapis[ID]=wynik;try{localStorage.setItem('walka-nagrody',JSON.stringify(zapis));}catch(e){}ZP.zeton(NAGRODA[wynik]);}
   const poddal=S.forfeit!=null?(S.forfeit===moj?'Poddałeś walkę.':esc(nick(on()))+' poddał walkę.'):'';
@@ -181,7 +181,7 @@ window.Walka=(()=>{
    +'<div class="rywale"><b>'+esc(nick(moj))+' '+Math.max(0,hp(moj))+' ❤</b><span>:</span><b>'+Math.max(0,hp(on()))+' ❤ '+esc(nick(on()))+'</b></div>'
    +(poddal?'<p>'+poddal+'</p>':'')
    +'<p class="elo">Ranking pojedynków: <b class="'+(delta<0?'minus':'')+'">'+(delta>0?'+':'')+(delta||0)+'</b> → '+rating+' pkt</p>'
-   +'<p class="datastate">🪙 +'+NAGRODA[wynik]+' monet za walkę, do tego punkty za każdą dobrą odpowiedź.</p>'
+   +'<p class="datastate">🎟️ +'+NAGRODA[wynik]+' żetonów na karty za walkę, do tego punkty za każdą dobrą odpowiedź.</p>'
    +'<div id="walkaRewanzInfo"></div>'
    +'<div class="klocki"><button class="big" id="walkaRewanz">Rewanż</button><a class="ghost big" href="ranking.html?gracz='+encodeURIComponent(moj===0?S.b:S.a)+'&n='+encodeURIComponent(nick(on()))+'">Profil i wiadomości</a><a class="ghost big" href="ranking.html">Ranking</a></div>');
   if(wynik==='wygrana')setTimeout(ZP.fanfary,300);

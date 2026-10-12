@@ -147,7 +147,7 @@ window.Karty=(function(){
   /* zdobyte karty:
      1. Kształt gminy: trafiona gmina to od razu karta,
      2. gry gminne (herby, Gdzie ta gmina, Ciepło-zimno, Kształt gminy): 3–7 trafień tej samej gminy to karta,
-     3. wszystkie inne gry dają monety; 25 monet to paczka z 2–7 kartami (zależnie od rodzaju paczki). */
+     3. wszystkie inne gry dają żetony; 25 żetonów to paczka z 2–7 kartami (zależnie od rodzaju paczki). */
   const PACZKA=25;
   const SZANSE=[["legenda",.001],["diament",.009],["zloto",.04],["srebro",.15],["zwykla",.80]];
   function paczki(){try{return JSON.parse(localStorage.getItem("karty-paczki")||"[]");}catch(e){return [];}}
@@ -189,7 +189,7 @@ window.Karty=(function(){
   const NAZWA_PACZKI={zwykla:"Zwykła",braz:"Brązowa",srebro:"Srebrna",zloto:"Złota",diament:"Diamentowa",legenda:"Legendarna"};
   // gwarancja: w paczce od srebrnej wzwyż co najmniej jedna karta tej rzadkości lub lepsza
   const GWARANCJA={srebro:"srebro",zloto:"zloto",diament:"diament",legenda:"legenda"};
-  const DUPLIKAT=2;   // monety za kartę, którą już masz
+  const DUPLIKAT=2;   // żetony za kartę, którą już masz
   const DROP={zwykla:[["legenda",.001],["diament",.009],["zloto",.04],["srebro",.15],["zwykla",.80]],braz:[["legenda",.002],["diament",.013],["zloto",.065],["srebro",.24],["zwykla",.68]],srebro:[["legenda",.005],["diament",.025],["zloto",.17],["srebro",.55],["zwykla",.25]],zloto:[["legenda",.02],["diament",.08],["zloto",.60],["srebro",.30]],diament:[["legenda",.10],["diament",.50],["zloto",.30],["srebro",.10]],legenda:[["legenda",.30],["diament",.45],["zloto",.20],["srebro",.05]]};
   function archiwizuj(){
     const owned=zdobyte().mam,records=JSON.parse(localStorage.getItem("karty-rekordy-v1")||"{}"),badges=odznaki();
@@ -218,7 +218,7 @@ window.Karty=(function(){
   async function otworzPaczke(){
     await zaladuj();migracja();
     const otworz=()=>{
-      // najpierw paczki z nagród (dziennych, za poziomy i mecze), potem paczki za monety
+      // najpierw paczki z nagród (dziennych, za poziomy i mecze), potem paczki za żetony
       const cz=czekajace(),zNagrody=cz.length>0;let kolor;
       if(zNagrody)kolor=cz.shift().kolor;
       else{if(zetony()<PACZKA)return null;kolor=losuj(PACZKI);}
@@ -250,12 +250,13 @@ window.Karty=(function(){
     if(typeof navigator!=="undefined"&&navigator.locks)return navigator.locks.request("polskoznawca-dzienna-nagroda",przyznaj);
     return przyznaj();
   }
-  async function nagrodaZa(id){
+  // kolorWymuszony: np. legendarna paczka za skarb tygodnia w Podboju
+  async function nagrodaZa(id,kolorWymuszony){
     await zaladuj();migracja();
     const przyznaj=()=>{
       const zapis=JSON.parse(localStorage.getItem("karty-nagrody-v1")||"{}");
       if(zapis[id])return null;
-      const kolor=losuj(PACZKI);
+      const kolor=kolorWymuszony&&NAZWA_PACZKI[kolorWymuszony]?kolorWymuszony:losuj(PACZKI);
       // nagroda raz na zadanie; paczka czeka w albumie, aż gracz ją otworzy
       zapis[id]={kolor,czeka:true};localStorage.setItem("karty-nagrody-v1",JSON.stringify(zapis));
       dodajCzekajaca(id,kolor);
@@ -686,7 +687,7 @@ window.Karty=(function(){
       const naj=karty.reduce((a,g)=>KOLEJ.indexOf(g.rz)<KOLEJ.indexOf(a.rz)?g:a,karty[0]);
       const dupl=karty.filter(g=>g._duplikat).length;
       w.className="pk podsum r-"+naj.rz;
-      w.innerHTML='<div class="pk-sum"><h2>'+(kolorP?esc(NAZWA_PACZKI[kolorP]||"")+" paczka":"Nowe karty")+'<small>'+karty.length+' '+(karty.length<5?"KARTY":"KART")+(dupl?" · DUPLIKATY: +"+dupl*DUPLIKAT+" MONET":"")+'</small></h2>'
+      w.innerHTML='<div class="pk-sum"><h2>'+(kolorP?esc(NAZWA_PACZKI[kolorP]||"")+" paczka":"Nowe karty")+'<small>'+karty.length+' '+(karty.length<5?"KARTY":"KART")+(dupl?" · DUPLIKATY: +"+dupl*DUPLIKAT+" ŻETONÓW":"")+'</small></h2>'
         +'<div class="pk-siatka">'+karty.map((g,n)=>'<div style="animation-delay:'+(n*.08).toFixed(2)+'s">'+karta(g,{tryb:"mini"})+'<span class="pk-znak'+(g._duplikat?' dup">JUŻ MASZ':'">NOWA')+'</span></div>').join("")+'</div></div>'
         +'<div class="pk-dol"><button class="glowny" data-a="koniec">Do kolekcji</button><a href="karty.html">Zobacz album</a></div>';
       w.querySelectorAll(".pk-siatka .kk").forEach(el=>holo(el));podepnijMapy(w);
@@ -700,7 +701,7 @@ window.Karty=(function(){
       const wo=WOJ&&WOJ[g.woj]?WOJ[g.woj]:"";
       let iskry="";for(let n=0;n<(pelne?40:18);n++)iskry+='<i style="left:'+(Math.random()*100).toFixed(1)+'%;animation-duration:'+(3+Math.random()*4).toFixed(1)+'s;animation-delay:'+(-Math.random()*6).toFixed(1)+'s"></i>';
       w.innerHTML='<div class="pk-iskry">'+iskry+'</div><div class="pk-kula"><svg viewBox="0 0 100 100" aria-hidden="true"><defs><clipPath id="pkK"><circle cx="50" cy="50" r="44"/></clipPath></defs><g clip-path="url(#pkK)" transform="rotate(-8 50 50)"><rect width="100" height="50" fill="#F4F4F2"/><rect y="50" width="100" height="50" fill="#DC1E35"/><ellipse cx="36" cy="27" rx="14" ry="6" fill="#fff" opacity=".7"/></g><circle cx="50" cy="50" r="44" fill="none" stroke="#3A2A14" stroke-width="4"/><ellipse cx="38" cy="40" rx="8" ry="10" fill="#fff" stroke="#3A2A14" stroke-width="3"/><ellipse cx="64" cy="40" rx="8" ry="10" fill="#fff" stroke="#3A2A14" stroke-width="3"/></svg></div><div class="pk-blysk"></div>'
-        +'<span class="pk-licznik">'+(g._paczka?"Z PACZKI":"NOWA KARTA")+(wiele?" "+(i+1)+" / "+karty.length:"")+(g._duplikat?" · JUŻ MASZ +"+DUPLIKAT+" 🪙":"")+(g._joker?" · +1 PODPOWIEDŹ 50/50":"")+'</span>'+'<button class="pk-pomin">'+(wiele?"Wszystkie ›":"Pomiń ›")+'</button>'
+        +'<span class="pk-licznik">'+(g._paczka?"Z PACZKI":"NOWA KARTA")+(wiele?" "+(i+1)+" / "+karty.length:"")+(g._duplikat?" · JUŻ MASZ +"+DUPLIKAT+" 🎟️":"")+(g._joker?" · +1 PODPOWIEDŹ 50/50":"")+'</span>'+'<button class="pk-pomin">'+(wiele?"Wszystkie ›":"Pomiń ›")+'</button>'
         +'<div class="pk-krok k1"><small>WOJEWÓDZTWO</small>'+wo+'<b>'+esc(g.woj)+'</b></div>'
         +'<div class="pk-krok k2"><small>'+(mnp(g)?"MIASTO NA PRAWACH POWIATU":esc(g.typ.toUpperCase()))+'</small><b>'+(mnp(g)?"MNP":TYP[g.typ]||"GM")+'</b><small style="letter-spacing:2px">'+esc(g.powiat)+'</small></div>'
         +'<div class="pk-krok k3"><small>'+RZ[g.rz].toUpperCase()+' KARTA</small><span class="pk-ovr">'+(g.ovr||"?")+'</span></div>'

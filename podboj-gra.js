@@ -52,7 +52,8 @@ window.Podboj=(function(){
   if(!w){ekran('<h2>Brak połączenia</h2><p>Wynik zapisany na telefonie: '+dobre(res)+' z 8. Spróbuj ponownie.</p><button class="big" id="pdPonow">Wyślij jeszcze raz</button><a class="ghost" href="'+mapaUrl()+'">Mapa Podboju</a>');
    $('pdPonow').onclick=()=>wyslij(res,przerwana);return;}
   pisz({res,wynik:w});
-  if(w.wynik==='zdobyty'||w.wynik==='przejety'||w.wynik==='obronione')ZP.zeton(w.wynik==='obronione'?2:1);
+  // skarb tygodnia: paczka kart do albumu (monety dopisał już serwer)
+  if(w.skarb&&ZP.modulKart)ZP.modulKart().then(K=>K.nagrodaZa('podboj-skarb:'+w.skarb.tydzien,w.skarb.paczka)).then(g=>{if(g)ZP.komunikat('Paczka za skarb trafiła do albumu kart!',3600);}).catch(()=>{});
   pokazKoniec(w,res);
  }
  function koniec(res){if(!czytaj()||!(czytaj()||{}).wynik)wyslij(res,false);else pokazKoniec(czytaj().wynik,res);}
@@ -78,6 +79,9 @@ window.Podboj=(function(){
   const box=$('wynik');
   box.innerHTML='<div class="saga-wynik podboj-ekran"><div class="pd-licznik"><b>'+n+'</b><span>/ 8</span></div>'
    +'<h2>'+T[0]+'</h2><div class="saga-odbl'+(T[2]<0?' nie':'')+'">'+T[1]+'</div>'
+   +(w.skarb?'<div class="saga-odbl pd-skarb-wyn">💰 <b>Skarb tygodnia!</b> '+w.skarb.miejsce+'. miejsce: +'+w.skarb.monety+' monet i '+(w.skarb.paczka==='legenda'?'legendarna':'brązowa')+' paczka kart.</div>':'')
+   +(w.zadania_monety>0?'<div class="saga-odbl">📜 Zadania dnia: +'+w.zadania_monety+' monet</div>':'')
+   +(w.monety!=null?'<p class="pd-skarbiec-wyn">🪙 W skarbcu Podboju: <b>'+w.monety+'</b> monet</p>':'')
    +'<div class="btnrow"><a class="big" href="'+mapaUrl()+'">Mapa Podboju</a></div><div class="rows"></div></div>';
   const rows=box.querySelector('.rows');
   res.forEach((r,i)=>{const q=(pytania||[])[i];const d=document.createElement('div');d.className='r';
@@ -85,7 +89,7 @@ window.Podboj=(function(){
    d.querySelector('b').textContent=!q?TYPY[r.t][1]:q.t==='k'?q.p.full:q.t==='t'?q.p.kod+': '+q.p.nazwa:q.t==='s'||q.t==='w'?(q.a.label||q.a.n)+' i '+(q.b.label||q.b.n):q.t==='p'?q.c.n+': '+q.pw.label:q.t==='r'?q.c.n+': '+q.c.rzeka:q.c.n;
    d.querySelector('small').textContent=TYPY[r.t][1];const ok=PodbojPytania.dobra(r),pt=d.querySelector('.pt');pt.textContent=ok?'✓':'✗';pt.className='pt '+(ok?'ok':'no');rows.appendChild(d);});
   box.classList.remove('hidden');
-  if(T[2]>0)setTimeout(ZP.fanfary,500);
+  if(T[2]>0||w.skarb)setTimeout(ZP.fanfary,500);
  }
  return {start,rozpocznij,postep,koniec,get powiat(){return powiat;}};
 })();

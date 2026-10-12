@@ -121,7 +121,7 @@ details[open]>summary .strz{transform:rotate(90deg)}
 <div class="wrap">
   <header class="gora"><a href="./" class="klocek jasny" style="min-height:40px;padding:0 12px" aria-label="Wróć">‹</a><h1>Album kart<small id="stan">wczytywanie…</small></h1></header>
   <main class="tresc" id="main">
-    <section class="pole postep"><div class="gora2"><span>Zebrane karty</span><b id="ile">0 / 2479</b></div><div class="pasek"><i id="pasek" style="width:0"></i></div><div class="rzadkosci" id="rzadkosci"></div><div class="zetony"><span>🪙 Monety do paczki</span><b id="zet">0 / 25</b></div><div class="pasek zet"><i id="zetPasek" style="width:0"></i></div><a class="zasady" href="profil.html#kartyInfo">Jak zdobywać karty i jak liczy się OVR ›</a></section>
+    <section class="pole postep"><div class="gora2"><span>Zebrane karty</span><b id="ile">0 / 2479</b></div><div class="pasek"><i id="pasek" style="width:0"></i></div><div class="rzadkosci" id="rzadkosci"></div><div class="zetony"><span>🎟️ Żetony do paczki</span><b id="zet">0 / 25</b></div><div class="pasek zet"><i id="zetPasek" style="width:0"></i></div><a class="zasady" href="profil.html#kartyInfo">Jak zdobywać karty i jak liczy się OVR ›</a></section>
     <div data-pb="Oto Twoja kolekcja! Zbieraj wszystkie gminy."></div>
     <section class="pole ap" aria-label="Porządek w albumie">
       <input id="szukajK" type="search" placeholder="Szukaj w kolekcji: gmina, powiat…" autocomplete="off" enterkeyhint="search">
@@ -131,9 +131,9 @@ details[open]>summary .strz{transform:rotate(90deg)}
     <div id="sekcje" style="display:flex;flex-direction:column;gap:12px"></div>
   </main>
 </div>
-<script src="wspolne.js?v=25"></script>
+<script src="wspolne.js?v=26"></script>
 <script src="polandball.js?v=4"></script>
-<script src="karty.js?v=25"></script>
+<script src="karty.js?v=26"></script>
 <script>
 const {$}=ZP;
 let D=null,filtr="",WOJ_SVG={},szukaj="",limitWsz=60;
@@ -200,13 +200,13 @@ function rysuj(){
 const KULA_P='<svg viewBox="0 0 40 40"><defs><clipPath id="pkl"><circle cx="20" cy="20" r="17"/></clipPath></defs><g clip-path="url(#pkl)"><rect width="40" height="20" fill="#F4F4F2"/><rect y="20" width="40" height="20" fill="#DC1E35"/></g><circle cx="20" cy="20" r="17" fill="none" stroke="#3A2A14" stroke-width="2.4"/><ellipse cx="14" cy="17" rx="3.4" ry="4.2" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/><ellipse cx="26" cy="17" rx="3.4" ry="4.2" fill="#fff" stroke="#3A2A14" stroke-width="1.6"/></svg>';
 function rysujPaczki(){
   const pct=n=>new Intl.NumberFormat("pl-PL",{maximumFractionDigits:1}).format(n*100)+"%";
-  $("szanse").innerHTML='<p class="szanse-note">Najpierw losujemy rodzaj paczki, potem rzadkość każdej karty w środku. Lepsza paczka ma więcej kart. Od srebrnej wzwyż w paczce jest co najmniej jedna karta tej rzadkości. Karta, którą już masz, daje '+Karty.DUPLIKAT+' monety.</p><table class="szanse-table"><caption>Szansa na rodzaj paczki</caption><thead><tr><th>Paczka</th><th>Kart</th><th>Szansa</th></tr></thead><tbody>'+Karty.PACZKI.map(([k,p])=>'<tr><td><i class="rarity-dot dot-'+k+'"></i>'+Karty.NAZWA_PACZKI[k]+'</td><td>'+Karty.KART_W_PACZCE[k]+'</td><td>'+pct(p)+'</td></tr>').join("")+'</tbody></table><div class="drop-tabs" role="group" aria-label="Szanse kart w paczce">'+Karty.PACZKI.map(([k])=>'<button type="button" data-drop="'+k+'" aria-pressed="'+(k==='zwykla')+'">'+Karty.NAZWA_PACZKI[k]+'</button>').join("")+'</div><table class="szanse-table"><caption id="drop-caption"></caption><thead><tr><th>Karta</th><th>Szansa</th></tr></thead><tbody id="drop-rows"></tbody></table>';
+  $("szanse").innerHTML='<p class="szanse-note">Najpierw losujemy rodzaj paczki, potem rzadkość każdej karty w środku. Lepsza paczka ma więcej kart. Od srebrnej wzwyż w paczce jest co najmniej jedna karta tej rzadkości. Karta, którą już masz, daje '+Karty.DUPLIKAT+' żetony.</p><table class="szanse-table"><caption>Szansa na rodzaj paczki</caption><thead><tr><th>Paczka</th><th>Kart</th><th>Szansa</th></tr></thead><tbody>'+Karty.PACZKI.map(([k,p])=>'<tr><td><i class="rarity-dot dot-'+k+'"></i>'+Karty.NAZWA_PACZKI[k]+'</td><td>'+Karty.KART_W_PACZCE[k]+'</td><td>'+pct(p)+'</td></tr>').join("")+'</tbody></table><div class="drop-tabs" role="group" aria-label="Szanse kart w paczce">'+Karty.PACZKI.map(([k])=>'<button type="button" data-drop="'+k+'" aria-pressed="'+(k==='zwykla')+'">'+Karty.NAZWA_PACZKI[k]+'</button>').join("")+'</div><table class="szanse-table"><caption id="drop-caption"></caption><thead><tr><th>Karta</th><th>Szansa</th></tr></thead><tbody id="drop-rows"></tbody></table>';
   const drop=k=>{document.querySelectorAll('[data-drop]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.drop===k)));$("drop-caption").textContent='Każda karta w paczce: '+Karty.NAZWA_PACZKI[k].toLowerCase();$("drop-rows").innerHTML=Karty.DROP[k].map(([r,p])=>'<tr><td><i class="rarity-dot dot-'+r+'"></i>'+Karty.RZ[r]+'</td><td>'+pct(p)+'</td></tr>').join('');};
   document.querySelectorAll('[data-drop]').forEach(b=>b.onclick=()=>drop(b.dataset.drop));drop('zwykla');
   const n=Karty.liczbaPaczek(),z=Karty.zetony()%Karty.PACZKA;
   const cz=Karty.czekajace(),kol=cz.length?cz[0].kolor:"";
   $("paczki").innerHTML='<div class="paczka'+(n?" gotowa":" pusta")+(kol?" pak-"+kol:"")+'">'+KULA_P+(n?'<span class="ile">'+n+'</span>':'')+'</div><div class="opis"><b>'+(n?(n===1?"1 paczka do otwarcia":n+" paczki do otwarcia"):"Brak paczek")+'</b><small>'
-    +(n?(kol?Karty.NAZWA_PACZKI[kol]+" paczka czeka: "+Karty.KART_W_PACZCE[kol]+" kart"+(Karty.KART_W_PACZCE[kol]<5?"y":"")+".":"W paczce od 2 do 7 kart, zależnie od jej rodzaju."):"Jeszcze "+(Karty.PACZKA-z)+" monet do następnej paczki.")+'</small>'
+    +(n?(kol?Karty.NAZWA_PACZKI[kol]+" paczka czeka: "+Karty.KART_W_PACZCE[kol]+" kart"+(Karty.KART_W_PACZCE[kol]<5?"y":"")+".":"W paczce od 2 do 7 kart, zależnie od jej rodzaju."):"Jeszcze "+(Karty.PACZKA-z)+" żetonów do następnej paczki.")+'</small>'
     +(n?'<button class="klocek" id="otworz">Otwórz paczkę</button>':'')+'</div>';
   if(n)$("otworz").onclick=otworzPaczke;
 }

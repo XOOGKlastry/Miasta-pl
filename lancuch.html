@@ -60,7 +60,7 @@
         <p>Zaczynasz od losowej gminy. Wpisz gminę, której nazwa zaczyna się na ostatnią literę poprzedniej, np. Kalisz → Zabrze → Elbląg.</p>
         <p>Masz 90 sekund, każda dobra gmina dodaje 5 s. Gminy się nie powtarzają. Polskie znaki możesz pomijać, wystarczy też pierwszy człon nazwy (np. „Maków”), a gra sama przyjmie poprawną gminę bez klikania OK.</p><p>🎤 Możesz też mówić: stuknij mikrofon, a gra będzie słuchać do końca łańcucha.</p>
         <p>Gdy nazwa kończy się na literę, od której nie zaczyna się żadna gmina (np. „y” w Tychy), liczy się litera przedostatnia.</p>
-        <p>Małe gminy (poniżej 5 tys. mieszkańców) dają +1 punkt. Co dwa ogniwa to moneta na paczkę z kartami.</p>
+        <p>Małe gminy (poniżej 5 tys. mieszkańców) dają +1 punkt. Co dwa ogniwa to żeton na paczkę z kartami.</p>
         <p id="stanDnia" style="font-weight:900;color:var(--braz)"></p>
       </section>
       <button class="klocek" id="graj" style="width:100%;justify-content:center;margin-top:12px">Start</button>
@@ -77,8 +77,8 @@
     <section id="koniec" hidden></section>
   </main>
 </div>
-<script src="wspolne.js?v=25"></script>
-<script src="saga.js?v=4"></script><script src="poziom.js?v=1"></script>
+<script src="wspolne.js?v=26"></script>
+<script src="saga.js?v=5"></script><script src="poziom.js?v=1"></script>
 <script>
 const {$,norm}=ZP;
 // poziom planszy (lancuch.html?poziom=N): krótszy czas, start w gminie tej krainy, gwiazdki za ogniwa
@@ -214,7 +214,7 @@ function pokazKoniec(w,swiezy){
   const rek=+(localStorage.getItem("lancuch-rekord")||0);
   const tekst="Łańcuch gmin w PolskoZnawcy: "+w.ogniwa+" ogniw, "+w.pkt+" pkt 🔗\n"+w.lancuch.join(" → ");
   $("koniec").innerHTML='<div class="pole lc-koniec"><h2>'+(w.rekord?"Nowy rekord!":"Łańcuch gmin")+'</h2><div class="wynik">'+w.ogniwa+' 🔗</div>'
-    +'<b>'+w.pkt+' pkt · rekord '+rek+' pkt'+(w.ogniwa>=2?' · 🪙 +'+Math.floor(w.ogniwa/2):'')+'</b>'
+    +'<b>'+w.pkt+' pkt · rekord '+rek+' pkt'+(w.ogniwa>=2?' · 🎟️ +'+Math.floor(w.ogniwa/2):'')+'</b>'
     +'<div class="lc-lista" style="justify-content:center">'+w.lancuch.map((n,i)=>(i?'<em>→</em>':'')+'<span'+(i?'':' class="start"')+'>'+n+'</span>').join("")+'</div>'
     +'<button class="klocek" id="trening">Jeszcze raz</button><button class="klocek jasny" id="udostepnij">Udostępnij wynik</button><a class="klocek jasny" href="gry.html">Inne gry</a></div>';
   $("koniec").hidden=false;
