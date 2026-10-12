@@ -1,5 +1,5 @@
 /* Podbój Polski: mapa 380 powiatów, właściciele z bazy (conq_mapa), akcje w arkuszu powiatu.
-   Zasady i monety pilnuje serwer (conq_start, conq_wynik, conq_kup_atak, conq_mury, conq_odsiecz); tu tylko podpowiadamy, co jest możliwe.
+   Zasady i monety pilnuje serwer (conq_start, conq_wynik, conq_kup_atak, conq_tarcza, conq_odsiecz); tu tylko podpowiadamy, co jest możliwe.
    Monety są tylko w Podboju: dochód z powiatów, zadania dnia, skarb tygodnia. */
 (function(){
  const $=id=>document.getElementById(id);
@@ -17,6 +17,13 @@
  // stolice graczy (k -> owner) i wojewodowie (kod województwa -> {owner,nick})
  const stolice=()=>new Map(((TYG&&TYG.stolice)||[]).map(o=>[o.k,o.owner]));
  const wojewodowie=()=>new Map(((TYG&&TYG.wojewodowie)||[]).map(o=>[o.woj,o]));
+ // bezpieczne stolice (wszyscy sąsiedzi należą do właściciela) i tarcze (k -> do kiedy)
+ const bezpieczne=()=>new Set(((TYG&&TYG.stolice)||[]).filter(o=>o.bezpieczna).map(o=>o.k));
+ const tarcze=()=>new Map(((TYG&&TYG.tarcze)||[]).filter(o=>new Date(o.do)>Date.now()).map(o=>[o.k,o.do]));
+ const godzina=t=>new Date(t).toLocaleString('pl-PL',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+ const KOSZT_TARCZY=()=>JA&&JA.koszt_tarczy||30;
+ // sąsiedzi stolicy, którzy jeszcze nie są Twoi
+ const brakDookola=k=>{const p=PO.get(k);return p?(p.nb||[]).filter(n=>n!==k&&PO.has(n)&&!(STAN.get(n)&&JA&&STAN.get(n).owner===JA.me)):[];};
  const WOJ_NAZWA=k=>ZP.WOJ_KOD[k]||k;
  let WOJ_SRODEK={};
  // ile dobrych odpowiedzi trzeba na cudzy powiat: obrona + 1, stolica jeszcze +1 (najwyżej 8)
@@ -31,7 +38,8 @@
    umocnij:moj&&s.score<8,
    przebij:!wolny&&!moj&&ile>0&&graniczy(p)&&s.score<8,
    pojedynek:!wolny&&!moj&&ile>0&&graniczy(p)&&s.score>=8,
-   mury:moj&&s.score<7};
+   oslona:!wolny&&!moj&&tarcze().has(p.k),
+   tarcza:moj&&!s.pojedynek&&!tarcze().has(p.k)};
  }
 
  /* ---------- mapa ---------- */
@@ -71,9 +79,9 @@
    else if(JA&&m.zdobadz&&m.ile>0)f='var(--pd-wolny-cel)';
    el.style.fill=f;
    el.classList.toggle('tw',!!(s&&s.score>=8));
-   el.classList.toggle('cel',!!(JA&&m.ile>0&&(m.przebij||m.pojedynek||(m.zdobadz))));
+   el.classList.toggle('cel',!!(JA&&m.ile>0&&!m.oslona&&(m.przebij||m.pojedynek||(m.zdobadz))));
    el.classList.toggle('wyb',p.k===wybrany);
-   const zn=(TYG&&TYG.skarb===p.k?'💰':'')+(s&&stol.get(p.k)===s.owner?'🏛':'')+(s&&s.score>=8?'★':'')+(s&&s.pojedynek?'⚔':'')+(obl.has(p.k)?'🔥':'');
+   const zn=(TYG&&TYG.skarb===p.k?'💰':'')+(s&&stol.get(p.k)===s.owner?'🏛':'')+(s&&s.score>=8?'★':'')+(s&&tarcze().has(p.k)?'🛡':'')+(s&&s.pojedynek?'⚔':'')+(obl.has(p.k)?'🔥':'');
    const roz=Math.min(9,0.45*Math.min(PROJ.x(p.bb[2])-PROJ.x(p.bb[0]),PROJ.y(p.bb[1])-PROJ.y(p.bb[3])));
    if(zn)ozn.push('<text class="ozn" font-size="'+roz.toFixed(1)+'" x="'+PROJ.x(p.lon).toFixed(1)+'" y="'+PROJ.y(p.lat).toFixed(1)+'">'+zn+'</text>');
   }
@@ -136,7 +144,8 @@
   if(!Online.dolaczony())html.push('<div class="pole pd-alert zloto"><div><b>Dołącz do gry</b><small>Wpisz pseudonim w rankingu, a zaczniesz zdobywać powiaty.</small></div><a class="klocek" href="ranking.html">Dołącz</a></div>');
   else if(JA&&!moje().length)html.push('<div class="pole pd-alert zloto"><div><b>Wybierz pierwszy powiat</b><small>Stuknij dowolny wolny powiat na mapie. Potem możesz atakować tylko sąsiednie.</small></div></div>');
   if(JA){
-   if(JA.powiaty>=10&&!JA.stolica)html.push('<div class="pole pd-alert zloto"><div><b>🏛️ Masz '+JA.powiaty+' powiatów: wybierz stolicę!</b><small>Stuknij swój powiat i „Ustaw stolicę”. Stolica daje podwójny dochód i +1 do obrony, ale jej utrata to łup 20% Twoich monet dla zdobywcy.</small></div></div>');
+   if(JA.powiaty>=10&&!JA.stolica)html.push('<div class="pole pd-alert zloto"><div><b>🏛️ Masz '+JA.powiaty+' powiatów: wybierz stolicę!</b><small>Stuknij swój powiat i „Ustaw stolicę”. Stolica daje podwójny dochód i +1 do obrony (gdy wszystko dookoła jest Twoje: potrójny dochód i +1 atak dziennie), ale jej utrata to łup 20% Twoich monet dla zdobywcy.</small></div></div>');
+   if(JA.stolica&&JA.stolica_bezpieczna)html.push('<div class="pole pd-alert zloto"><div><b>🏛️ Bezpieczna stolica</b><small>Wszystkie powiaty dookoła stolicy są Twoje: potrójny dochód ze stolicy i +1 atak każdego dnia.</small></div></div>');
    if(JA.wojewoda&&JA.wojewoda.length)html.push('<div class="pole pd-alert zloto"><div><b>👑 Jesteś wojewodą: '+JA.wojewoda.map(WOJ_NAZWA).map(esc).join(', ')+'</b><small>Masz wszystkie powiaty tego województwa: podwójny dochód z każdego z nich. Pilnuj granic!</small></div></div>');
    (JA.obrony||[]).forEach(d=>{const p=PO.get(d.k);html.push('<div class="pole pd-alert pilne"><div><b>⚔️ '+esc(d.nick)+' atakuje twierdzę</b><small>'+esc(p?p.full:d.k)+': rywal ma '+d.wynik+' z 8. Zostało '+zostalo(d.expires)+'.</small></div><button class="klocek" data-obrona="'+esc(d.id)+'" data-k="'+esc(d.k)+'" data-cel="'+d.wynik+'" data-rywal="'+esc(d.nick)+'">Broń</button></div>');});
    (JA.moje_pojedynki||[]).forEach(d=>{const p=PO.get(d.k);html.push('<div class="pole pd-alert"><div><b>⏳ Czekasz na '+esc(d.nick)+'</b><small>'+esc(p?p.full:d.k)+': Twój wynik '+d.wynik+' z 8. Jeśli nie odpowie w '+zostalo(d.expires)+', twierdza jest Twoja.</small></div></div>');});
@@ -172,20 +181,21 @@
   const m=mozliwosci(p),s=m.s,akcje=[];
   let opis='';
   if(m.wolny)opis='<div class="pd-wlasciciel"><div><b>Wolny powiat</b><small>Zdobędziesz go od 5 dobrych odpowiedzi na 8.</small></div></div>';
-  else opis='<div class="pd-wlasciciel">'+awatar(s.owner,m.moj?'Ty':s.nick,m.moj)+'<div><b>'+(m.moj?'Twój powiat':esc(s.nick))+(s.score>=8?' · twierdza ★':'')+(stolice().get(k)===s.owner?' · 🏛️ stolica':'')+'</b><small>'+(wojewodowie().get(k.slice(0,2))&&wojewodowie().get(k.slice(0,2)).owner===s.owner?'👑 wojewoda '+esc(WOJ_NAZWA(k.slice(0,2)))+' · ':'')+'Obrona '+s.score+' z 8'+(s.pojedynek?' · trwa pojedynek':'')+(oblezone().has(k)?' · 🔥 oblężony':'')+'</small>'+pasek(s.score,m.moj)+'</div></div>';
+  else opis='<div class="pd-wlasciciel">'+awatar(s.owner,m.moj?'Ty':s.nick,m.moj)+'<div><b>'+(m.moj?'Twój powiat':esc(s.nick))+(s.score>=8?' · twierdza ★':'')+(stolice().get(k)===s.owner?' · 🏛️ stolica':'')+'</b><small>'+(wojewodowie().get(k.slice(0,2))&&wojewodowie().get(k.slice(0,2)).owner===s.owner?'👑 wojewoda '+esc(WOJ_NAZWA(k.slice(0,2)))+' · ':'')+'Obrona '+s.score+' z 8'+(s.pojedynek?' · trwa pojedynek':'')+(oblezone().has(k)?' · 🔥 oblężony':'')+(tarcze().has(k)?' · 🛡️ tarcza do '+godzina(tarcze().get(k)):'')+'</small>'+pasek(s.score,m.moj)+'</div></div>';
   const atakiZostalo=JA?JA.limit-JA.ataki:0;
   if(!Online.dolaczony())akcje.push('<a class="klocek" href="ranking.html">Dołącz, żeby walczyć</a>');
   else if(!JA)akcje.push('<p class="uwaga">Ładowanie Twojego stanu…</p>');
   else{
-   const blokada=s.pojedynek?'O ten powiat trwa pojedynek.':atakiZostalo<=0?'Wykorzystałeś dzisiejsze ataki. Kup kolejny za '+JA.koszt_ataku+' monet albo wróć jutro.':'';
+   const blokada=s.pojedynek?'O ten powiat trwa pojedynek.':m.oslona?'Ten powiat chroni tarcza do '+godzina(tarcze().get(k))+'. Zaatakuj inny albo wróć później.':atakiZostalo<=0?'Wykorzystałeś dzisiejsze ataki. Kup kolejny za '+JA.koszt_ataku+' monet albo wróć jutro.':'';
    if(m.zdobadz)akcje.push(przycisk('atak','🏴 Zdobądź','potrzeba 5 z 8',blokada));
    if(m.umocnij)akcje.push(przycisk('atak','🛡️ Umocnij','masz '+s.score+' z 8, zagraj lepiej',blokada));
    if(m.przebij)akcje.push(przycisk('atak','⚔️ Przebij','potrzeba '+celAtaku(k,s)+' z 8'+(stolice().get(k)===s.owner?' · stolica: łup 20% monet':''),blokada));
    if(m.pojedynek)akcje.push(przycisk('pojedynek','⚔️ Pojedynek 24 h','obrońca ma dobę na odpowiedź',blokada));
-   if(m.mury)akcje.push('<button class="klocek jasny dwulinia" id="mury"'+(monety()<15?' disabled':'')+'>🧱 Mury: obrona '+s.score+' → '+(s.score+1)+'<small>15 🪙 · masz '+monety()+'</small></button>');
+   if(m.tarcza)akcje.push('<button class="klocek jasny dwulinia" id="tarcza"'+(monety()<KOSZT_TARCZY()||(JA.tarcze||0)>=2?' disabled':'')+'>🛡️ Tarcza 24 h<small>'+((JA.tarcze||0)>=2?'masz już 2 tarcze':KOSZT_TARCZY()+' 🪙 · masz '+monety()+' · nikt nie zaatakuje przez dobę')+'</small></button>');
    if(atakiZostalo<=0&&(m.zdobadz||m.umocnij||m.przebij||m.pojedynek))akcje.push('<button class="klocek jasny dwulinia" id="kupAtak2"'+(monety()<JA.koszt_ataku?' disabled':'')+'>➕ Dodatkowy atak<small>'+JA.koszt_ataku+' 🪙 · masz '+monety()+'</small></button>');
    if(m.moj&&JA.powiaty>=10&&JA.stolica!==k)akcje.push('<button class="klocek jasny dwulinia" id="stolica"'+(JA.stolica&&monety()<JA.koszt_stolicy?' disabled':'')+'>🏛️ '+(JA.stolica?'Przenieś tu stolicę':'Ustaw stolicę')+'<small>'+(JA.stolica?JA.koszt_stolicy+' 🪙 · masz '+monety():'za darmo · podwójny dochód i +1 obrony')+'</small></button>');
-   if(m.moj&&JA.stolica===k)akcje.unshift('<p class="uwaga">🏛️ To Twoja stolica: podwójny dochód i +1 do obrony. Jeśli ją stracisz, zdobywca zabierze 20% Twoich monet.</p>');
+   if(m.moj&&JA.stolica===k){const br=brakDookola(k);
+    akcje.unshift('<p class="uwaga">🏛️ To Twoja stolica: +1 do obrony i '+(br.length?'podwójny dochód. Zajmij wszystkie powiaty dookoła (brakuje: '+esc(br.map(n=>PO.get(n).short).join(', '))+'), a będzie bezpieczna: potrójny dochód i +1 atak dziennie.':'<b>bezpieczna</b>: wszystko dookoła jest Twoje, więc potrójny dochód i +1 atak dziennie.')+' Jeśli ją stracisz, zdobywca zabierze 20% Twoich monet.</p>');}
    if(!m.moj&&!m.wolny&&stolice().get(k)===s.owner)akcje.unshift('<p class="uwaga">🏛️ Stolica gracza '+esc(s.nick)+': potrzeba o 1 dobrą odpowiedź więcej, a zdobycie da łup 20% jego monet.</p>');
    if(TYG&&TYG.skarb===k)akcje.unshift('<p class="uwaga">💰 Tu jest skarb tygodnia! '+(JA.skarb_miejsce?'Już go zdobyłeś.':'Zdobądź ten powiat, a dostaniesz monety i paczkę kart.')+'</p>');
    if(!m.wolny&&!m.moj&&!m.obok)akcje.push('<p class="uwaga">Ten powiat nie graniczy z Twoimi. Zdobądź najpierw sąsiedni.</p>');
@@ -197,7 +207,9 @@
    +opis+'<div class="akcje">'+akcje.join('')+'</div><p class="uwaga" id="pdBlad" hidden></p>';
   if(odswiezenie&&!ark.hidden)tresc.innerHTML=html;else otworz(html);
   tresc.querySelectorAll('[data-rodzaj]').forEach(b=>b.onclick=()=>graj(k,b.dataset.rodzaj,null,b));
-  if($('mury'))$('mury').onclick=async e=>{const b=e.currentTarget;b.disabled=true;try{const r=await Online.podboj.mury(k);ZP.komunikat('Mury stoją: obrona '+r.score+' z 8');await odswiez();}catch(er){blad(er.message);b.disabled=false;}};
+  if($('tarcza'))$('tarcza').onclick=async e=>{const b=e.currentTarget;
+   if(!confirm('Postawić tarczę na '+p.full+' za '+KOSZT_TARCZY()+' monet? Przez 24 h nikt go nie zaatakuje (oblężenia tarcza nie zatrzymuje).'))return;
+   b.disabled=true;try{const r=await Online.podboj.tarcza(k);ZP.komunikat('🛡️ Tarcza stoi do '+godzina(r.do));await odswiez();}catch(er){blad(er.message);b.disabled=false;}};
   if($('stolica'))$('stolica').onclick=async e=>{const b=e.currentTarget;
    if(JA.stolica&&!confirm('Przenieść stolicę tutaj za '+JA.koszt_stolicy+' monet?'))return;
    b.disabled=true;try{await Online.podboj.stolica(k);ZP.komunikat('🏛️ '+p.full+' to teraz Twoja stolica!');await odswiez();}catch(er){blad(er.message);b.disabled=false;}};
