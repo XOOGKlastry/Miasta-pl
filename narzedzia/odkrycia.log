@@ -1,0 +1,76 @@
+ludzie: wersje językowe 15 do 20
+  dzielę przedział 15 20
+ludzie: wersje językowe 15 do 17
+  razem 566
+ludzie: wersje językowe 17 do 20
+  błąd HTTP Error 504: Gateway Timeout próba 1
+  razem 1107
+ludzie: wersje językowe 20 do 30
+  błąd HTTP Error 502: Bad Gateway próba 1
+  razem 1876
+ludzie: wersje językowe 30 do 50
+  razem 2223
+ludzie: wersje językowe 50 do 100
+  razem 2359
+ludzie: wersje językowe 100 do 100000
+  razem 2386
+  zawody 300 / 2386
+  zawody 600 / 2386
+  zawody 900 / 2386
+  zawody 1200 / 2386
+  zawody 1500 / 2386
+  zawody 1800 / 2386
+  zawody 2100 / 2386
+  zawody 2386 / 2386
+miejsca: unesco
+  nowych 18 razem 18
+miejsca: pomnik_historii
+  nowych 86 razem 104
+miejsca: zamek
+  nowych 199 razem 303
+miejsca: palac
+  nowych 62 razem 365
+miejsca: katedra
+  nowych 55 razem 420
+miejsca: bazylika
+  nowych 16 razem 436
+miejsca: sanktuarium
+  nowych 0 razem 436
+miejsca: klasztor
+  nowych 11 razem 447
+miejsca: muzeum
+  nowych 41 razem 488
+miejsca: park_narodowy
+  nowych 1 razem 489
+miejsca: szczyt
+  nowych 24 razem 513
+miejsca: jezioro
+  nowych 19 razem 532
+miejsca: latarnia
+  nowych 20 razem 552
+miejsca: most
+  nowych 11 razem 563
+miejsca: pomnik
+  nowych 20 razem 583
+miejsca: skansen
+  nowych 12 razem 595
+miejsca: kopalnia
+  nowych 5 razem 600
+miejsca: ratusz
+  nowych 9 razem 609
+miejsca: wieza
+  nowych 4 razem 613
+miejsca: stadion
+  nowych 15 razem 628
+miejsca: oboz
+  nowych 13 razem 641
+miejsca: pole_bitwy
+  nowych 0 razem 641
+wydarzenia: bitwy i oblężenia
+  błąd HTTP Error 504: Gateway Timeout próba 1
+  błąd HTTP Error 502: Bad Gateway próba 2
+  błąd HTTP Error 504: Gateway Timeout próba 3
+BŁĄD wydarzenia nie udało się: https://query.wikidata.org/sparql
+drogi: autostrady i ekspresowe z OSM
+  odcinków 22999
+gotowe: {'ludzie': 2386, 'miejsca': 641, 'wydarzenia': 0, 'drogi': 22999}
