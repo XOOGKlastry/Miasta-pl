@@ -13,7 +13,7 @@ Kategorie:
   drogi      odcinki autostrad i dróg ekspresowych (numer, środek odcinka) z OSM
 Uruchamiane przez GitHub Actions (.github/workflows/odkrycia.yml).
 """
-import json, sys, time, urllib.parse, urllib.request
+import json, sys, time, urllib.error, urllib.parse, urllib.request
 
 UA = "PolskoZnawca/1.0 (https://github.com/XOOGKlastry/Miasta-pl; gra edukacyjna)"
 WYNIK = "narzedzia/odkrycia-surowe.json"
@@ -238,24 +238,40 @@ def drogi():
 
 # ---------- popularność w Polsce: odsłony artykułu w polskiej Wikipedii z ostatnich 12 pełnych miesięcy ----------
 def odslony(lista):
+    """Suma odsłon z 12 pełnych miesięcy; 8 zapytań naraz, bez długich pauz, błąd = brak danych."""
+    from concurrent.futures import ThreadPoolExecutor
     teraz = time.gmtime()
     do = "%04d%02d01" % (teraz.tm_year, teraz.tm_mon)
     od = "%04d%02d01" % (teraz.tm_year - 1, teraz.tm_mon)
-    n = 0
-    for o in lista:
+    bledy = [0]
+
+    def jeden(o):
         if not o.get("art"):
-            continue
+            return
         url = ("https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/pl.wikipedia/all-access/user/"
-               + urllib.parse.quote(o["art"], safe="") + "/monthly/" + od + "/" + do)
-        try:
-            j = json.loads(http(url, tries=2, timeout=30, accept="application/json"))
-            o["odsl"] = sum(x["views"] for x in j.get("items", []))
-        except Exception:
-            o["odsl"] = None
-        n += 1
-        if n % 500 == 0:
-            print("  odsłony", n, flush=True)
-        time.sleep(0.05)
+               + urllib.parse.quote(o["art"].replace(" ", "_"), safe="") + "/monthly/" + od + "/" + do)
+        for proba in range(2):
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
+                with urllib.request.urlopen(req, timeout=20) as r:
+                    j = json.loads(r.read().decode("utf-8"))
+                o["odsl"] = sum(x["views"] for x in j.get("items", []))
+                return
+            except urllib.error.HTTPError as e:
+                if e.code == 404:   # artykuł bez odsłon w tym okresie
+                    o["odsl"] = 0
+                    return
+                time.sleep(1 + proba)
+            except Exception:
+                time.sleep(1 + proba)
+        bledy[0] += 1
+
+    start = time.time()
+    with ThreadPoolExecutor(max_workers=8) as ex:
+        for n, _ in enumerate(ex.map(jeden, lista), 1):
+            if n % 500 == 0:
+                print("  odsłony", n, "/", len(lista), "błędów", bledy[0], round(time.time() - start), "s", flush=True)
+    print("  odsłony gotowe, błędów", bledy[0], flush=True)
 
 
 def main():
