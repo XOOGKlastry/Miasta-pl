@@ -112,7 +112,7 @@ window.Online=(()=>{
   wynik:(id,dobre)=>rpcGracza('conq_wynik',{p_id:id,p_score:Math.round(dobre)}),
   tydzien:()=>request('/rest/v1/rpc/conq_tydzien',{}),
   kupAtak:()=>rpcGracza('conq_kup_atak',{}),
-  mury:k=>rpcGracza('conq_mury',{p_k:k}),
+  tarcza:k=>rpcGracza('conq_tarcza',{p_k:k}),
   odsiecz:k=>rpcGracza('conq_odsiecz',{p_k:k}),
   stolica:k=>rpcGracza('conq_stolica',{p_k:k}),
   ranking:()=>request('/rest/v1/rpc/conq_ranking',{})
