@@ -238,7 +238,7 @@ def drogi():
 
 # ---------- popularność w Polsce: odsłony artykułu w polskiej Wikipedii z ostatnich 12 pełnych miesięcy ----------
 def odslony(lista):
-    """Suma odsłon z 12 pełnych miesięcy; 8 zapytań naraz, bez długich pauz, błąd = brak danych."""
+    """Suma odsłon z 12 pełnych miesięcy; dwa wątki, po odmowie (429) dłuższa przerwa, błąd = brak danych."""
     from concurrent.futures import ThreadPoolExecutor
     teraz = time.gmtime()
     do = "%04d%02d01" % (teraz.tm_year, teraz.tm_mon)
@@ -250,7 +250,8 @@ def odslony(lista):
             return
         url = ("https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/pl.wikipedia/all-access/user/"
                + urllib.parse.quote(o["art"].replace(" ", "_"), safe="") + "/monthly/" + od + "/" + do)
-        for proba in range(2):
+        for proba in range(5):
+            time.sleep(0.4)   # najwyżej ok. 5 zapytań na sekundę przy dwóch wątkach
             try:
                 req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "application/json"})
                 with urllib.request.urlopen(req, timeout=20) as r:
@@ -261,13 +262,13 @@ def odslony(lista):
                 if e.code == 404:   # artykuł bez odsłon w tym okresie
                     o["odsl"] = 0
                     return
-                time.sleep(1 + proba)
+                time.sleep(5 * (proba + 1) if e.code == 429 else 1)
             except Exception:
                 time.sleep(1 + proba)
         bledy[0] += 1
 
     start = time.time()
-    with ThreadPoolExecutor(max_workers=8) as ex:
+    with ThreadPoolExecutor(max_workers=2) as ex:
         for n, _ in enumerate(ex.map(jeden, lista), 1):
             if n % 500 == 0:
                 print("  odsłony", n, "/", len(lista), "błędów", bledy[0], round(time.time() - start), "s", flush=True)
@@ -276,15 +277,24 @@ def odslony(lista):
 
 def main():
     dane = {"zbudowano": time.strftime("%Y-%m-%d"), "zrodla": {"wikidane": "https://www.wikidata.org (CC0)", "osm": "© OpenStreetMap (ODbL)"}}
+    try:   # poprzedni wynik: kategoria, której nie uda się pobrać, zostaje ze starego pliku
+        with open(WYNIK, encoding="utf-8") as fp:
+            stare = json.load(fp)
+    except Exception:
+        stare = {}
     for nazwa, f in [("ludzie", ludzie), ("miejsca", miejsca), ("wydarzenia", wydarzenia), ("drogi", drogi)]:
         try:
             dane[nazwa] = f()
+            if not dane[nazwa] and stare.get(nazwa):
+                print("  pusto, zostają stare dane:", nazwa, len(stare[nazwa]), flush=True)
+                dane[nazwa] = stare[nazwa]
+                continue
             if nazwa != "drogi":
                 print("odsłony:", nazwa, flush=True)
                 odslony(dane[nazwa])
         except Exception as e:
             print("BŁĄD", nazwa, e, flush=True)
-            dane[nazwa] = []
+            dane[nazwa] = stare.get(nazwa, [])
         # zapis po każdej kategorii, żeby przerwanie nie zabierało wszystkiego
         with open(WYNIK, "w", encoding="utf-8") as fp:
             json.dump(dane, fp, ensure_ascii=False, separators=(",", ":"))
