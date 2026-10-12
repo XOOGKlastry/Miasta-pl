@@ -114,6 +114,7 @@ window.Online=(()=>{
   kupAtak:()=>rpcGracza('conq_kup_atak',{}),
   mury:k=>rpcGracza('conq_mury',{p_k:k}),
   odsiecz:k=>rpcGracza('conq_odsiecz',{p_k:k}),
+  stolica:k=>rpcGracza('conq_stolica',{p_k:k}),
   ranking:()=>request('/rest/v1/rpc/conq_ranking',{})
  };
  async function zablokuj(inny,zglos){return rpcGracza('block_player',{p_other:inny,p_report:!!zglos});}
