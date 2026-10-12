@@ -80,6 +80,7 @@ window.Podboj=(function(){
   box.innerHTML='<div class="saga-wynik podboj-ekran"><div class="pd-licznik"><b>'+n+'</b><span>/ 8</span></div>'
    +'<h2>'+T[0]+'</h2><div class="saga-odbl'+(T[2]<0?' nie':'')+'">'+T[1]+'</div>'
    +(w.skarb?'<div class="saga-odbl pd-skarb-wyn">💰 <b>Skarb tygodnia!</b> '+w.skarb.miejsce+'. miejsce: +'+w.skarb.monety+' monet i '+(w.skarb.paczka==='legenda'?'legendarna':'brązowa')+' paczka kart.</div>':'')
+   +(w.lup>0?'<div class="saga-odbl pd-skarb-wyn">🏛️ <b>Zdobyłeś stolicę rywala!</b> Łup: +'+w.lup+' monet.</div>':'')
    +(w.zadania_monety>0?'<div class="saga-odbl">📜 Zadania dnia: +'+w.zadania_monety+' monet</div>':'')
    +(w.monety!=null?'<p class="pd-skarbiec-wyn">🪙 W skarbcu Podboju: <b>'+w.monety+'</b> monet</p>':'')
    +'<div class="btnrow"><a class="big" href="'+mapaUrl()+'">Mapa Podboju</a></div><div class="rows"></div></div>';
