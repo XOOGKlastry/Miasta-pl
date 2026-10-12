@@ -4,148 +4,235 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Profil · PolskoZnawca</title>
-<meta name="theme-color" content="#0A181B" />
+<meta name="theme-color" content="#FFF6E0" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="wspolne.css?v=23" />
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Rubik:wght@500;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="plansza.css?v=4" />
+<link rel="stylesheet" href="plansza-formularze.css?v=1" />
 <style>
-.przewijana{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:14px;padding-bottom:10px}
-.karta-gracza{display:flex;align-items:center;gap:14px;background:var(--ink-2);border:3px solid var(--line-2);border-radius:20px;padding:14px;box-shadow:var(--cien)}
-.awatar{width:72px;height:72px;border-radius:50%;background:var(--gold);display:grid;place-items:center;font-size:40px;flex:none;border:3px solid var(--ink);box-shadow:0 0 0 2px var(--gold)}
-.karta-gracza input{width:100%;font-family:"Fraunces",serif;font-size:22px;font-weight:900;background:transparent;border:none;border-bottom:1px dashed var(--line-2);border-radius:0;padding:4px 0}
-.karta-gracza small{color:var(--dim);font-size:12.5px}
-.poz{display:flex;align-items:center;gap:8px;margin-top:6px}
-.poz b{color:var(--teal);font-size:13px;white-space:nowrap}
-.poz i{flex:1;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
-.poz i span{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--gold));border-radius:4px}
-.sekcja h3{font-size:12px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase;margin:0 0 8px}
-.awatary{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.awatary button{aspect-ratio:1;border-radius:14px;border:1px solid var(--line-2);background:var(--ink-2);font-size:24px}
-.awatary button.akt{border-color:var(--gold);background:#24413F}
-.kafle{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.kafle div{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px;font-size:11.5px;color:var(--dim)}
-.kafle b{display:block;font-family:"Fraunces",serif;font-size:22px;color:var(--paper)}
-.metody{display:flex;flex-direction:column;gap:6px}
-.metoda{display:flex;align-items:center;gap:12px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
-.metoda .ik{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:18px;font-weight:900;flex:none;background:var(--ink-3)}
-.metoda div{flex:1;min-width:0}.metoda b{display:block;font-size:14.5px}.metoda small{color:var(--dim);font-size:12px}
-.metoda .zn{font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--ink-3);color:var(--dim);white-space:nowrap}
-.metoda.akt{border-color:var(--ok)}.metoda.akt .zn{background:var(--ok);color:#06231A}
-.linki{display:flex;flex-direction:column;gap:6px}
-.linki a,.linki button{display:flex;justify-content:space-between;align-items:center;min-height:48px;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--ink-2);text-decoration:none;color:inherit;font-size:14.5px;text-align:left}
-.linki .grozne{color:var(--red)}
-.ki{display:flex;flex-direction:column;gap:8px}
-.ki-zet{border:var(--ramka-k,1px solid var(--line));border-radius:14px;padding:10px 12px;background:var(--ink-2)}
-.ki-zet span{font-size:12px;font-weight:700;color:var(--dim)}.ki-zet b{float:right;font-size:16px}
-.ki-pasek{clear:both;height:10px;border-radius:6px;background:rgba(0,0,0,.12);overflow:hidden;margin:6px 0}
-.ki-pasek i{display:block;height:100%;width:0;background:#4FB04A;transition:width .4s}
-.ki-album{font-weight:800;font-size:13px}
-.ki details{border:1px solid var(--line);border-radius:14px;background:var(--ink-2);padding:0 12px}
-.ki summary{cursor:pointer;font-weight:800;padding:10px 0}
-.ki p,.ki li{font-size:13.5px;line-height:1.45;margin:0 0 8px}
-.ki ul{margin:0 0 8px;padding-left:18px}
-.ki-wzor{font-weight:900;text-align:center;padding:6px;border-radius:10px;background:rgba(245,184,46,.25)}
+/* karta gracza */
+.gracz{display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px;align-items:center;padding:14px}
+.gracz .awatar{width:84px;height:84px;border-radius:50%;background:var(--zolt);border:4px solid var(--braz);box-shadow:0 4px 0 var(--braz);display:grid;place-items:center;font-size:44px;position:relative;padding:0}
+.gracz .awatar::after{content:"✎";position:absolute;right:-4px;bottom:-4px;width:26px;height:26px;border-radius:50%;background:var(--krem);border:3px solid var(--braz);font:900 13px/20px Rubik,sans-serif;text-align:center}
+.tresc .gracz label.nick{display:flex;flex-direction:row;align-items:center;gap:6px;border-bottom:3px dashed rgba(58,42,20,.35)}
+.tresc .gracz .nick input{border:none!important;background:transparent!important;padding:2px 0!important;min-height:38px!important;font:400 20px Bungee,sans-serif!important;min-width:0}
+.gracz .nick input::placeholder{color:rgba(58,42,20,.4)}
+.gracz .nick span{font-size:16px;opacity:.55}
+.gracz .od{display:block;font-size:12px;font-weight:700;color:var(--braz-2);margin:6px 0 8px}
+.poziom{display:flex;align-items:center;gap:8px}
+.poziom b{font-family:Bungee,sans-serif;font-weight:400;font-size:13px;white-space:nowrap}
+.poziom i{flex:1;height:16px;border:3px solid var(--braz);border-radius:9px;background:#fff;overflow:hidden}
+.poziom i span{display:block;height:100%;background:var(--ziel);box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)}
+.poziom small{font-size:11px;font-weight:900;color:var(--braz-2);white-space:nowrap}
+/* wybór awatara */
+.awatary{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;padding:12px}
+.awatary[hidden]{display:none}
+.awatary button{aspect-ratio:1;border:3px solid var(--braz);border-radius:12px;background:#fff;box-shadow:0 3px 0 var(--braz);font-size:24px;padding:0;display:grid;place-items:center}
+.awatary button.akt{background:var(--zolt);transform:translateY(2px);box-shadow:0 1px 0 var(--braz)}
+/* kafle wyników */
+.kafle{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kafle .pole{padding:9px 6px 8px;text-align:center;box-shadow:0 4px 0 var(--braz);border-width:3px;display:flex;flex-direction:column;justify-content:center;min-height:76px}
+.kafle .ik{font-size:18px;line-height:1}
+.kafle b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:19px;line-height:1.15;margin:3px 0 2px;overflow-wrap:anywhere}
+.kafle b span{font:inherit;color:inherit}
+.kafle>div>span{font-size:10.5px;font-weight:900;color:var(--braz-2);line-height:1.15}
+/* wiersze (podbój, konto, linki) */
+.lista{padding:4px 12px}
+.wiersz{display:flex;align-items:center;gap:12px;min-height:58px;padding:8px 0;border-bottom:2px dashed rgba(58,42,20,.25);width:100%;background:none;border-left:0;border-right:0;border-top:0;text-align:left;font:inherit;color:inherit}
+.wiersz:last-child{border-bottom:none}
+.wiersz .ik{width:40px;height:40px;flex:none;border:3px solid var(--braz);border-radius:11px;display:grid;place-items:center;font-size:19px;font-weight:900;background:#fff}
+.wiersz div{flex:1;min-width:0}
+.wiersz div b{display:block;font-size:15px;font-weight:900}
+.wiersz div small{display:block;font-size:12px;font-weight:700;color:var(--braz-2);line-height:1.3}
+.wiersz .str{font:900 20px Rubik,sans-serif;color:var(--braz-2)}
+.wiersz .zn{font-size:11px;font-weight:900;padding:4px 9px;border:2px solid var(--braz);border-radius:999px;background:var(--krem-2);white-space:nowrap}
+.wiersz.akt .zn{background:var(--ziel);color:#fff}
+.wiersz.wybierz .zn{background:var(--zolt)}
+.wiersz.grozne,.wiersz.grozne div b{color:var(--czer)}
+.wiersz[disabled]{opacity:.7}
+/* podbój */
+.imperium[hidden]{display:none}
+.imperium{display:flex;align-items:center;gap:12px;padding:12px}
+.imperium .ik{width:48px;height:48px;flex:none;border:3px solid var(--braz);border-radius:12px;display:grid;place-items:center;font-size:26px;background:#E4F2D8}
+.imperium div{flex:1;min-width:0}
+.imperium b{display:block;font-family:Bungee,sans-serif;font-weight:400;font-size:15px}
+.imperium small{display:block;font-size:12.5px;font-weight:700;color:var(--braz-2);line-height:1.35}
+.imperium .klocek{min-height:44px;padding:0 14px;font-size:14px}
+/* karty */
+.zetony{padding:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 12px;align-items:center}
+.zetony span{font-size:12px;font-weight:900;color:var(--braz-2)}
+.zetony b{font-family:Bungee,sans-serif;font-weight:400;font-size:20px}
+.zetony .pas{grid-column:1/-1;height:16px;border:3px solid var(--braz);border-radius:9px;background:#fff;overflow:hidden}
+.zetony .pas i{display:block;height:100%;width:0;background:var(--zolt);transition:width .4s}
+.zetony .klocek{grid-column:2;grid-row:1/3;min-height:44px;padding:0 14px;font-size:14px}
+.tresc details ul{margin:6px 0;padding-left:18px}
+.tresc details li{font-size:13px;font-weight:700;color:var(--braz-2);line-height:1.4;margin:3px 0}
+.tresc details li b,.tresc details p b{color:var(--braz)}
+.wzor{text-align:center;font-weight:900!important;padding:6px;border:2px solid var(--braz);border-radius:10px;background:rgba(245,184,46,.3)}
+.tresc .info{font-size:12.5px;padding:0 12px 12px}
+.stopka{text-align:center;font-size:12px;font-weight:700;color:var(--krem);text-shadow:0 1px 0 var(--braz)}
 </style>
 </head>
 <body>
-<div class="app">
-<header>
-  <a class="back" href="./" aria-label="Wróć">‹</a>
-  <h1>Profil</h1>
-  <span class="round" id="wersja"></span>
-</header>
-<main class="przewijana">
-  <section class="karta-gracza">
-    <div class="awatar" id="awatar"></div>
-    <div style="flex:1;min-width:0">
-      <input id="nick" maxlength="14" placeholder="Twój nick" />
-      <small id="od"></small>
-      <div class="poz"><b id="poziom"></b><i><span id="pasek"></span></i></div>
-    </div>
-  </section>
-  <section class="sekcja"><h3>Awatar</h3><div class="awatary" id="awatary"></div></section>
-  <section class="sekcja"><h3>Twoje wyniki</h3><div class="kafle" id="kafle"></div></section>
-  <section class="sekcja" id="kartyInfo"><h3>Karty gmin: jak to działa</h3>
-    <div class="ki">
-      <div class="ki-zet"><span>Żetony do następnej paczki</span><b id="kiZet">0 / 25</b><div class="ki-pasek"><i id="kiPasek"></i></div><a href="karty.html" class="ki-album">Otwórz album ›</a></div>
-      <details open><summary>Jak zdobywać karty</summary>
-        <p><b>Gry gminne</b> dają postęp konkretnej gminie:</p>
-        <ul>
-          <li><b>Kształt gminy:</b> trafiona gmina to od razu karta, także po podpowiedzi.</li>
-          <li><b>Jaki to herb?, Gdzie ta gmina?, Ciepło-zimno:</b> każde trafienie danej gminy to 1 fragment; zwykła karta wymaga 3, srebrna 4, złota 5, diamentowa 6, legendarna 7 fragmentów.</li>
-        </ul>
-        <p><b>Wszystkie pozostałe gry</b> (miasta, powiaty, rzeki, kluby, tablice, plansza przygód, wyzwania, Do sześciu razy sztuka, Memory, Szybki strzał) dają <b>żetony na karty</b>. Każde trafienie daje punkty, a <b>10 punktów to 1 żeton</b>:</p>
-        <ul><li>zwykłe pytanie: 5 pkt (2 trafienia = 1 żeton),</li><li>Więcej czy mniej: 1 pkt (10 trafień = 1 żeton),</li><li>wymienianie miast: 1 żeton za 10 miast,</li><li>Karta w ciemno, gra rankingowa: 5 żetonów za wygraną, 2 za remis, 1 za przegraną, do tego szansa na paczkę.</li></ul>
-        <p><b>25 żetonów to paczka</b>. W paczce jest od 2 do 7 kart: zwykła 2, brązowa 3, srebrna 4, złota 5, diamentowa 6, legendarna 7.</p>
-        <p>Rodzaj paczki: zwykła 50%, brązowa 27%, srebrna 14%, złota 6%, diamentowa 2,5%, legendarna 0,5%. Lepsze paczki mają więcej kart i częściej rzadkie karty, a od srebrnej wzwyż co najmniej jedną kartę tej rzadkości. Karta, którą już masz, zamienia się w 2 żetony. Szczegółowe szanse znajdziesz w albumie.</p>
-        <p>Nowe karty z gier gminnych pokazują się po zakończeniu gry. <b>Paczki otwierasz sam</b> w albumie kart, kiedy chcesz.</p>
-      </details>
-      <details><summary>Podpowiedzi 50/50</summary>
-        <p>Za <b>każde 5 dobrych odpowiedzi z rzędu</b> dostajesz 1 podpowiedź 50/50: przy serii 5 pierwszą, przy 10 drugą, przy 15 trzecią i tak dalej. Podpowiedzi zbierają się na zapas (<b id="kiJok">0</b> teraz).</p>
-        <p>Podpowiedź usuwa 2 błędne odpowiedzi w pytaniu z wyborem. Przycisk „Podpowiedź 50/50” pojawia się nad odpowiedziami. <b>Użycie podpowiedzi zeruje serię.</b></p>
-        <p>W Karcie w ciemno podpowiedź odsłania wskaźnik jednej wybranej karty.</p>
-      </details>
-      <details><summary>Ciekawostki</summary>
-        <p>Niektóre karty mają na sobie mieniącego się PolandBalla. Stuknij go, a zobaczysz ciekawostki o tej gminie, czasem z linkiem.</p>
-      </details>
-      <details><summary>Rzadkość za rekordy</summary><p>Liczymy skrajne wartości w obu kierunkach. Rekord nie zawsze oznacza zaletę.</p><ul><li>Zwykła: bez rekordu.</li><li>Srebrna: 1 rekord województwa.</li><li>Złota: co najmniej 2 rekordy województwa.</li><li>Diamentowa: 1 rekord Polski.</li><li>Legendarna: co najmniej 2 rekordy Polski.</li></ul><p>Współrekordzistki otrzymują ten sam tytuł. Zdobyte odznaczenia są zachowywane według edycji. Zestaw rekordzistek województwa daje raz na edycję paczkę i odznakę.</p></details>
-      <details><summary>OVR miast i wsi</summary><p>Każdy wskaźnik jest oceniany w swojej grupie: wsie osobno, a miasta, MNP i gminy miejsko-wiejskie razem. Remisy mają identyczne punkty. Krzywa 40–94 skupia większość kart w przedziale 55–75; około 2% najlepszych ma 90+.</p><p>Miasta: PIT/os. ×2, bezrobocie ×2, migracja ×1,5, przyrost ×1, kanalizacja ×1.</p><p>Wsie: lesistość ×2, przyrost ×1,5, migracja ×1,5, kanalizacja ×1, wodociągi ×1, bezrobocie ×1. Szkoły publiczne ×1 są wstrzymane do pozyskania pełnych danych.</p><p>Średnia ważona wyznacza pozycję w grupie, którą przeliczamy na krzywą OVR. Stuknij numer na karcie, żeby zobaczyć obliczenia. „Zarobki” oznaczają PIT gminy na mieszkańca, nie przeciętną pensję.</p></details>
-      <details><summary>Ulepszanie i holografia</summary><p>Cały powiat: +1. Co 10 trafień konturu tej gminy: +1, maksymalnie +4. Łączne +5 daje kartę holograficzną. Premia zwiększa OVR i każdy dostępny wskaźnik, do limitu 99.</p><p>Na karcie widzisz dwa paski postępu i przycisk aktywowania połysku przy przechylaniu telefonu. Przy ograniczeniu ruchu efekt pozostaje statyczny.</p></details>
-      <a class="ki-album" href="karta-w-ciemno.html">Zagraj w Kartę w ciemno →</a>
-    </div>
-  </section>
-  <section class="sekcja"><h3>Konto</h3>
-    <div class="metody" id="metody"></div>
-    <p class="datastate" style="margin-top:8px">Na razie grasz jako gość: postęp jest zapisany na tym urządzeniu. Konto pozwala opublikować wynik w rankingu. Kolekcja i postęp są nadal lokalne.</p>
-  </section>
-  <section class="sekcja"><h3>Więcej</h3>
-    <div class="linki">
-      <button id="instaluj">📲 Zainstaluj aplikację na telefonie <span>›</span></button>
-      <button id="motyw">🎨 Wygląd gier: <b id="motywNazwa"></b></button>
-      <a href="statystyki.html">📊 Szczegółowe statystyki <span>›</span></a>
-      <a href="encyklopedia.html">📖 Encyklopedia <span>›</span></a>
-      <a href="admin.html">🛠️ Panel admina <span>›</span></a>
-      <button class="grozne" id="usun">🗑️ Usuń moje dane z tego urządzenia</button>
-    </div>
-  </section>
-</main>
+<div class="wrap">
+  <header class="gora"><img src="icon.svg?v=14" alt="" width="36" height="36" style="border-radius:10px;border:3px solid var(--braz)"><h1>Profil<small>Twój gracz i ustawienia</small></h1></header>
+  <main class="tresc">
+    <section class="pole gracz" aria-label="Twój gracz">
+      <button class="awatar" id="awatar" type="button" aria-label="Zmień awatar" aria-expanded="false" aria-controls="awatary"></button>
+      <div style="min-width:0">
+        <label class="nick" aria-label="Twój pseudonim"><input id="nick" maxlength="24" placeholder="Twój pseudonim" autocomplete="nickname" /><span aria-hidden="true">✎</span></label>
+        <small class="od" id="od"></small>
+        <div class="poziom"><b id="poziom"></b><i><span id="pasek"></span></i><small id="doNast"></small></div>
+      </div>
+    </section>
+    <section class="pole awatary" id="awatary" hidden aria-label="Wybierz awatar"></section>
+
+    <div class="naglowek">Twoje wyniki</div>
+    <section class="kafle" id="kafle"></section>
+
+    <section class="pole imperium" id="imperium" hidden></section>
+
+    <div class="naglowek">Karty gmin</div>
+    <section class="pole zetony"><span>Żetony do następnej paczki</span><b id="kiZet">0 / 25</b><div class="pas"><i id="kiPasek"></i></div><a href="karty.html" class="klocek">Album</a></section>
+    <details><summary>Jak zdobywać karty</summary>
+      <p><b>Gry gminne</b> dają postęp konkretnej gminie:</p>
+      <ul>
+        <li><b>Kształt gminy:</b> trafiona gmina to od razu karta, także po podpowiedzi.</li>
+        <li><b>Jaki to herb?, Gdzie ta gmina?, Ciepło-zimno:</b> każde trafienie gminy to 1 fragment; zwykła karta wymaga 3, srebrna 4, złota 5, diamentowa 6, legendarna 7 fragmentów.</li>
+      </ul>
+      <p><b>Pozostałe gry</b> dają żetony 🎟️. Każde trafienie to punkty, a <b>10 punktów to 1 żeton</b>:</p>
+      <ul><li>zwykłe pytanie: 5 pkt (2 trafienia = 1 żeton),</li><li>Więcej czy mniej: 1 pkt (10 trafień = 1 żeton),</li><li>wymienianie miast: 1 żeton za 10 miast,</li><li>Łańcuch gmin: 1 żeton co 2 ogniwa,</li><li>Karta w ciemno w rankingu: 5 żetonów za wygraną, 2 za remis, 1 za przegraną.</li></ul>
+      <p class="wzor">25 żetonów = paczka kart</p>
+      <p>W paczce jest od 2 do 7 kart: zwykła 2, brązowa 3, srebrna 4, złota 5, diamentowa 6, legendarna 7. Rodzaj paczki: zwykła 50%, brązowa 27%, srebrna 14%, złota 6%, diamentowa 2,5%, legendarna 0,5%. Od srebrnej wzwyż w paczce jest co najmniej jedna karta tej rzadkości. Karta, którą już masz, zamienia się w 2 żetony. <b>Paczki otwierasz sam</b> w albumie, kiedy chcesz.</p>
+    </details>
+    <details><summary>Rzadkość kart</summary>
+      <p>O rzadkości decyduje podium w którymkolwiek wskaźniku, liczone w obie strony (rekord nie zawsze jest zaletą):</p>
+      <ul><li><b>Legendarna:</b> 1. miejsce w Polsce.</li><li><b>Diamentowa:</b> 2. lub 3. miejsce w Polsce.</li><li><b>Złota:</b> 1. miejsce w województwie.</li><li><b>Srebrna:</b> 2. lub 3. miejsce w województwie.</li><li><b>Zwykła:</b> bez podium.</li></ul>
+      <p>Na karcie rekordy dobre są zielone, złe czerwone, a neutralne złote.</p>
+    </details>
+    <details><summary>OVR miast i wsi</summary>
+      <p>Każdy wskaźnik porównujemy w swojej grupie: wsie osobno, miasta i gminy miejsko-wiejskie razem. Średnia ważona daje pozycję w grupie, a krzywa zamienia ją na OVR od 40 do 94.</p>
+      <ul>
+        <li><b>Miasta:</b> zarobki (PIT) ×2, bezrobocie ×2, firmy ×1,5, migracja ×1,5, mieszkanie na osobę ×1, obciążenie demograficzne ×1, ludność ×1 i gęstość ×1 (<b>więcej = lepiej</b>, zielone ▲).</li>
+        <li><b>Wsie:</b> lesistość ×2, przyrost ×1,5, migracja ×1,5, bezrobocie ×1, obciążenie ×1, drogi ×1, szkoły ×1, ludność ×1 i gęstość ×1 (<b>mniej = lepiej</b>, pomarańczowe ▼).</li>
+      </ul>
+      <p>Odległość do stolicy województwa, wodociągi i kanalizacja są tylko informacją: nie wpływają na OVR ani na rzadkość. Stuknij OVR na karcie, żeby zobaczyć obliczenia.</p>
+    </details>
+    <details><summary>Ulepszanie i hologram</summary>
+      <p>Cały powiat w kolekcji: +1. Co 10 trafień konturu tej gminy: +1, najwyżej +4. Łącznie +5 daje kartę holograficzną. Premia podnosi OVR i każdy wskaźnik (limit 99).</p>
+    </details>
+    <details><summary>Podpowiedzi 50/50</summary>
+      <p>Za <b>każde 5 dobrych odpowiedzi z rzędu</b> dostajesz 1 podpowiedź 50/50 (masz teraz <b id="kiJok">0</b>). Usuwa 2 błędne odpowiedzi, a w Karcie w ciemno odsłania wskaźnik jednej karty. <b>Użycie podpowiedzi zeruje serię.</b></p>
+    </details>
+    <details><summary>Ciekawostki</summary>
+      <p>Niektóre karty mają mieniącego się PolandBalla. Stuknij go, a zobaczysz ciekawostki o tej gminie.</p>
+    </details>
+
+    <div class="naglowek">Konto</div>
+    <section class="pole">
+      <div class="lista" id="metody"></div>
+      <p class="info" id="kontoInfo"></p>
+    </section>
+
+    <div class="naglowek">Więcej</div>
+    <section class="pole lista">
+      <button class="wiersz" id="instaluj" type="button"><span class="ik">📲</span><div><b>Zainstaluj aplikację</b><small>ikona na ekranie telefonu, działa też bez internetu</small></div><span class="str">›</span></button>
+      <button class="wiersz" id="motyw" type="button"><span class="ik">🎨</span><div><b>Wygląd gier</b><small id="motywNazwa"></small></div><span class="str">›</span></button>
+      <a class="wiersz" href="statystyki.html"><span class="ik">📊</span><div><b>Szczegółowe statystyki</b><small>co już umiesz, a co warto powtórzyć</small></div><span class="str">›</span></a>
+      <a class="wiersz" href="encyklopedia.html"><span class="ik">📖</span><div><b>Encyklopedia</b><small>województwa, powiaty, gminy i ich karty</small></div><span class="str">›</span></a>
+      <a class="wiersz" href="admin.html"><span class="ik">🛠️</span><div><b>Panel admina</b><small>zdjęcia, herby, rzeki, ciekawostki</small></div><span class="str">›</span></a>
+      <button class="wiersz grozne" id="usun" type="button"><span class="ik">🗑️</span><div><b>Usuń moje dane z tego urządzenia</b><small>profil, postęp, kolekcja i rekordy</small></div></button>
+    </section>
+    <p class="stopka" id="wersja"></p>
+  </main>
+  <nav class="dol">
+  <a href="./" data-n="plansza"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20c0-4 3-4 3-8s-3-4-3-8"/><circle cx="16" cy="6" r="2.5"/><circle cx="16" cy="18" r="2.5"/><path d="M16 8.5v7"/></svg>Plansza</a>
+  <a href="codzienne.html" data-n="codzienne"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Codzienne</a>
+  <a href="ranking.html" data-n="znajomi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6M15 20c0-2.5 1.5-4.5 4-4.5"/></svg>Znajomi</a>
+  <a href="gry.html" data-n="gry"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>Gry</a>
+  <a href="profil.html" class="akt" data-n="profil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></svg>Profil</a>
+</nav>
 </div>
+<script>(function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();</script>
 <script src="instaluj.js"></script>
 <script src="online-config.js"></script><script src="online.js?v=9"></script><script src="konto.js"></script>
 <script src="wspolne.js?v=26"></script>
+<script src="naglowek.js?v=3"></script>
 <script>
 const {$,fmt}=ZP;
-const p=Konto.profil();
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}catch(e){return d;}};
-function rysuj(){
-  const pr=Konto.profil(),poz=Konto.poziom();
-  $("awatar").textContent=pr.awatar;$("nick").value=pr.nick||"";
-  $("od").textContent="Gracz od "+new Date(pr.utworzono).toLocaleDateString("pl-PL")+" · "+(pr.metoda==="gosc"?"konto gościa":pr.metoda);
-  $("poziom").textContent="Poziom "+poz.poziom;$("pasek").style.width=Math.round(100*poz.postep)+"%";
-  $("awatary").innerHTML=Konto.AWATARY.map(a=>'<button class="'+(a===pr.awatar?"akt":"")+'">'+a+'</button>').join("");
-  $("awatary").querySelectorAll("button").forEach(b=>b.onclick=()=>{Konto.ustaw({awatar:b.textContent});rysuj();});
-  const ser=czytaj("dzis-seria",{n:0}),sz=czytaj("szostka-stat",{gry:0,wygrane:0,seria:0}),ci=czytaj("cieplo-stat",{gry:0,suma:0});
-  const kafle=[["Trafień",fmt(poz.xp)],["Do poziomu "+(poz.poziom+1),fmt(poz.doNastepnego)],["Seria wyzwań",ser.n||0],
-    ["Wyzwanie: rekord",fmt(+(localStorage.getItem("dzis-best")||0))],["Sześć prób: wygrane",sz.gry?Math.round(100*sz.wygrane/sz.gry)+"%":"–"],["Ciepło-zimno: średnio",ci.gry?(ci.suma/ci.gry).toFixed(1)+" prób":"–"]];
-  $("kafle").innerHTML=kafle.map(([a,b])=>'<div>'+a+'<b>'+b+'</b></div>').join("");
-  const IK={gosc:"👤",google:"G",email:"✉️",apple:""};
-  $("metody").innerHTML=Konto.METODY.map(m=>'<div class="metoda'+(m.id===pr.metoda?" akt":"")+'" data-m="'+m.id+'"><span class="ik">'+(IK[m.id]||"f")+'</span><div><b>'+m.nazwa+'</b><small>'+m.opis+'</small></div><span class="zn">'+(m.id===pr.metoda?"aktywne":m.dostepna?"wybierz":"wkrótce")+'</span></div>').join("");
-  $("metody").querySelectorAll(".metoda").forEach(d=>d.onclick=()=>{const m=d.dataset.m;if(m===pr.metoda)return;Konto.zaloguj(m).catch(e=>ZP.komunikat(e.message,4200));});
-}
-$("nick").onchange=()=>{Konto.ustaw({nick:$("nick").value.trim().slice(0,14)});ZP.komunikat("Zapisano nick.");};
-$("usun").onclick=()=>{if(confirm("Usunąć profil, postęp i rekordy z tego urządzenia? Tego nie da się cofnąć.")){Konto.usunDane();location.href="./";}};
-$("wersja").textContent="wersja testowa";
-{const z=+localStorage.getItem("karty-zetony")||0;$("kiZet").textContent=(z%25)+" / 25";$("kiPasek").style.width=(100*(z%25)/25)+"%";}
-const odsw=()=>{const b=$("instaluj");if(Instaluj.zainstalowana()){b.innerHTML="✅ Aplikacja jest zainstalowana";b.disabled=true;}};odsw();Instaluj.naZmiane(odsw);
-$("instaluj").onclick=()=>Instaluj.zainstaluj();
-const mot=()=>localStorage.getItem("motyw")||"plansza";$("motywNazwa").textContent=mot()==="plansza"?"plansza (jasny)":"ciemny";
-$("motyw").onclick=()=>{localStorage.setItem("motyw",mot()==="plansza"?"ciemny":"plansza");location.reload();};
-rysuj();ZP.fitViewport();ZP.registerSW();
+const wRankingu=()=>window.Online&&Online.enabled()&&Online.dolaczony();
+// jeden pseudonim: ten z rankingu (gdy gracz dołączył), inaczej lokalny z profilu
+const mojNick=()=>(wRankingu()&&Online.profilLokalny().nick)||Konto.profil().nick||"";
 
-try{const e=document.getElementById("kiJok");if(e)e.textContent=localStorage.getItem("jokery")||0;}catch(e){}
+function gracz(){
+  const pr=Konto.profil(),poz=Konto.poziom();
+  $("awatar").textContent=pr.awatar;$("nick").value=mojNick();
+  $("od").textContent="Gracz od "+new Date(pr.utworzono).toLocaleDateString("pl-PL")+(wRankingu()?" · w rankingu":" · gość");
+  $("poziom").textContent="Poziom "+poz.poziom;$("pasek").style.width=Math.round(100*poz.postep)+"%";
+  $("doNast").textContent=fmt(poz.doNastepnego)+" do "+(poz.poziom+1);
+  $("awatary").innerHTML=Konto.AWATARY.map(a=>'<button type="button" class="'+(a===pr.awatar?"akt":"")+'" aria-label="Awatar '+a+'">'+a+'</button>').join("");
+  $("awatary").querySelectorAll("button").forEach(b=>b.onclick=()=>{Konto.ustaw({awatar:b.textContent});gracz();});
+}
+$("awatar").onclick=()=>{const a=$("awatary"),o=a.hidden;a.hidden=!o;$("awatar").setAttribute("aria-expanded",String(o));};
+$("nick").onchange=async()=>{
+  const n=$("nick").value.trim().slice(0,24);if(!n)return gracz();
+  Konto.ustaw({nick:n});
+  if(!wRankingu()){ZP.komunikat("Zapisano pseudonim.");return gracz();}
+  const r=Online.profilLokalny();
+  try{localStorage.setItem("ranking-profile",JSON.stringify({...r,nick:n}));await Online.odswiezProfil();ZP.komunikat("Zapisano pseudonim, także w rankingu.");}
+  catch(e){localStorage.setItem("ranking-profile",JSON.stringify(r));ZP.komunikat(e.message||"Nie udało się zmienić pseudonimu w rankingu.",4200);}
+  gracz();
+};
+
+function kafle(){
+  const poz=Konto.poziom(),ser=czytaj("dzis-seria",{n:0}),sz=czytaj("szostka-stat",{gry:0,wygrane:0}),ci=czytaj("cieplo-stat",{gry:0,suma:0});
+  const saga=czytaj("saga-v1",{gw:{}}),gw=Object.values(saga.gw||{}).map(Number).filter(x=>x>0),kd=czytaj("ciemno-ranking",{});
+  const k=[["🎯",fmt(poz.xp),"trafień"],["🔥",ser.n||0,"seria wyzwań"],["⭐",gw.reduce((a,b)=>a+b,0),"gwiazdki na planszy"],
+    ["🃏",'<span id="ileKart">…</span>',"karty w albumie"],["🔗",+localStorage.getItem("lancuch-rekord")||0,"rekord łańcucha"],["⚔️",(+kd.w||0)+"/"+(+kd.r||0)+"/"+(+kd.p||0),"karta w ciemno W/R/P"],
+    ["🏆",fmt(+(localStorage.getItem("dzis-best")||0)),"rekord wyzwania"],["🏙️",sz.gry?Math.round(100*sz.wygrane/sz.gry)+"%":"–","miasto dnia: wygrane"],["🌡️",ci.gry?(ci.suma/ci.gry).toFixed(1):"–","gmina dnia: śr. prób"]];
+  $("kafle").innerHTML=k.map(([i,b,s])=>'<div class="pole"><span class="ik" aria-hidden="true">'+i+'</span><b>'+b+'</b><span>'+s+'</span></div>').join("");
+  ZP.modulKart().then(K=>K.zaladuj().then(()=>{if(K.migracja)K.migracja();const m=K.zdobyte().mam,n=m.size!=null?m.size:m.length,e=$("ileKart");if(e)e.textContent=fmt(n||0);})).catch(()=>{const e=$("ileKart");if(e)e.textContent="–";});
+}
+
+// Podbój: krótki stan imperium (tylko dla graczy z rankingu)
+async function imperium(){
+  const box=$("imperium");if(!wRankingu())return;
+  try{
+    const ja=await Online.podboj.ja();if(!ja)return;
+    const ile=+ja.powiaty||0;
+    box.innerHTML='<span class="ik" aria-hidden="true">🏴</span><div><b>Podbój Polski</b><small>'
+      +(ile?ile+" "+(ile===1?"powiat":ile%10>=2&&ile%10<=4&&(ile%100<10||ile%100>=20)?"powiaty":"powiatów")+" · "+fmt(ja.monety||0)+" 🪙 · dochód +"+(ja.dochod_dzienny||0)+" dziennie"
+        +(ja.stolica?" · 🏛️ stolica"+(ja.stolica_bezpieczna?" bezpieczna":""):"")+(ja.wojewoda&&ja.wojewoda.length?" · 👑 wojewoda":""):"Nie masz jeszcze powiatu. Wybierz pierwszy na mapie!")
+      +'</small></div><a class="klocek" href="podboj.html">Mapa</a>';
+    box.hidden=false;
+  }catch(e){}
+}
+
+function konto(){
+  const pr=Konto.profil();
+  const IK={gosc:"👤",google:"G",email:"✉️",facebook:"f"};
+  $("metody").innerHTML=Konto.METODY.map(m=>{const akt=m.id===pr.metoda;return '<button type="button" class="wiersz'+(akt?" akt":m.dostepna?" wybierz":"")+'" data-m="'+m.id+'"'+(!akt&&!m.dostepna?" disabled":"")+'><span class="ik">'+(IK[m.id]||"?")+'</span><div><b>'+esc(m.nazwa)+'</b><small>'+esc(m.opis)+'</small></div><span class="zn">'+(akt?"aktywne":m.dostepna?"wybierz":"wkrótce")+'</span></button>';}).join("");
+  $("metody").querySelectorAll(".wiersz").forEach(d=>d.onclick=()=>{const m=d.dataset.m;if(m===pr.metoda)return;Konto.zaloguj(m).catch(e=>ZP.komunikat(e.message,4200));});
+  $("kontoInfo").innerHTML=wRankingu()
+    ?"Jesteś w rankingu jako <b>"+esc(Online.profilLokalny().nick)+"</b>. Kolekcja kart i postęp nauki są zapisane na tym telefonie."
+    :'Grasz jako gość: postęp jest zapisany na tym telefonie. <a href="ranking.html" style="text-decoration:underline">Dołącz do rankingu</a>, żeby grać z innymi i w Podbój Polski.';
+}
+
+{const z=+localStorage.getItem("karty-zetony")||0;$("kiZet").textContent=(z%25)+" / 25";$("kiPasek").style.width=(100*(z%25)/25)+"%";}
+try{$("kiJok").textContent=localStorage.getItem("jokery")||0;}catch(e){}
+const odsw=()=>{const b=$("instaluj");if(Instaluj.zainstalowana()){b.querySelector("b").textContent="Aplikacja jest zainstalowana";b.querySelector("small").textContent="✓ masz ją na ekranie telefonu";b.disabled=true;}};odsw();Instaluj.naZmiane(odsw);
+$("instaluj").onclick=()=>Instaluj.zainstaluj();
+const mot=()=>{try{return localStorage.getItem("motyw")||"plansza";}catch(e){return "plansza";}};
+$("motywNazwa").textContent=mot()==="plansza"?"jasny, jak plansza (stuknij, żeby zmienić na ciemny)":"ciemny (stuknij, żeby zmienić na jasny)";
+$("motyw").onclick=()=>{localStorage.setItem("motyw",mot()==="plansza"?"ciemny":"plansza");location.reload();};
+$("usun").onclick=()=>{if(confirm("Usunąć profil, postęp, kolekcję i rekordy z tego urządzenia? Tego nie da się cofnąć.")){Konto.usunDane();location.href="./";}};
+$("wersja").textContent="PolskoZnawca · wersja testowa";
+gracz();kafle();konto();imperium();ZP.registerSW();
 </script>
 </body>
 </html>
