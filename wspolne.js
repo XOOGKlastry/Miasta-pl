@@ -310,7 +310,7 @@ function modulKart(){
   if(KARTY_MODUL)return KARTY_MODUL;
   KARTY_MODUL=new Promise((resolve,reject)=>{
     let sc=document.querySelector('script[src^="karty.js"]'),nowy=!sc;
-    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=23";}
+    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=26";}
     sc.addEventListener("load",()=>resolve(window.Karty),{once:true});
     sc.addEventListener("error",()=>{KARTY_MODUL=null;sc.remove();reject(Error("Nie wczytano kart"));},{once:true});
     if(nowy)document.head.appendChild(sc);
@@ -880,16 +880,17 @@ function lotNagrody(symbol,n){
   if(matchMedia("(prefers-reduced-motion: reduce)").matches||!el.animate){setTimeout(()=>el.remove(),450);return;}
   const r=el.getBoundingClientRect();const anim=el.animate([{transform:"translate(-50%,0) scale(1)",opacity:1},{transform:"translate("+(b.left-r.left)+"px,"+(b.top-r.top)+"px) scale(.5)",opacity:.2}],{duration:750,easing:"cubic-bezier(.3,.1,.5,1)"});anim.onfinish=()=>el.remove();
 }
-/* monety za gry niegminne: każda dobra odpowiedź daje punkty, a 10 punktów to 1 moneta.
-   Zwykłe pytanie 5 pkt (2 trafienia = moneta); szybkie gry z mnóstwem odpowiedzi mniej:
-   Więcej czy mniej 1 pkt (10 trafień = moneta). 25 monet = paczka z kartą. */
+/* żetony na karty za gry niegminne: każda dobra odpowiedź daje punkty, a 10 punktów to 1 żeton.
+   (Monety są tylko w Podboju, na serwerze.)
+   Zwykłe pytanie 5 pkt (2 trafienia = żeton); szybkie gry z mnóstwem odpowiedzi mniej:
+   Więcej czy mniej 1 pkt (10 trafień = żeton). 25 żetonów = paczka z kartą. */
 const MONETY_PKT={ludnosc:1};
 function punktyMonet(kind){
   let a=(+localStorage.getItem("monety-pkt")||0)+(MONETY_PKT[kind]??5);
   const n=Math.floor(a/10);if(n){zeton(n);a-=n*10;}
   try{localStorage.setItem("monety-pkt",String(a));}catch(e){}
 }
-function zeton(n){lotNagrody("🪙",n||1);try{localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)+(n||1)));}catch(e){}}
+function zeton(n){lotNagrody("🎟️",n||1);try{localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)+(n||1)));}catch(e){}}
 /* ---- podpowiedzi 50/50: +1 za każde 5 dobrych odpowiedzi z rzędu (5, 10, 15…), zbierają się na zapas.
    Użycie podpowiedzi zeruje serię. Gra podaje poprawną odpowiedź przez jokerCel albo opcję „poprawne” pola wpisu. ---- */
 let JOKER_CEL=null,JOKER_RECZNY=false;
@@ -1022,7 +1023,7 @@ async function loadGminy(){
 function seeded(str){let h=1779033703^str.length;for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),3432918353);h=h<<13|h>>>19;}
   let a=h>>>0;return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function dayKey(d){d=d||new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-window.ZP={$,ocenaGdzie,etykietyMiast,nagrodaDnia,IKONA_5050,jokery,dodajJoker,jokerCel,seria,zeton,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
+window.ZP={$,modulKart,ocenaGdzie,etykietyMiast,nagrodaDnia,IKONA_5050,jokery,dodajJoker,jokerCel,seria,zeton,kartyPoGrze,podkladWektorowy,centra,doCentrum,ustawObszar,encyklopedia,dopiszEncykl,poprawki,popRzeki,popHerby,zoomSvg,komunikat,mapaGdzie,fokus,kreatorGry,wObszarze,obszarNazwa,get OBSZAR(){return OBSZAR;},ksztaltZPodkladem,poswiata,fanfary,WOJ_KOD,loadPowiaty,loadGminy,pasek,odliczanie,poleWpisu,pasuje,lapacz,ZAKRESY,zakresy,zakresStan,wZakresie,zapisz,waga,opanowane,statystyki,losujNauka,wojSasiedzi,nauka,seeded,dayKey,FALLBACK,norm,shuffle,pick,fetchT,fmt,km,loadWoj,wojOf,loadCities,projection,fitViewport,registerSW,inRing};
 })();
 
 // Konfiguracja i kontrola kont po załadowaniu strony.

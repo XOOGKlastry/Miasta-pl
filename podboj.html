@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="plansza.css?v=4" />
 <link rel="stylesheet" href="plansza-formularze.css?v=1" />
 <link rel="stylesheet" href="ranking-spolecznosc.css?v=4" />
-<link rel="stylesheet" href="podboj.css?v=1" />
+<link rel="stylesheet" href="podboj.css?v=2" />
 </head>
 <body>
 <div class="wrap">
@@ -24,7 +24,13 @@
       <div class="pole"><b id="ileTwierdz">–</b><span>twierdze</span></div>
       <div class="pole"><b id="ileAtakow">–</b><span>ataki dziś</span></div>
     </section>
+    <section class="pole pd-skarbiec" id="skarbiec" hidden aria-label="Skarbiec">
+      <div class="pd-sk-gora"><span class="pd-moneta" aria-hidden="true">🪙</span><div><b id="monety">0</b><small id="dochodInfo">monet w skarbcu</small></div>
+        <button class="klocek" type="button" id="kupAtak">+1 atak<small id="kosztAtaku">10 🪙</small></button></div>
+    </section>
     <div id="komunikaty" class="pd-komunikaty"></div>
+    <section class="pole pd-tydzien" id="skarbTyg" hidden></section>
+    <section class="pole pd-zadania" id="zadania" hidden></section>
     <section class="pole pd-mapa-pole">
       <div class="pd-mapa" id="mapaBox"><svg id="mapa" role="img" aria-label="Mapa powiatów Polski z ich właścicielami"></svg><p class="pd-laduje" id="laduje">Wczytywanie mapy…</p></div>
       <div class="pd-legenda" aria-hidden="true">
@@ -33,7 +39,8 @@
         <span><i style="background:var(--krem)"></i>Wolne</span>
         <span><i style="background:linear-gradient(90deg,#E84A3C 50%,#2E86DE 50%)"></i>Rywale</span>
         <span><b>★</b>Twierdza</span>
-        <span><b>🪙</b>Na sprzedaż</span>
+        <span><b>💰</b>Skarb tygodnia</span>
+        <span><b>🔥</b>Oblężenie</span>
       </div>
     </section>
     <p id="status" class="stan" role="status" aria-live="polite"></p>
@@ -47,9 +54,13 @@
         <li>Stuknij powiat na mapie. Żeby go zdobyć, zagraj 8 pytań o ten powiat i okolice: granice, herby, z lotu ptaka, tablice, kształty i inne. Masz 20 sekund na każde.</li>
         <li>Wolny powiat zdobywasz od 5 dobrych odpowiedzi. Pierwszy wybierasz dowolnie, kolejne muszą graniczyć z Twoimi.</li>
         <li>Wynik to obrona powiatu. Sąsiad przejmie go, jeśli zdobędzie więcej. Swój powiat możesz umocnić lepszym wynikiem.</li>
-        <li>Powiat z wynikiem 8 z 8 to twierdza: zwykły atak już nie przejdzie. Zostaje pojedynek 24 h (te same pytania: obrońca ma dobę, żeby wyrównać wynik; jeśli nie zagra, traci twierdzę) albo zakup, jeśli właściciel ją wystawi.</li>
-        <li>Swój powiat możesz wystawić na sprzedaż za monety (5 do 500). Monety ze sprzedaży odbierasz tutaj.</li>
-        <li>Masz 10 ataków dziennie (pojedynki też się liczą). Umacnianie własnego powiatu to też atak.</li>
+        <li>Powiat z wynikiem 8 z 8 to twierdza: zwykły atak już nie przejdzie. Zostaje pojedynek 24 h (te same pytania: obrońca ma dobę, żeby wyrównać wynik; jeśli nie zagra, traci twierdzę).</li>
+        <li>Masz 10 ataków dziennie (pojedynki i umacnianie też się liczą). Kolejny atak kupisz za monety: 10, potem każdy następny tego dnia o 5 drożej.</li>
+        <li><b>Monety są tylko w Podboju.</b> Każdy Twój powiat daje 3 monety dziennie, twierdza 6 (naliczane po wejściu na mapę, zaległość do 3 dni). Opłaca się trzymać dużo powiatów, a nie tylko odbijać cudze. Na start dostajesz 20 monet.</li>
+        <li>Za monety: dodatkowy atak, mury (+1 obrony swojego powiatu za 15, najwyżej do 7) i odsiecz oblężonych powiatów (25, +24 h, najwyżej 2 razy).</li>
+        <li><b>Oblężenie:</b> jeśli część Twoich powiatów zostanie odcięta od reszty i otoczona przez innych graczy, masz 48 h, żeby ją połączyć z resztą. Inaczej tę mniejszą część przejmuje gracz, który ją otoczył (obrona spada do 4). Ty też możesz tak odciąć rywala.</li>
+        <li><b>Skarb tygodnia:</b> w każdym tygodniu jeden powiat kryje skarb. Kto zdobędzie go pierwszy, dostaje 60 monet i legendarną paczkę kart; każdy kolejny w tym tygodniu 20 monet i brązową paczkę.</li>
+        <li><b>Zadania dnia:</b> trzy codzienne cele, 10 monet za każdy i 15 za komplet.</li>
       </ul>
     </details>
   </main>
@@ -64,9 +75,9 @@
 </div>
 <script>(function(){const vv=window.visualViewport;const fit=()=>document.documentElement.style.setProperty("--app-h",(vv?vv.height:innerHeight)+"px");(vv||window).addEventListener("resize",fit);fit();})();</script>
 <script src="topojson-client.min.js?v=17"></script>
-<script src="wspolne.js?v=25"></script>
+<script src="wspolne.js?v=26"></script>
 <script src="naglowek.js?v=3"></script>
-<script src="online-config.js"></script><script src="online.js?v=6"></script>
-<script src="podboj.js?v=1"></script>
+<script src="online-config.js"></script><script src="online.js?v=7"></script>
+<script src="podboj.js?v=2"></script>
 </body>
 </html>

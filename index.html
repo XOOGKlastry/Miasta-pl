@@ -161,7 +161,7 @@ body.sezon2 .plansza-pasek{background:#55507a}
 <script src="efekty.js?v=17"></script>
 <script src="instaluj.js"></script>
 <script src="konto.js"></script>
-<script src="saga.js?v=4"></script>
+<script src="saga.js?v=5"></script>
 <script src="polandball.js?v=4"></script>
 <script src="krainy.js?v=5"></script>
 <script>
@@ -304,7 +304,7 @@ function arkusz(n){
   const G=poz.specjalna?Saga.GRY[poz.specjalna]:null;
   w.innerHTML='<div class="cien" id="cien"></div><div class="arkusz pole"><h2>'+(poz.boss?"Stolica: "+poz.kraina.stolica:G?G.ikona+" "+poz.nazwa:"Poziom "+(n+1))+'</h2>'
     +'<p>'+(SEZON===2?"Szlak Mistrzów · ":"")+poz.kraina.nazwa+' · '+(poz.boss?"poziom mistrzowski":G?"poziom "+(n+1)+": "+G.opis:poz.nazwa)+(poz.pytan?' · '+poz.pytan+' pytań':'')+(poz.czas?' · '+poz.czas+' s na pytanie':'')+(poz.podp?'':' · bez podpowiedzi')+'</p>'
-    +(Saga.wTygodniu(n)?'<p class="wyd-info">🔥 Wydarzenie tygodnia: dodatkowe monety i paczka za 3 gwiazdki, wynik w rankingu tygodnia.</p>':'')
+    +(Saga.wTygodniu(n)?'<p class="wyd-info">🔥 Wydarzenie tygodnia: dodatkowe żetony i paczka za 3 gwiazdki, wynik w rankingu tygodnia.</p>':'')
     +(poz.gry.length?'<div class="gry">'+poz.gry.map(x=>'<span>'+TYPY[x.t]+(x.ile>1?" ×"+x.ile:"")+'</span>').join("")+'</div>':'')
     +'<div class="rzad"><span class="rek">'+gwiazdkiHtml(g)+'</span>'+(otw?'<a class="klocek" href="'+Saga.adres(n,SEZON)+'">Graj</a>':'<span style="font-weight:700;font-size:14px">Zdobądź '+(n===0?"wszystkie poziomy pierwszej planszy":(Saga.poziom(n-1,SEZON).boss?"2 gwiazdki":"gwiazdkę")+' na poziomie '+n)+', żeby tu wejść.</span>')+'</div></div>';
   $("cien").onclick=()=>{w.innerHTML="";};
@@ -362,7 +362,7 @@ function pasekPlanszy(){
   });
   $("wydBtn").onclick=()=>{
     const w=$("warstwa"),T=TYDZ,suma=Saga.wydarzenieSuma(T.klucz),kr=Saga.SWIATY[T.kraina];
-    w.innerHTML='<div class="cien" id="cien"></div><div class="arkusz pole"><h2>🔥 Wydarzenie tygodnia</h2><p>Kraina tygodnia: <b>'+kr.nazwa+'</b>. Do poniedziałku jej poziomy dają podwójne nagrody: 5 monet za pierwsze zaliczenie każdego poziomu i dodatkową paczkę za 3 gwiazdki.</p><p>Twój wynik tygodnia: <b>'+suma+' pkt</b> (za każdy poziom: 100 pkt za gwiazdkę i do 100 pkt za wynik). Tabela jest w rankingu, w zakładce „Tydzień”.</p><div class="rzad"><button class="klocek" id="wydIdz">Pokaż krainę</button><a class="klocek jasny" href="ranking.html?tydzien">Ranking</a></div></div>';
+    w.innerHTML='<div class="cien" id="cien"></div><div class="arkusz pole"><h2>🔥 Wydarzenie tygodnia</h2><p>Kraina tygodnia: <b>'+kr.nazwa+'</b>. Do poniedziałku jej poziomy dają podwójne nagrody: 5 żetonów za pierwsze zaliczenie każdego poziomu i dodatkową paczkę za 3 gwiazdki.</p><p>Twój wynik tygodnia: <b>'+suma+' pkt</b> (za każdy poziom: 100 pkt za gwiazdkę i do 100 pkt za wynik). Tabela jest w rankingu, w zakładce „Tydzień”.</p><div class="rzad"><button class="klocek" id="wydIdz">Pokaż krainę</button><a class="klocek jasny" href="ranking.html?tydzien">Ranking</a></div></div>';
     $("cien").onclick=()=>{w.innerHTML="";};
     $("wydIdz").onclick=()=>{w.innerHTML="";const b=document.querySelector('.baner[data-s="'+T.kraina+'"]');if(b)$("mapa").scrollTo({top:b.offsetTop-$("mapa").clientHeight*0.75,behavior:"smooth"});};
   };
@@ -450,7 +450,7 @@ fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
 window.addEventListener("resize",()=>{clearTimeout(window._r);window._r=setTimeout(start,200);});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
-<script src="karty.js?v=25"></script>
+<script src="karty.js?v=26"></script>
 <script>setTimeout(()=>{Karty.liczbaNowych().then(n=>{const e=document.getElementById("kolNowe");if(e&&n>0){e.textContent=n>99?"99+":n;e.classList.remove("hidden");}}).catch(()=>{});},1500);</script>
 <script src="naglowek.js?v=3"></script>
 </body>

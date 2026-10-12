@@ -104,15 +104,16 @@ window.Online=(()=>{
   zapisz:(tydzien,pkt)=>rpcGracza('event_publish',{p_week:tydzien,p_score:Math.round(pkt)}),
   ranking:tydzien=>request('/rest/v1/rpc/event_leaderboard',{p_week:tydzien||null})
  };
- // Podbój Polski: powiaty na mapie, próby (ziarno pytań wydaje serwer), pojedynki o twierdze, handel
+ // Podbój Polski: powiaty na mapie, próby (ziarno pytań wydaje serwer), pojedynki o twierdze, monety (skarbiec), skarb tygodnia, oblężenia
  const podboj={
   mapa:()=>request('/rest/v1/rpc/conq_mapa',{}),
   ja:()=>rpcGracza('conq_ja',{}),
   start:(k,rodzaj,pojedynek)=>rpcGracza('conq_start',{p_k:k,p_rodzaj:rodzaj,p_pojedynek:pojedynek||null}),
   wynik:(id,dobre)=>rpcGracza('conq_wynik',{p_id:id,p_score:Math.round(dobre)}),
-  sprzedaz:(k,cena)=>rpcGracza('conq_sprzedaz',{p_k:k,p_cena:cena==null?null:Math.round(cena)}),
-  kup:(k,cena)=>rpcGracza('conq_kup',{p_k:k,p_cena:Math.round(cena)}),
-  odbierz:()=>rpcGracza('conq_odbierz',{}),
+  tydzien:()=>request('/rest/v1/rpc/conq_tydzien',{}),
+  kupAtak:()=>rpcGracza('conq_kup_atak',{}),
+  mury:k=>rpcGracza('conq_mury',{p_k:k}),
+  odsiecz:k=>rpcGracza('conq_odsiecz',{p_k:k}),
   ranking:()=>request('/rest/v1/rpc/conq_ranking',{})
  };
  async function zablokuj(inny,zglos){return rpcGracza('block_player',{p_other:inny,p_report:!!zglos});}

@@ -64,7 +64,7 @@ if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceW
 // gry gminne dają karty, pozostałe żetony na paczki
 const GMINNE=["herb.html","ksztalt.html?rodzaj=g","slepa.html?tryb=g","cieplo.html"];
 document.querySelectorAll("a.pole.gra").forEach(a=>{const h=a.getAttribute("href")||"";if(/encyklopedia|profil|codzienne|karta-w-ciemno|podboj|gry\.html/.test(h))return;
-  const z=document.createElement("small");const g=GMINNE.indexOf(h)>=0;z.className=g?"znak-k":"znak-z";z.textContent=g?"🃏 karty gmin":"🪙 monety";a.querySelector("b").after(z);});
+  const z=document.createElement("small");const g=GMINNE.indexOf(h)>=0;z.className=g?"znak-k":"znak-z";z.textContent=g?"🃏 karty gmin":"🎟️ żetony";a.querySelector("b").after(z);});
 </script>
 <script src="naglowek.js?v=3"></script>
 </body>

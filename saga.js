@@ -120,14 +120,14 @@ window.Saga=(function(){
     const id=(sezon===2?"s2:":"")+n;
     const nagrody=[];
     const paczka=nazwa=>{const f=()=>Karty.nagrodaZa(nazwa).then(g=>{if(g&&window.ZP&&ZP.komunikat)ZP.komunikat("Paczka trafiła do albumu kart!",3200);}).catch(()=>{});
-      if(window.Karty)f();else{const sc=document.createElement("script");sc.src="karty.js?v=23";sc.onload=f;document.head.appendChild(sc);}};
+      if(window.Karty)f();else{const sc=document.createElement("script");sc.src="karty.js?v=26";sc.onload=f;document.head.appendChild(sc);}};
     if(gw===3){paczka("poziom:"+id);nagrody.push("paczka za 3 gwiazdki");}
     let wyd=null;
     if(wTygodniu(n)&&gw>0){
       const T=tydzien(),w=wydarzenieStan(T.klucz),pkt=gw*100+Math.max(0,Math.min(100,Math.round(proc||0))),stare=w.pkt[id]||0;
       if(pkt>stare)w.pkt[id]=pkt;
-      // podwójne nagrody: monety za pierwsze zaliczenie w tygodniu i dodatkowa paczka za 3 gwiazdki
-      if(!w.bonus[id]){w.bonus[id]=1;if(window.ZP&&ZP.zeton)ZP.zeton(5);else try{localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)+5));}catch(e){}nagrody.push("+5 monet wydarzenia");}
+      // podwójne nagrody: żetony za pierwsze zaliczenie w tygodniu i dodatkowa paczka za 3 gwiazdki
+      if(!w.bonus[id]){w.bonus[id]=1;if(window.ZP&&ZP.zeton)ZP.zeton(5);else try{localStorage.setItem("karty-zetony",String((+localStorage.getItem("karty-zetony")||0)+5));}catch(e){}nagrody.push("+5 żetonów wydarzenia");}
       if(gw===3&&!w.bonus[id+":3"]){w.bonus[id+":3"]=1;paczka("wydarzenie:"+T.klucz+":"+id);nagrody.push("dodatkowa paczka wydarzenia");}
       try{localStorage.setItem("wydarzenie-"+T.klucz,JSON.stringify(w));}catch(e){}
       wyd={klucz:T.klucz,pkt,suma:wydarzenieSuma(T.klucz),poprawa:pkt>stare};
