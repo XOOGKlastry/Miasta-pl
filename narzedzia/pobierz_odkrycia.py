@@ -17,7 +17,7 @@ import json, sys, time, urllib.parse, urllib.request
 
 UA = "PolskoZnawca/1.0 (https://github.com/XOOGKlastry/Miasta-pl; gra edukacyjna)"
 WYNIK = "narzedzia/odkrycia-surowe.json"
-MIN_SL_LUDZIE = 15
+MIN_SL_LUDZIE = 11
 BBOX = (14.0, 48.9, 24.2, 55.0)   # prostokąt wokół Polski (lon, lat); dokładnie przycina skrypt w node
 
 
@@ -66,7 +66,7 @@ def rok(s):
 def ludzie():
     wynik = {}
     # przedziały rozpoznawalności, żeby pojedyncze zapytanie nie przekroczyło limitu czasu
-    przedzialy = [(MIN_SL_LUDZIE, 20), (20, 30), (30, 50), (50, 100), (100, 100000)]
+    przedzialy = [(MIN_SL_LUDZIE, 13), (13, 15), (15, 17), (17, 20), (20, 25), (25, 30), (30, 50), (50, 100), (100, 100000)]
     while przedzialy:
         od, do = przedzialy.pop(0)
         q = """SELECT ?p ?pLabel ?opis ?ur ?zm ?m ?mLabel ?wsp ?img ?sl ?art WHERE {
@@ -127,10 +127,13 @@ KLASY = [
     ("palac", "?x wdt:P31/wdt:P279* wd:Q16560.", 6),
     ("katedra", "?x wdt:P31/wdt:P279* wd:Q2977.", 4),
     ("bazylika", "?x wdt:P31/wdt:P279* wd:Q163687.", 6),
-    ("sanktuarium", "?x wdt:P31/wdt:P279* wd:Q2878123.", 6),
     ("klasztor", "?x wdt:P31/wdt:P279* wd:Q44613.", 8),
     ("muzeum", "?x wdt:P31/wdt:P279* wd:Q33506.", 12),
-    ("park_narodowy", "?x wdt:P31 wd:Q46169.", 0),
+    ("park_narodowy", "?x wdt:P31/wdt:P279* wd:Q46169.", 0),
+    ("jaskinia", "?x wdt:P31/wdt:P279* wd:Q35509.", 6),
+    ("wodospad", "?x wdt:P31/wdt:P279* wd:Q34038.", 5),
+    ("wyspa", "?x wdt:P31/wdt:P279* wd:Q23442.", 10),
+    ("pustynia", "?x wdt:P31/wdt:P279* wd:Q8514.", 3),
     ("szczyt", "?x wdt:P31/wdt:P279* wd:Q8502.", 12),
     ("jezioro", "?x wdt:P31/wdt:P279* wd:Q23397.", 15),
     ("latarnia", "?x wdt:P31/wdt:P279* wd:Q39715.", 4),
@@ -142,7 +145,6 @@ KLASY = [
     ("wieza", "?x wdt:P31/wdt:P279* wd:Q12518.", 12),
     ("stadion", "?x wdt:P31/wdt:P279* wd:Q483110.", 15),
     ("oboz", "?x wdt:P31/wdt:P279* wd:Q152081.", 10),
-    ("pole_bitwy", "?x wdt:P31/wdt:P279* wd:Q4895508.", 5),
 ]
 
 
@@ -183,8 +185,8 @@ def miejsca():
 # ---------- wydarzenia ----------
 def wydarzenia():
     q = """SELECT ?x ?xLabel ?opis ?wsp ?data ?pocz ?sl ?art ?img WHERE {
-      VALUES ?klasa { wd:Q178561 wd:Q188055 }
-      ?x wdt:P31/wdt:P279* ?klasa; wdt:P625 ?wsp; wikibase:sitelinks ?sl.
+      VALUES ?klasa { wd:Q178561 wd:Q188055 wd:Q1261499 wd:Q645883 wd:Q831663 }
+      ?x wdt:P31 ?klasa; wdt:P625 ?wsp; wikibase:sitelinks ?sl.
       FILTER(?sl >= 6)
       ?art schema:about ?x; schema:isPartOf <https://pl.wikipedia.org/>.
       BIND(geof:longitude(?wsp) AS ?lon) BIND(geof:latitude(?wsp) AS ?lat)
@@ -234,11 +236,36 @@ def drogi():
     return out
 
 
+# ---------- popularność w Polsce: odsłony artykułu w polskiej Wikipedii z ostatnich 12 pełnych miesięcy ----------
+def odslony(lista):
+    teraz = time.gmtime()
+    do = "%04d%02d01" % (teraz.tm_year, teraz.tm_mon)
+    od = "%04d%02d01" % (teraz.tm_year - 1, teraz.tm_mon)
+    n = 0
+    for o in lista:
+        if not o.get("art"):
+            continue
+        url = ("https://wikimedia.org/api/rest_v1/metrics/pageviews/per-article/pl.wikipedia/all-access/user/"
+               + urllib.parse.quote(o["art"], safe="") + "/monthly/" + od + "/" + do)
+        try:
+            j = json.loads(http(url, tries=2, timeout=30, accept="application/json"))
+            o["odsl"] = sum(x["views"] for x in j.get("items", []))
+        except Exception:
+            o["odsl"] = None
+        n += 1
+        if n % 500 == 0:
+            print("  odsłony", n, flush=True)
+        time.sleep(0.05)
+
+
 def main():
     dane = {"zbudowano": time.strftime("%Y-%m-%d"), "zrodla": {"wikidane": "https://www.wikidata.org (CC0)", "osm": "© OpenStreetMap (ODbL)"}}
     for nazwa, f in [("ludzie", ludzie), ("miejsca", miejsca), ("wydarzenia", wydarzenia), ("drogi", drogi)]:
         try:
             dane[nazwa] = f()
+            if nazwa != "drogi":
+                print("odsłony:", nazwa, flush=True)
+                odslony(dane[nazwa])
         except Exception as e:
             print("BŁĄD", nazwa, e, flush=True)
             dane[nazwa] = []
