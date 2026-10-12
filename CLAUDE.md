@@ -32,6 +32,7 @@ Właściciel: Dawid (specjalista GIS). Rozmawiamy po polsku. W odpowiedziach nie
 ## Dane
 - `baza.json` (encyklopedia: województwa, powiaty, gminy z GUS), `karty-dane.json` (wskaźniki kart z GUS BDL), `karty-geo.json` (odległość do najbliższej stolicy województwa), `centra.json` (urzędy miast), `drogi.json` (OSM), `ciekawostki.json` (easter eggi na kartach, klucz TERYT).
 - Automaty GitHub Actions w `.github/workflows/` odświeżają dane (np. `karty-dane.yml` uruchamia `narzedzia/uzupelnij_karty.py`). Limit anonimowy GUS BDL: 100 zapytań na 15 minut.
+- Odkrycia (etap 1 z 5, research 12.10.2026; postacie, zabytki, bitwy i drogi jako pytania we wszystkich grach, przypięte do gmin i powiatów): `narzedzia/pobierz_odkrycia.py` (GitHub Actions `odkrycia.yml`: Wikidane CC0, odsłony pl.wikipedii z 12 miesięcy, autostrady i ekspresówki z OSM) → `narzedzia/odkrycia-surowe.json`; `node narzedzia/odkrycia_przetworz.cjs` przypisuje gminę i powiat po współrzędnych → `odkrycia.json` i `narzedzia/odkrycia-podsumowanie.json`. Rozpoznawalność = log10(odsłony+10) + 1,2·log10(wersje językowe), próg „rozpoznawalny” = 3000 odsłon i 12 wersji. Do decyzji Dawida: obozy zagłady (bez pytań w Podboju i walkach?), żyjący politycy, czarna lista, postacie innych narodów. Następne etapy: przegląd w panelu admina, wspólny generator pytań, wpięcie do Podboju, planszy i walk, minigry („Skąd pochodzi?”, „Gdzie to jest? Zabytki”).
 - Zadłużenia gmin nie ma w GUS (to sprawozdania Rb-Z Ministerstwa Finansów), wskaźnik jest wstrzymany.
 
 ## Karty: ustalone zasady
