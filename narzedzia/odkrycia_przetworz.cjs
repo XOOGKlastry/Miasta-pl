@@ -32,12 +32,14 @@ function main(){
   const S=wczytaj("narzedzia/odkrycia-surowe.json"),poza={ludzie:0,miejsca:0,wydarzenia:0,drogi:0};
   const ludzie=[],miejsca=[],wydarzenia=[];
   for(const o of S.ludzie||[]){const a=przypisz(o);if(!a){poza.ludzie++;continue;}
-    ludzie.push({q:o.q,n:o.n,opis:o.opis||null,ur:o.ur,zm:o.zm,mn:o.mn,m:o.m,wsp:o.wsp,...a,sl:o.sl,img:o.img||null,art:o.art,zaw:o.zaw||[],
-      pl:(o.obyw||[]).some(x=>POLSKIE.has(x)),watpliwe:o.inne_m&&o.inne_m.length?o.inne_m:undefined});}
+    // miejsce urodzenia bywa budynkiem, ulicą albo obiektem bez polskiej nazwy: wtedy podajemy gminę
+    const obiekt=!o.mn||/^Q\d+$/.test(o.mn)||/\d|ulica|dom |pałac|kamienica|szpital|zespół|dwór /i.test(o.mn);
+    ludzie.push({q:o.q,n:o.n,opis:o.opis||null,ur:o.ur,zm:o.zm,mn:obiekt?(a.gn||o.mn):o.mn,mn_oryg:obiekt?o.mn:undefined,m:o.m,wsp:o.wsp,...a,sl:o.sl,odsl:o.odsl??null,img:o.img||null,art:o.art,zaw:o.zaw||[],
+      pl:/polsk|polak/i.test(o.opis||"")||(o.obyw||[]).some(x=>POLSKIE.has(x)),watpliwe:o.inne_m&&o.inne_m.length?o.inne_m:undefined});}
   for(const o of S.miejsca||[]){const a=przypisz(o);if(!a){poza.miejsca++;continue;}
-    miejsca.push({q:o.q,n:o.n,opis:o.opis||null,wsp:o.wsp,...a,sl:o.sl,img:o.img||null,art:o.art||null,rok:o.rok,rodzaje:o.rodzaje});}
+    miejsca.push({q:o.q,n:o.n,opis:o.opis||null,wsp:o.wsp,...a,sl:o.sl,odsl:o.odsl??null,img:o.img||null,art:o.art||null,rok:o.rok,rodzaje:o.rodzaje});}
   for(const o of S.wydarzenia||[]){const a=przypisz(o);if(!a){poza.wydarzenia++;continue;}
-    wydarzenia.push({q:o.q,n:o.n,opis:o.opis||null,wsp:o.wsp,...a,sl:o.sl,rok:o.rok,img:o.img||null,art:o.art});}
+    wydarzenia.push({q:o.q,n:o.n,opis:o.opis||null,wsp:o.wsp,...a,sl:o.sl,odsl:o.odsl??null,rok:o.rok,img:o.img||null,art:o.art});}
   // drogi: numer -> powiaty, przez które przechodzi (po środkach odcinków)
   const dr={};
   for(const o of S.drogi||[]){const p=powiat(o.wsp[0],o.wsp[1]);if(!p){poza.drogi++;continue;}
