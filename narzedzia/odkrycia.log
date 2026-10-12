@@ -5,3 +5,99 @@ ludzie: wersje językowe 13 do 15
 ludzie: wersje językowe 15 do 17
   razem 2388
 ludzie: wersje językowe 17 do 20
+  razem 2929
+ludzie: wersje językowe 20 do 25
+  razem 3416
+ludzie: wersje językowe 25 do 30
+  razem 3698
+ludzie: wersje językowe 30 do 50
+  razem 4045
+ludzie: wersje językowe 50 do 100
+  razem 4181
+ludzie: wersje językowe 100 do 100000
+  razem 4208
+  zawody 300 / 4208
+  zawody 600 / 4208
+  zawody 900 / 4208
+  zawody 1200 / 4208
+  zawody 1500 / 4208
+  zawody 1800 / 4208
+  zawody 2100 / 4208
+  zawody 2400 / 4208
+  zawody 2700 / 4208
+  zawody 3000 / 4208
+  zawody 3300 / 4208
+  zawody 3600 / 4208
+  zawody 3900 / 4208
+  zawody 4200 / 4208
+  zawody 4208 / 4208
+odsłony: ludzie
+  odsłony 500 / 4208 błędów 0 145 s
+  odsłony 1000 / 4208 błędów 0 280 s
+  odsłony 1500 / 4208 błędów 0 440 s
+  odsłony 2000 / 4208 błędów 0 584 s
+  odsłony 2500 / 4208 błędów 0 744 s
+  odsłony 3000 / 4208 błędów 0 878 s
+  odsłony 3500 / 4208 błędów 0 1039 s
+  odsłony 4000 / 4208 błędów 0 1184 s
+  odsłony gotowe, błędów 0
+miejsca: unesco
+  nowych 18 razem 18
+miejsca: pomnik_historii
+  nowych 86 razem 104
+miejsca: zamek
+  nowych 199 razem 303
+miejsca: palac
+  nowych 62 razem 365
+miejsca: katedra
+  nowych 55 razem 420
+miejsca: bazylika
+  nowych 16 razem 436
+miejsca: klasztor
+  nowych 11 razem 447
+miejsca: muzeum
+  nowych 41 razem 488
+miejsca: park_narodowy
+  nowych 23 razem 511
+miejsca: jaskinia
+  nowych 8 razem 519
+miejsca: wodospad
+  nowych 6 razem 525
+miejsca: wyspa
+  nowych 5 razem 530
+miejsca: pustynia
+  nowych 3 razem 533
+miejsca: szczyt
+  nowych 24 razem 557
+miejsca: jezioro
+  nowych 19 razem 576
+miejsca: latarnia
+  nowych 20 razem 596
+miejsca: most
+  nowych 11 razem 607
+miejsca: pomnik
+  błąd HTTP Error 504: Gateway Timeout próba 1
+  nowych 20 razem 627
+miejsca: skansen
+  nowych 12 razem 639
+miejsca: kopalnia
+  nowych 5 razem 644
+miejsca: ratusz
+  nowych 9 razem 653
+miejsca: wieza
+  nowych 4 razem 657
+miejsca: stadion
+  nowych 15 razem 672
+miejsca: oboz
+  nowych 13 razem 685
+odsłony: miejsca
+  odsłony 500 / 685 błędów 0 132 s
+  odsłony gotowe, błędów 0
+wydarzenia: bitwy i oblężenia
+  razem 172
+odsłony: wydarzenia
+  odsłony gotowe, błędów 0
+drogi: autostrady i ekspresowe z OSM
+  błąd HTTP Error 504: Gateway Timeout próba 1
+  odcinków 22961
+gotowe: {'ludzie': 4208, 'miejsca': 685, 'wydarzenia': 172, 'drogi': 22961}
