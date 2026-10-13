@@ -32,14 +32,14 @@ ludzie: wersje językowe 100 do 100000
   zawody 4200 / 4208
   zawody 4208 / 4208
 odsłony: ludzie
-  odsłony 500 / 4208 błędów 0 148 s
-  odsłony 1000 / 4208 błędów 0 295 s
-  odsłony 1500 / 4208 błędów 0 447 s
-  odsłony 2000 / 4208 błędów 0 595 s
-  odsłony 2500 / 4208 błędów 0 748 s
-  odsłony 3000 / 4208 błędów 0 895 s
-  odsłony 3500 / 4208 błędów 0 1049 s
-  odsłony 4000 / 4208 błędów 0 1191 s
+  odsłony 500 / 4208 błędów 0 150 s
+  odsłony 1000 / 4208 błędów 0 299 s
+  odsłony 1500 / 4208 błędów 0 448 s
+  odsłony 2000 / 4208 błędów 0 598 s
+  odsłony 2500 / 4208 błędów 0 753 s
+  odsłony 3000 / 4208 błędów 0 897 s
+  odsłony 3500 / 4208 błędów 0 1053 s
+  odsłony 4000 / 4208 błędów 0 1198 s
   odsłony gotowe, błędów 0
 miejsca: unesco
   nowych 18 razem 18
@@ -120,10 +120,10 @@ miejsca: szczyt2
 miejsca: zabytek_techniki
   nowych 0 razem 2020
 odsłony: miejsca
-  odsłony 500 / 2020 błędów 0 145 s
-  odsłony 1000 / 2020 błędów 0 291 s
+  odsłony 500 / 2020 błędów 0 142 s
+  odsłony 1000 / 2020 błędów 0 296 s
   odsłony 1500 / 2020 błędów 0 437 s
-  odsłony 2000 / 2020 błędów 0 586 s
+  odsłony 2000 / 2020 błędów 0 591 s
   odsłony gotowe, błędów 0
 wydarzenia: bitwy i oblężenia
   razem 172
@@ -131,5 +131,8 @@ odsłony: wydarzenia
   odsłony gotowe, błędów 0
 drogi: autostrady i ekspresowe z OSM
   błąd HTTP Error 504: Gateway Timeout próba 1
-  odcinków 22961
-gotowe: {'ludzie': 4208, 'miejsca': 2020, 'wydarzenia': 172, 'drogi': 22961}
+  błąd HTTP Error 504: Gateway Timeout próba 2
+  błąd HTTP Error 504: Gateway Timeout próba 3
+  serwer https://overpass-api.de/api/interpreter nie odpowiada: nie udało się: https://overpass-api.de/api/interpreter
+  odcinków 22563
+gotowe: {'ludzie': 4208, 'miejsca': 2020, 'wydarzenia': 172, 'drogi': 22563}
