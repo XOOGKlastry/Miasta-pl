@@ -1,5 +1,5 @@
 {
- "zbudowano": "2026-10-12",
+ "zbudowano": "2026-10-13",
  "progi": {
   "ludzie_odslony": 20000,
   "ludzie_wersje": 40,
@@ -10,14 +10,14 @@
  },
  "liczby": {
   "ludzie": {
-   "gra": 1203,
+   "gra": 1199,
    "enc": 0,
-   "off": 3005
+   "off": 3009
   },
   "miejsca": {
-   "gra": 523,
+   "gra": 804,
    "enc": 18,
-   "off": 144
+   "off": 1198
   },
   "wydarzenia": {
    "gra": 94,
@@ -28,31 +28,29 @@
  "drogi": 27,
  "powody": {
   "bez_nazwy": 70,
-  "poza": 84,
+  "poza": 120,
+  "zbrodnie": 70,
   "region": 28,
-  "zbrodnie": 29,
-  "malo_znany": 3016
+  "malo_znany": 3997
  },
  "powiaty": {
   "wszystkie": 380,
-  "z_czyms": 326,
-  "z_trzema": 172,
+  "z_czyms": 333,
+  "z_trzema": 206,
   "bez": [
    "1410 łosicki",
    "1427 sierpecki",
    "3016 obornicki",
    "3202 choszczeński",
-   "2205 kartuski",
+   "3006 jarociński",
    "2801 bartoszycki",
    "1602 głubczycki",
    "1063 Skierniewice",
-   "1010 piotrkowski",
    "3062 Konin",
    "1426 siedlecki",
    "1409 lipski",
    "1018 wieruszowski",
    "3002 czarnkowsko-trzcianecki",
-   "2004 grajewski",
    "2605 konecki",
    "0413 sępoleński",
    "1812 niżański",
@@ -63,16 +61,12 @@
    "1608 oleski",
    "3031 złotowski",
    "3005 grodziski",
-   "2612 staszowski",
-   "2407 lubliniecki",
    "1411 makowski",
-   "2818 gołdapski",
    "1819 strzyżowski",
    "1436 zwoleński",
    "1214 proszowicki",
    "3014 międzychodzki",
    "2603 kazimierski",
-   "0615 radzyński",
    "2013 wysokomazowiecki",
    "3008 kępiński",
    "3027 turecki",
@@ -82,7 +76,6 @@
    "2813 olecki",
    "2803 działdowski",
    "0401 aleksandrowski",
-   "2009 sejneński",
    "3204 goleniowski",
    "2007 łomżyński",
    "0605 janowski",
@@ -96,20 +89,20 @@
  },
  "gminy": {
   "wszystkie": 2479,
-  "z_czyms": 599,
-  "z_dwoma": 201,
+  "z_czyms": 688,
+  "z_dwoma": 249,
   "wg_typu": {
    "miejsko-wiejskie": {
     "wszystkie": 724,
-    "z_czyms": 214
+    "z_czyms": 244
    },
    "wiejskie": {
     "wszystkie": 1453,
-    "z_czyms": 193
+    "z_czyms": 246
    },
    "miejskie": {
     "wszystkie": 302,
-    "z_czyms": 192
+    "z_czyms": 198
    }
   }
  }
