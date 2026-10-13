@@ -4,6 +4,7 @@
    a atakowany powiat jest zawsze wśród opcji, więc jego nazwa niczego nie zdradza. */
 (function(glob){
   const ILE=8;
+  const OP=()=>glob.OdkryciaPytania||(typeof require!=="undefined"?require("./odkrycia-pytania.js"):null);
   function km(a,b){const R=6371,r=Math.PI/180,dLat=(b.lat-a.lat)*r,dLon=(b.lon-a.lon)*r;
     const h=Math.sin(dLat/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dLon/2)**2;return 2*R*Math.asin(Math.sqrt(h));}
   function losuj(rnd,a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(rnd()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -72,10 +73,24 @@
         return {t:"p",c:w.c,pw:w.p,opcje:losuj(rnd,[...o])};},
       m(){const c=miejsca.shift();return c&&{t:"m",c,foto:c.zdjecia[Math.floor(rnd()*c.zdjecia.length)],opcje:czteryNaj(rnd,c,D.miejsca,x=>x.n)};},
       r(){const c=rzeki.shift();return c&&{t:"r",c,opcje:czteryNaj(rnd,c,D.rzeki,x=>x.rzeka)};},
+      // odkrycia: postać urodzona w atakowanym powiecie albo u sąsiada; zabytek albo bitwa z okolicy
+      o(){const op=OP();if(!op||!(D.ludzie||[]).length)return null;
+        const tu=(D.ludzie||[]).filter(c=>c.p===P.k),obok=(D.ludzie||[]).filter(c=>c.p!==P.k&&R.some(p=>p.k===c.p));
+        const l=op.wybierz(tu.length?tu:obok,1).slice(0,12);if(!l.length)return null;
+        return op.pytanieO(rnd,l[Math.floor(rnd()*l.length)],D.ludzie);},
+      a(){const op=OP();if(!op||!(D.zabytki||[]).length)return null;
+        const pw=new Map(pow.map(p=>[p.k,p])),l=(D.zabytki||[]).filter(c=>R.some(p=>p.k===c.p)&&!op.zdradza(c,pw.get(c.p)));if(!l.length)return null;
+        const tu=l.filter(c=>c.p===P.k),zb=tu.length&&rnd()<0.6?tu:l,c=zb[Math.floor(rnd()*zb.length)];
+        // opcje z okolicy atakowanego powiatu, zawsze z nim samym (nazwa atakowanego niczego nie zdradza)
+        const okol=R.filter(p=>p.k!==c.p);const q=op.pytanieA(rnd,c,pow,[P].concat(okol).filter(p=>p.k!==c.p));
+        if(q&&q.pw.k!==P.k&&q.opcje.indexOf(P.label)<0){q.opcje[q.opcje.findIndex(x=>x!==q.pw.label)]=P.label;}
+        return q;},
       w(){if(herby.length<2)return null;const a=herby[Math.floor(rnd()*herby.length)],b=herby.find(x=>x!==a&&x.pop&&a.pop&&Math.abs(x.pop-a.pop)/Math.min(x.pop,a.pop)>0.1);return b&&{t:"w",a,b};}
     };
     // kolejność ważności; brakujące rodzaje zastępują kolejne z listy, na końcu zawsze są granice
-    const plan=["k","s","t","h","z","g","p","m","r","s","w","h","z","g","s","s","s","s"];
+    // jedno pytanie z odkryć na atak (na zmianę postać albo zabytek), drugie tylko w zastępstwie brakujących
+    const odk=rnd()<0.5?["o","a"]:["a","o"];
+    const plan=["k","s",odk[0],"t","h","z","g","p","m","r","s",odk[1],"w","h","z","g","s","s","s","s"];
     const qs=[];
     for(const t of plan){if(qs.length>=ILE)break;try{const q=twor[t]();if(q)qs.push(q);}catch(e){}}
     // granice wypadają w środku, nie dwa razy z rzędu
@@ -84,7 +99,7 @@
     return reszta;
   }
   // dobra odpowiedź: w „Gdzie to jest?” co najmniej 700 pkt (około 50 km), w pozostałych pełne punkty
-  const dobra=r=>r.t==="g"?r.pts>=700:r.pts>=500;
+  const dobra=r=>r.t==="g"||r.t==="y"?r.pts>=700:r.pts>=500;
   const API={ILE,zestaw,dobra,okolica,tablica,wPowiecie};
   glob.PodbojPytania=API;
   if(typeof module!=="undefined")module.exports=API;

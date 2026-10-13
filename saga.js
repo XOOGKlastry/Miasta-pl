@@ -37,20 +37,20 @@ window.Saga=(function(){
   const PRZEPISY={
     1:[
       {nazwa:"Zwiad",gry:[["z",2],["g",2],["w",1]]},
-      {nazwa:"Pamiątki",gry:[["m",2],["h",2],["t",1],["w",1]]},
-      {nazwa:"Rzeki i kluby",gry:[["r",2],["c",2],["g",1]]},
+      {nazwa:"Pamiątki",gry:[["m",2],["h",2],["t",1],["a",1]]},
+      {nazwa:"Ludzie i rzeki",gry:[["o",2],["r",2],["c",1],["g",1]]},
       {gra:true},
       {nazwa:"Granice",gry:[["s",2],["w",1],["k",2]]},
-      {nazwa:"Stolica regionu",gry:[["z",2],["g",1],["m",1],["h",1],["t",1],["s",1],["k",1]],boss:true}
+      {nazwa:"Stolica regionu",gry:[["z",2],["g",1],["m",1],["h",1],["t",1],["o",1],["a",1],["s",1],["k",1]],boss:true}
     ],
     // sezon 2 „Szlak Mistrzów”: bez podpowiedzi, 15 s na pytanie, także małe miejscowości
     2:[
       {nazwa:"Mapa bez podpowiedzi",gry:[["g",3],["z",2],["v",1]]},
-      {nazwa:"Symbole",gry:[["h",2],["t",2],["c",2]]},
-      {nazwa:"Rzeki i granice",gry:[["r",2],["s",2],["p",2]]},
+      {nazwa:"Symbole i postacie",gry:[["h",2],["t",2],["o",2]]},
+      {nazwa:"Zabytki i granice",gry:[["y",2],["a",1],["r",1],["s",1],["p",1]]},
       {gra:true},
       {nazwa:"Kształty",gry:[["k",3],["s",2],["p",1]]},
-      {nazwa:"Mistrz regionu",gry:[["z",1],["g",1],["m",1],["h",1],["t",1],["r",1],["s",1],["k",1],["p",1]],boss:true}
+      {nazwa:"Mistrz regionu",gry:[["z",1],["g",1],["m",1],["h",1],["t",1],["r",1],["o",1],["y",1],["s",1],["k",1],["p",1]],boss:true}
     ]
   };
   const SEZONY={1:{nazwa:"Odkrywca",klucz:"saga-v1"},2:{nazwa:"Szlak Mistrzów",klucz:"saga-s2"}};

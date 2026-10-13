@@ -58,6 +58,9 @@ svg path{fill-rule:evenodd}
 .stage.jasna{background:#E9EEEC}
 .podpis{position:absolute;left:0;right:0;bottom:0;padding:22px 10px 6px;font-size:10.5px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65));pointer-events:none}
 .miasto-duze{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(30px,10vw,46px);text-align:center;padding:0 16px}
+.miasto-duze.dluga{font-size:clamp(21px,6.4vw,30px);line-height:1.15}
+.miasto-duze .odk-opis{display:block;font:600 15px/1.35 Rubik,"Space Grotesk",sans-serif;opacity:.8;margin-top:8px;overflow-wrap:anywhere}
+#feedback .odk-ciek{display:block;font-size:13px;line-height:1.35;margin-top:4px;opacity:.9;overflow-wrap:anywhere}
 .karty2{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;padding:10px;align-self:stretch}
 .karty2 .k{background:var(--ink-3);border:1px solid var(--line-2);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 8px;text-align:center}
 .karty2 .k b{font-family:"Fraunces",serif;font-size:22px;line-height:1.1}
@@ -237,16 +240,16 @@ svg path{fill-rule:evenodd}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script src="konto.js"></script>
-<script src="saga.js?v=6"></script>
+<script src="saga.js?v=7"></script>
 <script src="tablice-powiaty.js"></script>
 <script src="topojson-client.min.js?v=17"></script>
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=27"></script><script src="online-config.js"></script><script src="online.js?v=9"></script><script src="walka.js?v=3"></script><script src="podboj-pytania.js?v=1"></script><script src="podboj-gra.js?v=3"></script>
+<script src="wspolne.js?v=27"></script><script src="online-config.js"></script><script src="online.js?v=9"></script><script src="walka.js?v=4"></script><script src="odkrycia-pytania.js?v=1"></script><script src="podboj-pytania.js?v=2"></script><script src="podboj-gra.js?v=3"></script>
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
 if(new URLSearchParams(location.search).get("tryb")==="pojedynek")location.replace("ranking.html");
-const TRYB=["turniej","saga","kostka","walka","podboj"].indexOf(URLP.get("tryb"))>=0?URLP.get("tryb"):"dzien";
+const TRYB=["turniej","saga","kostka","walka","podboj","mini"].indexOf(URLP.get("tryb"))>=0?URLP.get("tryb"):"dzien";
 // wyzwanie od znajomego: te same pytania (ziarno i ustawienia w linku) i jego wynik do pobicia
 let RYWAL=URLP.get("od")?{nick:URLP.get("od").slice(0,20),wynik:+URLP.get("wynik")||0,nr:+URLP.get("nr")||0}:null;
 let ZIARNO=URLP.get("seed")||"";
@@ -254,9 +257,12 @@ const DZIEN=ZP.dayKey(),START=new Date(2026,8,20);
 const NR=Math.floor((new Date(DZIEN+"T12:00:00")-START)/864e5)+1;
 const KLUCZ="dzis-"+DZIEN;
 const TYPY={z:["🛰️","Z lotu ptaka"],g:["📍","Gdzie to jest?"],k:["🗺️","Kształt powiatu"],h:["🛡️","Jaki to herb?"],m:["📷","Co to za miasto?"],r:["🌊","Nad jaką rzeką?"],w:["⚖️","Więcej czy mniej?"],
-  t:["🚗","Tablice"],c:["⚽","Jaki to klub?"],s:["🤝","Graniczą czy nie?"],v:["🧭","Województwo"],p:["🏛️","Powiat"],q:["⚡","Szybki strzał"]};
+  t:["🚗","Tablice"],c:["⚽","Jaki to klub?"],s:["🤝","Graniczą czy nie?"],v:["🧭","Województwo"],p:["🏛️","Powiat"],q:["⚡","Szybki strzał"],
+  o:["👤","Skąd pochodzi?"],a:["🏰","Zabytki i bitwy"],y:["📌","Gdzie ten zabytek?"]};
 // kolejność konkurencji: wyzwanie dnia (8 pytań) i turniej (wszystkie gry po kolei)
-const KOLEJ_DZIEN=["z","g","m","h","t","w","r","k"],KOLEJ_TURNIEJ=["z","g","m","k","h","t","r","c","w","s","v"];
+const KOLEJ_DZIEN0=["z","g","m","h","t","w","r","k"],KOLEJ_TURNIEJ=["z","g","o","m","k","h","a","t","r","c","w","s","v","y"];
+// od 14.10.2026 wyzwanie dnia ma też postać („Skąd pochodzi?”) i zabytek (dotychczasowe dni zostają bez zmian)
+const KOLEJ_DZIEN=DZIEN>="2026-10-14"?["z","g","o","m","h","a","t","k"]:KOLEJ_DZIEN0;
 let etykiety=null;   // nazwy miast po odpowiedzi w „Gdzie to jest?”
 const kolor=p=>p>=700?"g":p>=300?"y":"r";
 const RANGI=[[85,"Geograf roku"],[70,"Kartograf"],[50,"Przewodnik"],[30,"Krajoznawca"],[0,"Turysta"]];
@@ -265,7 +271,9 @@ let D={},Q=[],st=null,map=null,warstwy=null,POLE=null,PL=null,baseSvg="",lotMap=
 /* ---------- dane ---------- */
 async function laduj(){
   const pob=(u,d)=>fetch(u,{cache:"no-cache"}).then(r=>r.ok?r.json():d).catch(()=>d);
-  const [woj,pw,hj,mj,rj,popr,kj]=await Promise.all([ZP.loadWoj(),ZP.loadPowiaty(),pob("herby.json",{miasta:[]}),pob("miejsca.json",{miasta:[]}),pob("rzeki.json",{miasta:[]}),ZP.poprawki(),pob("kluby.json",{kluby:[]})]);
+  const [woj,pw,hj,mj,rj,popr,kj,od]=await Promise.all([ZP.loadWoj(),ZP.loadPowiaty(),pob("herby.json",{miasta:[]}),pob("miejsca.json",{miasta:[]}),pob("rzeki.json",{miasta:[]}),ZP.poprawki(),pob("kluby.json",{kluby:[]}),pob("odkrycia.json",{})]);
+  // odkrycia: postacie (miejsce urodzenia), zabytki i bitwy z gminą i powiatem
+  const odk=OdkryciaPytania.przygotuj(od);D.ludzie=odk.ludzie;D.zabytki=odk.zabytki;
   D.woj=woj;D.pow=pw.filter(p=>!p.city);D.powAll=pw;
   D.kluby=(kj.kluby||[]).filter(k=>k.lat!=null);
   D.tab=(window.POWIATY||[]).map(p=>Object.assign({},p,{wojN:p.woj}));
@@ -292,12 +300,17 @@ function powiatMiasta(c){return D.powAll.find(p=>!p.city&&lonLatWBb(c,p.bb)&&wPo
 function lonLatWBb(c,b){return c.lon>=b[0]&&c.lon<=b[2]&&c.lat>=b[1]&&c.lat<=b[3];}
 function budujPytania(rnd,ile,filtr,kolej){
   filtr=filtr||(()=>true);kolej=kolej||KOLEJ_TURNIEJ;
+  const OP=OdkryciaPytania,wielk=(KONFIG&&KONFIG.wielk)||"dsm",znane=TRYB==="dzien"?0.25:wielk.indexOf("m")<0?0.4:1;
   const wObsz=x=>!ZP.OBSZAR.length||ZP.wObszarze(x);
   const miasta=D.miasta.filter(filtr),herby=D.herby.filter(filtr),miejsca=D.miejsca.filter(filtr),rzeki=D.rzeki.filter(filtr),pow=D.pow.filter(wObsz);
   const kluby=D.kluby.filter(k=>wObsz(k)),tab=D.tab.filter(p=>!ZP.OBSZAR.length||ZP.OBSZAR.indexOf(p.woj)>=0),powAll=D.powAll.filter(wObsz);
   const lista={z:losuj(rnd,miasta),g:losuj(rnd,miasta),k:losuj(rnd,pow),h:losuj(rnd,herby),m:losuj(rnd,miejsca),r:losuj(rnd,rzeki),w:losuj(rnd,miasta.filter(c=>c.pop>0)),
     t:losuj(rnd,tab),c:losuj(rnd,[...new Map(kluby.map(k=>[k.miasto,k])).values()]),s:losuj(rnd,powAll.filter(p=>p.nb&&p.nb.length)),v:losuj(rnd,miasta),
-    p:losuj(rnd,D.miasta.filter(x=>wObsz(x)&&!D.powAll.some(q=>q.city&&ZP.norm(q.short||q.n)===ZP.norm(x.n)))),q:[{}, {}, {}, {}]};
+    p:losuj(rnd,D.miasta.filter(x=>wObsz(x)&&!D.powAll.some(q=>q.city&&ZP.norm(q.short||q.n)===ZP.norm(x.n)))),q:[{}, {}, {}, {}],
+    // odkrycia: przy dużych miastach (łatwiej) tylko najbardziej znane postacie i zabytki, przy wszystkich wielkościach cała lista
+    o:losuj(rnd,OP.wybierz((D.ludzie||[]).filter(wObsz),znane)),y:losuj(rnd,OP.wybierz((D.zabytki||[]).filter(wObsz),znane))};
+  const powPo=new Map(D.powAll.map(p=>[p.k,p]));
+  lista.a=lista.y.filter(c=>!OP.zdradza(c,powPo.get(c.p)));lista.y=lista.y.slice().reverse();
   const qs=[],skrot=k=>k.klub;
   for(let i=0;qs.length<ile&&i<ile*4;i++){
     const t=kolej[i%kolej.length],src=lista[t];if(!src||!src.length)continue;
@@ -328,6 +341,9 @@ function budujPytania(rnd,ile,filtr,kolej){
         if(sas.length>=3)qs.push({t,c,pw,opcje:losuj(rnd,losuj(rnd,sas).slice(0,3).map(x=>x.label).concat([pw.label]))});}
     }
     if(t==="q")qs.push({t,c:{n:"Szybki strzał"}});
+    if(t==="o"){const q=OP.pytanieO(rnd,c,D.ludzie);if(q)qs.push(q);}
+    if(t==="a"){const q=OP.pytanieA(rnd,c,D.powAll);if(q){qs.push(q);const j=lista.y.indexOf(c);if(j>=0)lista.y.splice(j,1);}}
+    if(t==="y"){qs.push(OP.pytanieY(c));const j=lista.a.indexOf(c);if(j>=0)lista.a.splice(j,1);}
     if(t==="v"){const w=ZP.wojOf(c.lon,c.lat);if(w)qs.push({t,c,woj:w,opcje:losuj(rnd,losuj(rnd,Object.values(ZP.WOJ_KOD).filter(x=>x!==w)).slice(0,3).concat([w]))});}
   }
   return qs;
@@ -359,6 +375,19 @@ function krainaStart(){
 async function init(){
   if(TRYB==="saga"||TRYB==="kostka"){krainaStart();$("stanDanych").textContent="Wczytywanie…";await laduj();$("stanDanych").textContent="";$("zaczynam").disabled=false;$("zaczynam").textContent="Graj";return;}
   if(TRYB==="walka"){Walka.start();return;}
+  if(TRYB==="mini"){
+    const MINI={o:["Skąd pochodzi?","Znane postacie i miejsca, w których się urodziły: wybierz miejscowość. Po każdej odpowiedzi ciekawostka i kropka na mapie."],
+      y:["Gdzie ten zabytek?","Zamki, pałace, parki narodowe, szczyty i bitwy: wskaż je na mapie. Do 5 km od celu to pełne punkty."],
+      a:["Zabytki i bitwy","W którym powiecie leży zamek, pałac albo park, a gdzie rozegrała się bitwa? Wybierz z czterech powiatów."]};
+    const g=MINI[URLP.get("gra")]?URLP.get("gra"):"o";
+    KONFIG={preset:"",gry:[{t:g,ile:10}].concat(WSZYSTKIE.filter(t=>t!==g).map(t=>({t,ile:0}))),kolej:"po kolei",czas:0,podp:true,premia:false,wielk:"dsm",obszar:[]};
+    $("tytul").textContent=MINI[g][0];document.title=MINI[g][0]+" · PolskoZnawca";$("odznaka").textContent="Minigra";
+    $("startTytul").innerHTML=MINI[g][0];$("startOpis").textContent=MINI[g][1];
+    $("typyLista").innerHTML='<div><span>'+TYPY[g][0]+'</span>'+TYPY[g][1]+' ×10</div>';
+    $("start").classList.remove("hidden");
+    $("stanDanych").textContent="Wczytywanie…";await laduj();$("stanDanych").textContent="";$("zaczynam").disabled=false;$("zaczynam").textContent="Graj";
+    return;
+  }
   if(TRYB==="podboj"){Podboj.start();return;}
   if(TRYB==="turniej"){
     $("tytul").textContent="Turniej";
@@ -418,7 +447,7 @@ $("zaczynam").onclick=()=>{
 };
 
 /* ---------- rundy ---------- */
-function schowaj(){if(window.Efekty)Efekty.przerwij();const pm=$("paraMapa");if(pm)pm.remove();const hk=$("herbKlubu");if(hk)hk.remove();["mapa","lot","tablica","para","ksztalt","rzekaMapa","foto","herbImg","miastoDuze","karty2","podpis","answers","wpis","okBtn","feedback","tbar"].forEach(id=>$(id).classList.add("hidden"));$("stage").classList.remove("jasna");$("answers").classList.remove("dwa");}
+function schowaj(){if(window.Efekty)Efekty.przerwij();const pm=$("paraMapa");if(pm)pm.remove();const hk=$("herbKlubu");if(hk)hk.remove();["mapa","lot","tablica","para","ksztalt","rzekaMapa","foto","herbImg","miastoDuze","karty2","podpis","answers","wpis","okBtn","feedback","tbar"].forEach(id=>$(id).classList.add("hidden"));$("stage").classList.remove("jasna");$("answers").classList.remove("dwa");$("miastoDuze").classList.remove("dluga");}
 function segmenty(){[...$("segmenty").children].forEach((d,i)=>{const r=st.res[i];d.className=r?kolor(r.pts):(i===st.i?"teraz":"");});}
 function nastepne(){
   st.i++;schowaj();
@@ -429,7 +458,7 @@ function nastepne(){
   $("suma").textContent=fmt(st.res.reduce((a,r)=>a+r.pts,0));
   segmenty();
   const st2=$("stage");st2.style.animation="none";void st2.offsetWidth;st2.style.animation="";
-  ({z:rundaZ,g:rundaG,k:rundaK,h:rundaH,m:rundaM,r:rundaR,w:rundaW,t:rundaT,c:rundaC,s:rundaS,v:rundaV,p:rundaP,q:rundaQ})[q.t](q);
+  ({z:rundaZ,g:rundaG,k:rundaK,h:rundaH,m:rundaM,r:rundaR,w:rundaW,t:rundaT,c:rundaC,s:rundaS,v:rundaV,p:rundaP,q:rundaQ,o:rundaO,a:rundaA,y:rundaG})[q.t](q);
   const czas=TRYB==="dzien"||q.t==="q"?0:KONFIG.czas;
   if(czas>0)zegar(czas);
 }
@@ -441,7 +470,7 @@ function wpisz(nazwy,poprawne,opcje){
   if(TRYB==="walka"||TRYB==="podboj"||(TRYB==="saga"&&POZIOM.podp)){pokazOpcje();$("wpis").classList.add("bez-podp");}
   else{if(TRYB==="saga")$("wpis").classList.add("bez-podp");POLE.focus();}
 }
-ZP.jokerCel(()=>{const q=Q[st.i];if(!q)return [];if(q.t==="v")return [q.woj];if(q.t==="p")return [q.pw.label];return st.poprawne||[];});
+ZP.jokerCel(()=>{const q=Q[st.i];if(!q)return [];if(q.t==="v")return [q.woj];if(q.t==="p"||q.t==="a")return [q.pw.label];return st.poprawne||[];});
 function pokazOpcje(){
   const box=$("answers");box.innerHTML="";box.classList.remove("hidden");
   st.opcje.forEach(o=>{const b=document.createElement("button");b.textContent=o;b.onclick=()=>odpWpis(o,b);box.appendChild(b);});
@@ -454,14 +483,14 @@ function odpWpis(v,btn){
   wynikRundy(ok?(st.podp?500:1000):0,ok,ok?"Dobrze":(v?"Niestety":"Pas"));
 }
 function rundaG(q){
-  $("pytanie").textContent=q.c.n;
+  $("pytanie").textContent=q.t==="y"?(q.c.typ==="w"?"Gdzie to było? ":"Gdzie to jest? ")+q.c.n+(q.c.typ==="w"&&q.c.rok?" ("+q.c.rok+")":""):q.c.n;
   $("mapa").classList.remove("hidden");
   if(!map){
     const PLB=L.latLngBounds([48.9,14.0],[55.0,24.3]);
     map=L.map("mapa",{zoomControl:true,attributionControl:true,minZoom:5,maxZoom:12,maxBounds:PLB.pad(0.4),zoomSnap:0.25});
     ZP.podkladWektorowy(map);
     warstwy=L.layerGroup().addTo(map);etykiety=ZP.etykietyMiast(map);
-    map.on("click",e=>{if(st.odp||Q[st.i].t!=="g")return;st.guess=e.latlng;warstwy.clearLayers();L.circleMarker(e.latlng,{radius:8,color:"#0A181B",weight:2,fillColor:"#E8F1EE",fillOpacity:1}).addTo(warstwy);$("okBtn").disabled=false;});
+    map.on("click",e=>{if(st.odp||(Q[st.i].t!=="g"&&Q[st.i].t!=="y"))return;st.guess=e.latlng;warstwy.clearLayers();L.circleMarker(e.latlng,{radius:8,color:"#0A181B",weight:2,fillColor:"#E8F1EE",fillOpacity:1}).addTo(warstwy);$("okBtn").disabled=false;});
   }
   warstwy.clearLayers();etykiety.ukryj();
   // na planszy przygód mapa startuje od razu na województwie, z którego jest pytanie
@@ -572,6 +601,26 @@ function rundaQ(q){
   ZP.pasek($("tbar"),$("tfill"),20,()=>{if(st.i!==nr||st.odp)return;koniec=true;[...a.children].forEach(y=>y.disabled=true);
     const pts=Math.max(0,Math.min(1000,dobre*125-zle*60));wynikRundy(pts,pts>=500,"Szybki strzał: "+dobre+" dobrze, "+zle+" źle");},()=>st.i!==nr||st.odp);
 }
+// odkrycia: nazwa postaci albo zabytku z krótkim opisem pod spodem
+function duzaNazwa(c,dopisek){
+  const el=$("miastoDuze");el.innerHTML="";el.append(document.createTextNode(c.n));el.classList.toggle("dluga",c.n.length>22);
+  const opis=dopisek||c.opis;if(opis){const s=document.createElement("small");s.className="odk-opis";s.textContent=opis;el.appendChild(s);}
+  el.classList.remove("hidden");
+}
+function rundaO(q){
+  $("pytanie").textContent="Gdzie urodziła się ta osoba?";
+  duzaNazwa(q.c,q.c.opis+(q.c.ur?" · ur. "+q.c.ur:""));
+  wpisz([...new Set(D.ludzie.map(c=>c.mn))],[q.c.mn],q.opcje);
+}
+function rundaA(q){
+  $("pytanie").textContent=q.c.typ==="w"?"W którym powiecie to było?":"W którym powiecie leży";
+  duzaNazwa(q.c,q.c.typ==="w"?(q.c.rok?"rok "+q.c.rok:q.c.opis):q.c.opis);
+  const a=$("answers");a.innerHTML="";a.classList.remove("hidden");
+  q.opcje.forEach(o=>{const x=document.createElement("button");x.textContent=o;x.onclick=()=>{
+    if(st.odp)return;const ok=o===q.pw.label;
+    [...a.children].forEach(y=>{y.disabled=true;y.classList.add(y.textContent===q.pw.label?"right":y===x?"wrong":"fade");});
+    wynikRundy(ok?1000:0,ok,ok?"Dobrze":"Niestety");};a.appendChild(x);});
+}
 function rundaV(q){
   $("pytanie").textContent="W którym województwie leży";
   $("miastoDuze").textContent=q.c.n;$("miastoDuze").classList.remove("hidden");
@@ -640,6 +689,13 @@ function wynikRundy(pts,ok,naglowek){
     fetch("rzeki-geo.json").then(r=>r.json()).then(g=>{const l=g[q.c.rid];if(!l)return;
       svg.insertAdjacentHTML("afterbegin","");svg.querySelector(".dot").insertAdjacentHTML("beforebegin",'<path class="rz" d="'+l.map(x=>"M"+x.map(([a,b])=>PL.x(a).toFixed(1)+" "+PL.y(b).toFixed(1)).join("L")).join("")+'"/>');}).catch(()=>{});
   }
+  if(q.t==="o"||q.t==="a"){
+    // gdzie to jest: kropka na mapie Polski
+    $("miastoDuze").classList.add("hidden");
+    const svg=$("rzekaMapa");svg.setAttribute("viewBox","0 0 500 "+PL.H.toFixed(0));
+    svg.innerHTML=baseSvg+'<circle class="dot" cx="'+PL.x(q.c.lon).toFixed(1)+'" cy="'+PL.y(q.c.lat).toFixed(1)+'" r="7"/>';
+    svg.classList.remove("hidden");
+  }
   if(q.t==="z"&&lotMap){
     lotZnacznik=L.circleMarker([q.c.lat,q.c.lon],{radius:9,color:"#0A181B",weight:2,fillColor:"#F2C14E",fillOpacity:1}).addTo(lotMap).bindTooltip(q.c.n,{permanent:true,direction:"top",className:"cel-lbl"});
     lotMap.setMaxBounds(null);lotMap.setMinZoom(5);lotMap.flyTo([q.c.lat,q.c.lon],10,{duration:1.2});
@@ -654,7 +710,7 @@ function wynikRundy(pts,ok,naglowek){
       +'<text x="'+P.x(q.a.lon).toFixed(0)+'" y="'+P.y(q.a.lat).toFixed(0)+'">'+q.a.n+'</text><text x="'+P.x(q.b.lon).toFixed(0)+'" y="'+P.y(q.b.lat).toFixed(0)+'">'+q.b.n+'</text></svg>';
     $("para").classList.add("hidden");$("stage").insertAdjacentHTML("beforeend",svg);
   }
-  if(q.t!=="q")ZP.zapisz({z:"miasto",g:"miasto",k:"powiat",h:"herb",m:"miejsce",r:"rzeka",w:"ludnosc",t:"tablica",c:"klub",s:"powiat",v:"miasto",p:"miasto"}[q.t],q.t==="k"?q.p.k:q.t==="t"?q.p.kod:q.t==="s"?q.a.k:(q.c?q.c.n:q.a.n),ok);
+  if(q.t!=="q")ZP.zapisz({z:"miasto",g:"miasto",k:"powiat",h:"herb",m:"miejsce",r:"rzeka",w:"ludnosc",t:"tablica",c:"klub",s:"powiat",v:"miasto",p:"miasto",o:"postac",a:"zabytek",y:"zabytek"}[q.t],q.t==="k"?q.p.k:q.t==="t"?q.p.kod:q.t==="s"?q.a.k:(q.c?q.c.n:q.a.n),ok);
   st.res.push({t:q.t,pts});
   if(TRYB==="dzien")localStorage.setItem(KLUCZ,JSON.stringify({res:st.res,done:false}));
   if(TRYB==="podboj")Podboj.postep(st.res);
@@ -665,12 +721,14 @@ function wynikRundy(pts,ok,naglowek){
   const odp=q.t==="g"||q.t==="z"?q.c.n+(q.c.pop?", "+fmt(q.c.pop)+" mieszk.":""):q.t==="k"?q.p.full:q.t==="r"?q.c.n+", rzeka "+q.c.rzeka
     :q.t==="w"?q.a.n+" "+fmt(q.a.pop)+" · "+q.b.n+" "+fmt(q.b.pop):q.t==="t"?q.p.kod+" to "+q.p.nazwa+(q.p.siedziba?" ("+q.p.siedziba+")":"")
     :q.t==="c"?"W "+q.c.n+": "+q.kluby.map(k=>k.pelna).join(", "):q.t==="s"?(q.sas?"Graniczą":"Nie graniczą"):q.t==="v"?q.c.n+" leży w woj. "+q.woj
-    :q.t==="p"?q.c.n+" leży w: "+q.pw.full:q.t==="q"?"Koniec serii":q.c.n;
+    :q.t==="p"?q.c.n+" leży w: "+q.pw.full:q.t==="q"?"Koniec serii"
+    :q.t==="o"||q.t==="a"||q.t==="y"?OdkryciaPytania.odpowiedz(q,(D.powAll.find(p=>p.k===q.c.p)||{}).full):q.c.n;
   const fb=$("feedback");
   fb.innerHTML='<div class="txt"><strong></strong><span></span></div><button class="next" id="nextBtn"></button>';
   fb.querySelector("strong").textContent=naglowek+" · +"+pts;
   fb.querySelector("span").textContent=odp;
-  const cel=q.t==="k"?{p:q.p.k,nazwa:q.p.full}:q.t==="s"?{p:q.a.k,nazwa:q.a.label||q.a.n}:q.t==="t"||q.t==="q"?null:q.t==="p"?{p:q.pw.k,nazwa:q.pw.full}:q.t==="w"?{miasto:(q.a.pop>q.b.pop?q.a:q.b).n,lat:(q.a.pop>q.b.pop?q.a:q.b).lat,lon:(q.a.pop>q.b.pop?q.a:q.b).lon,nazwa:(q.a.pop>q.b.pop?q.a:q.b).n}:{miasto:q.c.n,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.n};
+  if(q.t==="o"||q.t==="a"||q.t==="y"){const ck=OdkryciaPytania.ciekawostka(q.c);if(ck){const s=document.createElement("small");s.className="odk-ciek";s.textContent="💡 "+ck;fb.querySelector(".txt").appendChild(s);}}
+  const cel=q.t==="o"||q.t==="a"||q.t==="y"?(()=>{const pw=D.powAll.find(p=>p.k===q.c.p);return pw?{p:pw.k,nazwa:pw.full}:null;})():q.t==="k"?{p:q.p.k,nazwa:q.p.full}:q.t==="s"?{p:q.a.k,nazwa:q.a.label||q.a.n}:q.t==="t"||q.t==="q"?null:q.t==="p"?{p:q.pw.k,nazwa:q.pw.full}:q.t==="w"?{miasto:(q.a.pop>q.b.pop?q.a:q.b).n,lat:(q.a.pop>q.b.pop?q.a:q.b).lat,lon:(q.a.pop>q.b.pop?q.a:q.b).lon,nazwa:(q.a.pop>q.b.pop?q.a:q.b).n}:{miasto:q.c.n,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.n};
   ZP.dopiszEncykl(fb,cel);
   $("nextBtn").textContent=st.i+1>=Q.length?"Wynik":"Dalej";$("nextBtn").onclick=nastepne;
   fb.classList.remove("hidden");
@@ -682,7 +740,7 @@ function wynikRundy(pts,ok,naglowek){
 }
 
 /* ---------- konfigurator rozgrywki: jakie gry, ile pytań, w jakiej kolejności ---------- */
-const WSZYSTKIE=["z","g","m","h","t","r","c","w","s","v","p","q","k"];
+const WSZYSTKIE=["z","g","m","h","t","r","c","w","s","v","p","o","a","y","q","k"];
 const PRESETY={
   "Turniej":{gry:WSZYSTKIE.map(t=>({t,ile:2})),kolej:"przeplatane"},
   "Szybka":{gry:WSZYSTKIE.map(t=>({t,ile:1})),kolej:"przeplatane"},
@@ -690,6 +748,7 @@ const PRESETY={
   "Mapa i miasta":{gry:[{t:"z",ile:3},{t:"g",ile:3},{t:"m",ile:3},{t:"v",ile:2}],kolej:"przeplatane"},
   "Symbole":{gry:[{t:"h",ile:3},{t:"t",ile:3},{t:"c",ile:3},{t:"r",ile:3}],kolej:"przeplatane"},
   "Granice":{gry:[{t:"k",ile:4},{t:"s",ile:4},{t:"v",ile:3}],kolej:"przeplatane"},
+  "Odkrycia":{gry:[{t:"o",ile:4},{t:"a",ile:3},{t:"y",ile:3}],kolej:"przeplatane"},
   "Ekspert":{gry:WSZYSTKIE.map(t=>({t,ile:2})),kolej:"losowo",podp:false,czas:20}
 };
 function nowaKonfig(preset){
@@ -785,7 +844,7 @@ function zegar(sek){
 function czasMinal(cicho){
   if(st.odp)return;
   const q=Q[st.i];
-  if(q&&q.t==="g"&&st.guess){$("okBtn").click();return;}
+  if(q&&(q.t==="g"||q.t==="y")&&st.guess){$("okBtn").click();return;}
   if(POLE)POLE.wylacz(true);
   $("okBtn").classList.add("hidden");
   [...$("answers").children].forEach(x=>x.disabled=true);
@@ -851,7 +910,8 @@ function pokazWynik(res){
     +'<div class="btnrow"><a class="ghost" href="./" style="display:grid;place-items:center;text-decoration:none;color:inherit">Inne gry</a>'
     +(TRYB==="turniej"?'<button class="ghost" id="jeszcze">Jeszcze raz</button>':'')+'</div>'
     +'<div class="rows"></div>';
-  w.querySelector(".ranga").textContent=ranga+" · "+(TRYB==="dzien"?"Wyzwanie dnia #"+NR:"Turniej");
+  w.querySelector(".ranga").textContent=ranga+" · "+(TRYB==="dzien"?"Wyzwanie dnia #"+NR:TRYB==="mini"?$("tytul").textContent:"Turniej");
+  if(TRYB==="mini"){const rz=w.querySelector("#rzuc");rz.textContent="Jeszcze raz";rz.id="jeszczeMini";rz.onclick=()=>location.reload();}
   const meta=w.querySelector(".meta");
   const nast=()=>{const n=new Date(),m=new Date(n);m.setHours(24,0,0,0);const s=Math.max(0,Math.floor((m-n)/1000));return Math.floor(s/3600)+":"+String(Math.floor(s%3600/60)).padStart(2,"0");};
   meta.innerHTML=TRYB==="dzien"
@@ -872,7 +932,7 @@ function pokazWynik(res){
     if(wygr)setTimeout(ZP.fanfary,700);
   }else if(proc>=75)setTimeout(ZP.fanfary,500);
   $("udostepnij").onclick=()=>udostepnij(res,suma,max,ranga);
-  $("rzuc").onclick=()=>rzucWyzwanie(res,suma);
+  if($("rzuc"))$("rzuc").onclick=()=>rzucWyzwanie(res,suma);
   if($("jeszcze"))$("jeszcze").onclick=()=>{w.classList.add("hidden");$("setup").classList.remove("hidden");};
   if(TRYB==="dzien")setInterval(()=>{const e=$("odl");if(e)e.textContent=nast();},30000);
 }
