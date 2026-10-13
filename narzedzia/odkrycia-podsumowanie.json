@@ -89,7 +89,7 @@
  },
  "gminy": {
   "wszystkie": 2479,
-  "z_czyms": 688,
+  "z_czyms": 689,
   "z_dwoma": 249,
   "wg_typu": {
    "miejsko-wiejskie": {
@@ -102,7 +102,7 @@
    },
    "miejskie": {
     "wszystkie": 302,
-    "z_czyms": 198
+    "z_czyms": 199
    }
   }
  }

@@ -32,14 +32,14 @@ ludzie: wersje językowe 100 do 100000
   zawody 4200 / 4208
   zawody 4208 / 4208
 odsłony: ludzie
-  odsłony 500 / 4208 błędów 0 148 s
-  odsłony 1000 / 4208 błędów 0 295 s
-  odsłony 1500 / 4208 błędów 0 447 s
-  odsłony 2000 / 4208 błędów 0 595 s
-  odsłony 2500 / 4208 błędów 0 748 s
-  odsłony 3000 / 4208 błędów 0 895 s
-  odsłony 3500 / 4208 błędów 0 1049 s
-  odsłony 4000 / 4208 błędów 0 1191 s
+  odsłony 500 / 4208 błędów 0 128 s
+  odsłony 1000 / 4208 błędów 0 288 s
+  odsłony 1500 / 4208 błędów 0 432 s
+  odsłony 2000 / 4208 błędów 0 591 s
+  odsłony 2500 / 4208 błędów 0 735 s
+  odsłony 3000 / 4208 błędów 0 894 s
+  odsłony 3500 / 4208 błędów 0 1032 s
+  odsłony 4000 / 4208 błędów 0 1192 s
   odsłony gotowe, błędów 0
 miejsca: unesco
   nowych 18 razem 18
@@ -120,9 +120,9 @@ miejsca: szczyt2
 miejsca: zabytek_techniki
   nowych 0 razem 2020
 odsłony: miejsca
-  odsłony 500 / 2020 błędów 0 145 s
-  odsłony 1000 / 2020 błędów 0 291 s
-  odsłony 1500 / 2020 błędów 0 437 s
+  odsłony 500 / 2020 błędów 0 142 s
+  odsłony 1000 / 2020 błędów 0 284 s
+  odsłony 1500 / 2020 błędów 0 426 s
   odsłony 2000 / 2020 błędów 0 586 s
   odsłony gotowe, błędów 0
 wydarzenia: bitwy i oblężenia
