@@ -1,5 +1,5 @@
 ludzie: wersje językowe 11 do 13
-  razem 1069
+  razem 1068
 ludzie: wersje językowe 13 do 15
   razem 1822
 ludzie: wersje językowe 15 do 17
@@ -32,14 +32,14 @@ ludzie: wersje językowe 100 do 100000
   zawody 4200 / 4208
   zawody 4208 / 4208
 odsłony: ludzie
-  odsłony 500 / 4208 błędów 0 145 s
-  odsłony 1000 / 4208 błędów 0 280 s
-  odsłony 1500 / 4208 błędów 0 440 s
-  odsłony 2000 / 4208 błędów 0 584 s
-  odsłony 2500 / 4208 błędów 0 744 s
-  odsłony 3000 / 4208 błędów 0 878 s
-  odsłony 3500 / 4208 błędów 0 1039 s
-  odsłony 4000 / 4208 błędów 0 1184 s
+  odsłony 500 / 4208 błędów 0 148 s
+  odsłony 1000 / 4208 błędów 0 295 s
+  odsłony 1500 / 4208 błędów 0 447 s
+  odsłony 2000 / 4208 błędów 0 595 s
+  odsłony 2500 / 4208 błędów 0 748 s
+  odsłony 3000 / 4208 błędów 0 895 s
+  odsłony 3500 / 4208 błędów 0 1049 s
+  odsłony 4000 / 4208 błędów 0 1191 s
   odsłony gotowe, błędów 0
 miejsca: unesco
   nowych 18 razem 18
@@ -76,7 +76,6 @@ miejsca: latarnia
 miejsca: most
   nowych 11 razem 607
 miejsca: pomnik
-  błąd HTTP Error 504: Gateway Timeout próba 1
   nowych 20 razem 627
 miejsca: skansen
   nowych 12 razem 639
@@ -90,8 +89,41 @@ miejsca: stadion
   nowych 15 razem 672
 miejsca: oboz
   nowych 13 razem 685
+miejsca: sanktuarium
+  nowych 32 razem 717
+miejsca: dwor
+  nowych 91 razem 808
+miejsca: kosciol_drewniany
+  nowych 0 razem 808
+miejsca: cerkiew
+  nowych 262 razem 1070
+miejsca: ruiny_zamku
+  nowych 16 razem 1086
+miejsca: rezerwat
+  nowych 30 razem 1116
+miejsca: park_krajobrazowy
+  nowych 8 razem 1124
+miejsca: uzdrowisko
+  nowych 17 razem 1141
+miejsca: pomnik_przyrody
+  nowych 19 razem 1160
+miejsca: palac2
+  nowych 414 razem 1574
+miejsca: zamek2
+  nowych 151 razem 1725
+miejsca: muzeum2
+  nowych 144 razem 1869
+miejsca: jezioro2
+  nowych 36 razem 1905
+miejsca: szczyt2
+  nowych 115 razem 2020
+miejsca: zabytek_techniki
+  nowych 0 razem 2020
 odsłony: miejsca
-  odsłony 500 / 685 błędów 0 132 s
+  odsłony 500 / 2020 błędów 0 145 s
+  odsłony 1000 / 2020 błędów 0 291 s
+  odsłony 1500 / 2020 błędów 0 437 s
+  odsłony 2000 / 2020 błędów 0 586 s
   odsłony gotowe, błędów 0
 wydarzenia: bitwy i oblężenia
   razem 172
@@ -100,4 +132,4 @@ odsłony: wydarzenia
 drogi: autostrady i ekspresowe z OSM
   błąd HTTP Error 504: Gateway Timeout próba 1
   odcinków 22961
-gotowe: {'ludzie': 4208, 'miejsca': 685, 'wydarzenia': 172, 'drogi': 22961}
+gotowe: {'ludzie': 4208, 'miejsca': 2020, 'wydarzenia': 172, 'drogi': 22961}

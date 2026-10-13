@@ -82,6 +82,31 @@
 .c-edycja textarea,.c-edycja input{width:100%;box-sizing:border-box;min-width:0}
 .c-poz>div{min-width:0}
 .c-pusta{font-weight:700;color:#7A6440;margin:0}
+/* odkrycia */
+.o-w{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:9px 2px;border-bottom:1px solid var(--line)}
+.o-w .nm{flex:1 1 220px;min-width:0}
+.o-w .nm b{display:block;font-size:15px;overflow-wrap:anywhere}
+.o-w .nm small{display:block;color:var(--dim);font-size:12px;line-height:1.35;overflow-wrap:anywhere}
+.o-w .nm .pw{color:var(--gold)}
+.o-w.s-off .nm b{opacity:.55;text-decoration:line-through}
+.o-w.zm{background:rgba(242,193,78,.07)}
+.o-stan{display:flex;gap:4px;flex:none}
+.o-stan button,.o-w .o-ed{min-height:40px;padding:0 9px;border-radius:10px;border:1px solid var(--line-2);background:var(--ink-2);font-size:12.5px;font-weight:700}
+.o-stan button.akt{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.o-stan button.akt.auto{background:transparent;color:var(--gold);border-color:var(--gold)}
+.o-stan button[data-s=off].akt{background:var(--red);border-color:var(--red);color:#fff}
+.o-stan button[data-s=off].akt.auto{background:transparent;color:var(--red)}
+.o-form{width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;padding:10px;border:1px solid var(--line-2);border-radius:12px;background:var(--ink-2)}
+.o-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--dim);min-width:0}
+.o-form label.cale{grid-column:1/-1}
+.o-form input,.o-form textarea,.o-form select{min-height:40px;font:inherit;font-size:14px;width:100%;box-sizing:border-box;min-width:0}
+.o-form textarea{min-height:64px}
+.o-form .o-przyc{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.o-form .o-przyc button{flex:1;min-height:44px}
+.o-podp{display:flex;flex-wrap:wrap;gap:4px}
+.o-podp button{min-height:34px;padding:0 8px;font-size:12.5px;border-radius:8px;border:1px solid var(--line-2);background:var(--ink-3,var(--ink-2))}
+@media (max-width:520px){.o-form{grid-template-columns:1fr}}
+#z-odkrycia{overflow:hidden}
 </style>
 </head>
 <body>
@@ -98,6 +123,7 @@
   <button data-z="herby">Herby</button>
   <button data-z="kluby">Kluby</button>
   <button data-z="ciekawostki">Ciekawostki</button>
+  <button data-z="odkrycia">Odkrycia</button>
   <button data-z="ustawienia">Połączenie</button>
 </div>
 
@@ -172,6 +198,26 @@
     <div id="cEdycja"></div>
     <h3 style="margin:16px 0 6px">Gminy z ciekawostkami</h3>
     <div id="cLista" class="c-wyniki"></div>
+  </section>
+  <!-- ODKRYCIA -->
+  <section class="panel-z hidden" id="z-odkrycia">
+    <details class="pomoc"><summary>Jak działają Odkrycia</summary>
+      <ol>
+        <li>Postacie, miejsca i bitwy pobiera automat z Wikidanych. Każda pozycja ma gminę i powiat, więc trafia do pytań w Podboju, na planszy, w walkach i minigrach.</li>
+        <li><b>Gra</b> = pytania i encyklopedia, <b>Encykl.</b> = tylko encyklopedia (bez pytań), <b>Wyłącz</b> = nigdzie. Bez Twojej decyzji działa automat (napis „auto” i powód).</li>
+        <li><b>✎</b> poprawia nazwę, opis, miejscowość, gminę i dopisuje ciekawostkę pokazywaną po odpowiedzi. <b>+ Dodaj wpis</b> dodaje własną postać, miejsce albo wydarzenie.</li>
+        <li><b>Zapisz w grze</b> zapisuje poprawki. Automat przelicza dane gry w kilka minut, a ręczne poprawki zostają przy każdym kolejnym pobraniu z Wikidanych.</li>
+      </ol>
+    </details>
+    <div class="pasek">
+      <input id="oSzukaj" type="text" placeholder="Szukaj postaci, miejsca, gminy…" />
+      <select id="oKat"><option value="">wszystko</option><option value="ludzie">postacie</option><option value="miejsca">miejsca</option><option value="wydarzenia">wydarzenia</option></select>
+      <select id="oStatus"><option value="gra">w grze</option><option value="enc">tylko encyklopedia</option><option value="off">wyłączone</option><option value="moje">moje decyzje i zmiany</option><option value="">wszystkie</option></select>
+      <select id="oWoj"><option value="">cała Polska</option></select>
+    </div>
+    <div class="status" id="oInfo">Wczytywanie…</div>
+    <div class="przewin" id="oPrzewin"><div id="oUstBox" class="c-edycja hidden" style="background:var(--ink-2);border-color:var(--line-2)"></div><div class="mini-lista" id="oLista"></div><button class="ghost hidden" id="oWiecej" style="width:100%;min-height:44px;margin:8px 0">Pokaż kolejne</button></div>
+    <div class="dodaj3"><button class="ghost" id="oDodaj">+ Dodaj wpis</button><button class="ghost" id="oUst">⚙ Progi i ustawienia</button></div>
   </section>
   <section class="panel-z hidden" id="z-ustawienia">
     <div class="info">
@@ -253,7 +299,7 @@ function pokazZmiany(){
 $("zakladki").onclick=e=>{
   const b=e.target.closest("button");if(!b)return;
   document.querySelectorAll("#zakladki button").forEach(x=>x.classList.toggle("akt",x===b));
-  ["zdjecia","rzeki","herby","kluby","ciekawostki","ustawienia"].forEach(z=>$("z-"+z).classList.toggle("hidden",z!==b.dataset.z));
+  ["zdjecia","rzeki","herby","kluby","ciekawostki","odkrycia","ustawienia"].forEach(z=>$("z-"+z).classList.toggle("hidden",z!==b.dataset.z));
 };
 
 /* ---------- ZDJĘCIA ---------- */
@@ -454,7 +500,8 @@ $("zAuto").onclick=()=>{
 /* ---------- CIEKAWOSTKI ---------- */
 let CIEK={},CIEK_ZM=false,GMINY_B=[];
 fetch("ciekawostki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).then(c=>{CIEK=c||{};try{const s=JSON.parse(localStorage.getItem("admin-ciek")||"null");if(s){CIEK=s;CIEK_ZM=true;pokazZmiany();}}catch(e){}cLista();}).catch(()=>{});
-fetch("baza.json").then(r=>r.json()).then(b=>{GMINY_B=b.gminy;cLista();}).catch(()=>{});
+let POW_B=[];
+fetch("baza.json").then(r=>r.json()).then(b=>{GMINY_B=b.gminy;POW_B=b.powiaty||[];cLista();if(ODK)oRysuj();}).catch(()=>{});
 const cNazwa=k=>{const g=GMINY_B.find(x=>x.k===k);return g?g.n+" ("+g.typ.replace("gmina ","")+", "+(ZP.WOJ_KOD[k.slice(0,2)]||"")+")":k;};
 function cZmiana(){CIEK_ZM=true;try{localStorage.setItem("admin-ciek",JSON.stringify(CIEK));}catch(e){}zmian++;pokazZmiany();}
 function cLista(){
@@ -482,6 +529,147 @@ function cEdytuj(k){
   setTimeout(()=>e.scrollIntoView({behavior:"smooth",block:"start"}),50);
 }
 
+/* ---------- ODKRYCIA ---------- */
+// Lista z narzedzia/odkrycia-wszystkie.json (przeliczana przez automat), poprawki w narzedzia/odkrycia-poprawki.json
+let ODK=null,ODKP=null,ODK_ZM=false,oIle=80;
+const O_DOM={progi:{ludzie_odslony:20000,ludzie_wersje:40,miejsca_odslony:3000,miejsca_wersje:10,wydarzenia_odslony:3000,wydarzenia_wersje:10},encyklopedia_rodzaje:["oboz"],decyzje:{},zmiany:{},dodane:[],drogi:{nazwy:{}}};
+const O_KAT={ludzie:"postać",miejsca:"miejsce",wydarzenia:"wydarzenie"};
+const O_ROD={unesco:"UNESCO",pomnik_historii:"Pomnik Historii",zamek:"zamek",palac:"pałac",katedra:"katedra",bazylika:"bazylika",klasztor:"klasztor",muzeum:"muzeum",park_narodowy:"park narodowy",szczyt:"szczyt",jezioro:"jezioro",latarnia:"latarnia morska",most:"most",pomnik:"pomnik",skansen:"skansen",kopalnia:"kopalnia",ratusz:"ratusz",wieza:"wieża",stadion:"stadion",oboz:"obóz (miejsce pamięci)",jaskinia:"jaskinia",wodospad:"wodospad",wyspa:"wyspa",pustynia:"pustynia",sanktuarium:"sanktuarium",dwor:"dwór",kosciol_drewniany:"kościół drewniany",cerkiew:"cerkiew",ruiny_zamku:"ruiny zamku",rezerwat:"rezerwat",park_krajobrazowy:"park krajobrazowy",uzdrowisko:"uzdrowisko",pomnik_przyrody:"pomnik przyrody",zabytek_techniki:"zabytek techniki"};
+const oEsc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+Promise.all([fetch("narzedzia/odkrycia-wszystkie.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null),fetch("narzedzia/odkrycia-poprawki.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null)]).then(([w,p])=>{
+  ODK=w||{pozycje:[],powody:{}};
+  ODKP=Object.assign(JSON.parse(JSON.stringify(O_DOM)),p||{});ODKP.progi=Object.assign({},O_DOM.progi,ODKP.progi||{});
+  ["decyzje","zmiany"].forEach(k=>{if(!ODKP[k]||typeof ODKP[k]!=="object")ODKP[k]={};});if(!Array.isArray(ODKP.dodane))ODKP.dodane=[];
+  // niezapisany szkic z tej przeglądarki ma pierwszeństwo
+  try{const s=JSON.parse(localStorage.getItem("admin-odk")||"null");if(s&&s.decyzje){ODKP=s;ODK_ZM=true;pokazZmiany();}}catch(e){}
+  const woj=$("oWoj");Object.entries(ZP.WOJ_KOD).forEach(([k,n])=>woj.insertAdjacentHTML("beforeend",'<option value="'+k+'">'+n+'</option>'));
+  oRysuj();
+}).catch(e=>{$("oInfo").textContent="Nie udało się wczytać listy odkryć: "+e.message;});
+function oZmiana(){ODK_ZM=true;try{localStorage.setItem("admin-odk",JSON.stringify(ODKP));}catch(e){}zmian++;pokazZmiany();}
+const oPowiat=k=>{if(!k)return "";const p=POW_B.find(x=>x.k===k);return p?(+k.slice(2)>=60?"m. ":"pow. ")+p.n:"";};
+const oGmina=k=>{if(!k)return "";const g=GMINY_B.find(x=>x.k===k);return g?g.n:"";};
+// pozycja po uwzględnieniu szkicu: zmiany pól, decyzja i status automatu przy bieżących progach
+function oPoz(o){
+  const z=ODKP.zmiany[o.id]||{},x=Object.assign({},o);
+  ["n","opis","mn","ciek"].forEach(k=>{if(z[k])x[k]=z[k];});if(z.rok)x[o.kat==="ludzie"?"ur":"rok"]=z.rok;
+  if(z.g){x.g=z.g;x.gn=oGmina(z.g)||x.gn;x.p=z.g.slice(0,4);}
+  let auto=o.auto,powod=o.powod;
+  if(o.dodany){auto="gra";powod=null;}
+  else if(!powod||powod==="malo_znany"||powod==="rodzaj"){
+    const pr=ODKP.progi,zn=(o.odsl||0)>=pr[o.kat+"_odslony"]||(o.sl||0)>=pr[o.kat+"_wersje"];
+    if(!zn){auto="off";powod="malo_znany";}
+    else if((o.rodzaje||[]).some(r=>ODKP.encyklopedia_rodzaje.includes(r))){auto="enc";powod="rodzaj";}
+    else{auto="gra";powod=null;}
+  }
+  x.auto=auto;x.powod=powod;x.dec=ODKP.decyzje[o.id]||null;x.s=x.dec||auto;x.zm=!!ODKP.zmiany[o.id];
+  return x;
+}
+// wpisy dodane w panelu (także te, których automat jeszcze nie przeliczył) + lista automatu
+function oZrodla(){
+  const znane=new Set(ODK.pozycje.map(o=>o.id));
+  return ODKP.dodane.filter(d=>!znane.has(d.id)).map(d=>({id:d.id,kat:d.kat,n:d.n,opis:d.opis,mn:d.mn,g:d.g,gn:oGmina(d.g),p:d.g?d.g.slice(0,4):null,ur:d.kat==="ludzie"?d.rok:undefined,rok:d.kat!=="ludzie"?d.rok:undefined,ciek:d.ciek,sl:0,odsl:null,pkt:0,auto:"gra",powod:null,dodany:true,rodzaje:d.rodzaje||[]})).concat(ODK.pozycje);
+}
+function oRysuj(){
+  if(!ODK)return;
+  const q=ZP.norm($("oSzukaj").value),k=$("oKat").value,st=$("oStatus").value,w=$("oWoj").value;
+  const wsz=oZrodla().map(oPoz),lic={gra:0,enc:0,off:0};wsz.forEach(o=>lic[o.s]++);
+  const l=wsz.filter(o=>(!k||o.kat===k)&&(!w||(o.p||"").startsWith(w))&&(st===""||(st==="moje"?(o.dec||o.zm||o.dodany):o.s===st))&&(!q||ZP.norm([o.n,o.opis,o.mn,o.gn].join(" ")).includes(q)));
+  $("oInfo").innerHTML="Pasuje: <b>"+l.length+"</b> · w grze "+lic.gra+" · tylko encyklopedia "+lic.enc+" · wyłączone "+lic.off+(ODK.zbudowano?" · dane z "+oEsc(ODK.zbudowano):"");
+  const box=$("oLista");box.innerHTML="";
+  l.slice(0,oIle).forEach(o=>box.appendChild(oWiersz(o)));
+  if(!l.length)box.innerHTML='<div class="datastate">Nic nie pasuje.</div>';
+  $("oWiecej").classList.toggle("hidden",l.length<=oIle);
+}
+const oZnajdz=id=>{const o=oZrodla().find(x=>x.id===id);return o?oPoz(o):null;};
+function oWiersz(o){
+  const d=document.createElement("div");d.className="o-w s-"+o.s+(o.zm||o.dodany?" zm":"");d.dataset.id=o.id;
+  const gdzie=[o.kat==="ludzie"&&o.mn?"ur. "+o.mn:null,o.gn?"gm. "+o.gn:null,oPowiat(o.p)||null].filter(Boolean).join(" · ");
+  const lata=o.kat==="ludzie"?(o.ur?o.ur+(o.zm?"–"+o.zm:""):""):(o.rok||"");
+  const miary=o.dodany?"wpis ręczny":"👁 "+(o.odsl==null?"?":Number(o.odsl).toLocaleString("pl-PL"))+" · 🌐 "+o.sl;
+  const pow=o.powod&&!o.dec?'<span class="pw">'+oEsc(ODK.powody[o.powod]||o.powod)+'</span> · ':"";
+  d.innerHTML='<div class="nm"><b></b><small class="op"></small><small>'+pow+oEsc(O_KAT[o.kat]||"")+(o.rodzaje&&o.rodzaje.length?" ("+oEsc(o.rodzaje.map(r=>O_ROD[r]||r).join(", "))+")":"")+(lata?" · "+oEsc(lata):"")+(gdzie?" · "+oEsc(gdzie):"")+" · "+miary+(o.ciek?" · 💡 ciekawostka":"")+(o.zm?" · ✎ poprawione":"")+'</small></div>'
+    +'<div class="o-stan">'+[["gra","Gra"],["enc","Encykl."],["off","Wyłącz"]].map(([s,t])=>'<button type="button" data-s="'+s+'" class="'+(o.s===s?"akt"+(o.dec?"":" auto"):"")+'"'+(o.s===s&&!o.dec?' title="tak ustawił automat"':'')+'>'+t+(o.s===s&&!o.dec?" (auto)":"")+'</button>').join("")+'</div><button type="button" class="o-ed" title="Popraw" aria-label="Popraw">✎</button>';
+  d.querySelector("b").textContent=o.n||"(bez nazwy)";d.querySelector(".op").textContent=o.opis||"";
+  d.querySelectorAll(".o-stan button").forEach(b=>b.onclick=()=>{
+    const s=b.dataset.s;
+    if(s===o.auto||o.dec===s)delete ODKP.decyzje[o.id];else ODKP.decyzje[o.id]=s;
+    oZmiana();const n=oZnajdz(o.id);if(n)d.replaceWith(oWiersz(n));
+  });
+  d.querySelector(".o-ed").onclick=()=>{const f=d.querySelector(".o-form");if(f){f.remove();return;}d.appendChild(oFormularz(o,false));};
+  return d;
+}
+// formularz poprawki albo nowego wpisu
+function oFormularz(o,nowy){
+  const surowa=nowy?{}:(ODK.pozycje.find(x=>x.id===o.id)||{}),wpis=nowy?null:ODKP.dodane.find(x=>x.id===o.id),z=nowy?{}:(ODKP.zmiany[o.id]||{});
+  const v0=nowy?{kat:"miejsca"}:wpis?Object.assign({},wpis):{n:o.n,opis:o.opis,mn:o.mn,rok:o.kat==="ludzie"?o.ur:o.rok,ciek:o.ciek,g:o.g,wsp:z.wsp};
+  const d=document.createElement("div");d.className="o-form";
+  const pole=(id,et,v,typ,cale)=>'<label'+(cale?' class="cale"':'')+'>'+et+(typ==="t"?'<textarea data-p="'+id+'">'+oEsc(v)+'</textarea>':'<input data-p="'+id+'" value="'+oEsc(v)+'">')+'</label>';
+  let h='';
+  if(nowy)h+='<label>Rodzaj wpisu<select data-p="kat"><option value="miejsca">miejsce</option><option value="ludzie">postać</option><option value="wydarzenia">wydarzenie</option></select></label>'
+    +'<label>Rodzaj miejsca<select data-p="rodzaj"><option value="">(dowolny)</option>'+Object.entries(O_ROD).map(([k,n])=>'<option value="'+k+'">'+n+'</option>').join("")+'</select></label>';
+  h+=pole("n","Nazwa",v0.n||"")+pole("mn","Miejscowość (urodzenia albo położenia)",v0.mn||"");
+  h+=pole("opis","Krótki opis (np. polski kompozytor i pianista)",v0.opis||"","i",true);
+  h+='<label>Gmina<input data-p="gq" autocomplete="off" placeholder="wpisz nazwę gminy" value="'+oEsc(oGmina(v0.g))+'"><span class="o-podp"></span></label>';
+  h+=pole("rok","Rok (urodzenia, powstania albo bitwy)",v0.rok||"");
+  h+=pole("wsp","Współrzędne: długość, szerokość (opcjonalnie)",(v0.wsp||[]).join(", "),"i",true);
+  h+=pole("ciek","Ciekawostka pokazywana po odpowiedzi",v0.ciek||"","t",true);
+  if(surowa.art)h+='<p style="grid-column:1/-1;margin:0;font-size:12px"><a target="_blank" rel="noopener" href="https://pl.wikipedia.org/wiki/'+encodeURIComponent(surowa.art)+'">Artykuł w Wikipedii ↗</a></p>';
+  h+='<div class="o-przyc">'+(nowy?'<button type="button" class="big" data-a="dodaj">Dodaj wpis</button>':'<button type="button" class="big" data-a="ok">Zastosuj</button>'+(Object.keys(z).length?'<button type="button" class="ghost" data-a="cofnij">Cofnij poprawki</button>':'')+(wpis?'<button type="button" class="ghost" data-a="usun">Usuń wpis</button>':''))+'<button type="button" class="ghost" data-a="zamknij">Zamknij</button></div><p class="status" data-a="blad" style="grid-column:1/-1;margin:0"></p>';
+  d.innerHTML=h;
+  if(nowy)d.querySelector("[data-p=kat]").value="miejsca";
+  let gWyb=v0.g||null;
+  const gq=d.querySelector("[data-p=gq]"),podp=d.querySelector(".o-podp");
+  gq.oninput=()=>{const q=ZP.norm(gq.value);gWyb=null;if(q.length<2){podp.innerHTML="";return;}
+    podp.innerHTML=GMINY_B.filter(g=>ZP.norm(g.n).startsWith(q)).slice(0,8).map(g=>'<button type="button" data-k="'+g.k+'">'+oEsc(g.n)+' ('+oEsc(oPowiat(g.k.slice(0,4)))+')</button>').join("")||'<small>brak takiej gminy</small>';
+    podp.querySelectorAll("button").forEach(b=>b.onclick=()=>{gWyb=b.dataset.k;gq.value=oGmina(gWyb);podp.innerHTML="";});};
+  const pola=()=>{const v={};d.querySelectorAll("[data-p]").forEach(f=>{if(f.dataset.p!=="gq")v[f.dataset.p]=f.value.trim();});
+    const w=v.wsp?v.wsp.split(/[\s,;]+/).filter(Boolean).map(Number):[];v.wsp=w.length===2&&w.every(x=>!isNaN(x))?w:null;v.g=gWyb;return v;};
+  const blad=t=>{d.querySelector("[data-a=blad]").textContent=t;};
+  const odswiez=()=>{oRysuj();};
+  d.querySelector("[data-a=zamknij]").onclick=()=>d.remove();
+  const b=a=>d.querySelector("[data-a="+a+"]");
+  if(b("dodaj"))b("dodaj").onclick=()=>{
+    const v=pola();if(!v.n)return blad("Wpisz nazwę.");if(!v.g&&!v.wsp)return blad("Wybierz gminę z podpowiedzi albo wpisz współrzędne.");
+    if(gq.value.trim()&&!v.g)return blad("Wybierz gminę z listy podpowiedzi.");
+    const w={id:"r-"+Date.now().toString(36),kat:v.kat,n:v.n};["opis","mn","ciek","rok"].forEach(k=>{if(v[k])w[k]=v[k];});if(v.g)w.g=v.g;if(v.wsp)w.wsp=v.wsp;if(v.rodzaj)w.rodzaje=[v.rodzaj];
+    ODKP.dodane.push(w);oZmiana();d.remove();$("oStatus").value="moje";$("oSzukaj").value="";odswiez();ZP.komunikat("Dodano. Zapisz w grze, żeby trafiło do gry.");
+  };
+  if(b("ok"))b("ok").onclick=()=>{
+    const v=pola();if(gq.value.trim()&&!v.g&&gq.value.trim()!==oGmina(v0.g))return blad("Wybierz gminę z listy podpowiedzi.");
+    if(wpis){["n","opis","mn","ciek","rok"].forEach(k=>{if(v[k])wpis[k]=v[k];else delete wpis[k];});if(v.g)wpis.g=v.g;if(v.wsp)wpis.wsp=v.wsp;else delete wpis.wsp;}
+    else{
+      const zm={},org={n:surowa.n,opis:surowa.opis,mn:surowa.mn,ciek:surowa.ciek,rok:String(surowa.kat==="ludzie"?surowa.ur||"":surowa.rok||"")};
+      ["n","opis","mn","ciek","rok"].forEach(k=>{if(v[k]&&v[k]!==String(org[k]??""))zm[k]=v[k];});
+      if(v.g&&v.g!==surowa.g)zm.g=v.g;if(v.wsp)zm.wsp=v.wsp;
+      if(Object.keys(zm).length)ODKP.zmiany[o.id]=zm;else delete ODKP.zmiany[o.id];
+    }
+    oZmiana();const n=oZnajdz(o.id),w=d.closest(".o-w");if(n&&w)w.replaceWith(oWiersz(n));else odswiez();
+  };
+  if(b("cofnij"))b("cofnij").onclick=()=>{delete ODKP.zmiany[o.id];oZmiana();const n=oZnajdz(o.id),w=d.closest(".o-w");if(n&&w)w.replaceWith(oWiersz(n));};
+  if(b("usun"))b("usun").onclick=()=>{ODKP.dodane=ODKP.dodane.filter(x=>x.id!==o.id);delete ODKP.decyzje[o.id];oZmiana();odswiez();};
+  return d;
+}
+$("oSzukaj").oninput=()=>{oIle=80;oRysuj();};["oKat","oStatus","oWoj"].forEach(id=>$(id).onchange=()=>{oIle=80;oRysuj();});
+$("oWiecej").onclick=()=>{oIle+=80;oRysuj();};
+$("oDodaj").onclick=()=>{const box=$("oLista");const f=oFormularz(null,true);box.prepend(f);$("oPrzewin").scrollTop=0;f.querySelector("[data-p=n]").focus();};
+// progi rozpoznawalności i rodzaje miejsc tylko do encyklopedii
+$("oUst").onclick=()=>{
+  const box=$("oUstBox");$("oPrzewin").scrollTop=0;if(!box.classList.contains("hidden")){box.classList.add("hidden");return;}
+  const pr=ODKP.progi,rodz=[...new Set(ODK.pozycje.flatMap(o=>o.rodzaje||[]))].sort();
+  const n=(k,et)=>'<label>'+et+'<input type="number" min="0" step="1" data-pr="'+k+'" value="'+pr[k]+'"></label>';
+  box.innerHTML='<h3>Progi rozpoznawalności</h3><p class="status" style="margin:0">Pozycja trafia do gry, gdy ma co najmniej tyle odsłon w polskiej Wikipedii rocznie <b>albo</b> tyle wersji językowych artykułu.</p>'
+    +'<div class="o-form">'+n("ludzie_odslony","Postacie: odsłony")+n("ludzie_wersje","Postacie: wersje językowe")+n("miejsca_odslony","Miejsca: odsłony")+n("miejsca_wersje","Miejsca: wersje językowe")+n("wydarzenia_odslony","Wydarzenia: odsłony")+n("wydarzenia_wersje","Wydarzenia: wersje językowe")
+    +'<div class="cale" style="grid-column:1/-1"><b style="font-size:13px">Rodzaje miejsc tylko do encyklopedii (bez pytań)</b><div class="o-podp" style="margin-top:6px">'+rodz.map(r=>'<label style="flex-direction:row;align-items:center;gap:6px;font-size:13px;color:var(--paper)"><input type="checkbox" data-rz="'+r+'"'+(ODKP.encyklopedia_rodzaje.includes(r)?" checked":"")+' style="min-height:0;width:auto">'+oEsc(O_ROD[r]||r)+'</label>').join("")+'</div></div>'
+    +'<div class="o-przyc"><button type="button" class="big" id="oUstOk">Zastosuj</button></div></div>';
+  box.classList.remove("hidden");
+  $("oUstOk").onclick=()=>{
+    box.querySelectorAll("[data-pr]").forEach(f=>{const v=parseInt(f.value,10);if(!isNaN(v)&&v>=0)ODKP.progi[f.dataset.pr]=v;});
+    ODKP.encyklopedia_rodzaje=[...box.querySelectorAll("[data-rz]:checked")].map(f=>f.dataset.rz);
+    oZmiana();box.classList.add("hidden");oRysuj();ZP.komunikat("Progi zmienione. Lista pokazuje już nowe statusy.");
+  };
+};
+const plikOdk=()=>{const {opis,...reszta}=ODKP;return JSON.stringify(Object.assign({opis:"Odkrycia: ręczne poprawki z panelu admina (zakładka Odkrycia). Automat przy każdym przeliczeniu stosuje je na danych z Wikidanych. progi: odsłony w polskiej Wikipedii rocznie albo wersje językowe potrzebne do gry; encyklopedia_rodzaje: rodzaje miejsc bez pytań; decyzje: id -> gra | enc | off; zmiany: id -> poprawione pola (n, opis, mn, g = TERYT gminy, ciek = ciekawostka, rok, wsp = [lon, lat]); dodane: wpisy dodane ręcznie; drogi.nazwy: nazwy własne dróg."},reszta),null,1);};
+
 /* ---------- zapis ---------- */
 const plikWybor=()=>JSON.stringify({opis:"Wybór zdjęć do gry „Co to za miasto?”. Edytowany w panelu admina. wybrane: pliki z Commons; wlasne: zdjęcia wgrane w panelu; z_adresow: obrazki z innych stron (pobiera je automat).",
   wybrane:WYBOR.wybrane,wlasne:WYBOR.wlasne,z_adresow:WYBOR.z_adresow,odrzucone:[...new Set(WYBOR.odrzucone)].sort()},null,1);
@@ -495,13 +683,14 @@ $("zapiszBtn").onclick=async()=>{
     if(KLUBY_ZM){await wspolrzedne();await zapiszPlik("kluby.json",JSON.stringify(KLUBY,null,1),"Panel admina: kluby piłkarskie");KLUBY_ZM=false;}
     if(CIEK_ZM){Object.keys(CIEK).forEach(k=>{CIEK[k]=CIEK[k].filter(x=>x.t&&x.t.trim());if(!CIEK[k].length)delete CIEK[k];});
       await zapiszPlik("ciekawostki.json",JSON.stringify(CIEK,null,1),"Panel admina: ciekawostki gmin");CIEK_ZM=false;localStorage.removeItem("admin-ciek");}
+    if(ODK_ZM){await zapiszPlik("narzedzia/odkrycia-poprawki.json",plikOdk(),"Panel admina: odkrycia");ODK_ZM=false;localStorage.removeItem("admin-odk");}
     zmian=0;localStorage.removeItem(L.szkic);pokazZmiany();
-    ZP.komunikat("Zapisano. Rzeki i herby działają od razu, nowe zdjęcia pojawią się w grze za kilka minut.",6000);
+    ZP.komunikat("Zapisano. Rzeki i herby działają od razu, nowe zdjęcia i odkrycia pojawią się w grze za kilka minut.",6000);
   }catch(e){$("zmiany").textContent="Nie udało się zapisać: "+e.message;}
   $("zapiszBtn").disabled=false;
 };
 $("pobierzBtn").onclick=()=>{
-  [["zdjecia-wybor.json",plikWybor()],["poprawki.json",plikPopr()]].forEach(([n,t])=>{
+  [["zdjecia-wybor.json",plikWybor()],["poprawki.json",plikPopr()]].concat(ODKP?[["odkrycia-poprawki.json",plikOdk()]]:[]).forEach(([n,t])=>{
     const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"application/json"}));a.download=n;document.body.appendChild(a);a.click();a.remove();
   });
 };

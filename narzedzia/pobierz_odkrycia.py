@@ -105,15 +105,24 @@ def ludzie():
     ks = list(wynik)
     for i in range(0, len(ks), 300):
         vals = " ".join("wd:" + k for k in ks[i:i + 300])
-        q = """SELECT ?p (GROUP_CONCAT(DISTINCT ?zl; separator="|") AS ?zaw) (GROUP_CONCAT(DISTINCT ?ob; separator="|") AS ?obyw) WHERE {
+        # zawody, obywatelstwo i znaczniki wykluczenia: NSDAP (P102), SS i Waffen-SS (P463, P241), wyrok (P1399)
+        q = """SELECT ?p (GROUP_CONCAT(DISTINCT ?zl; separator="|") AS ?zaw) (GROUP_CONCAT(DISTINCT ?ob; separator="|") AS ?obyw)
+          (SAMPLE(?nsdap) AS ?ns) (SAMPLE(?ss) AS ?s) (SAMPLE(?wyr) AS ?w) WHERE {
           VALUES ?p { %s }
           OPTIONAL { ?p wdt:P106 ?z. ?z rdfs:label ?zl FILTER(lang(?zl) = "pl") }
           OPTIONAL { ?p wdt:P27 ?o. BIND(STRAFTER(STR(?o), "entity/") AS ?ob) }
+          OPTIONAL { ?p wdt:P102 wd:Q7320. BIND(1 AS ?nsdap) }
+          OPTIONAL { VALUES ?ssq { wd:Q153687 wd:Q153695 wd:Q154067 } { ?p wdt:P463 ?ssq } UNION { ?p wdt:P241 ?ssq } BIND(1 AS ?ss) }
+          OPTIONAL { ?p wdt:P1399 ?wyrok. BIND(STRAFTER(STR(?wyrok), "entity/") AS ?wyr) }
         } GROUP BY ?p""" % vals
         for b in sparql(q):
             w = wynik[qid(b["p"])]
             w["zaw"] = [x for x in (b.get("zaw") or "").split("|") if x][:6]
             w["obyw"] = [x for x in (b.get("obyw") or "").split("|") if x][:4]
+            if b.get("ns") or b.get("s"):
+                w["nazizm"] = True
+            if b.get("w"):
+                w["wyrok"] = b["w"]
         print("  zawody", min(i + 300, len(ks)), "/", len(ks), flush=True)
     return list(wynik.values())
 
@@ -145,6 +154,22 @@ KLASY = [
     ("wieza", "?x wdt:P31/wdt:P279* wd:Q12518.", 12),
     ("stadion", "?x wdt:P31/wdt:P279* wd:Q483110.", 15),
     ("oboz", "?x wdt:P31/wdt:P279* wd:Q152081.", 10),
+    # bliżej gmin: obiekty, które są w wielu gminach wiejskich
+    ("sanktuarium", "?x wdt:P31 ?d. ?d rdfs:label \"sanktuarium\"@pl.", 2),
+    ("dwor", "?x wdt:P31/wdt:P279* wd:Q879050.", 3),
+    ("kosciol_drewniany", "?x wdt:P31 ?d. ?d rdfs:label \"kościół drewniany\"@pl.", 2),
+    ("cerkiew", "?x wdt:P31/wdt:P279* wd:Q2031836.", 3),
+    ("ruiny_zamku", "?x wdt:P31/wdt:P279* wd:Q17715832.", 2),
+    ("rezerwat", "?x wdt:P31 wd:Q179049; wdt:P17 wd:Q36. FILTER EXISTS { ?a schema:about ?x; schema:isPartOf <https://pl.wikipedia.org/> }", 2),
+    ("park_krajobrazowy", "?x wdt:P31 ?d. ?d rdfs:label \"park krajobrazowy\"@pl.", 1),
+    ("uzdrowisko", "?x wdt:P31 ?d. ?d rdfs:label \"uzdrowisko\"@pl.", 1),
+    ("pomnik_przyrody", "?x wdt:P31/wdt:P279* wd:Q23790.", 2),
+    ("palac2", "?x wdt:P31/wdt:P279* wd:Q16560.", 3),
+    ("zamek2", "?x wdt:P31/wdt:P279* wd:Q23413.", 2),
+    ("muzeum2", "?x wdt:P31/wdt:P279* wd:Q33506.", 5),
+    ("jezioro2", "?x wdt:P31/wdt:P279* wd:Q23397.", 8),
+    ("szczyt2", "?x wdt:P31/wdt:P279* wd:Q8502.", 6),
+    ("zabytek_techniki", "?x wdt:P31/wdt:P279* wd:Q15243209.", 3),
 ]
 
 

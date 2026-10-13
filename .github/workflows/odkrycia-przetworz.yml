@@ -1,0 +1,36 @@
+name: Odkrycia (przeliczenie po poprawkach)
+
+# Po zapisie w panelu admina (narzedzia/odkrycia-poprawki.json) albo zmianie skryptu
+# przelicza dane gry: odkrycia.json, lista dla panelu i podsumowanie.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "narzedzia/odkrycia-poprawki.json"
+      - "narzedzia/odkrycia_przetworz.cjs"
+      - ".github/workflows/odkrycia-przetworz.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  przelicz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Przeliczenie
+        run: node narzedzia/odkrycia_przetworz.cjs
+      - name: Zapisz zmiany
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add odkrycia.json narzedzia/odkrycia-wszystkie.json narzedzia/odkrycia-podsumowanie.json
+          if ! git diff --cached --quiet; then git commit -m "Odkrycia: przeliczenie po poprawkach"; for i in 1 2 3 4 5; do git pull --rebase -X theirs && git push && break; sleep $((i*7)); done; fi
