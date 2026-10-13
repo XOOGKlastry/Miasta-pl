@@ -1,0 +1,9 @@
+{
+ "opis": "Odkrycia: ręczne poprawki z panelu admina (zakładka Odkrycia). Automat przy każdym przeliczeniu stosuje je na danych z Wikidanych. progi: ile odsłon w polskiej Wikipedii rocznie albo wersji językowych potrzeba, żeby pozycja trafiła do gry; encyklopedia_rodzaje: rodzaje miejsc tylko do encyklopedii (bez pytań); decyzje: id -> gra | enc | off; zmiany: id -> poprawione pola (n, opis, mn, g = TERYT gminy, ciek = ciekawostka po odpowiedzi, wsp = [lon, lat]); dodane: wpisy dodane ręcznie; drogi.nazwy: nazwy własne dróg.",
+ "progi": {"ludzie_odslony": 20000, "ludzie_wersje": 40, "miejsca_odslony": 3000, "miejsca_wersje": 10, "wydarzenia_odslony": 3000, "wydarzenia_wersje": 10},
+ "encyklopedia_rodzaje": ["oboz"],
+ "decyzje": {},
+ "zmiany": {},
+ "dodane": [],
+ "drogi": {"nazwy": {"A1": "Autostrada Bursztynowa", "A2": "Autostrada Wolności"}}
+}

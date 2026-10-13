@@ -1,6 +1,11 @@
-/* Odkrycia: przypisanie surowych danych (narzedzia/odkrycia-surowe.json) do gmin i powiatów po współrzędnych.
-   Uruchomienie: node narzedzia/odkrycia_przetworz.cjs  →  odkrycia.json (dane do gry) i narzedzia/odkrycia-podsumowanie.json
-   Punkt w wielokącie na granicach z gminy.topojson i powiaty.topojson (z dziurami: miasta na prawach powiatu w środku powiatów). */
+/* Odkrycia: z surowych danych (narzedzia/odkrycia-surowe.json) i ręcznych poprawek (narzedzia/odkrycia-poprawki.json)
+   buduje dane gry i pełną listę dla panelu admina.
+   Uruchomienie: node narzedzia/odkrycia_przetworz.cjs
+     odkrycia.json                         dane do gry: pozycje „w grze” i „tylko encyklopedia” (s:"e")
+     narzedzia/odkrycia-wszystkie.json     wszystkie pozycje ze statusem i powodem (dla panelu, także odrzucone)
+     narzedzia/odkrycia-podsumowanie.json  liczby i pokrycie powiatów oraz gmin
+   Gmina i powiat z punktu w wielokącie na granicach z gminy.topojson i powiaty.topojson (z dziurami: miasta na prawach powiatu).
+   Poprawki z panelu wygrywają z automatem: decyzje (gra / enc / off), zmiany pól, wpisy dodane ręcznie, progi. */
 const fs=require("fs"),path=require("path"),topojson=require("../topojson-client.min.js");
 const KAT=path.join(__dirname,".."),wczytaj=f=>JSON.parse(fs.readFileSync(path.join(KAT,f),"utf8"));
 
@@ -17,50 +22,107 @@ const wSrodku=(x,y,g)=>x>=g.b[0]&&x<=g.b[2]&&y>=g.b[1]&&y<=g.b[3]&&g.polys.some(
 // siatka 0,25° jako prosty indeks przestrzenny
 function indeks(w){const s=new Map();w.forEach(g=>{for(let x=Math.floor(g.b[0]*4);x<=Math.floor(g.b[2]*4);x++)for(let y=Math.floor(g.b[1]*4);y<=Math.floor(g.b[3]*4);y++){const k=x+":"+y;if(!s.has(k))s.set(k,[]);s.get(k).push(g);}});
   return (lon,lat)=>(s.get(Math.floor(lon*4)+":"+Math.floor(lat*4))||[]).find(g=>wSrodku(lon,lat,g))||null;}
-
-const POW=warstwa("powiaty.topojson","powiaty"),GM=warstwa("gminy.topojson","gminy",f=>/^[0-9]{6}[123]$/.test(String(f.properties.k)));
-const powiat=indeks(POW),gmina=indeks(GM);
-const WOJ={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
-// obywatelstwa uznawane za polskie: Polska, II RP, PRL, Królestwo Polskie, Rzeczpospolita Obojga Narodów, Księstwo Warszawskie, Królestwo Kongresowe
-const POLSKIE=new Set(["Q36","Q207272","Q170366","Q1649871","Q172107","Q154195","Q152525","Q1179225","Q2569593","Q29993"]);
-
-function przypisz(o){
-  if(!o.wsp)return null;const [lon,lat]=o.wsp,p=powiat(lon,lat);if(!p)return null;const g=gmina(lon,lat);
-  return {p:p.k,g:g?g.k:null,gn:g?g.n:null};
+// punkt w środku gminy (dla wpisów dodanych bez współrzędnych): środek prostokąta albo najbliższy punkt siatki wewnątrz
+function punktW(g){
+  const [x0,y0,x1,y1]=g.b,cx=(x0+x1)/2,cy=(y0+y1)/2;if(wSrodku(cx,cy,g))return [+cx.toFixed(5),+cy.toFixed(5)];
+  let naj=null,d=1e9;for(let i=1;i<16;i++)for(let j=1;j<16;j++){const x=x0+(x1-x0)*i/16,y=y0+(y1-y0)*j/16;if(!wSrodku(x,y,g))continue;const dd=(x-cx)**2+(y-cy)**2;if(dd<d){d=dd;naj=[+x.toFixed(5),+y.toFixed(5)];}}
+  return naj;
 }
+
+const WOJ={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie","08":"lubuskie","10":"łódzkie","12":"małopolskie","14":"mazowieckie","16":"opolskie","18":"podkarpackie","20":"podlaskie","22":"pomorskie","24":"śląskie","26":"świętokrzyskie","28":"warmińsko-mazurskie","30":"wielkopolskie","32":"zachodniopomorskie"};
+// obywatelstwa uznawane za polskie (gdy opis nie mówi wprost)
+const POLSKIE=new Set(["Q36","Q207272","Q211274","Q172107","Q1649871","Q152115","Q221457"]);
+// zbrodniarze: opis albo zawód; wyjątki to łowcy nazistów, ofiary, ruch oporu
+const ZLY=/\bSS\b|SS-|Waffen|zbrodniar|nazist|NSDAP|gestapo|hitlerow|komendant obozu|führer|Gauleiter|Einsatzgrupp|\boprawc|ludobójc|nadzorczyni w obozie|sprawca Holokaustu/i;
+const DOBRZY=/antyhitlerow|antynazist|łowc|ofiar|obrońc|ruchu oporu|ocalał|więzień|więźniark|Sprawiedliw/i;
+// miejsce urodzenia będące regionem, a nie miejscowością
+const REGION=/^(Kujawy|Mazowsze|Śląsk|Górny Śląsk|Dolny Śląsk|Pomorze|Pomorze Zachodnie|Wielkopolska|Małopolska|Podlasie|Warmia|Mazury|Warmia i Mazury|Kaszuby|Kurpie|Podhale|Spisz|Orawa|Żuławy|Kociewie|Lubelszczyzna|Polska|Prusy|Prusy Wschodnie|Galicja)$/i;
+const OBIEKT=/\d|ulica|dom |pałac|kamienica|szpital|zespół|dwór /i;
+const DOMYSLNE={progi:{ludzie_odslony:20000,ludzie_wersje:40,miejsca_odslony:3000,miejsca_wersje:10,wydarzenia_odslony:3000,wydarzenia_wersje:10},
+  encyklopedia_rodzaje:["oboz"],decyzje:{},zmiany:{},dodane:[]};
+const POWODY={zbrodnie:"zbrodnie lub NSDAP/SS",malo_znany:"mało znany (poniżej progu)",region:"miejsce urodzenia to region",bez_nazwy:"brak polskiej nazwy",poza:"poza Polską",recznie:"wyłączone ręcznie",rodzaj:"rodzaj tylko do encyklopedii"};
+
 function main(){
-  const S=wczytaj("narzedzia/odkrycia-surowe.json"),poza={ludzie:0,miejsca:0,wydarzenia:0,drogi:0};
-  const ludzie=[],miejsca=[],wydarzenia=[];
-  for(const o of S.ludzie||[]){const a=przypisz(o);if(!a){poza.ludzie++;continue;}
+  const POW=warstwa("powiaty.topojson","powiaty"),GM=warstwa("gminy.topojson","gminy",f=>/^[0-9]{6}[123]$/.test(String(f.properties.k)));
+  const powiat=indeks(POW),gmina=indeks(GM),GMK=new Map(GM.map(g=>[g.k,g])),POWK=new Map(POW.map(p=>[p.k,p]));
+  const S=wczytaj("narzedzia/odkrycia-surowe.json");
+  let P=DOMYSLNE;try{P=Object.assign({},DOMYSLNE,wczytaj("narzedzia/odkrycia-poprawki.json"));P.progi=Object.assign({},DOMYSLNE.progi,P.progi||{});}catch(e){}
+  const pr=P.progi,encR=new Set(P.encyklopedia_rodzaje||[]);
+  const przypisz=w=>{if(!w)return null;const p=powiat(w[0],w[1]);if(!p)return null;const g=gmina(w[0],w[1]);return {p:p.k,g:g?g.k:null,gn:g?g.n:null};};
+  const znany=(o,kat)=>(o.odsl||0)>=pr[kat+"_odslony"]||(o.sl||0)>=pr[kat+"_wersje"];
+  const wszystkie=[];
+  const dodaj=(kat,o,extra)=>{
+    const a=przypisz(o.wsp),poz={id:o.q,kat,n:o.n,opis:o.opis||null,wsp:o.wsp||null,...(a||{p:null,g:null,gn:null}),sl:o.sl||0,odsl:o.odsl??null,img:o.img||null,art:o.art||null,...extra};
+    let auto="gra",powod=null;
+    if(!a){auto="off";powod="poza";}
+    else if(!poz.n||/^Q\d+$/.test(poz.n)){auto="off";powod="bez_nazwy";}
+    wszystkie.push(Object.assign(poz,{auto,powod}));return poz;
+  };
+  for(const o of S.ludzie||[]){
+    const t=(o.opis||"")+" | "+(o.zaw||[]).join(", ");
+    const p=dodaj("ludzie",o,{ur:o.ur,zm:o.zm,mn:o.mn,zaw:(o.zaw||[]).slice(0,4),pl:/polsk|polak/i.test(o.opis||"")||(o.obyw||[]).some(x=>POLSKIE.has(x)),
+      watpliwe:o.inne_m&&o.inne_m.length?o.inne_m.length:undefined,naz:o.nazizm||undefined,wyrok:o.wyrok||undefined});
+    if(p.auto!=="gra")continue;
     // miejsce urodzenia bywa budynkiem, ulicą albo obiektem bez polskiej nazwy: wtedy podajemy gminę
-    const obiekt=!o.mn||/^Q\d+$/.test(o.mn)||/\d|ulica|dom |pałac|kamienica|szpital|zespół|dwór /i.test(o.mn);
-    ludzie.push({q:o.q,n:o.n,opis:o.opis||null,ur:o.ur,zm:o.zm,mn:obiekt?(a.gn||o.mn):o.mn,mn_oryg:obiekt?o.mn:undefined,m:o.m,wsp:o.wsp,...a,sl:o.sl,odsl:o.odsl??null,img:o.img||null,art:o.art,zaw:o.zaw||[],
-      pl:/polsk|polak/i.test(o.opis||"")||(o.obyw||[]).some(x=>POLSKIE.has(x)),watpliwe:o.inne_m&&o.inne_m.length?o.inne_m:undefined});}
-  for(const o of S.miejsca||[]){const a=przypisz(o);if(!a){poza.miejsca++;continue;}
-    miejsca.push({q:o.q,n:o.n,opis:o.opis||null,wsp:o.wsp,...a,sl:o.sl,odsl:o.odsl??null,img:o.img||null,art:o.art||null,rok:o.rok,rodzaje:o.rodzaje});}
-  for(const o of S.wydarzenia||[]){const a=przypisz(o);if(!a){poza.wydarzenia++;continue;}
-    wydarzenia.push({q:o.q,n:o.n,opis:o.opis||null,wsp:o.wsp,...a,sl:o.sl,odsl:o.odsl??null,rok:o.rok,img:o.img||null,art:o.art});}
+    if(!p.mn||/^Q\d+$/.test(p.mn)||OBIEKT.test(p.mn)){p.mn_oryg=p.mn;p.mn=p.gn||p.mn;}
+    if(o.nazizm||(ZLY.test(t)&&!DOBRZY.test(t))){p.auto="off";p.powod="zbrodnie";}
+    else if(REGION.test(o.mn||"")){p.auto="off";p.powod="region";}
+    else if(!znany(o,"ludzie")){p.auto="off";p.powod="malo_znany";}
+  }
+  for(const o of S.miejsca||[]){
+    const rodzaje=[...new Set((o.rodzaje||[]).map(r=>r.replace(/\d+$/,"")))];
+    const p=dodaj("miejsca",o,{rok:o.rok,rodzaje});if(p.auto!=="gra")continue;
+    if(!znany(o,"miejsca")){p.auto="off";p.powod="malo_znany";}
+    else if(rodzaje.some(r=>encR.has(r))){p.auto="enc";p.powod="rodzaj";}
+  }
+  for(const o of S.wydarzenia||[]){const p=dodaj("wydarzenia",o,{rok:o.rok});if(p.auto!=="gra")continue;if(!znany(o,"wydarzenia")){p.auto="off";p.powod="malo_znany";}}
+  // wpisy dodane w panelu
+  for(const d of P.dodane||[]){
+    const g=d.g&&GMK.get(d.g),wsp=d.wsp||(g?punktW(g):null);
+    const p=dodaj(d.kat||"miejsca",{q:d.id,n:d.n,opis:d.opis,wsp,sl:0,odsl:null,img:d.img,art:d.art},{mn:d.mn,ur:d.ur,zm:d.zm,rok:d.rok,rodzaje:d.rodzaje||[],pl:d.pl!==false,dodany:true});
+    if(p.auto==="off"&&p.powod==="bez_nazwy"&&p.n)p.auto="gra";
+  }
+  // zmiany pól i decyzje z panelu
+  const ZM=P.zmiany||{},DEC=P.decyzje||{};
+  for(const p of wszystkie){
+    const z=ZM[p.id];
+    if(z){["n","opis","mn","ciek","ur","zm","rok"].forEach(k=>{if(z[k]!==undefined&&z[k]!=="")p[k]=z[k];});
+      if(z.g&&GMK.get(z.g)){const g=GMK.get(z.g);p.g=g.k;p.gn=g.n;const pw=POWK.get(g.k.slice(0,4))||POW.find(x=>wSrodku(...punktW(g),x));p.p=pw?pw.k:p.p;if(!z.wsp)p.wsp=punktW(g);if(p.auto==="off"&&p.powod==="poza"){p.auto="gra";p.powod=null;}}
+      if(Array.isArray(z.wsp)){p.wsp=z.wsp;const a=przypisz(z.wsp);if(a&&!z.g)Object.assign(p,a);}
+      p.zmieniony=true;}
+    const d=DEC[p.id];p.s=d==="gra"||d==="enc"||d==="off"?d:p.auto;
+    if(d==="off"&&!p.powod)p.powod="recznie";
+  }
   // drogi: numer -> powiaty, przez które przechodzi (po środkach odcinków)
   const dr={};
-  for(const o of S.drogi||[]){const p=powiat(o.wsp[0],o.wsp[1]);if(!p){poza.drogi++;continue;}
-    const d=dr[o.ref]||(dr[o.ref]={ref:o.ref,typ:o.ref[0]==="A"?"autostrada":"ekspresowa",powiaty:{},nazwy:{}});
-    d.powiaty[p.k]=(d.powiaty[p.k]||0)+1;if(o.nazwa)d.nazwy[o.nazwa]=(d.nazwy[o.nazwa]||0)+1;}
-  const drogi=Object.values(dr).map(d=>({ref:d.ref,typ:d.typ,powiaty:Object.keys(d.powiaty).filter(k=>d.powiaty[k]>=2||Object.keys(d.powiaty).length<6).sort(),
-    woj:[...new Set(Object.keys(d.powiaty).map(k=>k.slice(0,2)))].sort(),nazwa:Object.entries(d.nazwy).sort((a,b)=>b[1]-a[1]).map(x=>x[0]).find(n=>/autostrada|droga|obwodnica/i.test(n))||null}))
-    .sort((a,b)=>a.ref.localeCompare(b.ref,"pl",{numeric:true}));
-  ludzie.sort((a,b)=>b.sl-a.sl);miejsca.sort((a,b)=>b.sl-a.sl);wydarzenia.sort((a,b)=>b.sl-a.sl);
-  const wynik={zbudowano:S.zbudowano,zrodla:S.zrodla,ludzie,miejsca,wydarzenia,drogi};
-  fs.writeFileSync(path.join(KAT,"odkrycia.json"),JSON.stringify(wynik));
-  // podsumowanie: pokrycie powiatów i województw
-  const naPow={};POW.forEach(p=>naPow[p.k]={n:p.n,ludzie:0,miejsca:0,wydarzenia:0,drogi:0});
-  ludzie.forEach(o=>naPow[o.p].ludzie++);miejsca.forEach(o=>naPow[o.p].miejsca++);wydarzenia.forEach(o=>naPow[o.p].wydarzenia++);drogi.forEach(d=>d.powiaty.forEach(k=>naPow[k]&&naPow[k].drogi++));
-  const rodzaje={};miejsca.forEach(o=>o.rodzaje.forEach(r=>rodzaje[r]=(rodzaje[r]||0)+1));
-  const pod={zbudowano:S.zbudowano,liczby:{ludzie:ludzie.length,ludzie_polacy:ludzie.filter(o=>o.pl).length,miejsca:miejsca.length,wydarzenia:wydarzenia.length,drogi:drogi.length},poza,rodzaje,
-    powiaty_bez_niczego:Object.entries(naPow).filter(([,v])=>!v.ludzie&&!v.miejsca&&!v.wydarzenia).map(([k,v])=>k+" "+v.n),
-    powiaty_bez_ludzi:Object.values(naPow).filter(v=>!v.ludzie).length,powiaty_bez_miejsc:Object.values(naPow).filter(v=>!v.miejsca).length,naPow,
-    woj:Object.fromEntries(Object.entries(WOJ).map(([k,n])=>[n,{ludzie:ludzie.filter(o=>o.p.startsWith(k)).length,miejsca:miejsca.filter(o=>o.p.startsWith(k)).length,wydarzenia:wydarzenia.filter(o=>o.p.startsWith(k)).length}]))};
+  for(const o of S.drogi||[]){const p=powiat(o.wsp[0],o.wsp[1]);if(!p)continue;
+    const d=dr[o.ref]||(dr[o.ref]={ref:o.ref,typ:o.ref[0]==="A"?"autostrada":"ekspresowa",powiaty:{}});d.powiaty[p.k]=(d.powiaty[p.k]||0)+1;}
+  const NAZWY_DROG=Object.assign({A1:"Autostrada Bursztynowa",A2:"Autostrada Wolności"},(P.drogi||{}).nazwy||{});
+  const drogi=Object.values(dr).map(d=>({ref:d.ref,typ:d.typ,nazwa:NAZWY_DROG[d.ref]||null,powiaty:Object.keys(d.powiaty).filter(k=>d.powiaty[k]>=2||Object.keys(d.powiaty).length<6).sort(),
+    woj:[...new Set(Object.keys(d.powiaty).map(k=>k.slice(0,2)))].sort()})).sort((a,b)=>a.ref.localeCompare(b.ref,"pl",{numeric:true}));
+  // ocena rozpoznawalności i zapis
+  const ocena=o=>+(Math.log10((o.odsl||0)+10)+1.2*Math.log10(Math.max(1,o.sl||1))).toFixed(2);
+  wszystkie.forEach(o=>o.pkt=ocena(o));wszystkie.sort((a,b)=>b.pkt-a.pkt);
+  const doGry=o=>{const x={q:o.id,n:o.n,opis:o.opis,wsp:o.wsp,g:o.g,gn:o.gn,p:o.p,pkt:o.pkt};
+    if(o.s==="enc")x.s="e";if(o.ciek)x.ciek=o.ciek;if(o.img)x.img=o.img;if(o.art)x.art=o.art;
+    if(o.kat==="ludzie"){x.mn=o.mn;x.ur=o.ur;x.zm=o.zm;x.pl=o.pl;}else{x.rok=o.rok;if(o.rodzaje&&o.rodzaje.length)x.rodzaje=o.rodzaje;}return x;};
+  const gra={zbudowano:S.zbudowano,zrodla:S.zrodla};
+  ["ludzie","miejsca","wydarzenia"].forEach(k=>gra[k]=wszystkie.filter(o=>o.kat===k&&o.s!=="off"&&o.p).map(doGry));
+  gra.drogi=drogi;
+  fs.writeFileSync(path.join(KAT,"odkrycia.json"),JSON.stringify(gra));
+  const panel=wszystkie.map(o=>{const x={id:o.id,kat:o.kat,n:o.n,opis:o.opis,mn:o.mn,gn:o.gn,g:o.g,p:o.p,odsl:o.odsl,sl:o.sl,pkt:o.pkt,art:o.art,auto:o.auto,powod:o.powod,s:o.s};
+    ["ur","zm","rok","rodzaje","pl","naz","wyrok","watpliwe","ciek","dodany","zmieniony","mn_oryg"].forEach(k=>{if(o[k]!==undefined&&o[k]!==null&&!(Array.isArray(o[k])&&!o[k].length))x[k]=o[k];});return x;});
+  fs.writeFileSync(path.join(__dirname,"odkrycia-wszystkie.json"),JSON.stringify({zbudowano:S.zbudowano,powody:POWODY,progi:pr,pozycje:panel}));
+  // podsumowanie: liczby, pokrycie powiatów i gmin
+  const wGrze=wszystkie.filter(o=>o.s==="gra"&&o.p),ileP={},ileG={};wGrze.forEach(o=>{ileP[o.p]=(ileP[o.p]||0)+1;if(o.g)ileG[o.g]=(ileG[o.g]||0)+1;});
+  const typG={1:"miejskie",2:"wiejskie",3:"miejsko-wiejskie"},gminyTyp={};GM.forEach(g=>{const t=typG[g.k.slice(-1)];gminyTyp[t]=gminyTyp[t]||{wszystkie:0,z_czyms:0};gminyTyp[t].wszystkie++;if(ileG[g.k])gminyTyp[t].z_czyms++;});
+  const liczby={};["ludzie","miejsca","wydarzenia"].forEach(k=>{liczby[k]={gra:0,enc:0,off:0};wszystkie.filter(o=>o.kat===k).forEach(o=>liczby[k][o.s]++);});
+  const powody={};wszystkie.filter(o=>o.s==="off").forEach(o=>powody[o.powod]=(powody[o.powod]||0)+1);
+  const pod={zbudowano:S.zbudowano,progi:pr,liczby,drogi:drogi.length,powody,
+    powiaty:{wszystkie:POW.length,z_czyms:Object.keys(ileP).length,z_trzema:Object.values(ileP).filter(v=>v>=3).length,bez:POW.filter(p=>!ileP[p.k]).map(p=>p.k+" "+p.n)},
+    gminy:{wszystkie:GM.length,z_czyms:Object.keys(ileG).length,z_dwoma:Object.values(ileG).filter(v=>v>=2).length,wg_typu:gminyTyp}};
   fs.writeFileSync(path.join(__dirname,"odkrycia-podsumowanie.json"),JSON.stringify(pod,null,1));
-  console.log(JSON.stringify({liczby:pod.liczby,poza,rodzaje,bez_niczego:pod.powiaty_bez_niczego.length,bez_ludzi:pod.powiaty_bez_ludzi,bez_miejsc:pod.powiaty_bez_miejsc},null,1));
+  const {bez,...pw}=pod.powiaty;console.log(JSON.stringify({liczby,powody,powiaty:pw,gminy:pod.gminy},null,1));
 }
 if(require.main===module)main();
-module.exports={warstwa,indeks,wSrodku};
+module.exports={warstwa,indeks,wSrodku,punktW};
