@@ -86,7 +86,7 @@ window.Walka=(()=>{
  // pytania z ziarna meczu: obaj gracze dostają dokładnie te same
  function zbudujPytania(){
   if(pytania||!dane||!S)return;
-  const quiz=S.mode!=='mapa',typy=quiz?['h','t','v','w','r','s','p','c','z','k']:['g'];
+  const quiz=S.mode!=='mapa',typy=quiz?['h','t','v','w','r','s','p','c','z','k','o','a']:['g','y'];
   KONFIG={preset:'',gry:typy.map(t=>({t,ile:quiz?3:S.max+4})),kolej:'losowo',czas:S.czas,podp:true,premia:false,wielk:'ds',obszar:[]};
   Q=pytaniaZKonfig(KONFIG,ZP.seeded('walka-'+S.seed));
   st={i:-1,res:[]};

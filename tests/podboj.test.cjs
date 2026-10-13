@@ -13,7 +13,8 @@ function dane(){
   const ile={};pow.forEach(p=>{ile[p.label]=(ile[p.label]||0)+1;});pow.forEach(p=>{if(ile[p.label]>1)p.label+=' ('+p.woj+')';});
   const ctx={window:{}};vm.createContext(ctx);vm.runInContext(fs.readFileSync('tablice-powiaty.js','utf8'),ctx);
   const j=f=>JSON.parse(fs.readFileSync(f,'utf8')).miasta;
-  return {powAll:pow,herby:j('herby.json'),miejsca:j('miejsca.json').filter(c=>c.zdjecia&&c.zdjecia.length),rzeki:j('rzeki.json'),tab:ctx.window.POWIATY};
+  const odk=require('../odkrycia-pytania.js').przygotuj(JSON.parse(fs.readFileSync('odkrycia.json','utf8')));
+  return {powAll:pow,herby:j('herby.json'),miejsca:j('miejsca.json').filter(c=>c.zdjecia&&c.zdjecia.length),rzeki:j('rzeki.json'),tab:ctx.window.POWIATY,ludzie:odk.ludzie,zabytki:odk.zabytki};
 }
 function rnd(s){let a=s>>>0;return ()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 const D=dane();
@@ -48,4 +49,16 @@ test('Poprawna odpowiedź jest wśród opcji i należy do okolicy, nie zawsze to
 test('Dobra odpowiedź: mapa od 700 pkt, reszta od 500',()=>{
   assert.equal(PP.dobra({t:'g',pts:650}),false);assert.equal(PP.dobra({t:'g',pts:720}),true);
   assert.equal(PP.dobra({t:'h',pts:1000}),true);assert.equal(PP.dobra({t:'s',pts:0}),false);
+});
+
+test('Podbój: postacie i zabytki z atakowanego powiatu albo okolicy, poprawna odpowiedź wśród opcji, atakowany powiat w opcjach',()=>{
+  let o=0,a=0;
+  for(const p of D.powAll)for(let s=1;s<=2;s++){
+    const R=new Set(PP.okolica(D.powAll,p).map(x=>x.k));
+    for(const q of PP.zestaw(D,p.k,rnd(s))){
+      if(q.t==='o'){o++;assert.ok(R.has(q.c.p),p.full+': postać spoza okolicy');assert.equal(q.opcje.length,4);assert.equal(new Set(q.opcje).size,4);assert.ok(q.opcje.includes(q.c.mn));}
+      if(q.t==='a'){a++;assert.ok(R.has(q.c.p),p.full+': zabytek spoza okolicy');assert.equal(q.opcje.length,4);assert.equal(new Set(q.opcje).size,4);assert.ok(q.opcje.includes(q.pw.label));assert.ok(q.opcje.includes(p.label),p.full+': brak atakowanego w opcjach');assert.equal(q.pw.k,q.c.p);}
+    }
+  }
+  assert.ok(o>250,'za mało pytań o postacie: '+o);assert.ok(a>200,'za mało pytań o zabytki: '+a);
 });
