@@ -1,0 +1,60 @@
+name: Strona (gra i wersja testowa)
+# Publikuje grę na GitHub Pages: gałąź main w katalogu głównym, gałąź test (jeśli jest) w /test/.
+# Wymaga jednorazowo: Settings → Pages → Build and deployment → Source: „GitHub Actions”.
+# Automaty z danymi wypychają zmiany tokenem GITHUB_TOKEN, a takie wypchnięcia nie uruchamiają innych
+# workflowów, dlatego strona odświeża się też po zakończeniu każdego z nich (workflow_run).
+on:
+  push:
+    branches: [main, test]
+  workflow_run:
+    workflows: ["Baza encyklopedii", "Środki miast (urzędy)", "Granice gmin (PRG)", "Dane gier (herby, rzeki)", "Dane kart gmin", "Herby klubów piłkarskich", "Zdjęcia miast: wybór z panelu", "Zdjęcia miast (Co to za miasto?)", "Odkrycia (przeliczenie po poprawkach)", "Odkrycia (ludzie, zabytki, wydarzenia, drogi)"]
+    types: [completed]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  zbuduj:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: _site
+      - name: Wersja testowa z gałęzi test w /test/
+        run: |
+          rm -rf _site/.git
+          if git ls-remote --exit-code --heads "https://github.com/${{ github.repository }}" test >/dev/null; then
+            git clone --quiet --depth 1 --branch test "https://github.com/${{ github.repository }}" _test
+            rm -rf _test/.git _test/.github
+            mv _test _site/test
+            # bez indeksowania w wyszukiwarkach i z czerwoną etykietą TEST w rogu
+            python3 - <<'PY'
+          import pathlib,re
+          for f in pathlib.Path("_site/test").glob("*.html"):
+              s=f.read_text(encoding="utf-8")
+              s=re.sub(r"<head>", '<head><meta name="robots" content="noindex">', s, count=1)
+              s=re.sub(r"(<body[^>]*>)", r'\1<div style="position:fixed;left:0;bottom:0;z-index:99999;background:#E84A3C;color:#fff;font:900 10px sans-serif;padding:2px 6px;border-top-right-radius:6px;pointer-events:none">TEST</div>', s, count=1)
+              f.write_text(s, encoding="utf-8")
+          PY
+            echo "Wersja testowa: $(cd _site/test && ls *.html | wc -l) stron"
+          else
+            echo "Brak gałęzi test: publikuję tylko main."
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+  wdroz:
+    needs: zbuduj
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4
