@@ -5,7 +5,7 @@
 <script src="telemetria.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Statystyki · Znasz Polskę?</title>
-<meta name="theme-color" content="#0C1A1D" />
+<meta name="theme-color" content="#FFF6E0" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -13,14 +13,13 @@
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="wspolne.css?v=23" />
 <style>
 svg path{fill-rule:evenodd}
 .stage{flex:none;height:38%;min-height:150px;position:relative;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);overflow:hidden}
 #map{position:absolute;inset:0;width:100%;height:100%}
-#map path{stroke:#0C1A1D;stroke-width:.6;vector-effect:non-scaling-stroke}
-#map path.nowe{fill:#1D3D43}
+#map path{stroke:#5C3A1E;stroke-width:.6;vector-effect:non-scaling-stroke}
+#map path.nowe{fill:#EADBB8}
 #map path.slabo{fill:var(--red)}
 #map path.srednio{fill:#E8A33A}
 #map path.dobrze{fill:var(--ok)}
@@ -30,7 +29,7 @@ svg path{fill-rule:evenodd}
 h2{font-size:13px;font-weight:500;color:var(--dim);margin:0 0 4px;letter-spacing:.04em;text-transform:uppercase}
 .kafle{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .kafel{background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.kafel b{display:block;font-family:"Fraunces",serif;font-size:22px;line-height:1.1;color:var(--gold)}
+.kafel b{display:block;font-family:Rubik,system-ui,sans-serif;font-size:22px;line-height:1.1;color:var(--gold)}
 .kafel small{font-size:12px;color:var(--dim)}
 .lista .r{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:15px}
 .lista .r span:last-child{margin-left:auto;color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -58,7 +57,7 @@ h2{font-size:13px;font-weight:500;color:var(--dim);margin:0 0 4px;letter-spacing
     <span><i style="background:var(--ok)"></i>umiem</span>
     <span><i style="background:#E8A33A"></i>niepewnie</span>
     <span><i style="background:var(--red)"></i>mylę</span>
-    <span><i style="background:#1D3D43"></i>jeszcze nie było</span>
+    <span><i style="background:#EADBB8"></i>jeszcze nie było</span>
   </div>
 
   <div class="scroll">

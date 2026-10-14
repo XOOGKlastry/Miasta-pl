@@ -5,7 +5,7 @@
 <script src="telemetria.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>Ciepło-zimno · PolskoZnawca</title>
-<meta name="theme-color" content="#0A181B" />
+<meta name="theme-color" content="#FFF6E0" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -13,7 +13,6 @@
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="wspolne.css?v=23" />
 <style>
 .tryby{display:flex;gap:6px;flex:none}
@@ -36,7 +35,7 @@
 .skala i{width:90px;height:8px;border-radius:4px;background:linear-gradient(90deg,#8E1328,#E4485A,#F29B4E,#F2E6A0,#9DC4DA)}
 /* komunikat cieplej / zimniej */
 .efekt{position:absolute;inset:0;z-index:5;pointer-events:none;display:grid;place-items:center;overflow:hidden}
-.efekt .napis{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(44px,15vw,72px);letter-spacing:-.02em;animation:napis 1.6s cubic-bezier(.2,.7,.3,1) both;text-shadow:0 4px 24px rgba(0,0,0,.5)}
+.efekt .napis{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(44px,15vw,72px);letter-spacing:-.02em;animation:napis 1.6s cubic-bezier(.2,.7,.3,1) both;text-shadow:0 4px 24px rgba(0,0,0,.5)}
 .efekt.cieplo .napis{color:#FFB25B}.efekt.goraco .napis{color:#FF5A4F}.efekt.zimno .napis{color:#9DD6FF}.efekt.lod .napis{color:#E8F6FF}.efekt.bez .napis{color:var(--paper)}
 @keyframes napis{0%{transform:scale(.4);opacity:0}18%{transform:scale(1.12);opacity:1}30%{transform:scale(1)}78%{opacity:1}100%{transform:scale(1.05) translateY(-10px);opacity:0}}
 .efekt.cieplo::before,.efekt.goraco::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%,rgba(255,120,40,.55),transparent 65%);animation:zar 1.6s ease-out both}
@@ -53,7 +52,7 @@
 .ostatnia{flex:none;display:flex;align-items:center;gap:10px;min-height:46px;padding:0 12px;border-radius:14px;background:var(--ink-2);border:1px solid var(--line);animation:wejscie .3s both}
 .ostatnia .kolko{width:22px;height:22px;border-radius:50%;flex:none;border:2px solid rgba(255,255,255,.25)}
 .ostatnia .nm{flex:1;min-width:0}
-.ostatnia .nm b{display:block;font-family:"Fraunces",serif;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ostatnia .nm b{display:block;font-family:Rubik,system-ui,sans-serif;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ostatnia .nm small{color:var(--dim);font-size:12px}
 .ostatnia .km{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .najblizsze{flex:none;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
@@ -64,11 +63,11 @@
 .pasek-dol .wpis{flex:1}
 .pasek-dol .pas{flex:none;min-height:56px;padding:0 12px;font-size:12.5px}
 .koniec{flex:none;display:flex;flex-direction:column;gap:10px;animation:wejscie .35s both}
-.koniec h2{font-family:"Fraunces",serif;font-weight:900;font-size:26px;margin:0;line-height:1.05}
+.koniec h2{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:26px;margin:0;line-height:1.05}
 .koniec p{margin:0;color:var(--dim);font-size:14px}
 .staty{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .staty div{background:var(--ink-2);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center;font-size:11px;color:var(--dim)}
-.staty b{display:block;font-family:"Fraunces",serif;font-size:21px;color:var(--paper)}
+.staty b{display:block;font-family:Rubik,system-ui,sans-serif;font-size:21px;color:var(--paper)}
 </style>
 </head>
 <body>

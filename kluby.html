@@ -5,7 +5,7 @@
 <script src="telemetria.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>Jaki to klub? · PolskoZnawca</title>
-<meta name="theme-color" content="#0A181B" />
+<meta name="theme-color" content="#FFF6E0" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -13,19 +13,18 @@
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="wspolne.css?v=23" />
 <style>
 .target{flex:none;text-align:center}
 .target .kind{font-size:13px;color:var(--dim)}
-.target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(30px,9.5vw,44px);line-height:1.05;overflow-wrap:anywhere}
+.target .nm{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(30px,9.5vw,44px);line-height:1.05;overflow-wrap:anywhere}
 .target .liga{display:inline-block;margin-top:6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);border:1px solid rgba(242,193,78,.4);border-radius:999px;padding:3px 10px}
 .stage{flex:1;min-height:140px;position:relative;display:grid;place-items:center}
 #map{position:absolute;inset:0;width:100%;height:100%}
 #map .w{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke}
 #map .dot{fill:var(--gold);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
 #map .dot.inny{fill:#7FD8C6}
-#map text{font-family:"Fraunces",serif;font-weight:700;font-size:17px;text-anchor:middle;fill:var(--paper);paint-order:stroke;stroke:var(--ink);stroke-width:4px;stroke-linejoin:round}
+#map text{font-family:Rubik,system-ui,sans-serif;font-weight:700;font-size:17px;text-anchor:middle;fill:var(--paper);paint-order:stroke;stroke:var(--ink);stroke-width:4px;stroke-linejoin:round}
 .boisko{position:absolute;inset:12% 10%;border:2px solid rgba(143,170,168,.25);border-radius:10px;pointer-events:none}
 .boisko::before{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:2px solid rgba(143,170,168,.25)}
 .boisko::after{content:"";position:absolute;left:50%;top:50%;width:26%;aspect-ratio:1;border:2px solid rgba(143,170,168,.25);border-radius:50%;transform:translate(-50%,-50%)}
@@ -35,7 +34,7 @@
 @keyframes pilka{0%,100%{transform:translateY(0)}45%{transform:translateY(-38px)}55%{transform:translateY(-38px)}}
 .lista-klubow{position:relative;z-index:2;display:flex;flex-direction:column;gap:6px;width:88%;max-width:360px}
 .lista-klubow div{background:var(--ink-2);color:var(--paper);border:2px solid var(--line-2);border-radius:12px;padding:8px 12px;display:flex;justify-content:space-between;gap:8px;animation:wejscie .3s both}
-.lista-klubow b{font-family:"Fraunces",serif;flex:1}
+.lista-klubow b{font-family:Rubik,system-ui,sans-serif;flex:1}
 .lista-klubow div{align-items:center}
 .mini-herb{width:26px;height:26px;object-fit:contain;flex:none}
 .herb-klubu{position:absolute;right:10px;top:10px;z-index:3;display:flex;flex-direction:column;align-items:center;gap:2px;background:rgba(255,246,224,.92);border:3px solid #3A2A14;border-radius:16px;padding:8px;box-shadow:0 5px 0 #3A2A14;animation:herbWjazd .6s cubic-bezier(.3,1.5,.5,1) both}
