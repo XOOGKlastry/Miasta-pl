@@ -1,0 +1,57 @@
+name: Kopia zapasowa bazy
+# Codzienny zrzut bazy Supabase (schematy public i auth), zaszyfrowany hasłem (AES-256, gpg) i zapisany
+# jako artefakt na 30 dni. Repozytorium jest publiczne, dlatego kopia jest zawsze szyfrowana.
+# Sekrety (Settings → Secrets and variables → Actions):
+#   SUPABASE_DB_URL  adres „Session pooler” z Supabase (Connect → Session pooler), z hasłem bazy
+#   KOPIA_HASLO      długie hasło do szyfrowania kopii (zapisz je w menedżerze haseł)
+# Odtworzenie: gpg -d kopia-RRRR-MM-DD.dump.gpg > baza.dump
+#              pg_restore --no-owner --no-privileges -d "<adres bazy>" baza.dump
+on:
+  schedule:
+    - cron: "17 2 * * *"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  kopia:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sekrety
+        id: s
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+          HASLO: ${{ secrets.KOPIA_HASLO }}
+        run: |
+          if [ -z "$DB" ] || [ -z "$HASLO" ]; then
+            echo "::warning::Brak sekretów SUPABASE_DB_URL i KOPIA_HASLO, kopia pominięta."
+            echo "ok=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=1" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Klient PostgreSQL 17 (jak serwer)
+        if: steps.s.outputs.ok == '1'
+        run: |
+          sudo install -d /usr/share/postgresql-common/pgdg
+          sudo curl -fsSo /usr/share/postgresql-common/pgdg/apt.postgresql.org.asc https://www.postgresql.org/media/keys/ACCC4CF8.asc
+          echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+      - name: Zrzut i szyfrowanie
+        if: steps.s.outputs.ok == '1'
+        env:
+          DB: ${{ secrets.SUPABASE_DB_URL }}
+          HASLO: ${{ secrets.KOPIA_HASLO }}
+        run: |
+          set -euo pipefail
+          D=$(date -u +%F)
+          /usr/lib/postgresql/17/bin/pg_dump "$DB" --schema=public --schema=auth --no-owner --no-privileges -Fc -f baza.dump
+          ls -la baza.dump
+          gpg --batch --yes --pinentry-mode loopback --passphrase "$HASLO" --symmetric --cipher-algo AES256 -o "kopia-$D.dump.gpg" baza.dump
+          rm -f baza.dump
+          echo "D=$D" >> "$GITHUB_ENV"
+      - uses: actions/upload-artifact@v4
+        if: steps.s.outputs.ok == '1'
+        with:
+          name: kopia-bazy-${{ env.D }}
+          path: kopia-*.dump.gpg
+          retention-days: 30

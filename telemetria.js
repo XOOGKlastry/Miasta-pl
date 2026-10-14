@@ -6,7 +6,9 @@
    Ładowany jako pierwszy skrypt na stronie, nie zależy od innych plików. */
 window.Telemetria=(function(){
  const CFG=()=>window.ONLINE_CONFIG||{url:"https://dhzjqxhoiaroauimoepq.supabase.co",key:"sb_publishable_tfncaLD_9cjaDGmOZAbeaw_zyE4TX04"};
- const strona=(location.pathname.split("/").pop()||"index.html").replace(/\.html$/,"")||"index";
+ // wersja testowa (/test/): błędy oznaczone „test/”, bez liczników ruchu
+ const wTescie=/\/test\//.test(location.pathname);
+ const strona=(wTescie?"test/":"")+((location.pathname.split("/").pop()||"index.html").replace(/\.html$/,"")||"index");
  const dzien=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");};
  const czyt=k=>{try{return localStorage.getItem(k);}catch(e){return null;}};
  const pisz=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}};
@@ -39,7 +41,7 @@ window.Telemetria=(function(){
  window.addEventListener("unhandledrejection",e=>{const r=e&&e.reason;blad(r&&r.message?r.message:typeof r==="string"?r:"",r&&r.stack&&(String(r.stack).split("\n").find(l=>l.includes(location.origin))||""),r&&r.stack);});
 
  /* ---------- 2. liczniki ruchu ---------- */
- const nieSledz=navigator.doNotTrack==="1"||window.doNotTrack==="1";
+ const nieSledz=navigator.doNotTrack==="1"||window.doNotTrack==="1"||wTescie;
  // dzień pierwszej wizyty; dla graczy sprzed telemetrii nie wiemy, więc „?” (bez kohorty)
  let od=czyt("tm-od");
  if(!od){let stary=false;try{for(let i=0;i<localStorage.length;i++){if(!/^tm-/.test(localStorage.key(i))){stary=true;break;}}}catch(e){}

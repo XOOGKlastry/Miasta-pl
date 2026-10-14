@@ -4,6 +4,8 @@ Gra edukacyjna o geografii Polski (PWA). Działa na GitHub Pages: https://xoogkl
 Właściciel: Dawid (specjalista GIS). Rozmawiamy po polsku. W odpowiedziach nie używaj długiej pauzy („—”).
 
 ## Zasady pracy
+- Wersja testowa: gałąź `test` publikuje się w `/test/` (https://xoogklastry.github.io/Miasta-pl/test/, etykieta TEST, noindex) przez workflow `strona.yml` (Pages ze źródłem „GitHub Actions”; main w katalogu głównym, odświeżanie także po automatach z danymi przez `workflow_run`). Zmiany najpierw na `test`, potem do `main`. Test ma osobne pamięci SW (`PREFIX` w `sw.js`), ale dzieli z grą localStorage i bazę Supabase; telemetria w teście tylko błędy (strona `test/...`).
+- Kopie bazy: `kopia-bazy.yml` codziennie o 2:17 UTC, `pg_dump` schematów public i auth, szyfrowane gpg (AES-256) i zapisane jako artefakt na 30 dni. Potrzebne sekrety `SUPABASE_DB_URL` (Session pooler) i `KOPIA_HASLO`; bez nich workflow tylko ostrzega.
 - Statyczne HTML/JS/CSS bez kroku budowania. Gałąź `main` publikuje się sama na GitHub Pages.
 - Gra jest robiona pod telefon: nic nie może przewijać się w bok (sprawdzaj szerokości 360, 390 i 430 px).
 - Styl „planszy”: zielone sukno, kremowe pola, brązowe obrysy, żółte przyciski, nagłówki Bungee, tekst Rubik (`plansza.css`, `plansza-formularze.css`). Stare strony na `wspolne.css` mają nakładkę `html.plansza` (bez fontów Fraunces i Space Grotesk, wszystko Rubik/Bungee, `theme-color` #FFF6E0); Tablice mają nakładkę `tablice-plansza.css` (zmienne, `--akcent` dla żółtego tekstu), logowanie jest na `plansza.css`. Obrazek do udostępnienia wyniku (`karta()` w silniku) też w stylu planszy.
