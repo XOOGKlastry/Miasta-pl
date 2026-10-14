@@ -163,6 +163,7 @@ body.sezon2 .plansza-pasek{background:#55507a}
 <script src="instaluj.js"></script>
 <script src="konto.js"></script>
 <script src="saga.js?v=8"></script>
+<script src="pierwsze-kroki.js?v=1"></script>
 <script src="polandball.js?v=4"></script>
 <script src="krainy.js?v=5"></script>
 <script>
@@ -174,6 +175,8 @@ const czytaj=(k,d)=>{try{return JSON.parse(localStorage.getItem(k)||"null")||d;}
 const STEP=96,BANER=110,GORA=140,DOL=150;
 // dwie plansze: 1 „Odkrywca”, 2 „Szlak Mistrzów” (po ukończeniu pierwszej)
 const SEZON=Saga.sezon(),TYDZ=Saga.tydzien();
+// nowy gracz: od razu pierwsze pytanie (raz), plansza po powrocie
+if(window.PK)PK.plansza(Saga.adres(0,1));
 let WOJ={},stan=Saga.stan(SEZON),biez=Saga.biezacy(stan,SEZON),PASY=[],MGLA=null,HPL=0;
 
 // malowane krainy (grafiki/plansza): pola leżą tam, gdzie na ilustracji, a nasze pola zakrywają narysowane
