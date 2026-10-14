@@ -27,6 +27,7 @@ Właściciel: Dawid (specjalista GIS). Rozmawiamy po polsku. W odpowiedziach nie
 - Encyklopedia: każda gmina pokazuje swoją kartę (przód i tył, także niezdobytą) i wskaźniki z danych kart; powiat pokazuje karty wszystkich swoich gmin.
 - `polandball.js`: maskotka. `krainy.js`: stary rysowany krajobraz (zapas, gdy brak malowanych teł).
 - `admin.html`: panel admina (zdjęcia, rzeki, herby, kluby, ciekawostki); zapis przez GitHub API tokenem wpisanym w panelu.
+- `telemetria.js` (pierwszy skrypt na każdej stronie, obiekt `Telemetria`): błędy JS z telefonów (`zglos_blad_js` → `app_bledy`, najwyżej 5 na wczytanie strony, tylko nasze pliki), liczniki ruchu bez ciasteczek i identyfikatorów (`licz_ruch` → `app_ruch(dzien, zdarzenie, kohorta)`; kohorta = dzień pierwszej wizyty z `tm-od`, „?” dla graczy sprzed liczników; zdarzenia `wizyta`, `strona:x`, `nowy:x` raz dziennie, `start:tryb`/`koniec:tryb` z silnika; `Telemetria.zdarzenie(z,{raz})`; na localhost wyłączone, chyba że `localStorage tm-test`), „⚑ Zgłoś błąd w pytaniu” pod odpowiedzią w silniku (`Telemetria.przycisk(dane)`/`zglos`, `zglos_pytanie` → `app_zgloszenia`). Panel admina: zakładki „Zgłoszenia” i „Ruch” (`admin_raport`, `admin_zgloszenie`) na kluczu admina z zakładki „Połączenie” (`admin-klucz` w przeglądarce, w bazie tylko sha256 w `app_admin`, zmiana `admin_zmien_klucz`). Migracja `20261014_bledy_zgloszenia_ruch.sql`.
 - `online.js`, `online-config.js`, `ranking.html`, `logowanie.html`: konta i ranking w Supabase.
 
 ## Dane

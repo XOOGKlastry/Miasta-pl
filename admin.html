@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8" />
+<script src="telemetria.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="robots" content="noindex" />
 <title>Panel admina · PolskoZnawca</title>
@@ -57,6 +58,24 @@
 .wiersz.usuniete{opacity:.45;text-decoration:line-through}
 .wiersz button{min-height:40px;padding:0 10px;border-radius:10px;border:1px solid var(--line-2);background:var(--ink-2);font-size:13px}
 .mini-lista{display:flex;flex-direction:column}
+/* zgłoszenia i ruch */
+.rp-karta{border:1px solid var(--line-2);border-radius:14px;background:var(--ink-2);padding:10px 12px;margin-bottom:8px;overflow-wrap:anywhere}
+.rp-karta h4{margin:0 0 4px;font-size:15px}
+.rp-karta small{display:block;color:var(--dim);font-size:12px;line-height:1.35}
+.rp-karta .rp-akcje{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.rp-karta .rp-akcje button{flex:1;min-height:40px;border-radius:10px;border:1px solid var(--line-2);background:var(--ink);font-size:13px;font-weight:700}
+.rp-karta.zrobione{opacity:.55}
+.rp-karta pre{white-space:pre-wrap;font-size:11px;color:var(--dim);margin:6px 0 0;max-height:160px;overflow:auto}
+.rp-ile{float:right;background:var(--red);color:#fff;border-radius:999px;padding:1px 8px;font-size:12px;font-weight:800}
+.rp-kafle{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:10px}
+.rp-kafle div{border:1px solid var(--line-2);border-radius:12px;background:var(--ink-2);padding:8px;text-align:center}
+.rp-kafle b{display:block;font-size:22px;color:var(--gold)}.rp-kafle small{font-size:11px;color:var(--dim)}
+.rp-tab{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
+.rp-tab th,.rp-tab td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right}
+.rp-tab th:first-child,.rp-tab td:first-child{text-align:left}
+.rp-tab th{color:var(--dim);font-weight:700;font-size:12px}
+.rp-h{font-size:14px;margin:12px 0 6px;color:var(--gold)}
+.rp-pasek{display:inline-block;height:8px;background:var(--gold);border-radius:4px;vertical-align:middle;margin-left:6px}
 #pelne{position:fixed;inset:0;z-index:4000;background:rgba(0,0,0,.92);display:grid;place-items:center}
 #pelne img{max-width:100%;max-height:100%}
 .info{background:var(--ink-2);border:1px solid var(--line-2);border-radius:14px;padding:12px 14px;font-size:14px;color:var(--dim);line-height:1.55}
@@ -124,6 +143,8 @@
   <button data-z="kluby">Kluby</button>
   <button data-z="ciekawostki">Ciekawostki</button>
   <button data-z="odkrycia">Odkrycia</button>
+  <button data-z="zgloszenia">Zgłoszenia</button>
+  <button data-z="ruch">Ruch</button>
   <button data-z="ustawienia">Połączenie</button>
 </div>
 
@@ -219,6 +240,17 @@
     <div class="przewin" id="oPrzewin"><div id="oUstBox" class="c-edycja hidden" style="background:var(--ink-2);border-color:var(--line-2)"></div><div class="mini-lista" id="oLista"></div><button class="ghost hidden" id="oWiecej" style="width:100%;min-height:44px;margin:8px 0">Pokaż kolejne</button></div>
     <div class="dodaj3"><button class="ghost" id="oDodaj">+ Dodaj wpis</button><button class="ghost" id="oUst">⚙ Progi i ustawienia</button></div>
   </section>
+  <!-- ZGŁOSZENIA: błędy w pytaniach od graczy i błędy JavaScript z telefonów -->
+  <section class="panel-z hidden" id="z-zgloszenia">
+    <div class="pasek"><select id="rzFiltr"><option value="nowe">Pytania: nowe</option><option value="wszystkie">Pytania: wszystkie z 14 dni</option></select><button class="ghost" id="rzOdswiez">Odśwież</button></div>
+    <div class="przewin" id="rzLista"></div>
+  </section>
+  <!-- RUCH: liczniki bez ciasteczek (wizyty, nowi gracze, powroty, gry) -->
+  <section class="panel-z hidden" id="z-ruch">
+    <div class="pasek"><select id="ruDni"><option value="7">Ostatnie 7 dni</option><option value="14">14 dni</option><option value="30" selected>30 dni</option><option value="90">90 dni</option></select><button class="ghost" id="ruOdswiez">Odśwież</button></div>
+    <div class="przewin" id="ruLista"></div>
+  </section>
+
   <section class="panel-z hidden" id="z-ustawienia">
     <div class="info">
       <b>Zapis prosto do repozytorium.</b> Panel zapisuje zmiany w GitHubie Twoim kluczem; klucz zostaje tylko w tej przeglądarce.
@@ -233,6 +265,10 @@
     <label class="field"><span>Klucz dostępu (github_pat_…)</span><input id="uToken" type="text" autocomplete="off" placeholder="github_pat_…" /></label>
     <div class="zapis"><button class="ghost" id="uUsun">Usuń klucz z tej przeglądarki</button><button class="big" id="uSprawdz">Sprawdź i zapamiętaj</button></div>
     <div class="status" id="uStan"></div>
+    <div class="info" style="margin-top:14px"><b>Klucz admina (zgłoszenia i ruch).</b> Osobny od GitHuba: otwiera zakładki „Zgłoszenia” i „Ruch”. W bazie jest tylko jego skrót. Klucz zostaje w tej przeglądarce.</div>
+    <label class="field"><span>Klucz admina</span><input id="aKlucz" type="password" autocomplete="off" placeholder="pz-…" /></label>
+    <div class="zapis"><button class="ghost" id="aZmien">Zmień klucz</button><button class="big" id="aZapisz">Sprawdź i zapamiętaj</button></div>
+    <div class="status" id="aStan"></div>
   </section>
 
   <div class="status" id="zmiany"></div>
@@ -299,7 +335,8 @@ function pokazZmiany(){
 $("zakladki").onclick=e=>{
   const b=e.target.closest("button");if(!b)return;
   document.querySelectorAll("#zakladki button").forEach(x=>x.classList.toggle("akt",x===b));
-  ["zdjecia","rzeki","herby","kluby","ciekawostki","odkrycia","ustawienia"].forEach(z=>$("z-"+z).classList.toggle("hidden",z!==b.dataset.z));
+  ["zdjecia","rzeki","herby","kluby","ciekawostki","odkrycia","zgloszenia","ruch","ustawienia"].forEach(z=>$("z-"+z).classList.toggle("hidden",z!==b.dataset.z));
+  if(b.dataset.z==="zgloszenia"||b.dataset.z==="ruch")Raport.pokaz(b.dataset.z);
 };
 
 /* ---------- ZDJĘCIA ---------- */
@@ -701,6 +738,93 @@ $("uSprawdz").onclick=async()=>{
   $("uStan").textContent=ok?"Połączono. Możesz zapisywać zmiany.":"Klucz nie ma prawa zapisu do tego repozytorium.";
   $("uToken").value="";
 };
+/* ---------- ZGŁOSZENIA i RUCH (Supabase, klucz admina) ---------- */
+const Raport=(()=>{
+  const KL="admin-klucz";let DANE=null,DNI=0;
+  const cfg=()=>window.ONLINE_CONFIG||{url:"https://dhzjqxhoiaroauimoepq.supabase.co",key:"sb_publishable_tfncaLD_9cjaDGmOZAbeaw_zyE4TX04"};
+  const klucz=()=>localStorage.getItem(KL)||"";
+  const esc=t=>String(t==null?"":t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  async function rpc(fn,body){const c=cfg();const r=await fetch(c.url+"/rest/v1/rpc/"+fn,{method:"POST",headers:{apikey:c.key,"Content-Type":"application/json"},body:JSON.stringify(body)});
+    const d=await r.json().catch(()=>null);if(!r.ok)throw Error(d&&(d.message||d.msg)||"Błąd połączenia");return d;}
+  async function wczytaj(dni){DANE=await rpc("admin_raport",{p_klucz:klucz(),p_dni:dni});DNI=dni;return DANE;}
+  const kiedy=t=>new Date(t).toLocaleString("pl-PL",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+  const GRY={dzien:"Wyzwanie dnia",turniej:"Własna gra",saga:"Plansza",walka:"Walka",podboj:"Podbój",mini:"Minigra",kostka:"Kostka"};
+  function rysujZgl(){
+    const box=$("rzLista");if(!DANE){box.innerHTML="";return;}
+    const f=$("rzFiltr").value,z=DANE.zgloszenia.filter(x=>f==="wszystkie"||x.status==="nowe");
+    const nowe=DANE.zgloszenia.filter(x=>x.status==="nowe").length;
+    document.querySelector('[data-z="zgloszenia"]').innerHTML="Zgłoszenia"+(nowe?'<span class="n">'+nowe+'</span>':"");
+    let h='<h3 class="rp-h">Błędy w pytaniach ('+z.length+')</h3>';
+    h+=z.length?z.map(x=>'<div class="rp-karta'+(x.status!=="nowe"?" zrobione":"")+'"><h4>'+esc(x.powod||"Zgłoszenie")+(x.status!=="nowe"?" · "+esc(x.status):"")+'</h4>'
+      +'<small><b>'+esc(x.pytanie)+'</b></small><small>Odpowiedź w grze: '+esc(x.poprawna)+'</small>'+(x.uwagi?'<small>Uwagi: „'+esc(x.uwagi)+'”</small>':"")
+      +'<small>'+esc(GRY[x.gra]||x.gra)+' · typ '+esc(x.typ)+' · '+kiedy(x.kiedy)+(x.nick?' · '+esc(x.nick):"")+'</small>'
+      +(x.kontekst?'<pre>'+esc(JSON.stringify(x.kontekst))+'</pre>':"")
+      +'<div class="rp-akcje">'+(x.status==="nowe"?'<button data-st="poprawione" data-id="'+x.id+'">✓ Poprawione</button><button data-st="odrzucone" data-id="'+x.id+'">✗ Odrzuć</button>':'<button data-st="nowe" data-id="'+x.id+'">↺ Przywróć</button>')+'</div></div>').join("")
+      :'<p class="status">Brak zgłoszeń. 🎉</p>';
+    const b=DANE.bledy||[];
+    h+='<h3 class="rp-h">Błędy JavaScript z telefonów, '+DNI+' dni ('+b.length+')</h3>';
+    h+=b.length?b.map(x=>'<div class="rp-karta"><span class="rp-ile">×'+x.ile+'</span><h4>'+esc(x.wiadomosc)+'</h4><small>'+esc(x.strona)+(x.zrodlo?' · '+esc(x.zrodlo):"")+'</small><small>'+esc(x.przegladarka||"")+' · ostatnio '+kiedy(x.ostatni)+(x.wersja?' · wersja strony '+esc(x.wersja):"")+'</small>'
+      +(x.stos?'<details><summary style="font-size:12px;color:var(--dim)">Stos</summary><pre>'+esc(x.stos)+'</pre></details>':"")+'</div>').join(""):'<p class="status">Żadnych błędów. 🎉</p>';
+    box.innerHTML=h;
+    box.querySelectorAll("[data-st]").forEach(bt=>bt.onclick=async()=>{bt.disabled=true;
+      try{await rpc("admin_zgloszenie",{p_klucz:klucz(),p_id:+bt.dataset.id,p_status:bt.dataset.st});const x=DANE.zgloszenia.find(y=>y.id===+bt.dataset.id);if(x)x.status=bt.dataset.st;rysujZgl();}
+      catch(e){ZP.komunikat(e.message);bt.disabled=false;}});
+  }
+  // ruch: wizyty po dniach, nowi i wracający, powroty kohort (dzień 1, 3, 7), strony i gry nowych graczy
+  function rysujRuch(){
+    const box=$("ruLista");if(!DANE){box.innerHTML="";return;}
+    const R=DANE.ruch||[],dzis=DANE.dzis;
+    const suma=(f)=>R.filter(f).reduce((a,x)=>a+x.n,0);
+    const dni=[...new Set(R.map(x=>x.d))].sort().reverse();
+    const dodaj=(d,n)=>{const t=new Date(d+"T12:00:00");t.setDate(t.getDate()+n);return t.toISOString().slice(0,10);};
+    const wiz=(d,k)=>suma(x=>x.z==="wizyta"&&x.d===d&&(k===undefined||x.k===k));
+    const nowi=d=>wiz(d,d),wizDzis=wiz(dzis);
+    const ost7=dni.filter(d=>d>dodaj(dzis,-7));
+    let h='<div class="rp-kafle"><div><b>'+wizDzis+'</b><small>graczy dziś</small></div><div><b>'+nowi(dzis)+'</b><small>nowych dziś</small></div>'
+      +'<div><b>'+(ost7.length?Math.round(ost7.reduce((a,d)=>a+wiz(d),0)/ost7.length):0)+'</b><small>średnio dziennie (7 dni)</small></div>'
+      +'<div><b>'+dni.reduce((a,d)=>a+nowi(d),0)+'</b><small>nowych w '+DNI+' dni</small></div></div>';
+    h+='<h3 class="rp-h">Dzień po dniu</h3><table class="rp-tab"><tr><th>Dzień</th><th>Gracze</th><th>Nowi</th><th>Wracający</th><th>Starsi*</th><th>Gry</th></tr>'
+      +dni.map(d=>'<tr><td>'+d.slice(5)+'</td><td>'+wiz(d)+'</td><td>'+nowi(d)+'</td><td>'+suma(x=>x.z==="wizyta"&&x.d===d&&x.k&&x.k<d)+'</td><td>'+suma(x=>x.z==="wizyta"&&x.d===d&&!x.k)+'</td><td>'+suma(x=>x.d===d&&/^start:/.test(x.z))+'</td></tr>').join("")+'</table>'
+      +'<p class="status">* Starsi: gracze sprzed włączenia liczników (nie wiemy, kiedy przyszli pierwszy raz).</p>';
+    // powroty: kohorta = dzień pierwszej wizyty
+    const koh=dni.filter(d=>nowi(d)>0).sort().reverse();
+    const proc=(k,n)=>{const d=dodaj(k,n);if(d>dzis)return "–";const a=wiz(d,k),b=nowi(k);return b?Math.round(100*a/b)+"%":"–";};
+    h+='<h3 class="rp-h">Ilu nowych wraca</h3><table class="rp-tab"><tr><th>Pierwszy dzień</th><th>Nowi</th><th>Po 1 dniu</th><th>Po 3 dniach</th><th>Po 7 dniach</th></tr>'
+      +(koh.map(k=>'<tr><td>'+k.slice(5)+'</td><td>'+nowi(k)+'</td><td>'+proc(k,1)+'</td><td>'+proc(k,3)+'</td><td>'+proc(k,7)+'</td></tr>').join("")||'<tr><td colspan="5">Jeszcze brak danych.</td></tr>')+'</table>';
+    // gdzie odpadają: strony i gry pierwszego dnia
+    const lic=(re,f)=>{const m={};R.filter(x=>re.test(x.z)&&f(x)).forEach(x=>{const n=x.z.replace(re,"");m[n]=(m[n]||0)+x.n;});return Object.entries(m).sort((a,b)=>b[1]-a[1]);};
+    const nowyDzien=x=>x.k&&x.k===x.d;
+    const strNowi=lic(/^nowy:/,()=>true),max1=strNowi.length?strNowi[0][1]:1;
+    h+='<h3 class="rp-h">Pierwszy dzień: które strony otwierają nowi</h3><table class="rp-tab"><tr><th>Strona</th><th>Nowi</th></tr>'
+      +(strNowi.map(([n,v])=>'<tr><td>'+esc(n)+'</td><td>'+v+'<span class="rp-pasek" style="width:'+Math.round(60*v/max1)+'px"></span></td></tr>').join("")||'<tr><td colspan="2">Brak danych.</td></tr>')+'</table>';
+    const st=lic(/^start:/,()=>true),kn=Object.fromEntries(lic(/^koniec:/,()=>true)),stN=Object.fromEntries(lic(/^start:/,nowyDzien)),knN=Object.fromEntries(lic(/^koniec:/,nowyDzien));
+    h+='<h3 class="rp-h">Gry: ile rozpoczętych kończy się do końca</h3><table class="rp-tab"><tr><th>Gra</th><th>Start</th><th>Koniec</th><th>Kończy</th><th>Nowi: start → koniec</th></tr>'
+      +(st.map(([n,v])=>'<tr><td>'+esc(GRY[n.split("-")[0]]?GRY[n.split("-")[0]]+(n.includes("-")?" "+n.split("-")[1]:""):n)+'</td><td>'+v+'</td><td>'+(kn[n]||0)+'</td><td>'+Math.round(100*(kn[n]||0)/v)+'%</td><td>'+(stN[n]||0)+' → '+(knN[n]||0)+'</td></tr>').join("")||'<tr><td colspan="5">Brak danych.</td></tr>')+'</table>';
+    const str=lic(/^strona:/,()=>true),max2=str.length?str[0][1]:1;
+    h+='<h3 class="rp-h">Strony (gracze dziennie, razem w '+DNI+' dni)</h3><table class="rp-tab"><tr><th>Strona</th><th>Wejścia</th></tr>'
+      +str.map(([n,v])=>'<tr><td>'+esc(n)+'</td><td>'+v+'<span class="rp-pasek" style="width:'+Math.round(60*v/max2)+'px"></span></td></tr>').join("")+'</table>';
+    box.innerHTML=h;
+  }
+  async function pokaz(z){
+    const box=$(z==="ruch"?"ruLista":"rzLista");
+    if(!klucz()){box.innerHTML='<p class="status">Wpisz klucz admina w zakładce „Połączenie”.</p>';return;}
+    const dni=z==="ruch"?+$("ruDni").value:30;
+    if(!DANE||DNI!==dni){box.innerHTML='<p class="status">Wczytuję…</p>';try{await wczytaj(dni);}catch(e){box.innerHTML='<p class="status">'+esc(e.message)+'</p>';return;}}
+    z==="ruch"?rysujRuch():rysujZgl();
+  }
+  $("rzFiltr").onchange=rysujZgl;
+  $("rzOdswiez").onclick=()=>{DANE=null;pokaz("zgloszenia");};
+  $("ruDni").onchange=$("ruOdswiez").onclick=()=>{DANE=null;pokaz("ruch");};
+  $("aKlucz").value=klucz();
+  $("aZapisz").onclick=async()=>{const k=$("aKlucz").value.trim();localStorage.setItem(KL,k);DANE=null;
+    try{await wczytaj(30);$("aStan").innerHTML="<b>Klucz działa.</b> Zgłoszenia i ruch są dostępne.";rysujZgl();}catch(e){$("aStan").textContent=e.message;}};
+  $("aZmien").onclick=async()=>{const n=prompt("Nowy klucz admina (co najmniej 20 znaków):");if(!n)return;
+    try{await rpc("admin_zmien_klucz",{p_klucz:klucz(),p_nowy:n.trim()});localStorage.setItem(KL,n.trim());$("aKlucz").value=n.trim();$("aStan").innerHTML="<b>Klucz zmieniony.</b>";}catch(e){$("aStan").textContent=e.message;}};
+  // licznik nowych zgłoszeń na zakładce od razu po wejściu do panelu
+  if(klucz())wczytaj(30).then(rysujZgl).catch(()=>{});
+  return {pokaz};
+})();
+
 $("uUsun").onclick=()=>{localStorage.removeItem(L.token);sprawdz();$("uStan").textContent="Klucz usunięty z tej przeglądarki.";};
 $("uRepo").value=localStorage.getItem(L.repo)||"XOOGKlastry/Miasta-pl";
 sprawdz();wczytaj();ZP.fitViewport();
