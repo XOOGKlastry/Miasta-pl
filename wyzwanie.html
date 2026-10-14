@@ -244,7 +244,8 @@ svg path{fill-rule:evenodd}
 <script src="tablice-powiaty.js"></script>
 <script src="topojson-client.min.js?v=17"></script>
 <script src="efekty.js?v=17"></script>
-<script src="wspolne.js?v=28"></script><script src="online-config.js"></script><script src="online.js?v=9"></script><script src="walka.js?v=4"></script><script src="odkrycia-pytania.js?v=1"></script><script src="podboj-pytania.js?v=2"></script><script src="podboj-gra.js?v=4"></script>
+<script src="wspolne.js?v=28"></script>
+<script src="pierwsze-kroki.js?v=1"></script><script src="online-config.js"></script><script src="online.js?v=9"></script><script src="walka.js?v=4"></script><script src="odkrycia-pytania.js?v=1"></script><script src="podboj-pytania.js?v=2"></script><script src="podboj-gra.js?v=4"></script>
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
@@ -373,7 +374,10 @@ function krainaStart(){
   $("start").classList.remove("hidden");
 }
 async function init(){
-  if(TRYB==="saga"||TRYB==="kostka"){krainaStart();$("stanDanych").textContent="Wczytywanie…";await laduj();$("stanDanych").textContent="";$("zaczynam").disabled=false;$("zaczynam").textContent="Graj";return;}
+  if(TRYB==="saga"||TRYB==="kostka"){krainaStart();$("stanDanych").textContent="Wczytywanie…";await laduj();$("stanDanych").textContent="";$("zaczynam").disabled=false;$("zaczynam").textContent="Graj";
+    // pierwsza gra nowego gracza: bez ekranu startowego, od razu pytanie
+    if(window.PK&&PK.pierwszaGra())$("zaczynam").click();
+    return;}
   if(TRYB==="walka"){Walka.start();return;}
   if(TRYB==="mini"){
     const MINI={o:["Skąd pochodzi?","Znane postacie i miejsca, w których się urodziły: wybierz miejscowość. Po każdej odpowiedzi ciekawostka i kropka na mapie."],
@@ -462,6 +466,7 @@ function nastepne(){
   ({z:rundaZ,g:rundaG,k:rundaK,h:rundaH,m:rundaM,r:rundaR,w:rundaW,t:rundaT,c:rundaC,s:rundaS,v:rundaV,p:rundaP,q:rundaQ,o:rundaO,a:rundaA,y:rundaG})[q.t](q);
   const czas=TRYB==="dzien"||q.t==="q"?0:KONFIG.czas;
   if(czas>0)zegar(czas);
+  if(st.i===0&&window.PK)PK.wGrze("pytanie");
 }
 function wpisz(nazwy,poprawne,opcje){
   if(!POLE)POLE=ZP.poleWpisu($("wpis"),()=>st.nazwy,v=>odpWpis(v),{poprawne:()=>st.poprawne,pokazEtykieta:"Pokaż podpowiedzi<br><small>połowa punktów</small>",pokaz:()=>{st.podp=true;pokazOpcje();}});
@@ -731,6 +736,7 @@ function wynikRundy(pts,ok,naglowek){
   if(q.t==="o"||q.t==="a"||q.t==="y"){const ck=OdkryciaPytania.ciekawostka(q.c);if(ck){const s=document.createElement("small");s.className="odk-ciek";s.textContent="💡 "+ck;fb.querySelector(".txt").appendChild(s);}}
   const cel=q.t==="o"||q.t==="a"||q.t==="y"?(()=>{const pw=D.powAll.find(p=>p.k===q.c.p);return pw?{p:pw.k,nazwa:pw.full}:null;})():q.t==="k"?{p:q.p.k,nazwa:q.p.full}:q.t==="s"?{p:q.a.k,nazwa:q.a.label||q.a.n}:q.t==="t"||q.t==="q"?null:q.t==="p"?{p:q.pw.k,nazwa:q.pw.full}:q.t==="w"?{miasto:(q.a.pop>q.b.pop?q.a:q.b).n,lat:(q.a.pop>q.b.pop?q.a:q.b).lat,lon:(q.a.pop>q.b.pop?q.a:q.b).lon,nazwa:(q.a.pop>q.b.pop?q.a:q.b).n}:{miasto:q.c.n,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.n};
   ZP.dopiszEncykl(fb,cel);
+  if(st.i===0&&window.PK)PK.wGrze("odpowiedz");
   // zgłoś błąd w pytaniu: tekst pytania, odpowiedź i klucze danych (gmina, powiat, osoba), żeby łatwo znaleźć wpis
   if(window.Telemetria)fb.querySelector(".txt").appendChild(Telemetria.przycisk(()=>({gra:TRYB,typ:q.t,pytanie:($("pytanie").textContent||"").trim()||TYPY[q.t][1],poprawna:odp,
     kontekst:{t:q.t,ok:!!ok,c:q.c?{n:q.c.n,p:q.c.p,g:q.c.g,id:q.c.id}:undefined,p:q.p?q.p.k||q.p.kod:undefined,pw:q.pw?q.pw.k:undefined,a:q.a?q.a.n||q.a.k:undefined,b:q.b?q.b.n||q.b.k:undefined,opcje:Array.isArray(q.opcje)?q.opcje.slice(0,6).map(o=>typeof o==="string"?o:o&&(o.label||o.full||o.n||o.k)||""):undefined}})));
@@ -863,6 +869,7 @@ function wynikSaga(){
   const gw=Saga.gwiazdki(proc);
   // zapis, paczka za 3 gwiazdki i wydarzenie tygodnia: wspólne z osobnymi grami planszy (saga.js)
   const r=Saga.zakoncz({n:POZIOM.n,sezon:POZIOM.sezon,gw,wynik:suma,proc}),zal=r.zal,bylOdbl=r.bylOdbl,teraz=r.teraz;
+  if(window.PK)setTimeout(()=>PK.wGrze("koniec"),1800);
   const w=$("wynik");
   w.innerHTML='<div class="saga-wynik"><div class="saga-gw">'+[1,2,3].map(i=>'<span class="'+(i<=gw?"zdobyta":"")+'" style="animation-delay:'+(0.3+i*0.35)+'s">★</span>').join("")+'</div>'
     +'<h2>'+(gw===3?"Perfekcyjnie!":gw===2?"Świetnie!":gw===1?"Zaliczone!":"Tym razem nie")+'</h2>'
