@@ -24,7 +24,7 @@ function inRing(x,y,ring){let c=false;for(let i=0,j=ring.length-1;i<ring.length;
 function bboxOf(ring){let a=[1e9,1e9,-1e9,-1e9];ring.forEach(([x,y])=>{if(x<a[0])a[0]=x;if(y<a[1])a[1]=y;if(x>a[2])a[2]=x;if(y>a[3])a[3]=y;});return a;}
 async function loadWoj(){
   if(WOJ)return WOJ;
-  const gj=await (await fetch("woj.geojson?v=16")).json();
+  const gj=await (await fetch("woj-lekkie.json?v=1")).json();
   WOJ=gj.features.map(f=>{const g=f.geometry,rings=g.type==="Polygon"?[g.coordinates[0]]:g.coordinates.map(p=>p[0]);return {name:f.properties.nazwa,rings,bb:rings.map(bboxOf),f};});
   return WOJ;
 }
@@ -310,7 +310,7 @@ function modulKart(){
   if(KARTY_MODUL)return KARTY_MODUL;
   KARTY_MODUL=new Promise((resolve,reject)=>{
     let sc=document.querySelector('script[src^="karty.js"]'),nowy=!sc;
-    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=27";}
+    if(nowy){sc=document.createElement("script");sc.src="karty.js?v=28";}
     sc.addEventListener("load",()=>resolve(window.Karty),{once:true});
     sc.addEventListener("error",()=>{KARTY_MODUL=null;sc.remove();reject(Error("Nie wczytano kart"));},{once:true});
     if(nowy)document.head.appendChild(sc);
@@ -816,7 +816,7 @@ const WOJ_KOD={"02":"dolnośląskie","04":"kujawsko-pomorskie","06":"lubelskie",
 let POWC=null;
 async function loadPowiaty(){
   if(POWC)return POWC;
-  const t=await (await fetch("powiaty.topojson?v=16")).json();
+  const t=await (await fetch("powiaty-lekkie.json?v=1")).json();
   const o=t.objects.powiaty,nbi=topojson.neighbors(o.geometries),fs=topojson.feature(t,o).features;
   POWC=fs.map((f,i)=>{
     const k=f.properties.k,n=f.properties.n,city=+k.slice(2)>=60;

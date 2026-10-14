@@ -162,7 +162,7 @@ body.sezon2 .plansza-pasek{background:#55507a}
 <script src="efekty.js?v=17"></script>
 <script src="instaluj.js"></script>
 <script src="konto.js"></script>
-<script src="saga.js?v=7"></script>
+<script src="saga.js?v=8"></script>
 <script src="polandball.js?v=4"></script>
 <script src="krainy.js?v=5"></script>
 <script>
@@ -217,7 +217,7 @@ function rysujMalowana(W,uk,pl){
   Saga.SWIATY.forEach((sw,s)=>{
     const t=top[s],ph=panele[s].h;
     PASY.push({s,top:t,bottom:t+ph+BANER_M});
-    h+='<div class="malowany" data-s="'+s+'" style="top:'+t+'px;height:'+ph.toFixed(1)+'px;background-image:url(grafiki/plansza/'+panele[s].r.id+'.webp?v=2)"></div>';
+    h+='<div class="malowany" data-s="'+s+'" style="top:'+t+'px;height:'+ph.toFixed(1)+'px" data-tlo="grafiki/plansza/'+panele[s].r.id+'.webp?v=2"></div>';
     const gw=[...Array(Saga.NA_SWIAT)].reduce((a,_,i)=>a+(stan.gw[s*Saga.NA_SWIAT+i]||0),0),otw=Saga.odblokowany(s*Saga.NA_SWIAT,stan,SEZON);
     h+='<div class="separator" style="top:'+(t+ph)+'px;height:'+BANER_M+'px"></div>';
     const wyd=s===TYDZ.kraina;
@@ -235,7 +235,17 @@ function rysujMalowana(W,uk,pl){
   h+='<div class="pionek" id="pionek">'+(window.PB?PB.svg("zwykla"):"")+'</div>';
   pl.innerHTML=h;
   pl.querySelectorAll(".wezel").forEach(b=>b.onclick=e=>{if(window.Efekty)Efekty.fala(e.clientX,e.clientY);setTimeout(()=>arkusz(+b.dataset.n),120);});
+  wczytujTla(pl);
   return pts;
+}
+// tła krain wczytujemy dopiero blisko ekranu (16 ilustracji po ~260 kB naraz to kilka MB na start)
+let TLA_IO=null;
+function wczytujTla(pl){
+  const el=[...pl.querySelectorAll(".malowany[data-tlo]")],pokaz=e=>{e.style.backgroundImage="url("+e.dataset.tlo+")";e.removeAttribute("data-tlo");};
+  if(TLA_IO)TLA_IO.disconnect();
+  if(!("IntersectionObserver" in window)){el.forEach(pokaz);return;}
+  TLA_IO=new IntersectionObserver(w=>w.forEach(x=>{if(x.isIntersecting){pokaz(x.target);TLA_IO.unobserve(x.target);}}),{root:$("mapa"),rootMargin:"1200px 0px"});
+  el.forEach(e=>TLA_IO.observe(e));
 }
 function gwiazdkiHtml(g){return [1,2,3].map(i=>'<span class="'+(i<=g?"z":"")+'">★</span>').join("");}
 function rysuj(){
@@ -431,7 +441,7 @@ function start(){
   else{naSrodek(pts[cel]);pionekNa(pts[biez],true);}
   setTimeout(()=>powitanie(pts[biez],biez),h&&cel>0?1500:700);
 }
-fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
+fetch("woj-lekkie.json?v=1").then(r=>r.json()).then(gj=>{
   gj.features.forEach(f=>{
     const g=f.geometry,polys=g.type==="Polygon"?[g.coordinates]:g.coordinates;let b=[1e9,1e9,-1e9,-1e9];
     polys.forEach(p=>p[0].forEach(([x,y])=>{b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);}));
@@ -451,7 +461,7 @@ fetch("woj.geojson?v=16").then(r=>r.json()).then(gj=>{
 window.addEventListener("resize",()=>{clearTimeout(window._r);window._r=setTimeout(start,200);});
 if("serviceWorker" in navigator&&location.protocol==="https:")navigator.serviceWorker.register("sw.js",{updateViaCache:"none"}).catch(()=>{});
 </script>
-<script src="karty.js?v=27"></script>
+<script src="karty.js?v=28"></script>
 <script>setTimeout(()=>{Karty.liczbaNowych().then(n=>{const e=document.getElementById("kolNowe");if(e&&n>0){e.textContent=n>99?"99+":n;e.classList.remove("hidden");}}).catch(()=>{});},1500);</script>
 <script src="naglowek.js?v=3"></script>
 </body>
