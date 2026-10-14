@@ -14,11 +14,22 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  actions: write
 concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
+  # środowisko github-pages przyjmuje wdrożenia tylko z main, więc wypchnięcie na test
+  # uruchamia ten workflow na main (on i tak buduje obie wersje)
+  przekaz:
+    if: github.ref == 'refs/heads/test'
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run strona.yml --repo "${{ github.repository }}" --ref main
   zbuduj:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
