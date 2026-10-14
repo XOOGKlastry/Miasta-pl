@@ -53,7 +53,7 @@ window.Podboj=(function(){
    $('pdPonow').onclick=()=>wyslij(res,przerwana);return;}
   pisz({res,wynik:w});
   // skarb tygodnia: paczka kart do albumu (monety dopisał już serwer)
-  if(w.skarb&&ZP.modulKart)ZP.modulKart().then(K=>K.nagrodaZa('podboj-skarb:'+w.skarb.tydzien,w.skarb.paczka)).then(g=>{if(g)ZP.komunikat('Paczka za skarb trafiła do albumu kart!',3600);}).catch(()=>{});
+  if(w.skarb&&ZP.modulKart)ZP.modulKart().then(K=>K.nagrodaZa('podboj-skarb:'+w.skarb.tydzien+(w.skarb.k?':'+w.skarb.k:''),w.skarb.paczka)).then(g=>{if(g)ZP.komunikat('Paczka za skarb trafiła do albumu kart!',3600);}).catch(()=>{});
   pokazKoniec(w,res);
  }
  function koniec(res){if(!czytaj()||!(czytaj()||{}).wynik)wyslij(res,false);else pokazKoniec(czytaj().wynik,res);}
@@ -79,7 +79,8 @@ window.Podboj=(function(){
   const box=$('wynik');
   box.innerHTML='<div class="saga-wynik podboj-ekran"><div class="pd-licznik"><b>'+n+'</b><span>/ 8</span></div>'
    +'<h2>'+T[0]+'</h2><div class="saga-odbl'+(T[2]<0?' nie':'')+'">'+T[1]+'</div>'
-   +(w.skarb?'<div class="saga-odbl pd-skarb-wyn">💰 <b>Skarb tygodnia!</b> '+w.skarb.miejsce+'. miejsce: +'+w.skarb.monety+' monet i '+(w.skarb.paczka==='legenda'?'legendarna':'brązowa')+' paczka kart.</div>':'')
+   +(w.skarb?'<div class="saga-odbl pd-skarb-wyn">💰 <b>Skarb tygodnia!</b> '+w.skarb.miejsce+'. miejsce: +'+w.skarb.monety+' monet i '+({legenda:'legendarna',zloto:'złota',srebro:'srebrna',braz:'brązowa'}[w.skarb.paczka]||'nowa')+' paczka kart.</div>':'')
+   +(w.nowy_start?'<div class="saga-odbl pd-skarb-wyn">🐣 <b>'+(w.nowy_start.powrot?'Nowy start!':'Dobry początek!')+'</b> Przez 48 h nikt nie zaatakuje Twoich powiatów (chyba że sam zaatakujesz innego gracza). Zajmij wolne powiaty dookoła.'+(w.nowy_start.monety>0?' Na odbudowę: +'+w.nowy_start.monety+' monet.':'')+'</div>':'')
    +(w.lup>0?'<div class="saga-odbl pd-skarb-wyn">🏛️ <b>Zdobyłeś stolicę rywala!</b> Łup: +'+w.lup+' monet.</div>':'')
    +(w.zadania_monety>0?'<div class="saga-odbl">📜 Zadania dnia: +'+w.zadania_monety+' monet</div>':'')
    +(w.monety!=null?'<p class="pd-skarbiec-wyn">🪙 W skarbcu Podboju: <b>'+w.monety+'</b> monet</p>':'')
