@@ -721,7 +721,7 @@ window.Karty=(function(){
       w.querySelectorAll(".pk-dol [data-a]").forEach(b=>b.onclick=e=>{e.stopPropagation();const a=b.dataset.a;if(a==="dalej"){i++;pokaz();}else if(a==="podsum")podsumowanie();else zakoncz();});
     };
     // kontury województw do pierwszego kroku prezentacji
-    if(!WOJ){try{const gj=await fetch("woj.geojson?v=17").then(r=>r.json());WOJ={};
+    if(!WOJ){try{const gj=await fetch("woj-lekkie.json?v=1").then(r=>r.json());WOJ={};
       gj.features.forEach(f=>{const ps=f.geometry.type==="Polygon"?[f.geometry.coordinates]:f.geometry.coordinates;let b=[1e9,1e9,-1e9,-1e9];ps.forEach(p=>p[0].forEach(([x,y])=>{b[0]=Math.min(b[0],x);b[1]=Math.min(b[1],y);b[2]=Math.max(b[2],x);b[3]=Math.max(b[3],y);}));
         const k=Math.cos((b[1]+b[3])/2*Math.PI/180),s=Math.min(100/((b[2]-b[0])*k),100/(b[3]-b[1]));
         WOJ[f.properties.nazwa]='<svg viewBox="0 0 100 100"><path d="'+ps.map(p=>"M"+p[0].filter((_,i)=>i%2===0).map(([x,y])=>((x-b[0])*k*s+(100-(b[2]-b[0])*k*s)/2).toFixed(1)+" "+((b[3]-y)*s+(100-(b[3]-b[1])*s)/2).toFixed(1)).join("L")+"Z").join("")+'"/></svg>';});}catch(e){WOJ={};}}
