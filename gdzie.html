@@ -5,7 +5,7 @@
 <script src="telemetria.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Gdzie to jest? · Znasz Polskę?</title>
-<meta name="theme-color" content="#0C1A1D" />
+<meta name="theme-color" content="#FFF6E0" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -13,12 +13,11 @@
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <link rel="stylesheet" href="wspolne.css?v=23" />
 <style>
 .target{flex:none;text-align:center}
-.target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(28px,8.5vw,38px);line-height:1.05;overflow-wrap:anywhere}
+.target .nm{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(28px,8.5vw,38px);line-height:1.05;overflow-wrap:anywhere}
 .target .hint{font-size:14px;color:var(--dim);min-height:20px}
 .stage{flex:1;min-height:180px;position:relative;border-radius:var(--r);background:var(--land);border:1px solid var(--line);overflow:hidden;touch-action:manipulation}
 #map{position:absolute;inset:0;background:#0f1d20;cursor:crosshair}
@@ -27,15 +26,15 @@
 .leaflet-bar a:hover{background:var(--ink-3);color:var(--paper)}
 .leaflet-control-attribution{background:rgba(10,24,27,.7)!important;color:var(--dim)!important;font-size:9px}
 .leaflet-control-attribution a{color:var(--dim)!important}
-.nazwa{background:var(--gold);color:var(--gold-ink);border:none;box-shadow:0 2px 8px rgba(0,0,0,.5);font-family:"Fraunces",serif;font-weight:600;font-size:14px;padding:3px 9px;border-radius:6px}
+.nazwa{background:var(--gold);color:var(--gold-ink);border:none;box-shadow:0 2px 8px rgba(0,0,0,.5);font-family:Rubik,system-ui,sans-serif;font-weight:600;font-size:14px;padding:3px 9px;border-radius:6px}
 .nazwa::before{display:none}
 .tip{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:13px;color:var(--dim);pointer-events:none}
 #okBtn{width:100%}
 .tura{position:absolute;inset:0;z-index:700;display:grid;place-items:center;background:rgba(8,18,20,.94);text-align:center;padding:20px}
-.tura b{display:block;font-family:"Fraunces",serif;font-weight:900;font-size:34px;line-height:1.1}
+.tura b{display:block;font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:34px;line-height:1.1}
 .tura .kto1{color:var(--gold)}
 .tura .kto2{color:#7FD8C6}
-.tura .licz{font-family:"Fraunces",serif;font-size:72px;font-weight:900;line-height:1}
+.tura .licz{font-family:Rubik,system-ui,sans-serif;font-size:72px;font-weight:900;line-height:1}
 .tura small{display:block;color:var(--dim);font-size:15px;margin-top:6px}
 .tbar{flex:none;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
 .tbar i{display:block;height:100%;background:var(--gold);width:100%}

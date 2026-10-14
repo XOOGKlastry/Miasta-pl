@@ -6,7 +6,7 @@ Właściciel: Dawid (specjalista GIS). Rozmawiamy po polsku. W odpowiedziach nie
 ## Zasady pracy
 - Statyczne HTML/JS/CSS bez kroku budowania. Gałąź `main` publikuje się sama na GitHub Pages.
 - Gra jest robiona pod telefon: nic nie może przewijać się w bok (sprawdzaj szerokości 360, 390 i 430 px).
-- Styl „planszy”: zielone sukno, kremowe pola, brązowe obrysy, żółte przyciski, nagłówki Bungee, tekst Rubik (`plansza.css`, `plansza-formularze.css`).
+- Styl „planszy”: zielone sukno, kremowe pola, brązowe obrysy, żółte przyciski, nagłówki Bungee, tekst Rubik (`plansza.css`, `plansza-formularze.css`). Stare strony na `wspolne.css` mają nakładkę `html.plansza` (bez fontów Fraunces i Space Grotesk, wszystko Rubik/Bungee, `theme-color` #FFF6E0); Tablice mają nakładkę `tablice-plansza.css` (zmienne, `--akcent` dla żółtego tekstu), logowanie jest na `plansza.css`. Obrazek do udostępnienia wyniku (`karta()` w silniku) też w stylu planszy.
 - Po zmianie pliku JS/CSS podbij jego wersję w adresach (`?v=`) i stałą `CACHE` w `sw.js`, inaczej telefony trzymają starą wersję.
 - Testy: `node --test tests/*.test.cjs` (muszą przechodzić przed wypchnięciem).
 - Kod i komentarze po polsku, nazwy zmiennych też.

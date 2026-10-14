@@ -5,12 +5,11 @@
 <script src="telemetria.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Encyklopedia · PolskoZnawca</title>
-<meta name="theme-color" content="#0A181B" />
+<meta name="theme-color" content="#FFF6E0" />
 <link rel="manifest" href="manifest.webmanifest" />
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="wspolne.css?v=23" />
 <style>
 .zakladki{display:flex;gap:6px;flex:none}
@@ -20,7 +19,7 @@
 .zakladki button.akt small{color:#6B5317}
 #szukaj{flex:none;min-height:48px;font-size:17px}
 .lista{flex:1;min-height:0;overflow:auto;-webkit-overflow-scrolling:touch}
-.litera{position:sticky;top:0;z-index:2;background:var(--ink);font-family:"Fraunces",serif;font-weight:900;font-size:20px;color:var(--gold);padding:8px 2px 4px;border-bottom:1px solid var(--line)}
+.litera{position:sticky;top:0;z-index:2;background:var(--ink);font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:20px;color:var(--gold);padding:8px 2px 4px;border-bottom:1px solid var(--line)}
 .poz{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--line);cursor:pointer;content-visibility:auto;contain-intrinsic-size:52px}
 .poz:active{background:var(--ink-2)}
 .poz .nm{flex:1;min-width:0}
@@ -35,11 +34,11 @@
 .okruchy a{color:var(--teal);text-decoration:none;cursor:pointer}
 .tytul{display:flex;align-items:center;gap:14px}
 .tytul img{width:74px;height:86px;object-fit:contain;background:#E9EEEC;border-radius:12px;padding:6px;flex:none}
-.tytul h2{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(30px,9vw,42px);line-height:1.02;margin:0;letter-spacing:-.01em}
+.tytul h2{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(30px,9vw,42px);line-height:1.02;margin:0;letter-spacing:-.01em}
 .tytul small{display:block;color:var(--teal);font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-top:4px}
 .kafle{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .kafle div{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px 12px;font-size:12px;color:var(--dim)}
-.kafle b{display:block;font-family:"Fraunces",serif;font-size:22px;color:var(--paper);font-variant-numeric:tabular-nums}
+.kafle b{display:block;font-family:Rubik,system-ui,sans-serif;font-size:22px;color:var(--paper);font-variant-numeric:tabular-nums}
 .mapki{display:grid;grid-template-columns:1.4fr 1fr;gap:8px}
 .mapki svg{width:100%;height:170px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px}
 .mapki .ks path{fill:rgba(242,193,78,.2);stroke:var(--gold);stroke-width:1.8;vector-effect:non-scaling-stroke;stroke-linejoin:round;fill-rule:evenodd}

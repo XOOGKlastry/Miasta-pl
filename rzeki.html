@@ -5,7 +5,7 @@
 <script src="telemetria.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Nad jaką rzeką? · Znasz Polskę?</title>
-<meta name="theme-color" content="#0C1A1D" />
+<meta name="theme-color" content="#FFF6E0" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -13,12 +13,11 @@
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="wspolne.css?v=23" />
 <style>
 .target{flex:none;text-align:center}
 .target .kind{font-size:13px;color:var(--dim)}
-.target .nm{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(28px,8.5vw,38px);line-height:1.05;overflow-wrap:anywhere}
+.target .nm{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(28px,8.5vw,38px);line-height:1.05;overflow-wrap:anywhere}
 .stage{flex:1;min-height:140px;position:relative;border-radius:var(--r);background:var(--ink-2);border:1px solid var(--line);overflow:hidden;display:grid;place-items:center}
 #map{position:absolute;inset:0;width:100%;height:100%}
 #map .w{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke}
@@ -26,7 +25,7 @@
   stroke-dasharray:2000;stroke-dashoffset:2000;animation:rysuj 1.4s ease-out forwards}
 @keyframes rysuj{to{stroke-dashoffset:0}}
 #map .rz-tlo{fill:none;stroke:#5AA9E6;stroke-opacity:.28;stroke-width:1;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;animation:etykieta .6s both}
-#map .rz-nazwa{font-family:"Fraunces",serif;font-weight:700;font-size:17px;text-anchor:middle;fill:#CFEAFF;paint-order:stroke;stroke:#0A181B;stroke-width:4px;stroke-linejoin:round;animation:etykieta .5s .5s both}
+#map .rz-nazwa{font-family:Rubik,system-ui,sans-serif;font-weight:700;font-size:17px;text-anchor:middle;fill:#CFEAFF;paint-order:stroke;stroke:#0A181B;stroke-width:4px;stroke-linejoin:round;animation:etykieta .5s .5s both}
 @keyframes etykieta{from{opacity:0}to{opacity:1}}
 #map .dot{fill:var(--gold);stroke:var(--ink);stroke-width:2;vector-effect:non-scaling-stroke}
 </style>

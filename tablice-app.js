@@ -134,7 +134,8 @@ function loadState(){
     if (s.guess && ['powiat','kod','mix'].includes(s.guess)) state.guess = s.guess;
     applyMode();
   } catch(e){}
-  state.nick = localStorage.getItem(NICK_KEY) || '';
+  // bez ekranu „podaj nick”: bierzemy pseudonim z rankingu (albo „Gracz”), od razu pierwsze pytanie
+  state.nick = localStorage.getItem(NICK_KEY) || (()=>{try{return JSON.parse(localStorage.getItem('ranking-profile')||'{}').nick||'';}catch(e){return '';}})() || localStorage.getItem('nick') || 'Gracz';
 }
 function saveState(){
   try{

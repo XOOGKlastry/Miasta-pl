@@ -5,7 +5,7 @@
 <script src="telemetria.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>Wyzwanie · PolskoZnawca</title>
-<meta name="theme-color" content="#0A181B" />
+<meta name="theme-color" content="#FFF6E0" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -13,7 +13,6 @@
 <link rel="apple-touch-icon" href="icon-192.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
 <link rel="stylesheet" href="wspolne.css?v=23" />
 <style>
@@ -26,8 +25,8 @@ svg path{fill-rule:evenodd}
 .gora{display:flex;align-items:center;gap:10px;flex:none}
 .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);
   background:rgba(242,193,78,.1);border:1px solid rgba(242,193,78,.35);border-radius:999px;padding:4px 10px}
-.pkt{margin-left:auto;font-family:"Fraunces",serif;font-weight:900;font-size:22px;color:var(--gold);font-variant-numeric:tabular-nums}
-.pytanie{flex:none;font-family:"Fraunces",serif;font-weight:900;font-size:clamp(24px,7.5vw,34px);line-height:1.08;letter-spacing:-.01em;overflow-wrap:anywhere}
+.pkt{margin-left:auto;font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:22px;color:var(--gold);font-variant-numeric:tabular-nums}
+.pytanie{flex:none;font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(24px,7.5vw,34px);line-height:1.08;letter-spacing:-.01em;overflow-wrap:anywhere}
 .stage{flex:1;min-height:150px;position:relative;display:grid;place-items:center;animation:wejscie .35s both}
 .stage>*{grid-area:1/1}
 #mapa{position:absolute;inset:0}
@@ -38,16 +37,16 @@ svg path{fill-rule:evenodd}
 @keyframes rysuj{to{stroke-dashoffset:0}}
 #lot{position:absolute;inset:0}
 .tablica{display:flex;height:84px;border:3px solid #111;border-radius:9px;background:#F4F4F2;overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.4)}
-.tablica i{width:38px;background:#1546B8;display:grid;place-items:end center;color:#fff;font:700 14px/1 "Space Grotesk";padding-bottom:7px;font-style:normal}
-.tablica span{padding:0 26px;display:grid;place-items:center;color:#111;font:700 54px/1 "Space Grotesk",sans-serif;letter-spacing:.06em}
+.tablica i{width:38px;background:#1546B8;display:grid;place-items:end center;color:#fff;font:700 14px/1 Rubik;padding-bottom:7px;font-style:normal}
+.tablica span{padding:0 26px;display:grid;place-items:center;color:#111;font:700 54px/1 Rubik,sans-serif;letter-spacing:.06em}
 .para{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px;text-align:center}
-.para b{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(24px,8vw,34px);line-height:1.05}
+.para b{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(24px,8vw,34px);line-height:1.05}
 .para span{color:var(--dim);font-size:13px}
 .para em{font-style:normal;color:var(--gold);font-weight:700;font-size:14px;letter-spacing:.1em}
 #paraMapa{position:absolute;inset:6px;width:calc(100% - 12px);height:calc(100% - 12px)}
 #paraMapa path{fill:#1D3D43;stroke:#4F7F86;stroke-width:1;vector-effect:non-scaling-stroke}
 #paraMapa path.a{fill:rgba(242,193,78,.55);stroke:var(--gold)}#paraMapa path.b{fill:rgba(127,216,198,.55);stroke:var(--teal)}
-#paraMapa text{font-family:"Fraunces",serif;font-weight:700;font-size:14px;text-anchor:middle;fill:#fff;paint-order:stroke;stroke:#0A181B;stroke-width:4px}
+#paraMapa text{font-family:Rubik,system-ui,sans-serif;font-weight:700;font-size:14px;text-anchor:middle;fill:#fff;paint-order:stroke;stroke:#0A181B;stroke-width:4px}
 .answers.dwa{grid-template-columns:1fr 1fr}
 .q-zdanie{font-size:clamp(20px,6vw,26px)!important;padding:0 6px}
 .tabl-q{display:inline-block;border:2px solid #111;border-radius:4px;background:#F4F4F2;color:#111;font:700 .9em Rubik,sans-serif;padding:0 8px 0 14px;box-shadow:inset 8px 0 0 #1546B8}
@@ -58,21 +57,21 @@ svg path{fill-rule:evenodd}
 #herbImg{max-width:72%;max-height:86%;object-fit:contain;filter:drop-shadow(0 6px 14px rgba(0,0,0,.25))}
 .stage.jasna{background:#E9EEEC}
 .podpis{position:absolute;left:0;right:0;bottom:0;padding:22px 10px 6px;font-size:10.5px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65));pointer-events:none}
-.miasto-duze{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(30px,10vw,46px);text-align:center;padding:0 16px}
+.miasto-duze{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(30px,10vw,46px);text-align:center;padding:0 16px}
 .miasto-duze.dluga{font-size:clamp(21px,6.4vw,30px);line-height:1.15}
-.miasto-duze .odk-opis{display:block;font:600 15px/1.35 Rubik,"Space Grotesk",sans-serif;opacity:.8;margin-top:8px;overflow-wrap:anywhere}
+.miasto-duze .odk-opis{display:block;font:600 15px/1.35 Rubik,sans-serif;opacity:.8;margin-top:8px;overflow-wrap:anywhere}
 #feedback .odk-ciek{display:block;font-size:13px;line-height:1.35;margin-top:4px;opacity:.9;overflow-wrap:anywhere}
 .karty2{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%;padding:10px;align-self:stretch}
 .karty2 .k{background:var(--ink-3);border:1px solid var(--line-2);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 8px;text-align:center}
-.karty2 .k b{font-family:"Fraunces",serif;font-size:22px;line-height:1.1}
+.karty2 .k b{font-family:Rubik,system-ui,sans-serif;font-size:22px;line-height:1.1}
 .karty2 .k small{color:var(--dim);font-size:12px}
-.karty2 .k .lud{font-family:"Fraunces",serif;font-size:22px;color:var(--gold);min-height:28px}
+.karty2 .k .lud{font-family:Rubik,system-ui,sans-serif;font-size:22px;color:var(--gold);min-height:28px}
 .karty2 .k button{min-height:50px;width:100%;margin-top:4px}
 .karty2 .k.dobrze{border-color:var(--ok);background:#153A33}.karty2 .k.zle{border-color:var(--red);background:#3A1A22}
 #okBtn{width:100%}
 .leaflet-container{background:#1b1b1b;font-family:inherit}
 .leaflet-bar a{background:var(--ink-2);color:var(--paper);border-color:var(--line-2)}
-.cel-lbl{background:var(--gold);color:var(--gold-ink);border:none;font-family:"Fraunces",serif;font-weight:700;font-size:14px;padding:2px 8px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+.cel-lbl{background:var(--gold);color:var(--gold-ink);border:none;font-family:Rubik,system-ui,sans-serif;font-weight:700;font-size:14px;padding:2px 8px;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,.5)}
 .cel-lbl::before{display:none}
 
 /* ekran startowy */
@@ -80,7 +79,7 @@ svg path{fill-rule:evenodd}
 .odznaka-d{align-self:flex-start;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:6px 12px;border-radius:999px;
   background:linear-gradient(90deg,var(--gold),#FF9E6B,var(--teal),var(--gold));background-size:300% 100%;color:var(--gold-ink);animation:tecza 6s linear infinite}
 @keyframes tecza{to{background-position:300% 0}}
-.start h2{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(38px,12vw,58px);line-height:.98;margin:0;letter-spacing:-.02em}
+.start h2{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(38px,12vw,58px);line-height:.98;margin:0;letter-spacing:-.02em}
 .start p{margin:0;color:var(--dim);font-size:15.5px}
 .typy{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .typy div{background:var(--ink-2);border:1px solid var(--line-2);border-radius:14px;padding:10px 6px;text-align:center;font-size:12px;color:var(--dim)}
@@ -90,21 +89,21 @@ svg path{fill-rule:evenodd}
 /* wynik */
 .wynik{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px;animation:wejscie .4s both}
 .wynik .ranga{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
-.wynik .suma{font-family:"Fraunces",serif;font-weight:900;font-size:clamp(56px,18vw,86px);line-height:.95;letter-spacing:-.03em}
+.wynik .suma{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:clamp(56px,18vw,86px);line-height:.95;letter-spacing:-.03em}
 .wynik .suma span{font-size:22px;color:var(--dim);font-weight:600}
 .kafle{display:flex;gap:6px;flex-wrap:wrap}
 .kafle i{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;font-style:normal;font-size:16px;animation:wejscie .3s both}
 .kafle i.g{background:var(--ok)}.kafle i.y{background:var(--warn)}.kafle i.r{background:var(--red)}
 .meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .meta div{background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:10px;font-size:12px;color:var(--dim)}
-.meta b{display:block;font-family:"Fraunces",serif;font-size:22px;color:var(--paper)}
+.meta b{display:block;font-family:Rubik,system-ui,sans-serif;font-size:22px;color:var(--paper)}
 .wynik .rows{flex:1}
-.mp-kod{font-family:"Fraunces",serif;font-weight:900;font-size:64px;letter-spacing:.14em;text-align:center;color:var(--gold);line-height:1}
+.mp-kod{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:64px;letter-spacing:.14em;text-align:center;color:var(--gold);line-height:1}
 .mp-gracze{display:flex;flex-direction:column;gap:6px}
 .mp-gracz{display:flex;align-items:center;gap:10px;background:var(--ink-2);border:1px solid var(--line);border-radius:14px;padding:9px 12px;animation:wejscie .3s both}
 .mp-gracz .av{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:19px;flex:none}
 .mp-gracz b{flex:1;font-size:16px}.mp-gracz.ja{border-color:var(--gold)}
-.mp-gracz .pkt{font-family:"Fraunces",serif;font-weight:900;font-size:20px;color:var(--gold)}
+.mp-gracz .pkt{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:20px;color:var(--gold)}
 .mp-stan{font-size:12.5px;color:var(--dim);margin-top:4px}.mp-stan b{color:var(--gold)}
 .mp-tabela{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
 .mp-tabela span{background:var(--ink-3);border-radius:999px;padding:2px 8px;font-size:11.5px;color:var(--paper)}.mp-tabela span.ja{background:var(--gold);color:var(--gold-ink)}
@@ -118,7 +117,7 @@ svg path{fill-rule:evenodd}
 #lobby{justify-content:flex-start;gap:12px;overflow:auto}
 /* konfigurator rozgrywki */
 .konfig{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;animation:wejscie .3s both}
-.konfig h2{font-family:"Fraunces",serif;font-weight:900;font-size:26px;margin:0}
+.konfig h2{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:26px;margin:0}
 .presety{display:flex;flex-wrap:wrap;gap:6px;flex:none}.presety::-webkit-scrollbar{display:none}
 .presety button{flex:none;border-radius:999px;border:1px solid var(--line-2);background:var(--ink-2);padding:7px 12px;font-size:13px;font-weight:700;white-space:nowrap}
 .presety button.akt{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
@@ -154,7 +153,7 @@ svg path{fill-rule:evenodd}
 .herb-klubu small{font-weight:700;font-size:12px}
 @keyframes herbWjazd{from{transform:translateY(-40px) scale(.4);opacity:0}}
 .saga-wynik{display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;text-align:center}
-.saga-wynik h2{font-family:"Fraunces",serif;font-weight:900;font-size:34px;margin:0}
+.saga-wynik h2{font-family:Rubik,system-ui,sans-serif;font-weight:900;font-size:34px;margin:0}
 .saga-wynik p{margin:0;color:var(--dim)}
 .saga-gw{display:flex;justify-content:center;gap:10px;margin-top:10px}
 .saga-gw span{font-size:64px;line-height:1;color:#2E4A4F;transform:scale(.8)}
@@ -167,13 +166,13 @@ svg path{fill-rule:evenodd}
 .saga-wynik>a.ghost{color:inherit}
 .saga-wynik .btnrow a.big{color:var(--gold-ink)}
 .pd-licznik{display:flex;justify-content:center;align-items:baseline;gap:6px;margin-top:8px}
-.pd-licznik b{font:400 64px/1 Bungee,"Fraunces",sans-serif;color:var(--gold,#F5B82E);text-shadow:0 4px 0 rgba(58,42,20,.35)}
+.pd-licznik b{font:400 64px/1 Bungee,Rubik,sans-serif;color:var(--gold,#F5B82E);text-shadow:0 4px 0 rgba(58,42,20,.35)}
 .pd-skarbiec-wyn{margin:0!important;font-weight:800}.pd-skarb-wyn{background:#FFE9A8!important;border-color:#B7860B!important}
 .pd-licznik span{font-size:20px;font-weight:900;color:var(--dim)}
 .podboj-ekran .klocek,.podboj-ekran>a,.podboj-ekran>button{min-height:52px;display:grid;place-items:center;text-decoration:none}
 .pojedynek-wynik{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:16px;padding:10px 14px;animation:wejscie .4s .3s both}
 .pojedynek-wynik div{text-align:center}.pojedynek-wynik small{display:block;color:var(--dim);font-size:12px}
-.pojedynek-wynik b{font-family:"Fraunces",serif;font-size:26px}
+.pojedynek-wynik b{font-family:Rubik,system-ui,sans-serif;font-size:26px}
 .pojedynek-wynik span{font-size:30px}
 .pojedynek-wynik.wygr{border-color:var(--ok)}.pojedynek-wynik.przegr{border-color:var(--red)}
 .pojedynek-opis{margin:0;font-size:13.5px;color:var(--dim)}
@@ -946,24 +945,29 @@ function pokazWynik(res){
 /* ---------- udostępnianie: obrazek z wynikiem ---------- */
 async function karta(res,suma,max,ranga){
   await document.fonts.ready;
+  // obrazek w stylu planszy: zielone sukno, kremowa karta z brązowym obrysem, żółte akcenty
   const c=document.createElement("canvas");c.width=1080;c.height=1350;const g=c.getContext("2d");
-  const gr=g.createLinearGradient(0,0,1080,1350);gr.addColorStop(0,"#0A181B");gr.addColorStop(1,"#153A38");g.fillStyle=gr;g.fillRect(0,0,1080,1350);
-  g.fillStyle="rgba(242,193,78,.08)";g.beginPath();g.arc(930,160,320,0,7);g.fill();
+  const BR="#5C3A1E",KR="#FFF6E0",ZO="#F2C14E";
+  g.fillStyle="#7DB36B";g.fillRect(0,0,1080,1350);
+  g.fillStyle="rgba(58,42,20,.08)";for(let y=12;y<1350;y+=32)for(let x=12;x<1080;x+=32){g.beginPath();g.arc(x,y,3,0,7);g.fill();}
+  const pole=(x,y,w,h,r,kolor)=>{g.fillStyle=BR;g.beginPath();g.roundRect(x,y+12,w,h,r);g.fill();g.fillStyle=kolor;g.beginPath();g.roundRect(x,y,w,h,r);g.fill();g.lineWidth=8;g.strokeStyle=BR;g.stroke();};
+  pole(50,50,980,1250,48,KR);
   // PolandBall
-  g.save();g.translate(140,150);g.beginPath();g.arc(0,0,60,0,7);g.clip();g.fillStyle="#F4F4F2";g.fillRect(-70,-70,140,70);g.fillStyle="#DC1E35";g.fillRect(-70,0,140,70);g.restore();
-  g.lineWidth=6;g.strokeStyle="#111";g.beginPath();g.arc(140,150,60,0,7);g.stroke();
-  [[122,138],[156,134]].forEach(([x,y])=>{g.fillStyle="#fff";g.beginPath();g.ellipse(x,y,10,14,0,0,7);g.fill();g.lineWidth=4;g.stroke();});
-  g.fillStyle="#E8F1EE";g.font="900 58px Fraunces, Georgia, serif";g.fillText("PolskoZnawca",230,140);
-  g.fillStyle="#8FAAA8";g.font="500 34px 'Space Grotesk', sans-serif";g.fillText(TRYB==="dzien"?"Wyzwanie dnia #"+NR+" · "+new Date(DZIEN+"T12:00").toLocaleDateString("pl-PL"):"Turniej",232,190);
-  g.fillStyle="#7FD8C6";g.font="800 40px 'Space Grotesk', sans-serif";g.fillText(ranga.toUpperCase(),90,400);
-  g.fillStyle="#F2C14E";g.font="900 230px Fraunces, Georgia, serif";g.fillText(fmt(suma),80,620);
-  g.fillStyle="#8FAAA8";g.font="600 54px Fraunces, Georgia, serif";g.fillText("z "+fmt(max)+" punktów",90,700);
-  const kol={g:"#5DCAA5",y:"#E8A33A",r:"#E0465A"},n=res.length,sz=Math.min(140,(900-(n-1)*18)/n);
-  res.forEach((r,i)=>{const x=90+i*(sz+18),y=790;g.fillStyle=kol[kolor(r.pts)];g.beginPath();g.roundRect(x,y,sz,sz,26);g.fill();
-    g.font=Math.round(sz*.5)+"px sans-serif";g.textAlign="center";g.fillText(TYPY[r.t][0],x+sz/2,y+sz*.66);g.textAlign="left";});
-  g.fillStyle="#E8F1EE";g.font="500 36px 'Space Grotesk', sans-serif";
-  g.fillText("Zagraj i sprawdź, czy znasz Polskę lepiej:",90,1120);
-  g.fillStyle="#F2C14E";g.font="700 40px 'Space Grotesk', sans-serif";g.fillText(location.host+location.pathname.replace(/[^/]*$/,""),90,1180);
+  g.save();g.translate(170,170);g.beginPath();g.arc(0,0,60,0,7);g.clip();g.fillStyle="#F4F4F2";g.fillRect(-70,-70,140,70);g.fillStyle="#DC1E35";g.fillRect(-70,0,140,70);g.restore();
+  g.lineWidth=6;g.strokeStyle="#111";g.beginPath();g.arc(170,170,60,0,7);g.stroke();
+  [[152,158],[186,154]].forEach(([x,y])=>{g.fillStyle="#fff";g.beginPath();g.ellipse(x,y,10,14,0,0,7);g.fill();g.lineWidth=4;g.stroke();});
+  g.fillStyle=BR;g.font="400 56px Bungee, Rubik, sans-serif";g.fillText("PolskoZnawca",260,165);
+  g.fillStyle="#7A5A3A";g.font="700 34px Rubik, sans-serif";g.fillText(TRYB==="dzien"?"Wyzwanie dnia #"+NR+" · "+new Date(DZIEN+"T12:00").toLocaleDateString("pl-PL"):"Własna gra",262,215);
+  pole(110,300,860,420,36,ZO);
+  g.fillStyle=BR;g.font="900 40px Rubik, sans-serif";g.textAlign="center";g.fillText(ranga.toUpperCase(),540,380);
+  g.font="400 200px Bungee, Rubik, sans-serif";g.fillText(fmt(suma),540,590);
+  g.font="700 50px Rubik, sans-serif";g.fillText("z "+fmt(max)+" punktów",540,670);g.textAlign="left";
+  const kol={g:"#5DBB63",y:"#F2C14E",r:"#E84A3C"},n=res.length,sz=Math.min(130,(860-(n-1)*16)/n),x0=540-(n*sz+(n-1)*16)/2;
+  res.forEach((r,i)=>{const x=x0+i*(sz+16),y=800;g.fillStyle=BR;g.beginPath();g.roundRect(x,y+8,sz,sz,24);g.fill();g.fillStyle=kol[kolor(r.pts)];g.beginPath();g.roundRect(x,y,sz,sz,24);g.fill();g.lineWidth=6;g.strokeStyle=BR;g.stroke();
+    g.font=Math.round(sz*.5)+"px sans-serif";g.textAlign="center";g.fillStyle="#000";g.fillText(TYPY[r.t][0],x+sz/2,y+sz*.66);g.textAlign="left";});
+  g.fillStyle=BR;g.font="700 38px Rubik, sans-serif";g.textAlign="center";
+  g.fillText("Zagraj i sprawdź, czy znasz Polskę lepiej:",540,1100);
+  g.font="900 40px Rubik, sans-serif";g.fillStyle="#9B5A12";g.fillText(location.host+location.pathname.replace(/[^/]*$/,""),540,1170);g.textAlign="left";
   return new Promise(ok=>c.toBlob(ok,"image/png"));
 }
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"})[c]);

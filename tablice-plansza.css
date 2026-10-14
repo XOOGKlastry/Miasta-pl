@@ -1,0 +1,25 @@
+/* Tablice w stylu planszy: zielone sukno, kremowe pola, brązowe obrysy, żółte przyciski, Bungee i Rubik.
+   Nakładka na style z tablice.html (zmienia zmienne i kilka ciemnych miejsc); sama tablica rejestracyjna zostaje jak prawdziwa. */
+:root{
+  --bg:#7DB36B;--shell:#7DB36B;
+  --surface:#FFF6E0;--surface-2:#FFEFC9;--surface-3:#F3DDAA;
+  --border:#5C3A1E;--border-2:#8A6A44;
+  --text:#3A2A14;--text-2:#6B5537;--text-3:#8E7858;
+  --yellow:#F2C14E;--yellow-soft:rgba(242,193,78,.25);--yellow-line:#C9962A;
+  --green:#27AE60;--green-soft:rgba(39,174,96,.16);
+  --red:#E84A3C;--orange:#E07B1A;
+}
+body{font-family:Rubik,system-ui,sans-serif;background:#7DB36B;letter-spacing:0}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(rgba(58,42,20,.08) 1.5px,transparent 1.5px);background-size:16px 16px}
+h1,h2,.all-header-title,.sheet h2,.result-title{font-family:Bungee,Rubik,sans-serif;font-weight:400;letter-spacing:0}
+.map-tooltip{background:#5C3A1E;color:#FFF6E0}
+.map-tooltip::after{border-top-color:#5C3A1E}
+.all-header{background:#FFF6E0;border-bottom:3px solid #5C3A1E}
+.all-header-title .ttl-ico{color:#3A2A14}
+/* kremowe pola z brązowym obrysem i „cieniem planszy” */
+[class*="card"],[class*="sheet"],[class*="panel"],.mode-card,.mistake-row{border-color:#5C3A1E}
+button{font-family:Rubik,system-ui,sans-serif}
+:root{--akcent:#A0581A}
+.bottom-nav{background:#FFF6E0;border-top:3px solid #5C3A1E}
+.nav-item{color:#8E7858}.nav-item.active{color:#3A2A14}
+.nav-item.active::after{background:#F2C14E}
