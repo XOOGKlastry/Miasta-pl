@@ -2,6 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="utf-8" />
+<script src="telemetria.js?v=1"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
 <title>Wyzwanie · PolskoZnawca</title>
 <meta name="theme-color" content="#0A181B" />
@@ -428,6 +429,7 @@ $("startBtn").onclick=()=>{ // kreator turnieju
   $("setup").classList.add("hidden");$("start").classList.remove("hidden");
 };
 $("zaczynam").onclick=()=>{
+  if(window.Telemetria)Telemetria.zdarzenie("start:"+TRYB+(TRYB==="mini"?"-"+(URLP.get("gra")||""):""));
   if(TRYB==="podboj"){
     if(st)return;Q=Podboj.rozpocznij();st={i:-1,res:[]};
   }else if(TRYB==="dzien"){
@@ -730,6 +732,9 @@ function wynikRundy(pts,ok,naglowek){
   if(q.t==="o"||q.t==="a"||q.t==="y"){const ck=OdkryciaPytania.ciekawostka(q.c);if(ck){const s=document.createElement("small");s.className="odk-ciek";s.textContent="💡 "+ck;fb.querySelector(".txt").appendChild(s);}}
   const cel=q.t==="o"||q.t==="a"||q.t==="y"?(()=>{const pw=D.powAll.find(p=>p.k===q.c.p);return pw?{p:pw.k,nazwa:pw.full}:null;})():q.t==="k"?{p:q.p.k,nazwa:q.p.full}:q.t==="s"?{p:q.a.k,nazwa:q.a.label||q.a.n}:q.t==="t"||q.t==="q"?null:q.t==="p"?{p:q.pw.k,nazwa:q.pw.full}:q.t==="w"?{miasto:(q.a.pop>q.b.pop?q.a:q.b).n,lat:(q.a.pop>q.b.pop?q.a:q.b).lat,lon:(q.a.pop>q.b.pop?q.a:q.b).lon,nazwa:(q.a.pop>q.b.pop?q.a:q.b).n}:{miasto:q.c.n,lat:q.c.lat,lon:q.c.lon,nazwa:q.c.n};
   ZP.dopiszEncykl(fb,cel);
+  // zgłoś błąd w pytaniu: tekst pytania, odpowiedź i klucze danych (gmina, powiat, osoba), żeby łatwo znaleźć wpis
+  if(window.Telemetria)fb.querySelector(".txt").appendChild(Telemetria.przycisk(()=>({gra:TRYB,typ:q.t,pytanie:($("pytanie").textContent||"").trim()||TYPY[q.t][1],poprawna:odp,
+    kontekst:{t:q.t,ok:!!ok,c:q.c?{n:q.c.n,p:q.c.p,g:q.c.g,id:q.c.id}:undefined,p:q.p?q.p.k||q.p.kod:undefined,pw:q.pw?q.pw.k:undefined,a:q.a?q.a.n||q.a.k:undefined,b:q.b?q.b.n||q.b.k:undefined,opcje:Array.isArray(q.opcje)?q.opcje.slice(0,6).map(o=>typeof o==="string"?o:o&&(o.label||o.full||o.n||o.k)||""):undefined}})));
   $("nextBtn").textContent=st.i+1>=Q.length?"Wynik":"Dalej";$("nextBtn").onclick=nastepne;
   fb.classList.remove("hidden");
   if(TRYB==="walka"){
@@ -880,6 +885,7 @@ function wynikSaga(){
   if(zal&&!bylOdbl&&teraz){try{sessionStorage.setItem("saga-nowy",POZIOM.n+1);}catch(e){}}
 }
 function koniec(){
+  if(window.Telemetria)Telemetria.zdarzenie("koniec:"+TRYB+(TRYB==="mini"?"-"+(URLP.get("gra")||""):""));
   if(TRYB==="saga")return wynikSaga();
   if(TRYB==="podboj")return Podboj.koniec(st.res);
   const suma=st.res.reduce((a,r)=>a+r.pts,0);
