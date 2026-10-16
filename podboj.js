@@ -144,7 +144,9 @@
   $('monety').textContent=fmtM(JA.monety);
   $('dochodInfo').textContent='monet · +'+fmtM(JA.dochod_godzinowy)+' co godzinę · +'+fmtM(JA.dzienne)+' codziennie'+(wk&&wk.teraz?' · 🎉 weekend':'')+(JA.przygraniczne?' · 🛂 '+JA.przygraniczne+' przy granicy':'');
   $('kosztAtaku').textContent=fmtM(JA.koszt_ataku)+' 🪙';
-  $('kupAtak').disabled=JA.monety<JA.koszt_ataku;
+  const pelny=JA.limit>=(UST('ataki_max')||50);
+  $('kupAtak').disabled=JA.monety<JA.koszt_ataku||pelny;
+  $('kupAtak').title=pelny?'Masz już '+JA.limit+' ataków na dziś (więcej się nie da)':'';
  }
  $('kupAtak').onclick=async e=>{const b=e.currentTarget;if(!JA)return;
   if(!confirm('Kupić dodatkowy atak na dziś za '+JA.koszt_ataku+' monet?'))return;
