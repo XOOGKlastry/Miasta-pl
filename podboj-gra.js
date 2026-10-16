@@ -81,6 +81,7 @@ window.Podboj=(function(){
    +'<h2>'+T[0]+'</h2><div class="saga-odbl'+(T[2]<0?' nie':'')+'">'+T[1]+'</div>'
    +(w.skarb?'<div class="saga-odbl pd-skarb-wyn">💰 <b>Skarb tygodnia!</b> '+w.skarb.miejsce+'. miejsce: +'+w.skarb.monety+' monet i '+({legenda:'legendarna',zloto:'złota',srebro:'srebrna',braz:'brązowa'}[w.skarb.paczka]||'nowa')+' paczka kart.</div>':'')
    +(w.nowy_start?'<div class="saga-odbl pd-skarb-wyn">🐣 <b>'+(w.nowy_start.powrot?'Nowy start!':'Dobry początek!')+'</b> Przez 48 h nikt nie zaatakuje Twoich powiatów (chyba że sam zaatakujesz innego gracza). Zajmij wolne powiaty dookoła.'+(w.nowy_start.monety>0?' Na odbudowę: +'+w.nowy_start.monety+' monet.':'')+'</div>':'')
+   +(w.stolica_woj?'<div class="saga-odbl pd-skarb-wyn">🏙️ <b>Stolica województwa!</b> Za pierwsze dojście +'+w.stolica_woj.monety+' monet, a dopóki ją trzymasz: +'+w.stolica_woj.szanse+' atak i +'+w.stolica_woj.dzienne+' monet każdego dnia.</div>':'')
    +(w.lup>0?'<div class="saga-odbl pd-skarb-wyn">🏛️ <b>Zdobyłeś stolicę rywala!</b> Łup: +'+w.lup+' monet.</div>':'')
    +(w.zadania_monety>0?'<div class="saga-odbl">📜 Zadania dnia: +'+w.zadania_monety+' monet</div>':'')
    +(w.monety!=null?'<p class="pd-skarbiec-wyn">🪙 W skarbcu Podboju: <b>'+w.monety+'</b> monet</p>':'')
