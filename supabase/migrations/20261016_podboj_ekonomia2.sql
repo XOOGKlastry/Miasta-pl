@@ -103,7 +103,7 @@ begin
   v := public._conq_dzienne(p, public._conq_weekend());
   insert into public.conq_portfel(public_id, monety, dochod_dzien, godzina_od, zarobek) values (p, v, v_dzis, date_trunc('hour', now()), v)
   on conflict (public_id) do update set monety = public.conq_portfel.monety + v, dochod_dzien = v_dzis,
-    zarobek = public.conq_portfel.zarobek + v, godzina_od = coalesce(public.conq_portfel.godzina_od, date_trunc('hour', now()));
+    zarobek = public.conq_portfel.zarobek + v;  -- godzina_od zostaje: inaczej wypłata dzienna zjadłaby pierwszą godzinówkę
   return v;
 end $$;
 revoke all on function public._conq_dochod(uuid) from public, anon, authenticated;
