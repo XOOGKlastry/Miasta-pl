@@ -362,7 +362,7 @@ window.Karty=(function(){
       +'<div class="kk-o-blok"><b>Pozostałe dane</b><div class="kk-o-st">'+reszta.map(s=>'<span>'+(IK[s.k]||IK.ludnosc)+'<em>'+s.n+'</em><strong>'+(g.oc&&g.oc[s.k]!=null?g.oc[s.k]:'–')+'</strong><i>'+wartosc(g,s.k)+'</i></span>').join('')+'</div></div>'
       +(herbSrc(g)?'<div class="kk-o-herb"><img alt="Herb: '+esc(g.n)+'" onerror="this.parentNode.remove()" src="'+herbSrc(g)+'"></div>':'')
       +(pol?'<p class="kk-o-pol">'+pol+'</p>':'')
-      +'<div class="kk-rz">'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
+      +'<div class="kk-rz"'+(g.k==='1009032'?' data-nb="1"':'')+'>'+RZ[g.rz].toUpperCase()+' · #'+g.nr+'</div></div>';
   }
 
   function panel(g){
@@ -409,6 +409,8 @@ window.Karty=(function(){
     d.onclick=e=>{if(e.target===d||e.target.closest(".kk-ciek-gora button"))d.remove();};
     document.body.appendChild(d);
   }
+  (function(){let n=0,t=0;document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest(".kk-odwrot [data-nb]");if(!b)return;
+   const d=Date.now();n=d-t<1500?n+1:1;t=d;if(n>=3){n=0;try{if(!localStorage.getItem("kk-o-nb")){localStorage.setItem("kk-o-nb","1");if(navigator.vibrate)navigator.vibrate(25);}}catch(er){}}},true);})();
   document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest(".kk-pb");if(b){e.stopPropagation();e.preventDefault();ciekawostki(b.dataset.c);}},true);
   function styl(){
     if(document.getElementById("kk-styl"))return;
