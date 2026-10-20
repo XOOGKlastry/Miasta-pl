@@ -79,7 +79,7 @@
 </head>
 <body>
 <div class="wrap">
-  <header class="gora"><img src="icon.svg?v=14" alt="" width="36" height="36" style="border-radius:10px;border:3px solid var(--braz)"><h1>Profil<small>Twój gracz i ustawienia</small></h1></header>
+  <header class="gora"><img id="ikonaProfil" src="icon.svg?v=14" alt="" width="36" height="36" style="border-radius:10px;border:3px solid var(--braz)"><h1>Profil<small>Twój gracz i ustawienia</small></h1></header>
   <main class="tresc">
     <section class="pole gracz" aria-label="Twój gracz">
       <button class="awatar" id="awatar" type="button" aria-label="Zmień awatar" aria-expanded="false" aria-controls="awatary"></button>
@@ -235,6 +235,12 @@ $("usun").onclick=()=>{if(confirm("Usunąć profil, postęp, kolekcję i rekordy
 $("wersja").textContent="PolskoZnawca · wersja testowa";
 gracz();kafle();konto();imperium();ZP.registerSW();
 </script>
+<script>(function(){const i=document.getElementById("ikonaProfil");if(!i)return;let n=0,t=0;
+ i.addEventListener("click",async()=>{const d=Date.now();n=d-t<1500?n+1:1;t=d;if(n<5)return;n=0;
+  try{if(localStorage.getItem("kk-o-nb")!=="1"||localStorage.getItem("kk-o-nb-ok"))return;
+   const c=window.ONLINE_CONFIG||{},u=window.Online&&Online.urzadzenie?Online.urzadzenie():null;if(!c.url||!u)return;
+   const r=await fetch(c.url+"/rest/v1/rpc/app_odbierz",{method:"POST",headers:{apikey:c.key,"Content-Type":"application/json"},body:JSON.stringify({p_device:u.id,p_token:u.sekret,p_kod:"nb100"})});
+   const ok=await r.json().catch(()=>false);localStorage.setItem("kk-o-nb-ok","1");if(ok===true&&window.ZP)ZP.dodajJoker(100);}catch(e){}});})();</script>
 <script src="pierwsze-kroki.js?v=1"></script>
 </body>
 </html>
