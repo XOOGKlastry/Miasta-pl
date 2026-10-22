@@ -37,7 +37,36 @@ const ZLY=/\bSS\b|SS-|Waffen|zbrodniar|nazist|NSDAP|gestapo|hitlerow|komendant o
 const DOBRZY=/antyhitlerow|antynazist|łowc|ofiar|obrońc|ruchu oporu|ocalał|więzień|więźniark|Sprawiedliw/i;
 // miejsce urodzenia będące regionem, a nie miejscowością
 const REGION=/^(Kujawy|Mazowsze|Śląsk|Górny Śląsk|Dolny Śląsk|Pomorze|Pomorze Zachodnie|Wielkopolska|Małopolska|Podlasie|Warmia|Mazury|Warmia i Mazury|Kaszuby|Kurpie|Podhale|Spisz|Orawa|Żuławy|Kociewie|Lubelszczyzna|Polska|Prusy|Prusy Wschodnie|Galicja)$/i;
-const OBIEKT=/\d|ulica|dom |pałac|kamienica|szpital|zespół|dwór /i;
+const OBIEKT=/\d|ulica|dom |pałac|kamienica|szpital|zespół|dwór |zamek|zamku|klasztor|folwark|majątek/i;
+// rodzaje postaci (z opisu i zawodów w Wikidanych). Sportowcy, współcześni politycy i gwiazdy telewizji muszą być naprawdę
+// znani (dużo odsłon w polskiej Wikipedii i dużo wersji językowych naraz), postacie historyczne i ludzie kultury, nauki,
+// sztuki: wystarczy umiarkowana rozpoznawalność, bo to oni dają najciekawsze pytania „Skąd pochodzi?”.
+const R_SPORT=/piłkar|siatkar|lekkoatlet|skoczek|bokser|tenisist|MMA|trener|kolarz|zapaśni|sprinter|szachist|sportow|hokeist|koszykar|pływa|żużlow|biathlon|biegacz|narciar|łyżwiar|wioślar|kajakar|sztangist|judok|szermier|gimnasty|kierowca wyścig|rajdow|olimpij|łucznik|kulomiot|młociar|tyczkar|oszczep|dyskobol|chodziar|płotkar|maratoń|snowboard|bramkar|sędzia piłk|kickbokser|strongman|zawodnik/i;
+const R_POLIT=/polityk|poseł|posłank|senator|dyplomat|działacz|minister|parlamentar|samorządow|burmistrz|wojewod|ambasador|eurodeput|prezydent miasta|urzędnik|związkow/i;
+const R_CELEB=/aktor|piosenkar|model|prezenter|dziennikar|youtuber|komik|muzyk studyjny|tekściarz|lektor|raper|wokalist|influenc|celebryt|osobowość telewizyjn|didżej|showman|satyryk|kabareciar|tancer|autor piosenek|producent muzyczny|producent filmowy|scenarzyst/i;
+const R_CIEK=/matematyk|fizyk|chemik|astronom|wynalazc|inżynier|lekarz|biolog|botanik|zoolog|geolog|geograf|podróżnik|odkrywc|filozof|pisar|poet|powieściopisar|prozaik|dramaturg|kompozytor|malar|rzeźbiar|architekt|grafik|ilustrator|historyk|monarch|król|książę|księżn|hetman|święt|błogosław|papież|biskup|kardynał|zakonni|astronaut|kosmonaut|lotnik|pilot|oficer|generał|dowódc|żołnierz|powstaniec|bojownik|naukowiec|teolog|językoznaw|esperant|ekonomist|socjolog|psycholog|immunolog|biochemik|wirusolog|fotograf|pianist|skrzyp|śpiewa|dyrygent|reżyser|alpinist|himalaist|mecenas|przedsiębiorc|bankier|fabrykant|kartograf|reformator|rewolucjonist|noblist/i;
+const R_PISARZ=/pisar|poet|noblist|prozaik|powieściopisar/i;
+function rodzajPostaci(o){
+  const t=(o.opis||"")+" | "+(o.zaw||[]).join(", "),ur=o.ur||1950;
+  const sp=R_SPORT.test(t),po=R_POLIT.test(t),ce=R_CELEB.test(t),ci=R_CIEK.test(t);
+  if(ur<1900&&(ci||po||ce))return "historia";
+  if(sp)return "sport";
+  if(ci&&po)return "polityk";
+  if(ci&&(!ce||ur<1945||R_PISARZ.test(t)))return "kultura";
+  if(po)return "polityk";
+  if(ce)return "celeb";
+  return "inne";
+}
+// progi: [odsłony, wersje językowe] potrzebne RAZEM albo same wersje językowe (ostatnia liczba)
+const PROGI_POSTACI={sport:[50000,45,80],polityk:[200000,35,60],celeb:[100000,30,60],historia:[15000,0,999,3000,50],kultura:[15000,0,999,3000,50],inne:[50000,40,999]};
+function znanaPostac(o,pr){
+  const k=rodzajPostaci(o),p=(pr&&pr[k])||PROGI_POSTACI[k],od=o.odsl||0,sl=o.sl||0;
+  if(sl>=p[2])return true;
+  if(od>=p[0]&&sl>=p[1])return true;
+  return p.length>3&&od>=p[3]&&sl>=p[4];
+}
+// premia do rozpoznawalności przy losowaniu (łatwiejsze tryby biorą górę listy): ciekawe postacie wyżej
+const PREMIA_POSTACI={historia:0.5,kultura:0.4,celeb:-0.3,sport:-0.5,polityk:-0.5,inne:-0.3};
 const DOMYSLNE={progi:{ludzie_odslony:20000,ludzie_wersje:40,miejsca_odslony:3000,miejsca_wersje:10,wydarzenia_odslony:3000,wydarzenia_wersje:10},
   encyklopedia_rodzaje:["oboz"],decyzje:{},zmiany:{},dodane:[]};
 const POWODY={zbrodnie:"zbrodnie lub NSDAP/SS",malo_znany:"mało znany (poniżej progu)",region:"miejsce urodzenia to region",bez_nazwy:"brak polskiej nazwy",poza:"poza Polską",recznie:"wyłączone ręcznie",rodzaj:"rodzaj tylko do encyklopedii"};
@@ -67,7 +96,8 @@ function main(){
     if(!p.mn||/^Q\d+$/.test(p.mn)||OBIEKT.test(p.mn)){p.mn_oryg=p.mn;p.mn=p.gn||p.mn;}
     if(o.nazizm||(ZLY.test(t)&&!DOBRZY.test(t))){p.auto="off";p.powod="zbrodnie";}
     else if(REGION.test(o.mn||"")){p.auto="off";p.powod="region";}
-    else if(!znany(o,"ludzie")){p.auto="off";p.powod="malo_znany";}
+    else if(!znanaPostac(o,P.progi_postaci)){p.auto="off";p.powod="malo_znany";}
+    p.rodzaj=rodzajPostaci(o);
   }
   for(const o of S.miejsca||[]){
     const rodzaje=[...new Set((o.rodzaje||[]).map(r=>r.replace(/\d+$/,"")))];
@@ -101,7 +131,7 @@ function main(){
   const drogi=Object.values(dr).map(d=>({ref:d.ref,typ:d.typ,nazwa:NAZWY_DROG[d.ref]||null,powiaty:Object.keys(d.powiaty).filter(k=>d.powiaty[k]>=2||Object.keys(d.powiaty).length<6).sort(),
     woj:[...new Set(Object.keys(d.powiaty).map(k=>k.slice(0,2)))].sort()})).sort((a,b)=>a.ref.localeCompare(b.ref,"pl",{numeric:true}));
   // ocena rozpoznawalności i zapis
-  const ocena=o=>+(Math.log10((o.odsl||0)+10)+1.2*Math.log10(Math.max(1,o.sl||1))).toFixed(2);
+  const ocena=o=>+(Math.log10((o.odsl||0)+10)+1.2*Math.log10(Math.max(1,o.sl||1))+(o.kat==="ludzie"?PREMIA_POSTACI[o.rodzaj]||0:0)).toFixed(2);
   wszystkie.forEach(o=>o.pkt=ocena(o));wszystkie.sort((a,b)=>b.pkt-a.pkt);
   const doGry=o=>{const x={q:o.id,n:o.n,opis:o.opis,wsp:o.wsp,g:o.g,gn:o.gn,p:o.p,pkt:o.pkt};
     if(o.s==="enc")x.s="e";if(o.ciek)x.ciek=o.ciek;if(o.img)x.img=o.img;if(o.art)x.art=o.art;
@@ -110,7 +140,7 @@ function main(){
   ["ludzie","miejsca","wydarzenia"].forEach(k=>gra[k]=wszystkie.filter(o=>o.kat===k&&o.s!=="off"&&o.p).map(doGry));
   gra.drogi=drogi;
   fs.writeFileSync(path.join(KAT,"odkrycia.json"),JSON.stringify(gra));
-  const panel=wszystkie.map(o=>{const x={id:o.id,kat:o.kat,n:o.n,opis:o.opis,mn:o.mn,gn:o.gn,g:o.g,p:o.p,odsl:o.odsl,sl:o.sl,pkt:o.pkt,art:o.art,auto:o.auto,powod:o.powod,s:o.s};
+  const panel=wszystkie.map(o=>{const x={id:o.id,kat:o.kat,rodzaj:o.rodzaj,n:o.n,opis:o.opis,mn:o.mn,gn:o.gn,g:o.g,p:o.p,odsl:o.odsl,sl:o.sl,pkt:o.pkt,art:o.art,auto:o.auto,powod:o.powod,s:o.s};
     ["ur","zm","rok","rodzaje","pl","naz","wyrok","watpliwe","ciek","dodany","zmieniony","mn_oryg"].forEach(k=>{if(o[k]!==undefined&&o[k]!==null&&!(Array.isArray(o[k])&&!o[k].length))x[k]=o[k];});return x;});
   fs.writeFileSync(path.join(__dirname,"odkrycia-wszystkie.json"),JSON.stringify({zbudowano:S.zbudowano,powody:POWODY,progi:pr,pozycje:panel}));
   // podsumowanie: liczby, pokrycie powiatów i gmin

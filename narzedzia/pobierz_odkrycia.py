@@ -66,7 +66,8 @@ def rok(s):
 def ludzie():
     wynik = {}
     # przedziały rozpoznawalności, żeby pojedyncze zapytanie nie przekroczyło limitu czasu
-    przedzialy = [(MIN_SL_LUDZIE, 13), (13, 15), (15, 17), (17, 20), (20, 25), (25, 30), (30, 50), (50, 100), (100, 100000)]
+    # wąskie przedziały także u góry: szerokie zapytania o najbardziej znanych potrafiły się nie udać
+    przedzialy = [(MIN_SL_LUDZIE, 13), (13, 15), (15, 17), (17, 20), (20, 25), (25, 30), (30, 40), (40, 50), (50, 65), (65, 85), (85, 120), (120, 100000)]
     while przedzialy:
         od, do = przedzialy.pop(0)
         q = """SELECT ?p ?pLabel ?opis ?ur ?zm ?m ?mLabel ?wsp ?img ?sl ?art WHERE {
@@ -79,17 +80,25 @@ def ludzie():
           SERVICE wikibase:label { bd:serviceParam wikibase:language "pl,en". }
         }""" % (od, do)
         print("ludzie: wersje językowe", od, "do", do, flush=True)
-        try:
-            wiersze = sparql(q)
-        except Exception as e:
+        wiersze, blad = None, None
+        for proba in range(3):   # najpierw ponawiamy (przeciążony serwer), dopiero potem dzielimy przedział
+            try:
+                wiersze = sparql(q)
+                break
+            except Exception as e:
+                blad = e
+                print("  błąd, ponawiam za", 20 * (proba + 1), "s:", str(e)[:120], flush=True)
+                time.sleep(20 * (proba + 1))
+        if wiersze is None:
             # zbyt duże zapytanie: dzielimy przedział na pół
             if do - od > 1:
                 pol = (od + min(do, od + 200)) // 2
                 przedzialy[:0] = [(od, pol), (pol, do)]
                 print("  dzielę przedział", od, do, flush=True)
                 continue
-            print("  pominięte:", e, flush=True)
+            print("  POMINIĘTE:", blad, flush=True)
             continue
+        print("  wierszy:", len(wiersze), flush=True)
         for b in wiersze:
             k = qid(b["p"])
             w = wynik.get(k)

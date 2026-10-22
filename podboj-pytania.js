@@ -49,7 +49,8 @@
     const herby=losuj(rnd,D.herby.filter(c=>wPowiecie(c,P)));
     const miejsca=losuj(rnd,(D.miejsca||[]).filter(c=>wPowiecie(c,P))),rzeki=losuj(rnd,(D.rzeki||[]).filter(c=>wPowiecie(c,P)));
     // miasta okolicy (do „w którym powiecie”): w atakowanym powiecie albo u sąsiadów
-    const wOkolicy=losuj(rnd,D.herby.map(c=>({c,p:lad.find(p=>wPowiecie(c,p))})).filter(x=>x.p));
+    // bez miast, od których powiat bierze nazwę (Brodnica → powiat brodnicki): odpowiedź byłaby w pytaniu
+    const op0=OP(),wOkolicy=losuj(rnd,D.herby.map(c=>({c,p:lad.find(p=>wPowiecie(c,p))})).filter(x=>x.p&&!(op0&&op0.zdradzaPowiat(x.c.n,x.p))));
     // miasta do herbu, zdjęcia z lotu ptaka i mapy: najpierw z atakowanego powiatu; gdy jest ich mniej niż 3
     // (miasto na prawach powiatu), dochodzą najbliższe miasta okolicy, żeby nie pytać czterech razy o to samo
     const zOkolicy=herby.length<3?D.herby.filter(c=>herby.indexOf(c)<0&&R.some(p=>p!==P&&wPowiecie(c,p))).sort((a,b)=>km(P,a)-km(P,b)).slice(0,3-herby.length):[];
