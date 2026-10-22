@@ -34,30 +34,31 @@ ludzie: wersje językowe 85 do 120
 ludzie: wersje językowe 120 do 100000
   wierszy: 18
   razem 4211
-  zawody 300 / 4211
-  zawody 600 / 4211
-  zawody 900 / 4211
-  zawody 1200 / 4211
-  zawody 1500 / 4211
-  zawody 1800 / 4211
-  zawody 2100 / 4211
-  zawody 2400 / 4211
-  zawody 2700 / 4211
-  zawody 3000 / 4211
-  zawody 3300 / 4211
-  zawody 3600 / 4211
-  zawody 3900 / 4211
-  zawody 4200 / 4211
-  zawody 4211 / 4211
+  lista znanych: 220 tytułów, nie znaleziono: ['Daniel Gabriel Fahrenheit', 'Albert Abraham Michelson', 'Kora (piosenkarka)', 'Stanisław Soyka', 'Albert Chmielowski']
+  zawody 300 / 4221
+  zawody 600 / 4221
+  zawody 900 / 4221
+  zawody 1200 / 4221
+  zawody 1500 / 4221
+  zawody 1800 / 4221
+  zawody 2100 / 4221
+  zawody 2400 / 4221
+  zawody 2700 / 4221
+  zawody 3000 / 4221
+  zawody 3300 / 4221
+  zawody 3600 / 4221
+  zawody 3900 / 4221
+  zawody 4200 / 4221
+  zawody 4221 / 4221
 odsłony: ludzie
-  odsłony 500 / 4211 błędów 0 139 s
-  odsłony 1000 / 4211 błędów 0 289 s
-  odsłony 1500 / 4211 błędów 0 434 s
-  odsłony 2000 / 4211 błędów 0 596 s
-  odsłony 2500 / 4211 błędów 0 741 s
-  odsłony 3000 / 4211 błędów 0 893 s
-  odsłony 3500 / 4211 błędów 0 1038 s
-  odsłony 4000 / 4211 błędów 0 1199 s
+  odsłony 500 / 4221 błędów 0 146 s
+  odsłony 1000 / 4221 błędów 0 292 s
+  odsłony 1500 / 4221 błędów 0 444 s
+  odsłony 2000 / 4221 błędów 0 590 s
+  odsłony 2500 / 4221 błędów 0 751 s
+  odsłony 3000 / 4221 błędów 0 892 s
+  odsłony 3500 / 4221 błędów 0 1043 s
+  odsłony 4000 / 4221 błędów 0 1190 s
   odsłony gotowe, błędów 0
 miejsca: unesco
   nowych 18 razem 18
@@ -138,9 +139,9 @@ miejsca: szczyt2
 miejsca: zabytek_techniki
   nowych 0 razem 2021
 odsłony: miejsca
-  odsłony 500 / 2021 błędów 0 138 s
+  odsłony 500 / 2021 błędów 0 143 s
   odsłony 1000 / 2021 błędów 0 288 s
-  odsłony 1500 / 2021 błędów 0 432 s
+  odsłony 1500 / 2021 błędów 0 447 s
   odsłony 2000 / 2021 błędów 0 591 s
   odsłony gotowe, błędów 0
 wydarzenia: bitwy i oblężenia
@@ -149,4 +150,4 @@ odsłony: wydarzenia
   odsłony gotowe, błędów 0
 drogi: autostrady i ekspresowe z OSM
   odcinków 22975
-gotowe: {'ludzie': 4211, 'miejsca': 2021, 'wydarzenia': 172, 'drogi': 22975}
+gotowe: {'ludzie': 4221, 'miejsca': 2021, 'wydarzenia': 172, 'drogi': 22975, 'lista_brak': 5}

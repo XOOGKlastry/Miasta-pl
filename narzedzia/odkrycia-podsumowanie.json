@@ -10,9 +10,9 @@
  },
  "liczby": {
   "ludzie": {
-   "gra": 515,
+   "gra": 557,
    "enc": 0,
-   "off": 3696
+   "off": 3664
   },
   "miejsca": {
    "gra": 805,
@@ -27,19 +27,41 @@
  },
  "drogi": 27,
  "powody": {
+  "bez_nazwy": 70,
   "zbrodnie": 70,
   "region": 28,
-  "bez_nazwy": 70,
   "recznie": 5,
   "poza": 120,
-  "malo_znany": 4679
+  "malo_znany": 4647
  },
- "lista_brak": [],
- "lista_poza": [],
+ "lista_brak": [
+  "Daniel Gabriel Fahrenheit",
+  "Albert Abraham Michelson",
+  "Kora (piosenkarka)",
+  "Stanisław Soyka",
+  "Albert Chmielowski"
+ ],
+ "lista_poza": [
+  "Q160359 (bez_nazwy)",
+  "Q361642 (bez_nazwy)",
+  "Q152441 (bez_nazwy)",
+  "Q464531 (bez_nazwy)",
+  "Q156277 (bez_nazwy)",
+  "Q151025 (bez_nazwy)",
+  "Q161590 (bez_nazwy)",
+  "Q234366 (bez_nazwy)",
+  "Q59737 (bez_nazwy)",
+  "Q467368 (bez_nazwy)",
+  "Q558722 (bez_nazwy)",
+  "Q561031 (bez_nazwy)",
+  "Q983949 (bez_nazwy)",
+  "Q55789 (bez_nazwy)",
+  "Q1354695 (bez_nazwy)"
+ ],
  "powiaty": {
   "wszystkie": 380,
-  "z_czyms": 300,
-  "z_trzema": 143,
+  "z_czyms": 304,
+  "z_trzema": 146,
   "bez": [
    "1410 łosicki",
    "1427 sierpecki",
@@ -59,8 +81,6 @@
    "0213 milicki",
    "2801 bartoszycki",
    "1602 głubczycki",
-   "1063 Skierniewice",
-   "2213 starogardzki",
    "1818 stalowowolski",
    "1426 siedlecki",
    "1409 lipski",
@@ -81,7 +101,6 @@
    "3005 grodziski",
    "3024 szamotulski",
    "0404 chełmiński",
-   "2415 wodzisławski",
    "1411 makowski",
    "1816 rzeszowski",
    "1436 zwoleński",
@@ -108,7 +127,6 @@
    "3030 wrzesiński",
    "2803 działdowski",
    "0401 aleksandrowski",
-   "1861 Krosno",
    "3204 goleniowski",
    "2007 łomżyński",
    "0605 janowski",
@@ -125,20 +143,20 @@
  },
  "gminy": {
   "wszystkie": 2479,
-  "z_czyms": 581,
-  "z_dwoma": 187,
+  "z_czyms": 596,
+  "z_dwoma": 188,
   "wg_typu": {
    "miejsko-wiejskie": {
     "wszystkie": 724,
-    "z_czyms": 201
+    "z_czyms": 208
    },
    "wiejskie": {
     "wszystkie": 1453,
-    "z_czyms": 220
+    "z_czyms": 221
    },
    "miejskie": {
     "wszystkie": 302,
-    "z_czyms": 160
+    "z_czyms": 167
    }
   }
  }
