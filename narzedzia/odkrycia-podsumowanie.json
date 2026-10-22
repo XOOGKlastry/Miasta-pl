@@ -10,9 +10,9 @@
  },
  "liczby": {
   "ludzie": {
-   "gra": 557,
+   "gra": 579,
    "enc": 0,
-   "off": 3664
+   "off": 3642
   },
   "miejsca": {
    "gra": 805,
@@ -27,12 +27,11 @@
  },
  "drogi": 27,
  "powody": {
-  "bez_nazwy": 70,
-  "zbrodnie": 70,
+  "zbrodnie": 72,
   "region": 28,
   "recznie": 5,
   "poza": 120,
-  "malo_znany": 4647
+  "malo_znany": 4693
  },
  "lista_brak": [
   "Daniel Gabriel Fahrenheit",
@@ -41,27 +40,11 @@
   "Stanisław Soyka",
   "Albert Chmielowski"
  ],
- "lista_poza": [
-  "Q160359 (bez_nazwy)",
-  "Q361642 (bez_nazwy)",
-  "Q152441 (bez_nazwy)",
-  "Q464531 (bez_nazwy)",
-  "Q156277 (bez_nazwy)",
-  "Q151025 (bez_nazwy)",
-  "Q161590 (bez_nazwy)",
-  "Q234366 (bez_nazwy)",
-  "Q59737 (bez_nazwy)",
-  "Q467368 (bez_nazwy)",
-  "Q558722 (bez_nazwy)",
-  "Q561031 (bez_nazwy)",
-  "Q983949 (bez_nazwy)",
-  "Q55789 (bez_nazwy)",
-  "Q1354695 (bez_nazwy)"
- ],
+ "lista_poza": [],
  "powiaty": {
   "wszystkie": 380,
-  "z_czyms": 304,
-  "z_trzema": 146,
+  "z_czyms": 305,
+  "z_trzema": 148,
   "bez": [
    "1410 łosicki",
    "1427 sierpecki",
@@ -103,7 +86,6 @@
    "0404 chełmiński",
    "1411 makowski",
    "1816 rzeszowski",
-   "1436 zwoleński",
    "1437 żuromiński",
    "0609 lubelski",
    "1214 proszowicki",
@@ -143,16 +125,16 @@
  },
  "gminy": {
   "wszystkie": 2479,
-  "z_czyms": 596,
-  "z_dwoma": 188,
+  "z_czyms": 604,
+  "z_dwoma": 189,
   "wg_typu": {
    "miejsko-wiejskie": {
     "wszystkie": 724,
-    "z_czyms": 208
+    "z_czyms": 213
    },
    "wiejskie": {
     "wszystkie": 1453,
-    "z_czyms": 221
+    "z_czyms": 224
    },
    "miejskie": {
     "wszystkie": 302,

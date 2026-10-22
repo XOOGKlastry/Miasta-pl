@@ -7,7 +7,7 @@
 Mikołaj Kopernik
 Maria Skłodowska-Curie
 Jan Heweliusz
-Daniel Gabriel Fahrenheit
+Gabriel Fahrenheit
 Ignacy Łukasiewicz
 Kazimierz Funk
 Stefan Banach
@@ -22,7 +22,7 @@ Paul Ehrlich
 Max Born
 Fritz Haber
 Otto Stern
-Albert Abraham Michelson
+Albert Michelson
 Maria Goeppert-Mayer
 Józef Rotblat
 Tadeusz Reichstein
@@ -115,11 +115,11 @@ Feliks Nowowiejski
 Michał Kleofas Ogiński
 Marek Grechuta
 Ewa Demarczyk
-Kora (piosenkarka)
+Kora
 Krzysztof Krawczyk
 Maryla Rodowicz
 Tomasz Stańko
-Stanisław Soyka
+Stanisław Sojka
 Grzegorz Ciechowski
 Ryszard Riedel
 Józef Elsner
@@ -195,7 +195,7 @@ Jerzy Popiełuszko
 Maksymilian Maria Kolbe
 Faustyna Kowalska
 Edyta Stein
-Albert Chmielowski
+Adam Chmielowski
 Stanisław ze Szczepanowa
 Andrzej Bobola
 Jan Kanty

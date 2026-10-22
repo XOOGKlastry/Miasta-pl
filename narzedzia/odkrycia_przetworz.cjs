@@ -87,7 +87,9 @@ function main(){
     else if(!poz.n||/^Q\d+$/.test(poz.n)){auto="off";powod="bez_nazwy";}
     wszystkie.push(Object.assign(poz,{auto,powod}));return poz;
   };
-  for(const o of S.ludzie||[]){
+  // brak polskiej etykiety w Wikidanych (bywa przy znanych postaciach): nazwa z tytułu artykułu w polskiej Wikipedii
+  const zArtykulu=o=>{if((!o.n||/^Q\d+$/.test(o.n))&&o.art){o.n=decodeURIComponent(o.art).replace(/_/g," ").replace(/\s*\(.*\)$/,"");}return o;};
+  for(const o0 of S.ludzie||[]){const o=zArtykulu(Object.assign({},o0));
     const t=(o.opis||"")+" | "+(o.zaw||[]).join(", ");
     const p=dodaj("ludzie",o,{ur:o.ur,zm:o.zm,mn:o.mn,zaw:(o.zaw||[]).slice(0,4),pl:/polsk|polak/i.test(o.opis||"")||(o.obyw||[]).some(x=>POLSKIE.has(x)),
       watpliwe:o.inne_m&&o.inne_m.length?o.inne_m.length:undefined,naz:o.nazizm||undefined,wyrok:o.wyrok||undefined,lista:o.lista||undefined});
