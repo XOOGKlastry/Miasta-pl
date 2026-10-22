@@ -1,5 +1,5 @@
 {
- "zbudowano": "2026-10-13",
+ "zbudowano": "2026-10-22",
  "progi": {
   "ludzie_odslony": 20000,
   "ludzie_wersje": 40,
@@ -12,10 +12,10 @@
   "ludzie": {
    "gra": 515,
    "enc": 0,
-   "off": 3693
+   "off": 3696
   },
   "miejsca": {
-   "gra": 804,
+   "gra": 805,
    "enc": 18,
    "off": 1198
   },
@@ -32,7 +32,7 @@
   "bez_nazwy": 70,
   "recznie": 5,
   "poza": 120,
-  "malo_znany": 4676
+  "malo_znany": 4679
  },
  "powiaty": {
   "wszystkie": 380,
@@ -128,11 +128,11 @@
   "wg_typu": {
    "miejsko-wiejskie": {
     "wszystkie": 724,
-    "z_czyms": 202
+    "z_czyms": 201
    },
    "wiejskie": {
     "wszystkie": 1453,
-    "z_czyms": 219
+    "z_czyms": 220
    },
    "miejskie": {
     "wszystkie": 302,
