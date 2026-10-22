@@ -26,9 +26,20 @@
   }
   // nazwa zabytku zdradza powiat (np. „Zamek w Malborku” i powiat malborski)
   function zdradza(c,pw){if(!pw)return true;const r=norm(pw.short||pw.n).slice(0,5);return r.length>=4&&norm(c.n).includes(r);}
+  // rdzeń nazwy (pierwsze słowo, 3 litery): Brodnica i powiat brodnicki, Nowy Targ i nowotarski
+  const rdzen=s=>(norm(s).split(/[ -]/)[0]||"").slice(0,3);
+  // „W którym powiecie leży X?”, gdy powiat ziemski nosi nazwę od X: odpowiedź jest w pytaniu
+  const zdradzaPowiat=(nazwa,pw)=>!!pw&&!pw.city&&rdzen(nazwa).length===3&&rdzen(nazwa)===rdzen(pw.short||pw.n);
+  // nazwa obiektu albo postaci zawiera nazwę miejscowości lub gminy, o którą pytamy (np. „Stare Miasto w Krakowie”)
+  function zdradzaMiejsce(nazwa,miejsca){
+    const t=" "+norm(nazwa)+" ";
+    return (miejsca||[]).filter(Boolean).some(m=>{const n=norm(m).split(" ")[0];if(n.length<3)return false;
+      const st=n.length<=4?n:n.slice(0,Math.max(4,n.length-2));return new RegExp(" "+st).test(t);});
+  }
 
   // „Skąd pochodzi?”: trzy inne miejscowości urodzenia z okolicy (najbliższe, losowo z siedmiu)
   function pytanieO(rnd,c,wszyscy){
+    if(zdradzaMiejsce(c.n,[c.mn]))return null;
     const zle=new Set([norm(c.mn)]),blisko=wszyscy.filter(x=>!zle.has(norm(x.mn))).sort((a,b)=>km(c,a)-km(c,b)),o=[];
     for(const x of blisko){const k=norm(x.mn);if(zle.has(k))continue;zle.add(k);o.push(x.mn);if(o.length===7)break;}
     if(o.length<3)return null;
@@ -37,6 +48,7 @@
   // zabytek albo bitwa: powiat i trzy powiaty z okolicy (sąsiedzi, a gdy ich mało, sąsiedzi sąsiadów)
   function pytanieA(rnd,c,powAll,okolica){
     const po=new Map(powAll.map(p=>[p.k,p])),pw=po.get(c.p);if(!pw)return null;
+    if(zdradza(c,pw)||(zdradzaMiejsce(c.n,[c.gn])&&rdzen(c.gn)===rdzen(pw.short||pw.n)))return null;
     let kand=(okolica||[]).filter(x=>x&&x.k!==pw.k);
     if(kand.length<3){const jest=new Set([pw.k]);kand=[];
       const dodaj=l=>l.forEach(k=>{const x=po.get(k);if(x&&!jest.has(k)){jest.add(k);kand.push(x);}});
@@ -46,7 +58,7 @@
     if(inne.length<3)return null;
     return {t:"a",c,pw,opcje:losuj(rnd,inne.concat([pw.label]))};
   }
-  const pytanieY=c=>({t:"y",c});
+  const pytanieY=c=>zdradzaMiejsce(c.n,[c.gn,c.mn])?null:{t:"y",c};
   // tekst po odpowiedzi: gdzie dokładnie i ciekawostka
   function odpowiedz(q,powiatNazwa){
     const c=q.c;let pw=powiatNazwa||"";
@@ -56,7 +68,7 @@
     return c.n+(c.rok&&c.typ==="w"?" ("+c.rok+")":"")+(c.gn?" · gm. "+c.gn:"")+(pw?", "+pw:"");
   }
   const ciekawostka=c=>c.ciek||(c.opis?c.opis.charAt(0).toUpperCase()+c.opis.slice(1)+".":"");
-  const API={przygotuj,wybierz,zdradza,pytanieO,pytanieA,pytanieY,odpowiedz,ciekawostka,km,norm};
+  const API={przygotuj,wybierz,zdradza,zdradzaPowiat,zdradzaMiejsce,rdzen,pytanieO,pytanieA,pytanieY,odpowiedz,ciekawostka,km,norm};
   glob.OdkryciaPytania=API;
   if(typeof module!=="undefined")module.exports=API;
 })(typeof window!=="undefined"?window:globalThis);

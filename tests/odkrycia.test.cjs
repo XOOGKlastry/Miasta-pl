@@ -5,7 +5,7 @@ function rnd(s){let a=s>>>0;return ()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^
 
 test('Odkrycia: dane gry bez pozycji tylko do encyklopedii, każda z powiatem i współrzędnymi w Polsce',()=>{
   const {ludzie,zabytki}=OP.przygotuj(dane);
-  assert.ok(ludzie.length>800,'postaci: '+ludzie.length);assert.ok(zabytki.length>500,'zabytków: '+zabytki.length);
+  assert.ok(ludzie.length>400,'postaci: '+ludzie.length);assert.ok(zabytki.length>500,'zabytków: '+zabytki.length);
   for(const o of ludzie.concat(zabytki)){assert.ok(/^\d{4}$/.test(o.p),o.n);assert.ok(o.lat>48.9&&o.lat<55&&o.lon>14&&o.lon<24.2,o.n);}
   const enc=new Set([].concat(dane.miejsca,dane.wydarzenia).filter(o=>o.s==='e').map(o=>o.n));
   assert.ok(enc.size>0);assert.ok(!zabytki.some(o=>enc.has(o.n)),'obóz w pytaniach');
@@ -30,4 +30,21 @@ test('Pytanie o zabytek: powiat i trzy inne z okolicy, nazwa nie zdradza powiatu
   assert.equal(OP.zdradza({n:'Zamek Czocha'},{short:'lubański'}),false);
   const malbork=zabytki.find(o=>/Malbork/.test(o.n));if(malbork)assert.equal(OP.zdradza(malbork,pow.find(p=>p.k===malbork.p)),true);
   assert.ok(zabytki.filter(o=>!OP.zdradza(o,pow.find(p=>p.k===o.p))).length>300);
+});
+
+test('pytania nie zdradzają odpowiedzi w treści', () => {
+  const OP = require('../odkrycia-pytania.js');
+  const pw = (short, city) => ({ short, n: short, city: !!city });
+  assert.equal(OP.zdradzaPowiat('Brodnica', pw('brodnicki')), true);
+  assert.equal(OP.zdradzaPowiat('Nowy Targ', pw('nowotarski')), true);
+  assert.equal(OP.zdradzaPowiat('Golub-Dobrzyń', pw('golubsko-dobrzyński')), true);
+  assert.equal(OP.zdradzaPowiat('Zakopane', pw('tatrzański')), false);
+  assert.equal(OP.zdradzaPowiat('Wrocław', pw('Wrocław', true)), false);
+  assert.equal(OP.zdradzaPowiat('Siechnice', pw('wrocławski')), false);
+  assert.equal(OP.zdradzaMiejsce('Stare Miasto w Krakowie', ['Kraków']), true);
+  assert.equal(OP.zdradzaMiejsce('Zamek w Malborku', ['Malbork']), true);
+  assert.equal(OP.zdradzaMiejsce('Zamek Królewski na Wawelu', ['Kraków']), false);
+  assert.equal(OP.zdradzaMiejsce('Bitwa pod Grunwaldem', ['Grunwald']), true);
+  assert.equal(OP.pytanieY({ n: 'Stare Miasto w Krakowie', gn: 'Kraków' }), null);
+  assert.ok(OP.pytanieY({ n: 'Wawel', gn: 'Kraków' }));
 });

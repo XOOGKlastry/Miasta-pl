@@ -245,7 +245,7 @@ svg path{fill-rule:evenodd}
 <script src="topojson-client.min.js?v=17"></script>
 <script src="efekty.js?v=17"></script>
 <script src="wspolne.js?v=28"></script>
-<script src="pierwsze-kroki.js?v=1"></script><script src="online-config.js"></script><script src="online.js?v=9"></script><script src="walka.js?v=4"></script><script src="odkrycia-pytania.js?v=1"></script><script src="podboj-pytania.js?v=2"></script><script src="podboj-gra.js?v=5"></script>
+<script src="pierwsze-kroki.js?v=1"></script><script src="online-config.js"></script><script src="online.js?v=9"></script><script src="walka.js?v=4"></script><script src="odkrycia-pytania.js?v=2"></script><script src="podboj-pytania.js?v=3"></script><script src="podboj-gra.js?v=5"></script>
 <script>
 const {$,fmt}=ZP;
 const URLP=new URLSearchParams(location.search);
@@ -307,7 +307,7 @@ function budujPytania(rnd,ile,filtr,kolej){
   const kluby=D.kluby.filter(k=>wObsz(k)),tab=D.tab.filter(p=>!ZP.OBSZAR.length||ZP.OBSZAR.indexOf(p.woj)>=0),powAll=D.powAll.filter(wObsz);
   const lista={z:losuj(rnd,miasta),g:losuj(rnd,miasta),k:losuj(rnd,pow),h:losuj(rnd,herby),m:losuj(rnd,miejsca),r:losuj(rnd,rzeki),w:losuj(rnd,miasta.filter(c=>c.pop>0)),
     t:losuj(rnd,tab),c:losuj(rnd,[...new Map(kluby.map(k=>[k.miasto,k])).values()]),s:losuj(rnd,powAll.filter(p=>p.nb&&p.nb.length)),v:losuj(rnd,miasta),
-    p:losuj(rnd,D.miasta.filter(x=>wObsz(x)&&!D.powAll.some(q=>q.city&&ZP.norm(q.short||q.n)===ZP.norm(x.n)))),q:[{}, {}, {}, {}],
+    p:losuj(rnd,D.miasta.filter(x=>wObsz(x))),q:[{}, {}, {}, {}],
     // odkrycia: przy dużych miastach (łatwiej) tylko najbardziej znane postacie i zabytki, przy wszystkich wielkościach cała lista
     o:losuj(rnd,OP.wybierz((D.ludzie||[]).filter(wObsz),znane)),y:losuj(rnd,OP.wybierz((D.zabytki||[]).filter(wObsz),znane))};
   const powPo=new Map(D.powAll.map(p=>[p.k,p]));
@@ -338,13 +338,20 @@ function budujPytania(rnd,ile,filtr,kolej){
     }
     if(t==="p"){
       const pw=powiatMiasta(c);
-      if(pw){const sas=D.powAll.filter(x=>!x.city&&pw.nb.indexOf(x.k)>=0&&x.label!==pw.label);
+      // pomijamy pytania z odpowiedzią w treści (Brodnica → powiat brodnicki)
+      if(pw&&!OP.zdradzaPowiat(c.n,pw)){const sas=D.powAll.filter(x=>!x.city&&pw.nb.indexOf(x.k)>=0&&x.label!==pw.label);
         if(sas.length>=3)qs.push({t,c,pw,opcje:losuj(rnd,losuj(rnd,sas).slice(0,3).map(x=>x.label).concat([pw.label]))});}
+      else if(!pw){
+        // miasto na prawach powiatu z „obwarzankiem” (Wrocław i powiat wrocławski): pułapka, więc pytamy
+        const cp=D.powAll.find(x=>x.city&&ZP.norm(x.short||x.n)===ZP.norm(c.n)),obw=cp&&D.powAll.find(x=>!x.city&&cp.nb.indexOf(x.k)>=0&&OP.rdzen(x.short||x.n)===OP.rdzen(cp.short||cp.n));
+        if(cp&&obw){const inne=D.powAll.filter(x=>x!==obw&&x!==cp&&(cp.nb.indexOf(x.k)>=0||obw.nb.indexOf(x.k)>=0)&&x.label!==cp.label);
+          if(inne.length>=2)qs.push({t,c,pw:cp,opcje:losuj(rnd,losuj(rnd,inne).slice(0,2).map(x=>x.label).concat([obw.label,cp.label]))});}
+      }
     }
     if(t==="q")qs.push({t,c:{n:"Szybki strzał"}});
     if(t==="o"){const q=OP.pytanieO(rnd,c,D.ludzie);if(q)qs.push(q);}
     if(t==="a"){const q=OP.pytanieA(rnd,c,D.powAll);if(q){qs.push(q);const j=lista.y.indexOf(c);if(j>=0)lista.y.splice(j,1);}}
-    if(t==="y"){qs.push(OP.pytanieY(c));const j=lista.a.indexOf(c);if(j>=0)lista.a.splice(j,1);}
+    if(t==="y"){const q=OP.pytanieY(c);if(q){qs.push(q);const j=lista.a.indexOf(c);if(j>=0)lista.a.splice(j,1);}}
     if(t==="v"){const w=ZP.wojOf(c.lon,c.lat);if(w)qs.push({t,c,woj:w,opcje:losuj(rnd,losuj(rnd,Object.values(ZP.WOJ_KOD).filter(x=>x!==w)).slice(0,3).concat([w]))});}
   }
   return qs;

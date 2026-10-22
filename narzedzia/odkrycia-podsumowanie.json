@@ -10,9 +10,9 @@
  },
  "liczby": {
   "ludzie": {
-   "gra": 1199,
+   "gra": 515,
    "enc": 0,
-   "off": 3009
+   "off": 3693
   },
   "miejsca": {
    "gra": 804,
@@ -27,58 +27,92 @@
  },
  "drogi": 27,
  "powody": {
-  "bez_nazwy": 70,
-  "poza": 120,
   "zbrodnie": 70,
   "region": 28,
-  "malo_znany": 3997
+  "bez_nazwy": 70,
+  "recznie": 5,
+  "poza": 120,
+  "malo_znany": 4676
  },
  "powiaty": {
   "wszystkie": 380,
-  "z_czyms": 333,
-  "z_trzema": 206,
+  "z_czyms": 300,
+  "z_trzema": 143,
   "bez": [
    "1410 łosicki",
    "1427 sierpecki",
+   "1404 gostyniński",
+   "1405 grodziski",
    "3016 obornicki",
+   "3063 Leszno",
    "3202 choszczeński",
+   "2468 Jaworzno",
+   "3025 średzki",
    "3006 jarociński",
+   "1008 pabianicki",
+   "2006 kolneński",
+   "3015 nowotomyski",
+   "2003 bielski",
+   "2610 skarżyski",
+   "0213 milicki",
    "2801 bartoszycki",
    "1602 głubczycki",
    "1063 Skierniewice",
-   "3062 Konin",
+   "2213 starogardzki",
+   "1818 stalowowolski",
    "1426 siedlecki",
    "1409 lipski",
    "1018 wieruszowski",
+   "0802 krośnieński",
+   "1606 namysłowski",
    "3002 czarnkowsko-trzcianecki",
    "2605 konecki",
    "0413 sępoleński",
    "1812 niżański",
    "1401 białobrzeski",
+   "0602 biłgorajski",
    "0613 parczewski",
    "1006 łódzki wschodni",
    "1806 kolbuszowski",
    "1608 oleski",
    "3031 złotowski",
    "3005 grodziski",
+   "3024 szamotulski",
+   "0404 chełmiński",
+   "2415 wodzisławski",
    "1411 makowski",
-   "1819 strzyżowski",
+   "1816 rzeszowski",
    "1436 zwoleński",
+   "1437 żuromiński",
+   "0609 lubelski",
    "1214 proszowicki",
+   "1021 brzeziński",
    "3014 międzychodzki",
    "2603 kazimierski",
+   "2204 gdański",
+   "3218 łobeski",
+   "0417 wąbrzeski",
+   "1429 sokołowski",
    "2013 wysokomazowiecki",
+   "3026 śremski",
    "3008 kępiński",
    "3027 turecki",
    "2414 bieruńsko-lędziński",
    "3211 policki",
    "0216 polkowicki",
    "2813 olecki",
+   "1003 łaski",
+   "0804 nowosolski",
+   "3030 wrzesiński",
    "2803 działdowski",
    "0401 aleksandrowski",
+   "1861 Krosno",
    "3204 goleniowski",
    "2007 łomżyński",
    "0605 janowski",
+   "1017 wieluński",
+   "1802 brzozowski",
+   "1603 kędzierzyńsko-kozielski",
    "3029 wolsztyński",
    "2476 Świętochłowice",
    "0462 Grudziądz",
@@ -89,20 +123,20 @@
  },
  "gminy": {
   "wszystkie": 2479,
-  "z_czyms": 689,
-  "z_dwoma": 249,
+  "z_czyms": 581,
+  "z_dwoma": 187,
   "wg_typu": {
    "miejsko-wiejskie": {
     "wszystkie": 724,
-    "z_czyms": 244
+    "z_czyms": 202
    },
    "wiejskie": {
     "wszystkie": 1453,
-    "z_czyms": 246
+    "z_czyms": 219
    },
    "miejskie": {
     "wszystkie": 302,
-    "z_czyms": 199
+    "z_czyms": 160
    }
   }
  }
