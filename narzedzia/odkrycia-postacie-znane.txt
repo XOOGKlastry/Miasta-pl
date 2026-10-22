@@ -1,0 +1,244 @@
+# Postacie urodzone na dzisiejszych ziemiach polskich, które zawsze trafiają do pytań „Skąd pochodzi?”
+# (bez progów rozpoznawalności, z premią w losowaniu). Jedna linia = tytuł artykułu w polskiej Wikipedii.
+# Automat (narzedzia/pobierz_odkrycia.py) bierze z Wikidanych miejsce urodzenia; jeśli leży poza Polską, pozycja odpada sama.
+# Kolejność: nauka, odkrywcy, literatura, muzyka, sztuka, film, historia, religia, polityka, sport.
+
+# nauka i wynalazki
+Mikołaj Kopernik
+Maria Skłodowska-Curie
+Jan Heweliusz
+Daniel Gabriel Fahrenheit
+Ignacy Łukasiewicz
+Kazimierz Funk
+Stefan Banach
+Hugo Steinhaus
+Marian Rejewski
+Jerzy Różycki
+Henryk Zygalski
+Ludwik Hirszfeld
+Jan Czochralski
+Kazimierz Prószyński
+Paul Ehrlich
+Max Born
+Fritz Haber
+Otto Stern
+Albert Abraham Michelson
+Maria Goeppert-Mayer
+Józef Rotblat
+Tadeusz Reichstein
+Kazimierz Kordylewski
+Aleksander Wolszczan
+Alfred Tarski
+Wacław Sierpiński
+Kazimierz Kuratowski
+Benoît Mandelbrot
+Ludwik Zamenhof
+Arthur Schopenhauer
+Johann Gottfried Herder
+Olga Malinkiewicz
+
+# podróżnicy, odkrywcy, himalaiści
+Paweł Edmund Strzelecki
+Bronisław Malinowski
+Arkady Fiedler
+Tony Halik
+Elżbieta Dzikowska
+Wojciech Cejrowski
+Martyna Wojciechowska
+Jan Kubary
+Jerzy Kukuczka
+Krzysztof Wielicki
+Andrzej Zawada
+Andrzej Bargiel
+Tomasz Mackiewicz
+Piotr Pustelnik
+
+# literatura
+Henryk Sienkiewicz
+Bolesław Prus
+Władysław Reymont
+Stefan Żeromski
+Maria Konopnicka
+Wisława Szymborska
+Olga Tokarczuk
+Jan Kochanowski
+Ignacy Krasicki
+Aleksander Fredro
+Cyprian Kamil Norwid
+Józef Ignacy Kraszewski
+Kazimierz Przerwa-Tetmajer
+Jan Kasprowicz
+Stanisław Wyspiański
+Tadeusz Boy-Żeleński
+Julian Tuwim
+Konstanty Ildefons Gałczyński
+Krzysztof Kamil Baczyński
+Witold Gombrowicz
+Stanisław Ignacy Witkiewicz
+Tadeusz Różewicz
+Sławomir Mrożek
+Andrzej Sapkowski
+Janusz Korczak
+Isaac Bashevis Singer
+Günter Grass
+Gerhart Hauptmann
+Maria Dąbrowska
+Zofia Nałkowska
+Wiesław Myśliwski
+Agnieszka Osiecka
+Jan Twardowski
+Halina Poświatowska
+Marek Hłasko
+Leopold Tyrmand
+Adam Asnyk
+Wincenty Pol
+Wacław Potocki
+Andrzej Frycz Modrzewski
+Józef Wybicki
+Jan Długosz
+Hanna Krall
+Magdalena Samozwaniec
+Maria Pawlikowska-Jasnorzewska
+
+# muzyka
+Fryderyk Chopin
+Henryk Wieniawski
+Krzysztof Penderecki
+Witold Lutosławski
+Henryk Mikołaj Górecki
+Krzysztof Komeda
+Zbigniew Preisner
+Jan Kiepura
+Artur Rubinstein
+Władysław Szpilman
+Feliks Nowowiejski
+Michał Kleofas Ogiński
+Marek Grechuta
+Ewa Demarczyk
+Kora (piosenkarka)
+Krzysztof Krawczyk
+Maryla Rodowicz
+Tomasz Stańko
+Stanisław Soyka
+Grzegorz Ciechowski
+Ryszard Riedel
+Józef Elsner
+Rafał Blechacz
+
+# sztuka
+Jan Matejko
+Jacek Malczewski
+Józef Chełmoński
+Olga Boznańska
+Tamara Łempicka
+Zdzisław Beksiński
+Nikifor Krynicki
+Tadeusz Kantor
+Magdalena Abakanowicz
+Józef Brandt
+Aleksander Gierymski
+Juliusz Kossak
+Leon Wyczółkowski
+Józef Mehoffer
+Xawery Dunikowski
+
+# film i teatr
+Andrzej Wajda
+Krzysztof Kieślowski
+Agnieszka Holland
+Krzysztof Zanussi
+Andrzej Munk
+Stanisław Bareja
+Paweł Pawlikowski
+Pola Negri
+Helena Modrzejewska
+Jerzy Stuhr
+Daniel Olbrychski
+Krystyna Janda
+Bogusław Linda
+Janusz Gajos
+Kazimierz Kutz
+Jerzy Grotowski
+Billy Wilder
+Samuel Goldwyn
+Fred Zinnemann
+Max Factor
+Helena Rubinstein
+
+# historia, władcy, wojsko
+Kazimierz III Wielki
+Zygmunt II August
+Anna Jagiellonka
+Katarzyna II Wielka
+Józef Bem
+Jan Henryk Dąbrowski
+Kazimierz Pułaski
+Stefan Czarniecki
+Jan Zamoyski
+Władysław Sikorski
+Władysław Anders
+Jan Karski
+Irena Sendlerowa
+Józef Haller
+Wojciech Korfanty
+Ignacy Mościcki
+Stanisław Wojciechowski
+Stefan Starzyński
+Dezydery Chłapowski
+Manfred von Richthofen
+Paul von Hindenburg
+
+# religia
+Jan Paweł II
+Stefan Wyszyński
+Jerzy Popiełuszko
+Maksymilian Maria Kolbe
+Faustyna Kowalska
+Edyta Stein
+Albert Chmielowski
+Stanisław ze Szczepanowa
+Andrzej Bobola
+Jan Kanty
+Stanisław Kostka
+Józef Glemp
+
+# polityka
+Lech Wałęsa
+Tadeusz Mazowiecki
+Wojciech Jaruzelski
+Edward Gierek
+Władysław Gomułka
+Roman Dmowski
+Wincenty Witos
+Róża Luksemburg
+Dawid Ben Gurion
+Zbigniew Brzeziński
+
+# sport
+Robert Lewandowski
+Adam Małysz
+Kamil Stoch
+Iga Świątek
+Robert Kubica
+Justyna Kowalczyk
+Otylia Jędrzejczak
+Kazimierz Deyna
+Grzegorz Lato
+Zbigniew Boniek
+Jan Tomaszewski
+Włodzimierz Lubański
+Mariusz Pudzianowski
+Agnieszka Radwańska
+Robert Korzeniowski
+Tomasz Majewski
+Anita Włodarczyk
+Andrzej Gołota
+Dariusz Michalczewski
+Tomasz Adamek
+Mateusz Kusznierewicz
+Bartosz Kurek
+Jakub Błaszczykowski
+Wojciech Fortuna
+Leszek Blanik
+Miroslav Klose
+Łukasz Podolski

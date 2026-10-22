@@ -3,6 +3,7 @@ name: Odkrycia (ludzie, zabytki, wydarzenia, drogi)
 on:
   workflow_dispatch:
   push:
+    branches: [main]
     paths:
       - "narzedzia/pobierz_odkrycia.py"
       - ".github/workflows/odkrycia.yml"

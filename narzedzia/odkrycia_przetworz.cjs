@@ -90,13 +90,13 @@ function main(){
   for(const o of S.ludzie||[]){
     const t=(o.opis||"")+" | "+(o.zaw||[]).join(", ");
     const p=dodaj("ludzie",o,{ur:o.ur,zm:o.zm,mn:o.mn,zaw:(o.zaw||[]).slice(0,4),pl:/polsk|polak/i.test(o.opis||"")||(o.obyw||[]).some(x=>POLSKIE.has(x)),
-      watpliwe:o.inne_m&&o.inne_m.length?o.inne_m.length:undefined,naz:o.nazizm||undefined,wyrok:o.wyrok||undefined});
+      watpliwe:o.inne_m&&o.inne_m.length?o.inne_m.length:undefined,naz:o.nazizm||undefined,wyrok:o.wyrok||undefined,lista:o.lista||undefined});
     if(p.auto!=="gra")continue;
     // miejsce urodzenia bywa budynkiem, ulicą albo obiektem bez polskiej nazwy: wtedy podajemy gminę
     if(!p.mn||/^Q\d+$/.test(p.mn)||OBIEKT.test(p.mn)){p.mn_oryg=p.mn;p.mn=p.gn||p.mn;}
     if(o.nazizm||(ZLY.test(t)&&!DOBRZY.test(t))){p.auto="off";p.powod="zbrodnie";}
     else if(REGION.test(o.mn||"")){p.auto="off";p.powod="region";}
-    else if(!znanaPostac(o,P.progi_postaci)){p.auto="off";p.powod="malo_znany";}
+    else if(!o.lista&&!znanaPostac(o,P.progi_postaci)){p.auto="off";p.powod="malo_znany";}
     p.rodzaj=rodzajPostaci(o);
   }
   for(const o of S.miejsca||[]){
@@ -131,7 +131,7 @@ function main(){
   const drogi=Object.values(dr).map(d=>({ref:d.ref,typ:d.typ,nazwa:NAZWY_DROG[d.ref]||null,powiaty:Object.keys(d.powiaty).filter(k=>d.powiaty[k]>=2||Object.keys(d.powiaty).length<6).sort(),
     woj:[...new Set(Object.keys(d.powiaty).map(k=>k.slice(0,2)))].sort()})).sort((a,b)=>a.ref.localeCompare(b.ref,"pl",{numeric:true}));
   // ocena rozpoznawalności i zapis
-  const ocena=o=>+(Math.log10((o.odsl||0)+10)+1.2*Math.log10(Math.max(1,o.sl||1))+(o.kat==="ludzie"?PREMIA_POSTACI[o.rodzaj]||0:0)).toFixed(2);
+  const ocena=o=>+(Math.log10((o.odsl||0)+10)+1.2*Math.log10(Math.max(1,o.sl||1))+(o.kat==="ludzie"?(o.lista?0.6:PREMIA_POSTACI[o.rodzaj]||0):0)).toFixed(2);
   wszystkie.forEach(o=>o.pkt=ocena(o));wszystkie.sort((a,b)=>b.pkt-a.pkt);
   const doGry=o=>{const x={q:o.id,n:o.n,opis:o.opis,wsp:o.wsp,g:o.g,gn:o.gn,p:o.p,pkt:o.pkt};
     if(o.s==="enc")x.s="e";if(o.ciek)x.ciek=o.ciek;if(o.img)x.img=o.img;if(o.art)x.art=o.art;
@@ -140,7 +140,7 @@ function main(){
   ["ludzie","miejsca","wydarzenia"].forEach(k=>gra[k]=wszystkie.filter(o=>o.kat===k&&o.s!=="off"&&o.p).map(doGry));
   gra.drogi=drogi;
   fs.writeFileSync(path.join(KAT,"odkrycia.json"),JSON.stringify(gra));
-  const panel=wszystkie.map(o=>{const x={id:o.id,kat:o.kat,rodzaj:o.rodzaj,n:o.n,opis:o.opis,mn:o.mn,gn:o.gn,g:o.g,p:o.p,odsl:o.odsl,sl:o.sl,pkt:o.pkt,art:o.art,auto:o.auto,powod:o.powod,s:o.s};
+  const panel=wszystkie.map(o=>{const x={id:o.id,kat:o.kat,rodzaj:o.rodzaj,lista:o.lista,n:o.n,opis:o.opis,mn:o.mn,gn:o.gn,g:o.g,p:o.p,odsl:o.odsl,sl:o.sl,pkt:o.pkt,art:o.art,auto:o.auto,powod:o.powod,s:o.s};
     ["ur","zm","rok","rodzaje","pl","naz","wyrok","watpliwe","ciek","dodany","zmieniony","mn_oryg"].forEach(k=>{if(o[k]!==undefined&&o[k]!==null&&!(Array.isArray(o[k])&&!o[k].length))x[k]=o[k];});return x;});
   fs.writeFileSync(path.join(__dirname,"odkrycia-wszystkie.json"),JSON.stringify({zbudowano:S.zbudowano,powody:POWODY,progi:pr,pozycje:panel}));
   // podsumowanie: liczby, pokrycie powiatów i gmin
@@ -149,6 +149,7 @@ function main(){
   const liczby={};["ludzie","miejsca","wydarzenia"].forEach(k=>{liczby[k]={gra:0,enc:0,off:0};wszystkie.filter(o=>o.kat===k).forEach(o=>liczby[k][o.s]++);});
   const powody={};wszystkie.filter(o=>o.s==="off").forEach(o=>powody[o.powod]=(powody[o.powod]||0)+1);
   const pod={zbudowano:S.zbudowano,progi:pr,liczby,drogi:drogi.length,powody,
+    lista_brak:S.lista_brak||[],lista_poza:wszystkie.filter(o=>o.lista&&o.s==="off").map(o=>o.n+" ("+(o.powod||"")+")"),
     powiaty:{wszystkie:POW.length,z_czyms:Object.keys(ileP).length,z_trzema:Object.values(ileP).filter(v=>v>=3).length,bez:POW.filter(p=>!ileP[p.k]).map(p=>p.k+" "+p.n)},
     gminy:{wszystkie:GM.length,z_czyms:Object.keys(ileG).length,z_dwoma:Object.values(ileG).filter(v=>v>=2).length,wg_typu:gminyTyp}};
   fs.writeFileSync(path.join(__dirname,"odkrycia-podsumowanie.json"),JSON.stringify(pod,null,1));

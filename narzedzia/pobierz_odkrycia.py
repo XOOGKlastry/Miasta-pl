@@ -13,7 +13,8 @@ Kategorie:
   drogi      odcinki autostrad i dróg ekspresowych (numer, środek odcinka) z OSM
 Uruchamiane przez GitHub Actions (.github/workflows/odkrycia.yml).
 """
-import json, sys, time, urllib.error, urllib.parse, urllib.request
+import json
+import os, sys, time, urllib.error, urllib.parse, urllib.request
 
 UA = "PolskoZnawca/1.0 (https://github.com/XOOGKlastry/Miasta-pl; gra edukacyjna)"
 WYNIK = "narzedzia/odkrycia-surowe.json"
@@ -63,6 +64,9 @@ def rok(s):
 
 
 # ---------- ludzie ----------
+LISTA_BRAK = []
+
+
 def ludzie():
     wynik = {}
     # przedziały rozpoznawalności, żeby pojedyncze zapytanie nie przekroczyło limitu czasu
@@ -110,6 +114,45 @@ def ludzie():
                         "m": qid(b["m"]), "mn": b.get("mLabel"), "wsp": wsp(b.get("wsp")), "img": plik(b.get("img")),
                         "sl": int(b["sl"]), "art": urllib.parse.unquote(b["art"].rsplit("/", 1)[-1])}
         print("  razem", len(wynik), flush=True)
+    # lista znanych postaci (narzedzia/odkrycia-postacie-znane.txt): po tytule artykułu w polskiej Wikipedii,
+    # bez warunku na kraj miejsca urodzenia (część miejsc w Wikidanych nie ma państwa); poza Polską odrzuci przeliczenie
+    global LISTA_BRAK
+    LISTA_BRAK = []
+    try:
+        with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "odkrycia-postacie-znane.txt"), encoding="utf-8") as fp:
+            tytuly = [l.strip() for l in fp if l.strip() and not l.startswith("#")]
+    except Exception:
+        tytuly = []
+    znalezione = set()
+    for i in range(0, len(tytuly), 40):
+        vals = " ".join('"%s"@pl' % t.replace('"', '') for t in tytuly[i:i + 40])
+        q = """SELECT ?t ?p ?pLabel ?opis ?ur ?zm ?m ?mLabel ?wsp ?img ?sl ?art WHERE {
+          VALUES ?t { %s }
+          ?art schema:name ?t; schema:isPartOf <https://pl.wikipedia.org/>; schema:about ?p.
+          ?p wikibase:sitelinks ?sl.
+          OPTIONAL { ?p wdt:P19 ?m. OPTIONAL { ?m wdt:P625 ?wsp } }
+          OPTIONAL { ?p wdt:P569 ?ur } OPTIONAL { ?p wdt:P570 ?zm } OPTIONAL { ?p wdt:P18 ?img }
+          OPTIONAL { ?p schema:description ?opis FILTER(lang(?opis) = "pl") }
+          SERVICE wikibase:label { bd:serviceParam wikibase:language "pl,en". }
+        }""" % vals
+        try:
+            wiersze = sparql(q)
+        except Exception as e:
+            print("  lista znanych: błąd", e, flush=True)
+            continue
+        for b in wiersze:
+            znalezione.add(b.get("t"))
+            k = qid(b["p"])
+            if k in wynik:
+                wynik[k]["lista"] = True
+                continue
+            if not b.get("m") or not b.get("wsp"):
+                continue
+            wynik[k] = {"q": k, "n": b.get("pLabel"), "opis": b.get("opis"), "ur": rok(b.get("ur", "")), "zm": rok(b.get("zm", "")),
+                        "m": qid(b["m"]), "mn": b.get("mLabel"), "wsp": wsp(b.get("wsp")), "img": plik(b.get("img")),
+                        "sl": int(b["sl"]), "art": urllib.parse.unquote(b["art"].rsplit("/", 1)[-1]), "lista": True}
+    LISTA_BRAK = [t for t in tytuly if t not in znalezione]
+    print("  lista znanych:", len(tytuly), "tytułów, nie znaleziono:", LISTA_BRAK, flush=True)
     # zawody i obywatelstwo partiami
     ks = list(wynik)
     for i in range(0, len(ks), 300):
@@ -332,6 +375,9 @@ def main():
         # zapis po każdej kategorii, żeby przerwanie nie zabierało wszystkiego
         with open(WYNIK, "w", encoding="utf-8") as fp:
             json.dump(dane, fp, ensure_ascii=False, separators=(",", ":"))
+    dane["lista_brak"] = LISTA_BRAK   # tytuły z listy znanych, których nie znaleziono w Wikidanych (do poprawy nazw)
+    with open(WYNIK, "w", encoding="utf-8") as fp:
+        json.dump(dane, fp, ensure_ascii=False, separators=(",", ":"))
     print("gotowe:", {k: len(v) for k, v in dane.items() if isinstance(v, list)}, flush=True)
 
 

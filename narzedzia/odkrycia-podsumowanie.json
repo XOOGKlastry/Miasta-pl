@@ -34,6 +34,8 @@
   "poza": 120,
   "malo_znany": 4679
  },
+ "lista_brak": [],
+ "lista_poza": [],
  "powiaty": {
   "wszystkie": 380,
   "z_czyms": 300,
