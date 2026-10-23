@@ -144,13 +144,16 @@
   $('monety').textContent=fmtM(JA.monety);
   $('dochodInfo').textContent='monet · +'+fmtM(JA.dochod_godzinowy)+' co godzinę · +'+fmtM(JA.dzienne)+' codziennie'+(wk&&wk.teraz?' · 🎉 weekend':'')+(JA.przygraniczne?' · 🛂 '+JA.przygraniczne+' przy granicy':'');
   $('kosztAtaku').textContent=fmtM(JA.koszt_ataku)+' 🪙';
+  if(window.ZPNaglowek&&ZPNaglowek.saldo)ZPNaglowek.saldo(JA.monety);
   const pelny=JA.limit>=(UST('ataki_max')||50);
   $('kupAtak').disabled=JA.monety<JA.koszt_ataku||pelny;
   $('kupAtak').title=pelny?'Masz już '+JA.limit+' ataków na dziś (więcej się nie da)':'';
  }
+ // zakup podpowiedzi w skarbcu z nagłówka zmienia saldo: odśwież stan gracza
+ document.addEventListener('zp-saldo',()=>{odswiez().catch(()=>{});});
  $('kupAtak').onclick=async e=>{const b=e.currentTarget;if(!JA)return;
-  if(!confirm('Kupić dodatkowy atak na dziś za '+JA.koszt_ataku+' monet?'))return;
-  b.disabled=true;try{const r=await Online.podboj.kupAtak();ZP.komunikat('Masz dodatkowy atak! Dziś: '+r.limit+' ataków.');await odswiez();}catch(er){ZP.komunikat(er.message);b.disabled=false;}};
+  if(!confirm('Kupić dodatkowy atak na dziś za '+fmtM(JA.koszt_ataku)+' monet?'+(JA.koszt_ataku_przyrost&&(UST('przyrost_od')||0)<=+new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Warsaw'}).replace(/-/g,'')?' Każdy kolejny dziś będzie o '+fmtM(JA.koszt_ataku_przyrost)+' droższy.':'')))return;
+  b.disabled=true;try{const r=await Online.podboj.kupAtak();ZP.komunikat('Masz dodatkowy atak! Dziś: '+r.limit+' ataków. Następny kosztuje '+fmtM(r.koszt_ataku)+' monet.');await odswiez();}catch(er){ZP.komunikat(er.message);b.disabled=false;}};
  // nagroda za skarb zależy od miejsca: 1. 100 monet i legendarna paczka, 2.–3. 50 i złota, dalsi 25 i srebrna
  const NAGRODY=()=>(TYG&&TYG.skarb_nagrody)||[500,250,100];
  const NAGRODA_SKARBU=n=>n<=1?fmtM(NAGRODY()[0])+' 🪙 i legendarna paczka':n<=3?fmtM(NAGRODY()[1])+' 🪙 i złota paczka':fmtM(NAGRODY()[2])+' 🪙 i srebrna paczka';
@@ -230,13 +233,13 @@
   if(!Online.dolaczony())akcje.push('<a class="klocek" href="ranking.html">Dołącz, żeby walczyć</a>');
   else if(!JA)akcje.push('<p class="uwaga">Ładowanie Twojego stanu…</p>');
   else{
-   const blokada=s.pojedynek?'O ten powiat trwa pojedynek.':m.chroniony?esc(s.nick)+' dopiero zaczyna i ma ochronę do '+godzina(ochrony().get(s.owner))+'. Zaatakuj kogoś innego.':m.oslona?'Ten powiat chroni tarcza do '+godzina(tarcze().get(k))+'. Zaatakuj inny albo wróć później.':atakiZostalo<=0?'Wykorzystałeś dzisiejsze ataki. Kup kolejny za '+JA.koszt_ataku+' monet albo wróć jutro.':'';
+   const blokada=s.pojedynek?'O ten powiat trwa pojedynek.':m.chroniony?esc(s.nick)+' dopiero zaczyna i ma ochronę do '+godzina(ochrony().get(s.owner))+'. Zaatakuj kogoś innego.':m.oslona?'Ten powiat chroni tarcza do '+godzina(tarcze().get(k))+'. Zaatakuj inny albo wróć później.':atakiZostalo<=0?'Wykorzystałeś dzisiejsze ataki. Kup kolejny za '+fmtM(JA.koszt_ataku)+' monet albo wróć jutro.':'';
    if(m.zdobadz)akcje.push(przycisk('atak','🏴 Zdobądź','potrzeba 5 z 8',blokada));
    if(m.umocnij)akcje.push(przycisk('atak','🛡️ Umocnij','masz '+s.score+' z 8, zagraj lepiej',blokada));
    if(m.przebij)akcje.push(przycisk('atak',m.ile?'⚔️ Przebij':'🌱 Zacznij tutaj','potrzeba '+celAtaku(k,s)+' z 8'+(stolice().get(k)===s.owner?' · stolica: łup 20% monet':'')+(mamOchrone()?' · stracisz ochronę':''),blokada));
    if(m.pojedynek)akcje.push(przycisk('pojedynek','⚔️ Pojedynek 24 h','obrońca ma dobę na odpowiedź'+(mamOchrone()?' · stracisz ochronę':''),blokada));
    if(m.tarcza)akcje.push('<button class="klocek jasny dwulinia" id="tarcza"'+(monety()<KOSZT_TARCZY()||(JA.tarcze||0)>=2?' disabled':'')+'>🛡️ Tarcza 24 h<small>'+((JA.tarcze||0)>=2?'masz już 2 tarcze':KOSZT_TARCZY()+' 🪙 · masz '+monety()+' · nikt nie zaatakuje przez dobę')+'</small></button>');
-   if(atakiZostalo<=0&&(m.zdobadz||m.umocnij||m.przebij||m.pojedynek))akcje.push('<button class="klocek jasny dwulinia" id="kupAtak2"'+(monety()<JA.koszt_ataku?' disabled':'')+'>➕ Dodatkowy atak<small>'+JA.koszt_ataku+' 🪙 · masz '+monety()+'</small></button>');
+   if(atakiZostalo<=0&&(m.zdobadz||m.umocnij||m.przebij||m.pojedynek))akcje.push('<button class="klocek jasny dwulinia" id="kupAtak2"'+(monety()<JA.koszt_ataku?' disabled':'')+'>➕ Dodatkowy atak<small>'+fmtM(JA.koszt_ataku)+' 🪙 · masz '+fmtM(monety())+'</small></button>');
    if(m.moj&&JA.powiaty>=10&&JA.stolica!==k)akcje.push('<button class="klocek jasny dwulinia" id="stolica"'+(JA.stolica&&monety()<JA.koszt_stolicy?' disabled':'')+'>🏛️ '+(JA.stolica?'Przenieś tu stolicę':'Ustaw stolicę')+'<small>'+(JA.stolica?JA.koszt_stolicy+' 🪙 · masz '+monety():'za darmo · podwójny dochód i +1 obrony')+'</small></button>');
    if(m.moj&&JA.stolica===k){const br=brakDookola(k);
     akcje.unshift('<p class="uwaga">🏛️ To Twoja stolica: +1 do obrony i '+(br.length?'podwójny dochód. Zajmij wszystkie powiaty dookoła (brakuje: '+esc(br.map(n=>PO.get(n).short).join(', '))+'), a będzie bezpieczna: potrójny dochód i +1 atak dziennie.':'<b>bezpieczna</b>: wszystko dookoła jest Twoje, więc potrójny dochód i +1 atak dziennie.')+' Jeśli ją stracisz, zdobywca zabierze 20% Twoich monet.</p>');}

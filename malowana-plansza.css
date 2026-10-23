@@ -36,3 +36,7 @@ nav.dol{border-top-width:2px}
 /* puchar rankingu obok kolekcji w nagłówku planszy */
 .gora h1{grid-column:2}
 .gora>.zp-ng.puchar{grid-column:3;grid-row:1;justify-self:end;width:36px;height:36px;margin-left:0;border-width:2px;box-shadow:0 2px 0 #71613e}
+
+/* monety z Podboju w drugim rzędzie, obok gwiazdek */
+.gora>.zp-mon{grid-column:2;grid-row:2;justify-self:end;height:auto;margin:0;padding:2px 7px 2px 4px;border-width:1.5px;box-shadow:none;font:900 12px Rubik,system-ui,sans-serif;gap:3px}
+.gora>.zp-mon .ik{font-size:13px}
