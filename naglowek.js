@@ -1,4 +1,4 @@
-/* Przyciski w prawym górnym rogu: puchar (ranking) i kolekcja kart. Ten sam wygląd na każdym ekranie.
+/* Przyciski w prawym górnym rogu: monety z Podboju (sklepik z podpowiedziami), puchar (ranking) i kolekcja kart. Ten sam wygląd na każdym ekranie.
    Strony z wspolne.js dostają je przez ZP; pozostałe ekrany ładują ten plik. */
 (function(){
   const PUCHAR='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3A2A14" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M7 3h10v6a5 5 0 0 1-10 0z" fill="#FFF6E0"/><path d="M7 5H4c0 3 1.2 5 3.2 5.4M17 5h3c0 3-1.2 5-3.2 5.4"/><path d="M10 14.5h4l.6 3.5H9.4z" fill="#FFF6E0"/><rect x="7" y="18" width="10" height="3" rx="1" fill="#E84A3C"/><path d="M10.2 6.5l1.8-1 1.8 1-.4 2h-2.8z" fill="#F5B82E" stroke-width="1.4"/></svg>';
@@ -112,8 +112,118 @@
     }
     pingT=setTimeout(pingWalki,20000);
   }
+
+  /* ---- stan konta (monety z Podboju) w nagłówku i sklepik z podpowiedziami 50/50 ---- */
+  const fmtM=n=>Number(n||0).toLocaleString("pl-PL");
+  const krotko=n=>{n=+n||0;if(n<10000)return fmtM(n);if(n<1e5)return (Math.floor(n/100)/10).toLocaleString("pl-PL")+"k";if(n<1e6)return Math.floor(n/1000)+"k";return (Math.floor(n/1e5)/10).toLocaleString("pl-PL")+" mln";};
+  let SALDO=null;
+  function stylSklepu(){
+    if(document.getElementById("zp-sk-styl"))return;
+    const s=document.createElement("style");s.id="zp-sk-styl";
+    s.textContent=".zp-mon[hidden]{display:none!important}.zp-mon{flex:none;margin-left:6px;height:36px;padding:0 9px 0 5px;display:flex;align-items:center;gap:4px;border-radius:999px;background:#F5B82E;border:3px solid #3A2A14;box-shadow:0 3px 0 #3A2A14;font:900 14px/1 Rubik,sans-serif;color:#3A2A14;cursor:pointer;white-space:nowrap}"
+      +".zp-mon:active{transform:translateY(3px);box-shadow:0 0 0 #3A2A14}.zp-mon .ik{font-size:17px;line-height:1}.zp-mon.waski{padding:0 7px 0 4px;font-size:12px}"
+      +".zp-mon.wzrost{animation:zpMon .6s ease}@keyframes zpMon{40%{transform:scale(1.15)}}"
+      +".zp-sk-tlo{position:fixed;inset:0;z-index:7500;background:rgba(30,20,8,.55);display:flex;align-items:flex-end;justify-content:center}"
+      +".zp-sk{width:min(100%,460px);box-sizing:border-box;max-height:92vh;overflow-y:auto;background:#FFF6E0;color:#3A2A14;border:4px solid #3A2A14;border-bottom:0;border-radius:22px 22px 0 0;padding:16px 16px calc(env(safe-area-inset-bottom,0px) + 16px);font-family:Rubik,system-ui,sans-serif;animation:zpSk .3s cubic-bezier(.3,1.2,.4,1)}"
+      +"@keyframes zpSk{from{transform:translateY(100%)}}"
+      +".zp-sk h2{margin:0 0 2px;font:400 20px/1.1 Bungee,sans-serif}.zp-sk .stan{display:flex;align-items:center;gap:8px;margin:8px 0 4px;font:900 30px/1 Rubik,sans-serif}.zp-sk .stan small{font-size:14px;font-weight:700}"
+      +".zp-sk p{margin:6px 0;font-weight:700;font-size:14px;line-height:1.35}.zp-sk .muted{color:#7A5A30;font-size:13px}"
+      +".zp-sk .pp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 6px}"
+      +".zp-sk .pp button{min-height:74px;border-radius:14px;border:3px solid #3A2A14;box-shadow:0 4px 0 #3A2A14;background:#fff;color:#3A2A14;font:900 20px/1.1 Rubik,sans-serif;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:4px}"
+      +".zp-sk .pp button small{font-size:12px;font-weight:800}.zp-sk .pp button em{font-style:normal;font-size:11px;font-weight:800;color:#2E7D32}"
+      +".zp-sk .pp button:disabled{opacity:.45;cursor:default}.zp-sk .pp button:not(:disabled):active{transform:translateY(4px);box-shadow:0 0 0 #3A2A14}"
+      +".zp-sk .dol{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}.zp-sk .dol>*{min-height:48px;border-radius:14px;border:3px solid #3A2A14;box-shadow:0 4px 0 #3A2A14;font:800 15px Rubik,sans-serif;color:#3A2A14;background:#fff;display:grid;place-items:center;text-decoration:none;cursor:pointer}"
+      +".zp-sk .dol a{background:#F5B82E}.zp-sk .ik5050{width:22px;height:22px;vertical-align:-5px}"
+      +"@media (prefers-reduced-motion:reduce){.zp-sk,.zp-mon.wzrost{animation:none}}";
+    document.head.appendChild(s);
+  }
+  // chip z monetami przed pucharem; gdy tytuł ekranu robi się za wąski, skrót („27,7k”), a w ostateczności chip się chowa
+  // (wtedy sklep otwiera się z licznika podpowiedzi 50/50)
+  function chip(){
+    const h=document.querySelector("body header");if(!h||SALDO==null)return;
+    stylSklepu();
+    let c=h.querySelector(".zp-mon");
+    const t=h.querySelector("h1"),szer=()=>t?t.getBoundingClientRect().width:999;
+    if(!c){c=document.createElement("button");c.type="button";c.className="zp-mon";c.onclick=sklep;
+      c.dataset.h1=Math.round(szer());
+      const gw=h.querySelector("#sumaGw"),p=h.querySelector(".zp-ng.puchar");
+      if(gw)gw.parentNode.after(c);else if(p)h.insertBefore(c,p);else h.appendChild(c);}
+    const ile=+SALDO.monety||0,poprz=+c.dataset.m;
+    c.title="Twoje monety: "+fmtM(ile)+". Stuknij, żeby kupić podpowiedzi.";c.setAttribute("aria-label",c.title);
+    c.hidden=false;c.classList.remove("waski");c.innerHTML='<span class="ik" aria-hidden="true">🪙</span><b>'+fmtM(ile)+'</b>';
+    const w0=+c.dataset.h1||0;
+    const nachodzi=()=>{const r=c.getBoundingClientRect();return [...h.children].some(x=>x!==c&&!x.hidden&&(()=>{const q=x.getBoundingClientRect();return q.width&&r.left<q.right-1&&r.right>q.left+1&&r.top<q.bottom-1&&r.bottom>q.top+1;})());};
+    const brak=()=>h.scrollWidth>h.clientWidth+1||document.documentElement.scrollWidth>innerWidth+1||nachodzi();
+    if(brak()||szer()<Math.min(w0,110)-1){c.classList.add("waski");c.querySelector("b").textContent=krotko(ile);}
+    if(brak()||szer()<Math.min(w0,44)-1)c.hidden=true;
+    if(!isNaN(poprz)&&ile>poprz){c.classList.remove("wzrost");void c.offsetWidth;c.classList.add("wzrost");}
+    c.dataset.m=ile;
+    // licznik podpowiedzi też otwiera sklep
+    const jk=[...h.querySelectorAll(".zp-jk")];const j=document.getElementById("jokery");if(j&&j.parentNode)jk.push(j.parentNode);
+    jk.forEach(x=>{if(x.dataset.sklep)return;x.dataset.sklep="1";x.style.cursor="pointer";x.setAttribute("role","button");x.tabIndex=0;
+      x.title="Podpowiedzi 50/50 · stuknij, żeby dokupić";x.addEventListener("click",sklep);x.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();sklep();}});});
+  }
+  function ustawSaldo(d){
+    if(!d||typeof d!=="object"){return;}
+    SALDO=Object.assign(SALDO||{},d);
+    try{sessionStorage.setItem("zp-saldo",JSON.stringify({d:SALDO,t:Date.now()}));}catch(e){}
+    chip();
+  }
+  // podbój i sklep mogą podać nowe saldo od razu
+  function saldo(m){if(m==null)return SALDO&&SALDO.monety;ustawSaldo({monety:+m||0});}
+  async function pobierzSaldo(sila){
+    try{
+      const c=JSON.parse(sessionStorage.getItem("zp-saldo")||"null");
+      if(c&&c.d){SALDO=c.d;chip();if(!sila&&Date.now()-c.t<60000)return;}
+      const d=await rpc("conq_saldo");if(d)ustawSaldo(d);
+    }catch(e){}
+  }
+  const jokeryTeraz=()=>+localStorage.getItem("jokery")||0;
+  function dodajPodpowiedzi(n){
+    if(window.ZP&&ZP.dodajJoker){ZP.dodajJoker(n,"kupione za monety");}
+    else{try{localStorage.setItem("jokery",String(jokeryTeraz()+n));}catch(e){}}
+    const j=document.getElementById("jokery");if(j)j.textContent=jokeryTeraz();
+    document.querySelectorAll(".zp-jk b").forEach(b=>b.textContent=jokeryTeraz());
+  }
+  const IK5050='<svg class="ik5050" viewBox="0 0 40 40" aria-hidden="true"><defs><clipPath id="c5050"><circle cx="20" cy="20" r="17"/></clipPath></defs><g clip-path="url(#c5050)"><path d="M0 0H40L0 40Z" fill="#F5B82E"/><path d="M40 0V40H0Z" fill="#FFF6E0"/></g><path d="M8 32L32 8" stroke="#3A2A14" stroke-width="2.6" stroke-linecap="round"/><circle cx="20" cy="20" r="17" fill="none" stroke="#3A2A14" stroke-width="3"/><text x="14.5" y="19" text-anchor="middle" style="font:900 10.5px Rubik,Arial,sans-serif;fill:#3A2A14">50</text><text x="25.5" y="31" text-anchor="middle" style="font:900 10.5px Rubik,Arial,sans-serif;fill:#3A2A14">50</text></svg>';
+  function sklep(){
+    stylSklepu();if(document.querySelector(".zp-sk-tlo"))return;
+    const tlo=document.createElement("div");tlo.className="zp-sk-tlo";
+    const okno=document.createElement("div");okno.className="zp-sk";okno.setAttribute("role","dialog");okno.setAttribute("aria-modal","true");okno.setAttribute("aria-label","Skarbiec");
+    tlo.appendChild(okno);document.body.appendChild(tlo);
+    const zamknij=()=>{tlo.remove();document.removeEventListener("keydown",esc);};
+    const esc=e=>{if(e.key==="Escape")zamknij();};document.addEventListener("keydown",esc);
+    tlo.addEventListener("click",e=>{if(e.target===tlo)zamknij();});
+    const wPodboju=/podboj\.html/.test(location.pathname);
+    let blad="";
+    function rysuj(){
+      const S=SALDO||{},m=+S.monety||0,cena=+S.koszt_podpowiedzi||1000,dzis=+S.podpowiedzi_dzis||0,max=+S.podpowiedzi_max||30;
+      const pakiet=(n,rabat)=>{const c=Math.round(cena*n*(1-rabat));const nie=m<c||dzis+n>max;
+        return '<button type="button" data-n="'+n+'"'+(nie?' disabled':'')+'>'+IK5050.replace('class="ik5050"','class="ik5050" style="width:26px;height:26px"')+'<span>×'+n+'</span><small>'+fmtM(c)+' 🪙</small>'+(rabat?'<em>−'+Math.round(rabat*100)+'%</em>':'')+'</button>';};
+      okno.innerHTML='<h2>Skarbiec</h2><div class="stan"><span aria-hidden="true">🪙</span>'+fmtM(m)+'<small>monet</small></div>'
+        +'<p class="muted">Monety zarabiasz w Podboju Polski: codziennie dla każdego gracza i co godzinę za każdy Twój powiat.</p>'
+        +'<p>Podpowiedzi 50/50: masz <b>'+jokeryTeraz()+'</b>. Działają we wszystkich grach.</p>'
+        +'<div class="pp">'+pakiet(1,0)+pakiet(5,.1)+pakiet(10,.2)+'</div>'
+        +'<p class="muted">Dziś kupione: '+dzis+' z '+max+'.'+(S.koszt_ataku?' Dodatkowy atak w Podboju: '+fmtM(S.koszt_ataku)+' 🪙.':'')+'</p>'
+        +(blad?'<p role="alert" style="color:#B3261E">'+escN(blad)+'</p>':'')
+        +'<div class="dol"><button type="button" class="zam">Zamknij</button>'+(wPodboju?'<button type="button" class="zam">Wracam do mapy</button>':'<a href="podboj.html">Do Podboju →</a>')+'</div>';
+      okno.querySelectorAll(".zam").forEach(b=>b.onclick=zamknij);
+      okno.querySelectorAll(".pp button").forEach(b=>b.onclick=async()=>{
+        const n=+b.dataset.n;okno.querySelectorAll(".pp button").forEach(x=>x.disabled=true);
+        try{const r=await rpc("conq_kup_podpowiedzi",{p_ile:n});
+          if(!r)throw Error("Najpierw zapisz swój pseudonim w rankingu.");
+          dodajPodpowiedzi(n);blad="";ustawSaldo({monety:r.monety,podpowiedzi_dzis:r.podpowiedzi_dzis,podpowiedzi_max:r.podpowiedzi_max});
+          try{document.dispatchEvent(new CustomEvent("zp-saldo",{detail:SALDO}));}catch(e){}
+        }catch(e){blad=e.message;}
+        rysuj();
+      });
+    }
+    rysuj();
+    pobierzSaldo(true).then(()=>{if(document.body.contains(okno))rysuj();});
+  }
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)pobierzSaldo();});
   document.addEventListener("visibilitychange",()=>{if(!document.hidden)pingWalki();});
-  window.ZPNaglowek={dodaj,odznaka,pingWalki};
-  const start=()=>{dodaj();setTimeout(sprawdzWiadomosci,1500);setTimeout(pingWalki,800);};
+  window.ZPNaglowek={dodaj,odznaka,pingWalki,saldo,sklep,pobierzSaldo};
+  const start=()=>{dodaj();pobierzSaldo();setTimeout(sprawdzWiadomosci,1500);setTimeout(pingWalki,800);};
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
 })();

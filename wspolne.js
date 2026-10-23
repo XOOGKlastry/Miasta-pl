@@ -296,7 +296,7 @@ function przyciskKolekcji(){
   const jk=document.createElement("span");jk.className="zp-jk";jk.title="Podpowiedzi 50/50";
   const odsJk=()=>{jk.innerHTML=IKONA_5050+'<b>'+jokery()+'</b>';};odsJk();ZP_JK_ODS=odsJk;
   h.appendChild(jk);h.appendChild(a);
-  if(!document.querySelector('script[src*="naglowek.js"]')){const sc=document.createElement("script");sc.src="naglowek.js?v=3";document.head.appendChild(sc);}
+  if(!document.querySelector('script[src*="naglowek.js"]')){const sc=document.createElement("script");sc.src="naglowek.js?v=4";document.head.appendChild(sc);}
   // liczba nowych kart dopiero, gdy przeglądarka ma wolną chwilę
   const licz=()=>{const go=()=>Karty.liczbaNowych().then(n=>{if(n>0){const i=document.createElement("i");i.textContent=n>99?"99+":n;a.appendChild(i);}}).catch(()=>{});
     modulKart().then(go).catch(()=>{});};
